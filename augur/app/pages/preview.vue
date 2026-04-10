@@ -236,8 +236,8 @@ async function triggerApiCall() {
           email: store.email,
         },
       })
-    } catch (saveError) {
-      console.warn('Report save failed, continuing:', saveError)
+    } catch {
+      // Report save failed, continue without saving
     }
 
     isLoading.value = false
@@ -302,8 +302,8 @@ async function handlePayment() {
     })
 
     if (url) window.location.href = url
-  } catch (error) {
-    console.error('Payment error:', error)
+  } catch {
+    console.error('Payment processing failed')
     isProcessingPayment.value = false
   }
 }

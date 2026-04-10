@@ -14,6 +14,8 @@ export default defineEventHandler(async (event) => {
   const answers        = body.answers
 
   assertInput(!!firstName, 'firstName is required')
+  assertInput(!!dateOfBirth, 'dateOfBirth is required')
+  assertInput(isValidDateOfBirth(dateOfBirth), 'Invalid dateOfBirth')
   assertInput(!!city, 'city is required')
   assertInput(isValidArchetype(body.archetype), 'Invalid archetype')
   assertInput(answers !== null && typeof answers === 'object', 'Invalid answers')

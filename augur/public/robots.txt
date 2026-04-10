@@ -1,6 +1,12 @@
-User-agent: *
+# OMENORA Robots.txt - Enterprise SEO Configuration
+# Last Updated: 2026-04-10
+
+# Google Bot - Primary crawler
+User-agent: Googlebot
 Allow: /$
-Allow: /og-image.png
+Allow: /privacy
+Allow: /terms
+Allow: /og-image.svg
 Allow: /favicon.ico
 Disallow: /analysis
 Disallow: /preview
@@ -9,5 +15,82 @@ Disallow: /calendar
 Disallow: /compatibility
 Disallow: /subscription
 Disallow: /api/
+Crawl-delay: 1
 
+# Bing Bot
+User-agent: Bingbot
+Allow: /$
+Allow: /privacy
+Allow: /terms
+Allow: /og-image.svg
+Allow: /favicon.ico
+Disallow: /analysis
+Disallow: /preview
+Disallow: /report
+Disallow: /calendar
+Disallow: /compatibility
+Disallow: /subscription
+Disallow: /api/
+Crawl-delay: 1
+
+# General Bots
+User-agent: *
+Allow: /$
+Allow: /privacy
+Allow: /terms
+Allow: /og-image.svg
+Allow: /favicon.ico
+Disallow: /analysis
+Disallow: /preview
+Disallow: /report
+Disallow: /calendar
+Disallow: /compatibility
+Disallow: /subscription
+Disallow: /api/
+Crawl-delay: 2
+
+# AI Crawlers (respect rate limits)
+User-agent: ChatGPT-User
+Allow: /$
+Allow: /privacy
+Allow: /terms
+Disallow: /analysis
+Disallow: /preview
+Disallow: /report
+Disallow: /calendar
+Disallow: /compatibility
+Disallow: /subscription
+Disallow: /api/
+Crawl-delay: 5
+
+User-agent: GPTBot
+Allow: /$
+Allow: /privacy
+Allow: /terms
+Disallow: /analysis
+Disallow: /preview
+Disallow: /report
+Disallow: /calendar
+Disallow: /compatibility
+Disallow: /subscription
+Disallow: /api/
+Crawl-delay: 5
+
+User-agent: PerplexityBot
+Allow: /$
+Allow: /privacy
+Allow: /terms
+Disallow: /analysis
+Disallow: /preview
+Disallow: /report
+Disallow: /calendar
+Disallow: /compatibility
+Disallow: /subscription
+Disallow: /api/
+Crawl-delay: 5
+
+# Host directive for canonical domain
+Host: https://omenora.com
+
+# Sitemap location
 Sitemap: https://omenora.com/sitemap.xml

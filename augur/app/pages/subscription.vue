@@ -168,8 +168,8 @@ onMounted(async () => {
     })
 
     isLoading.value = false
-  } catch (error) {
-    console.error('Subscription error:', error)
+  } catch {
+    console.error('Subscription page failed')
     isLoading.value = false
     hasError.value = true
   }

@@ -162,22 +162,22 @@ onMounted(async () => {
             language: store.language,
           },
         })
-        console.log('Compatibility email sent')
-      } catch (emailError) {
-        console.error('Compatibility email failed:', emailError)
+        // Email sent successfully
+      } catch {
+        console.error('Compatibility email failed')
       }
     }
 
     isLoading.value = false
-  } catch (error) {
-    console.error('Compatibility load error:', error)
+  } catch {
+    console.error('Compatibility page load failed')
     hasError.value = true
     isLoading.value = false
   }
 })
 
 function downloadCompatibilityCard() {
-  console.log('download compatibility card')
+  // TODO: Implement compatibility card download
 }
 </script>
 

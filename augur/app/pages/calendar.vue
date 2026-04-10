@@ -261,8 +261,8 @@ onMounted(async () => {
         if (reportData?.report?.email) {
           store.setEmail(reportData.report.email)
         }
-      } catch (e) {
-        console.log('Could not fetch report from DB:', e)
+      } catch {
+        // Silently ignore - report may not exist yet
       }
     }
 
@@ -277,15 +277,15 @@ onMounted(async () => {
             language: store.language,
           },
         })
-        console.log('Calendar email sent')
-      } catch (emailError) {
-        console.error('Calendar email failed:', emailError)
+        // Email sent successfully
+      } catch {
+        console.error('Calendar email failed')
       }
     }
 
     isLoading.value = false
-  } catch (error) {
-    console.error('Calendar load error:', error)
+  } catch {
+    console.error('Calendar page load failed')
     hasError.value = true
     isLoading.value = false
   } finally {
@@ -326,8 +326,8 @@ async function downloadCalendar() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-  } catch (err) {
-    console.error('Download error:', err)
+  } catch {
+    console.error('Calendar download failed')
   } finally {
     isDownloadingCalendar.value = false
   }
@@ -358,8 +358,8 @@ async function downloadCalendarPDF() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-  } catch (err) {
-    console.error('Calendar PDF error:', err)
+  } catch {
+    console.error('Calendar PDF download failed')
   } finally {
     isDownloadingCalPDF.value = false
   }

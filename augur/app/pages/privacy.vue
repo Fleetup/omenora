@@ -97,10 +97,60 @@
 </template>
 
 <script setup lang="ts">
+const SITE_URL = 'https://omenora.com'
+
 useSeoMeta({
-  title: 'Privacy Policy',
-  description: 'OMENORA Privacy Policy - Learn how we protect and handle your personal data.',
-  robots: 'index, follow',
+  title: 'Privacy Policy | OMENORA - Data Protection & Privacy',
+  description: 'OMENORA Privacy Policy - Learn how we collect, use, and protect your personal data including birth information, payment details, and usage data. GDPR compliant data practices.',
+  ogTitle: 'Privacy Policy | OMENORA',
+  ogDescription: 'Learn how OMENORA protects your personal data including birth information, payment details, and usage data. Transparent privacy practices.',
+  ogUrl: `${SITE_URL}/privacy`,
+  twitterTitle: 'Privacy Policy | OMENORA',
+  twitterDescription: 'Learn how OMENORA protects your personal data. Transparent privacy practices.',
+  robots: 'index, follow, max-snippet:-1, max-image-preview:large',
+  keywords: 'privacy policy, data protection, GDPR, personal data, data security, privacy rights',
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: `${SITE_URL}/privacy` }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebPage',
+            '@id': `${SITE_URL}/privacy#webpage`,
+            url: `${SITE_URL}/privacy`,
+            name: 'Privacy Policy | OMENORA',
+            isPartOf: { '@id': `${SITE_URL}/#website` },
+            description: 'OMENORA Privacy Policy - Learn how we protect and handle your personal data.',
+            datePublished: '2026-04-10T00:00:00+00:00',
+            dateModified: '2026-04-10T00:00:00+00:00',
+            inLanguage: 'en',
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: SITE_URL,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Privacy Policy',
+                item: `${SITE_URL}/privacy`,
+              },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
 })
 </script>
 

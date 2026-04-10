@@ -724,8 +724,8 @@ async function loadRegionalSection() {
       tarotData.value = result.tarot
       store.setTarotData(result.tarot)
     }
-  } catch (err) {
-    console.error('Regional section error:', err)
+  } catch {
+    console.error('Regional section failed')
   } finally {
     isLoadingRegional.value = false
   }
@@ -750,8 +750,8 @@ async function generateBundleCalendar(): Promise<any> {
     })
     store.setCalendarData(calData.calendar)
     return calData.calendar
-  } catch (err) {
-    console.error('Calendar generation error:', err)
+  } catch {
+    console.error('Calendar generation failed')
     return null
   } finally {
     isGeneratingCalendar.value = false
@@ -777,8 +777,8 @@ async function generateCompatibilityFree() {
       },
     })
     bundleCompatibilityResult.value = result.compatibility
-  } catch (err) {
-    console.error('Compatibility error:', err)
+  } catch {
+    console.error('Compatibility generation failed')
   } finally {
     isGeneratingCompatibility.value = false
   }
@@ -908,8 +908,8 @@ onMounted(async () => {
                 method: 'POST',
                 body: { sessionId },
               })
-            } catch (emailError) {
-              console.error('Email error:', emailError)
+            } catch {
+              // Email sending failed, continue silently
             }
           }
         } else {
@@ -998,8 +998,8 @@ onMounted(async () => {
           if (report.email) store.setEmail(report.email)
           if (report.region) store.setRegion(report.region, store.country)
           if (report.date_of_birth) store.dateOfBirth = report.date_of_birth
-        } catch (e) {
-          console.log('Could not load from DB:', e)
+        } catch {
+          // Could not load from DB, continue without cached data
         }
       }
 
@@ -1056,16 +1056,16 @@ onMounted(async () => {
               body: { sessionId: dedupeId },
             })
           }
-        } catch (emailError) {
-          console.error('Email error:', emailError)
+        } catch {
+          // Email sending failed, continue silently
         }
       }
 
       // Silently provision Supabase Auth account (non-blocking — report renders regardless)
       provisionUser({ sessionId }).catch(() => {})
 
-    } catch (error) {
-      console.error('Report load error:', error)
+    } catch {
+      console.error('Report page load failed')
       isLoadingReport.value = false
       showAddon.value = false
       hasError.value = true
@@ -1105,8 +1105,8 @@ async function buyBundle() {
       }
     )
     if (url) window.location.href = url
-  } catch (err) {
-    console.error('Bundle error:', err)
+  } catch {
+    console.error('Bundle purchase failed')
     isLoadingBundle.value = false
   }
 }
@@ -1133,8 +1133,8 @@ async function handleAddonPurchase() {
       }
     )
     if (url) window.location.href = url
-  } catch (err) {
-    console.error('Addon error:', err)
+  } catch {
+    console.error('Addon purchase failed')
     isProcessingAddon.value = false
   }
 }
@@ -1171,8 +1171,8 @@ async function downloadCard() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-  } catch (error) {
-    console.error('Download error:', error)
+  } catch {
+    console.error('Card download failed')
   } finally {
     isDownloading.value = false
   }
@@ -1213,8 +1213,8 @@ async function buyCompatibilityReading() {
     })
 
     if (url) window.location.href = url
-  } catch (error) {
-    console.error('Compatibility payment error:', error)
+  } catch {
+    console.error('Compatibility purchase failed')
     isProcessingCompatibility.value = false
   }
 }
@@ -1240,8 +1240,8 @@ async function buyCalendar() {
       }
     )
     if (url) window.location.href = url
-  } catch (error) {
-    console.error('Calendar payment error:', error)
+  } catch {
+    console.error('Calendar purchase failed')
     isLoadingCalendar.value = false
   }
 }
@@ -1265,8 +1265,8 @@ async function generateBirthChartAuto() {
       },
     })
     store.setBirthChartData(result.birthChart)
-  } catch (err) {
-    console.error('Birth chart generation error:', err)
+  } catch {
+    console.error('Birth chart generation failed')
   } finally {
     isLoadingBirthChart.value = false
   }
@@ -1296,8 +1296,8 @@ async function buyBirthChart() {
       }
     )
     if (url) window.location.href = url
-  } catch (err) {
-    console.error('Birth chart payment error:', err)
+  } catch {
+    console.error('Birth chart purchase failed')
   } finally {
     isLoadingBirthChart.value = false
   }
@@ -1320,8 +1320,8 @@ async function startSubscription() {
       },
     })
     if (url) window.location.href = url
-  } catch (error) {
-    console.error('Subscription error:', error)
+  } catch {
+    console.error('Subscription start failed')
     isStartingSub.value = false
   }
 }
@@ -1358,8 +1358,8 @@ async function downloadReportPDF() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-  } catch (err) {
-    console.error('PDF error:', err)
+  } catch {
+    console.error('PDF download failed')
   } finally {
     isDownloadingPDF.value = false
   }

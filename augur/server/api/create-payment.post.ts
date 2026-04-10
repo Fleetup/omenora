@@ -16,6 +16,8 @@ export default defineEventHandler(async (event) => {
   const originRaw      = sanitizeString(body.origin, 300)
 
   assertInput(!!firstName, 'firstName is required')
+  assertInput(!!email, 'email is required')
+  assertInput(isValidEmail(email), 'Invalid email')
   assertInput(isValidArchetype(body.archetype), 'Invalid archetype')
   assertInput(isValidRedirectOrigin(originRaw), 'Invalid origin')
 

@@ -100,10 +100,60 @@
 </template>
 
 <script setup lang="ts">
+const SITE_URL = 'https://omenora.com'
+
 useSeoMeta({
-  title: 'Terms of Service',
-  description: 'OMENORA Terms of Service - Please read these terms carefully before using our services.',
-  robots: 'index, follow',
+  title: 'Terms of Service | OMENORA - User Agreement & Conditions',
+  description: 'OMENORA Terms of Service - Read our user agreement, payment terms, refund policy, intellectual property rights, and service conditions. Legal information for using our AI astrology platform.',
+  ogTitle: 'Terms of Service | OMENORA',
+  ogDescription: 'Read OMENORA\'s Terms of Service including payment terms, refund policy, and intellectual property rights.',
+  ogUrl: `${SITE_URL}/terms`,
+  twitterTitle: 'Terms of Service | OMENORA',
+  twitterDescription: 'Read OMENORA\'s Terms of Service and user agreement.',
+  robots: 'index, follow, max-snippet:-1, max-image-preview:large',
+  keywords: 'terms of service, user agreement, terms and conditions, legal terms, service agreement, refund policy',
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: `${SITE_URL}/terms` }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebPage',
+            '@id': `${SITE_URL}/terms#webpage`,
+            url: `${SITE_URL}/terms`,
+            name: 'Terms of Service | OMENORA',
+            isPartOf: { '@id': `${SITE_URL}/#website` },
+            description: 'OMENORA Terms of Service - User agreement and legal conditions for using our AI astrology platform.',
+            datePublished: '2026-04-10T00:00:00+00:00',
+            dateModified: '2026-04-10T00:00:00+00:00',
+            inLanguage: 'en',
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: SITE_URL,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Terms of Service',
+                item: `${SITE_URL}/terms`,
+              },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
 })
 </script>
 
