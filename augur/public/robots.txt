@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /$
+Allow: /og-image.png
+Allow: /favicon.ico
+Disallow: /analysis
+Disallow: /preview
+Disallow: /report
+Disallow: /calendar
+Disallow: /compatibility
+Disallow: /subscription
+Disallow: /api/
+
+Sitemap: https://omenora.com/sitemap.xml

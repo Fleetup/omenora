@@ -1,0 +1,13 @@
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Misc
+.DS_Store
+.fleet
+.idea
+.vscode
+
+# Railway
+.railway
