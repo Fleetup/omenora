@@ -1,0 +1,24 @@
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { CompatibilityScreenProps } from '../navigation/types';
+import { colors } from '../theme/colors';
+
+export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = () => (
+  <View style={styles.container}>
+    <LinearGradient colors={colors.gradients.cosmic} style={styles.gradient}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Love Compatibility</Text>
+        <Text style={styles.subtitle}>Coming soon...</Text>
+      </View>
+    </LinearGradient>
+  </View>
+);
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  gradient: { flex: 1 },
+  content: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 24, fontWeight: 'bold', color: colors.text.primary },
+  subtitle: { color: colors.text.tertiary, marginTop: 10 },
+});
