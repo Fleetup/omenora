@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { CalendarScreenProps } from '../navigation/types';
 import { useAnalysisStore } from '../stores/analysisStore';
 import { colors } from '../theme/colors';
+import { fonts } from '../theme/fonts';
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 const PREVIEW_BARS = [0.72, 0.45, 0.88, 0.55, 0.94, 0.63, 0.81, 0.5, 0.76, 0.42, 0.85, 0.68];
@@ -93,10 +94,8 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
                   </View>
                 ))}
               </View>
-              <TouchableOpacity style={styles.upgradeBtn} onPress={() => navigation.navigate('Preview')}>
-                <LinearGradient colors={colors.gradients.primary} style={styles.upgradeBtnGradient}>
-                  <Text style={styles.upgradeBtnText}>Unlock with Bundle — $4.99  ✦</Text>
-                </LinearGradient>
+              <TouchableOpacity style={styles.upgradeBtn} onPress={() => navigation.navigate('Preview')} activeOpacity={0.75}>
+                <Text style={styles.upgradeBtnText}>Unlock with Bundle — $4.99  ✦</Text>
               </TouchableOpacity>
               <Text style={styles.upgradeNote}>Also included in Full Oracle · $12.99</Text>
             </View>
@@ -115,41 +114,41 @@ const styles = StyleSheet.create({
   topBar:             { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 },
   backBtn:            { padding: 6 },
   backArrow:          { fontSize: 22, color: colors.text.primary },
-  brand:              { fontSize: 11, letterSpacing: 3, color: colors.text.muted },
+  brand:              { fontFamily: fonts.inter, fontSize: 11, letterSpacing: 3, color: 'rgba(255,255,255,0.22)' },
   accessBadge:        { borderWidth: 1, borderColor: 'rgba(140,110,255,0.35)', borderRadius: 2, paddingVertical: 3, paddingHorizontal: 9, backgroundColor: 'rgba(140,110,255,0.07)' },
-  accessBadgeText:    { fontSize: 9, letterSpacing: 1, color: 'rgba(140,110,255,0.8)' },
+  accessBadgeText:    { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 1, color: 'rgba(140,110,255,0.8)' },
   lockBadge:          { borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 2, paddingVertical: 3, paddingHorizontal: 9 },
-  lockBadgeText:      { fontSize: 9, letterSpacing: 0.5, color: 'rgba(255,255,255,0.3)' },
+  lockBadgeText:      { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 0.5, color: 'rgba(255,255,255,0.3)' },
 
-  eyebrow:            { fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', color: colors.gold.medium, marginBottom: 10 },
-  heading:            { fontSize: 36, fontWeight: '300', color: colors.text.primary, lineHeight: 44, marginBottom: 8 },
-  subheading:         { fontSize: 13, color: colors.text.tertiary, marginBottom: 24, fontStyle: 'italic' },
+  eyebrow:            { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', color: colors.gold.medium, marginBottom: 10 },
+  heading:            { fontFamily: fonts.cormorant, fontSize: 36, fontWeight: '300', color: colors.text.primary, lineHeight: 44, marginBottom: 8 },
+  subheading:         { fontFamily: fonts.cormorantItalic, fontSize: 13, color: colors.text.tertiary, marginBottom: 24 },
 
   calendarCard:       { backgroundColor: 'rgba(255,255,255,0.02)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: 16, marginBottom: 24, overflow: 'hidden', position: 'relative' },
   calRow:             { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
-  calMonth:           { fontSize: 10, fontWeight: '500', color: 'rgba(255,255,255,0.3)', width: 30, letterSpacing: 0.5 },
+  calMonth:           { fontFamily: fonts.inter, fontSize: 10, fontWeight: '500', color: 'rgba(255,255,255,0.3)', width: 30, letterSpacing: 0.5 },
   calBarTrack:        { flex: 1, height: 4, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' },
   calBar:             { height: '100%', backgroundColor: colors.purple.full, borderRadius: 2 },
-  calLabel:           { fontSize: 9, color: colors.gold.medium, width: 32, textAlign: 'right', letterSpacing: 0.3 },
+  calLabel:           { fontFamily: fonts.inter, fontSize: 9, color: colors.gold.medium, width: 32, textAlign: 'right', letterSpacing: 0.3 },
   calLabelLocked:     { opacity: 0.25 },
   calFade:            { position: 'absolute', bottom: 0, left: 0, right: 0, height: 100 },
 
   purchasedBox:       { alignItems: 'center', paddingTop: 8 },
   purchasedIcon:      { fontSize: 24, color: colors.gold.medium, marginBottom: 14 },
-  purchasedTitle:     { fontSize: 18, fontWeight: '400', color: colors.text.primary, textAlign: 'center', marginBottom: 12 },
-  purchasedDesc:      { fontSize: 14, color: colors.text.tertiary, textAlign: 'center', lineHeight: 22, marginBottom: 28 },
+  purchasedTitle:     { fontFamily: fonts.playfair, fontSize: 18, color: colors.text.primary, textAlign: 'center', marginBottom: 12 },
+  purchasedDesc:      { fontFamily: fonts.inter, fontSize: 14, color: colors.text.tertiary, textAlign: 'center', lineHeight: 22, marginBottom: 28 },
   reportBtn:          { borderWidth: 1, borderColor: colors.gold.subtle, borderRadius: 3, paddingVertical: 12, paddingHorizontal: 28 },
-  reportBtnText:      { fontSize: 12, letterSpacing: 1.5, textTransform: 'uppercase', color: colors.gold.medium },
+  reportBtnText:      { fontFamily: fonts.inter, fontSize: 12, letterSpacing: 1.5, textTransform: 'uppercase', color: colors.gold.medium },
 
   upgradeBox:         { paddingTop: 4 },
-  upgradeTitle:       { fontSize: 22, fontWeight: '400', color: colors.text.primary, marginBottom: 10 },
-  upgradeDesc:        { fontSize: 14, color: colors.text.tertiary, lineHeight: 22, marginBottom: 20 },
+  upgradeTitle:       { fontFamily: fonts.playfair, fontSize: 22, color: colors.text.primary, marginBottom: 10 },
+  upgradeDesc:        { fontFamily: fonts.inter, fontSize: 14, color: colors.text.tertiary, lineHeight: 22, marginBottom: 20 },
   featureList:        { gap: 10, marginBottom: 24 },
   featureRow:         { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  featureDot:         { fontSize: 10, color: colors.gold.medium, marginTop: 2 },
-  featureText:        { fontSize: 13, color: colors.text.secondary, flex: 1, lineHeight: 20 },
-  upgradeBtn:         { borderRadius: 8, overflow: 'hidden', marginBottom: 12 },
-  upgradeBtnGradient: { paddingVertical: 17, alignItems: 'center' },
-  upgradeBtnText:     { fontSize: 14, fontWeight: '600', color: colors.text.primary, letterSpacing: 0.3 },
-  upgradeNote:        { fontSize: 11, color: colors.text.dim, textAlign: 'center' },
+  featureDot:         { fontFamily: fonts.inter, fontSize: 10, color: colors.gold.medium, marginTop: 2 },
+  featureText:        { fontFamily: fonts.inter, fontSize: 13, color: 'rgba(255,255,255,0.6)', flex: 1, lineHeight: 20 },
+  upgradeBtn:         { borderRadius: 3, overflow: 'hidden', marginBottom: 12, borderWidth: 1, borderColor: 'rgba(201,168,76,0.32)', backgroundColor: 'transparent', paddingVertical: 16, alignItems: 'center' },
+  upgradeBtnGradient: { paddingVertical: 17, alignItems: 'center', width: '100%' },
+  upgradeBtnText:     { fontFamily: fonts.inter, fontSize: 12, fontWeight: '400', color: 'rgba(255,255,255,0.78)', letterSpacing: 1.5, textTransform: 'uppercase' },
+  upgradeNote:        { fontFamily: fonts.inter, fontSize: 11, color: colors.text.dim, textAlign: 'center' },
 });

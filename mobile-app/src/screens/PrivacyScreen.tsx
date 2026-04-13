@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } fr
 import { LinearGradient } from 'expo-linear-gradient';
 import { PrivacyScreenProps } from '../navigation/types';
 import { colors } from '../theme/colors';
+import { fonts } from '../theme/fonts';
 
 const SECTIONS = [
   {
@@ -69,15 +70,15 @@ const styles = StyleSheet.create({
   topBar:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
   backBtn:       { padding: 6 },
   backArrow:     { fontSize: 22, color: colors.text.primary },
-  brand:         { fontSize: 11, letterSpacing: 3, color: colors.text.muted },
+  brand:         { fontFamily: fonts.inter, fontSize: 11, letterSpacing: 3, color: 'rgba(255,255,255,0.22)' },
   spacer:        { width: 34 },
 
-  eyebrow:       { fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', color: colors.gold.medium, marginBottom: 8 },
-  heading:       { fontSize: 32, fontWeight: '300', color: colors.text.primary, marginBottom: 6 },
-  lastUpdated:   { fontSize: 12, color: colors.text.dim, marginBottom: 24, fontStyle: 'italic' },
+  eyebrow:       { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', color: colors.gold.medium, marginBottom: 8 },
+  heading:       { fontFamily: fonts.cormorant, fontSize: 32, fontWeight: '300', color: colors.text.primary, marginBottom: 6 },
+  lastUpdated:   { fontFamily: fonts.cormorantItalic, fontSize: 12, color: colors.text.dim, marginBottom: 24 },
   rule:          { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 28 },
 
   section:       { marginBottom: 28 },
-  sectionTitle:  { fontSize: 12, fontWeight: '600', color: colors.text.secondary, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 },
-  sectionBody:   { fontSize: 14, color: colors.text.tertiary, lineHeight: 24 },
+  sectionTitle:  { fontFamily: fonts.inter, fontSize: 10, fontWeight: '600', color: 'rgba(255,255,255,0.45)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 },
+  sectionBody:   { fontFamily: fonts.inter, fontSize: 14, color: 'rgba(255,255,255,0.48)', lineHeight: 24 },
 });

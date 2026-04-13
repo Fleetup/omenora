@@ -8,6 +8,21 @@ import { ThemeProvider } from './src/theme/ThemeProvider';
 import { RootNavigator, navigationRef } from './src/navigation/RootNavigator';
 import { useAnalysisStore } from './src/stores/analysisStore';
 import { api } from './src/api/endpoints';
+import {
+  useFonts,
+  CormorantGaramond_300Light,
+  CormorantGaramond_300Light_Italic,
+  CormorantGaramond_500Medium,
+} from '@expo-google-fonts/cormorant-garamond';
+import {
+  PlayfairDisplay_400Regular,
+  PlayfairDisplay_400Regular_Italic,
+} from '@expo-google-fonts/playfair-display';
+import {
+  Inter_300Light,
+  Inter_400Regular,
+  Inter_500Medium,
+} from '@expo-google-fonts/inter';
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
@@ -16,6 +31,17 @@ export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
   const initializeStore = useAnalysisStore((state) => state.initialize);
   const store           = useAnalysisStore();
+
+  const [fontsLoaded] = useFonts({
+    CormorantGaramond_300Light,
+    CormorantGaramond_300Light_Italic,
+    CormorantGaramond_500Medium,
+    PlayfairDisplay_400Regular,
+    PlayfairDisplay_400Regular_Italic,
+    Inter_300Light,
+    Inter_400Regular,
+    Inter_500Medium,
+  });
 
   // ── Payment deep-link handler ─────────────────────────────────────────────
   const handleDeepLink = useCallback(async (url: string) => {
@@ -66,12 +92,12 @@ export default function App() {
   }, [initializeStore]);
 
   const onLayoutRootView = useCallback(async () => {
-    if (appIsReady) {
+    if (appIsReady && fontsLoaded) {
       await SplashScreen.hideAsync();
     }
-  }, [appIsReady]);
+  }, [appIsReady, fontsLoaded]);
 
-  if (!appIsReady) {
+  if (!appIsReady || !fontsLoaded) {
     return null;
   }
 

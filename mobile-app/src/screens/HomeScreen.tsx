@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { HomeScreenProps } from '../navigation/types';
 import { colors } from '../theme/colors';
+import { fonts } from '../theme/fonts';
 
 const { width: SW } = Dimensions.get('window');
 const brandFontSize  = SW < 375 ? 52 : SW < 420 ? 64 : 72;
@@ -138,34 +139,34 @@ const styles = StyleSheet.create({
   nebulaGlow:           { position: 'absolute', top: '30%', left: '50%', width: 320, height: 260, borderRadius: 160, backgroundColor: 'rgba(140,110,255,0.06)', transform: [{ translateX: -160 }, { translateY: -130 }] },
   nebulaGlowSecondary:  { position: 'absolute', top: '38%', left: '48%', width: 190, height: 140, borderRadius: 95, backgroundColor: 'rgba(201,168,76,0.035)', transform: [{ translateX: -95 }, { translateY: -70 }] },
 
-  // Brand name — large, light-weight, exact web letter-spacing 0.14em
-  brandName:            { fontWeight: '300', letterSpacing: 10, color: colors.text.primary, marginTop: 10, marginBottom: 0, textAlign: 'center' },
+  // Brand name — Cormorant Garamond 300, letter-spacing 0.14em — exact web match
+  brandName:            { fontFamily: fonts.cormorant, fontWeight: '300', letterSpacing: 10, color: 'rgba(255,255,255,0.93)', marginTop: 10, marginBottom: 0, textAlign: 'center' },
 
-  // Tagline — italic, muted, matching web font-style
-  tagline:              { fontStyle: 'italic', fontWeight: '300', color: colors.text.tertiary, letterSpacing: 0.2, lineHeight: 26, textAlign: 'center', marginTop: 16, marginBottom: 0 },
+  // Tagline — Cormorant Garamond italic 300 — exact web match
+  tagline:              { fontFamily: fonts.cormorantItalic, fontWeight: '300', color: 'rgba(255,255,255,0.48)', letterSpacing: 0.2, lineHeight: 26, textAlign: 'center', marginTop: 16, marginBottom: 0 },
 
   // Threshold separator
   threshold:            { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 28, width: '100%', maxWidth: 320 },
   thresholdRule:        { flex: 1, height: 1, backgroundColor: colors.gold.ghost },
-  socialProof:          { fontSize: 10, color: colors.gold.medium, letterSpacing: 1.5, textTransform: 'uppercase' },
+  socialProof:          { fontFamily: fonts.inter, fontSize: 10, color: colors.gold.medium, letterSpacing: 1.5, textTransform: 'uppercase' },
 
-  // CTA — transparent background, gold border, rounded=3, uppercase 12px
+  // CTA — transparent background, gold border, rounded=3, uppercase Inter 12px — exact web match
   ctaButton:            { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 28, backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.gold.low, borderRadius: 3, paddingVertical: 16, paddingHorizontal: 44, width: '100%', maxWidth: 360 },
-  ctaLabel:             { fontSize: 12, fontWeight: '400', color: 'rgba(255,255,255,0.78)', letterSpacing: 1.5, textTransform: 'uppercase' },
-  ctaGlyph:             { fontSize: 10, color: colors.gold.medium },
+  ctaLabel:             { fontFamily: fonts.inter, fontSize: 12, fontWeight: '400', color: 'rgba(255,255,255,0.78)', letterSpacing: 1.5, textTransform: 'uppercase' },
+  ctaGlyph:             { fontFamily: fonts.inter, fontSize: 10, color: colors.gold.medium },
 
-  subLabel:             { fontSize: 11, color: colors.text.dim, marginTop: 14, letterSpacing: 0.3 },
+  subLabel:             { fontFamily: fonts.inter, fontSize: 11, color: colors.text.dim, marginTop: 14, letterSpacing: 0.3 },
   starRow:              { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
-  starGold:             { fontSize: 11, color: 'rgba(201,168,76,0.65)', letterSpacing: 1 },
-  starLabel:            { fontSize: 11, color: colors.text.dim, letterSpacing: 0.2 },
+  starGold:             { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(201,168,76,0.65)', letterSpacing: 1 },
+  starLabel:            { fontFamily: fonts.inter, fontSize: 11, color: colors.text.dim, letterSpacing: 0.2 },
 
-  // Feature pills — square corners (borderRadius 2), very subtle
+  // Feature pills — square corners (borderRadius 2), very subtle — exact web match
   featurePills:         { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 24, maxWidth: 360 },
   featurePill:          { borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', borderRadius: 2, paddingVertical: 4, paddingHorizontal: 10 },
-  featurePillText:      { fontSize: 9, color: 'rgba(255,255,255,0.16)', letterSpacing: 0.8, textTransform: 'uppercase' },
+  featurePillText:      { fontFamily: fonts.inter, fontSize: 9, color: 'rgba(255,255,255,0.16)', letterSpacing: 0.8, textTransform: 'uppercase' },
 
   // Legal
   legalLinks:           { flexDirection: 'row', alignItems: 'center', marginTop: 32 },
-  legalLink:            { fontSize: 11, color: colors.text.dim },
-  legalDot:             { fontSize: 11, color: colors.text.dim, marginHorizontal: 8 },
+  legalLink:            { fontFamily: fonts.inter, fontSize: 11, color: colors.text.dim },
+  legalDot:             { fontFamily: fonts.inter, fontSize: 11, color: colors.text.dim, marginHorizontal: 8 },
 });

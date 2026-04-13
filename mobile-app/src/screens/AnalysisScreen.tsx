@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AnalysisScreenProps } from '../navigation/types';
 import { useAnalysisStore } from '../stores/analysisStore';
 import { colors } from '../theme/colors';
+import { fonts } from '../theme/fonts';
 import { QUESTIONS, LANGUAGES, REGION_OPTIONS } from '../constants/questions';
 import { calculateLifePathNumber } from '../utils/lifePathNumber';
 import { assignArchetype } from '../utils/archetypes';
@@ -258,10 +259,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                   </View>
                 </View>
 
-                <TouchableOpacity style={[styles.continueButton, !isStep1Valid && styles.continueButtonDisabled]} onPress={continueToStep2} disabled={!isStep1Valid}>
-                  <LinearGradient colors={isStep1Valid ? colors.gradients.primary : ['#444', '#333']} style={styles.continueGradient}>
-                    <Text style={styles.continueText}>Continue →</Text>
-                  </LinearGradient>
+                <TouchableOpacity style={[styles.continueButton, !isStep1Valid && styles.continueButtonDisabled]} onPress={continueToStep2} disabled={!isStep1Valid} activeOpacity={0.75}>
+                  <Text style={styles.continueText}>Continue ✦</Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -284,10 +283,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                     {index < QUESTIONS.length - 1 && <View style={styles.divider} />}
                   </View>
                 ))}
-                <TouchableOpacity style={[styles.continueButton, !allQuestionsAnswered && styles.continueButtonDisabled]} onPress={submitAnalysis} disabled={!allQuestionsAnswered}>
-                  <LinearGradient colors={allQuestionsAnswered ? colors.gradients.primary : ['#444', '#333']} style={styles.continueGradient}>
-                    <Text style={styles.continueText}>Reveal My Destiny ✦</Text>
-                  </LinearGradient>
+                <TouchableOpacity style={[styles.continueButton, styles.submitButton, !allQuestionsAnswered && styles.continueButtonDisabled]} onPress={submitAnalysis} disabled={!allQuestionsAnswered} activeOpacity={0.75}>
+                  <Text style={[styles.continueText, styles.submitText]}>Reveal My Destiny ✦</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -304,59 +301,60 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 16 },
   backButton: { padding: 8 },
   backButtonText: { fontSize: 24, color: colors.text.primary },
-  brandText: { fontSize: 16, fontWeight: '600', color: colors.text.primary, letterSpacing: 2 },
-  stepIndicator: { fontSize: 14, color: colors.text.tertiary },
-  progressBar: { flexDirection: 'row', paddingHorizontal: 20, gap: 8, marginBottom: 24 },
-  progressSegment: { flex: 1, height: 3, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 2 },
-  progressActive: { backgroundColor: colors.purple.full },
+  brandText: { fontFamily: fonts.inter, fontSize: 11, letterSpacing: 2.5, color: 'rgba(255,255,255,0.22)' },
+  stepIndicator: { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.22)' },
+  progressBar: { flexDirection: 'row', paddingHorizontal: 20, gap: 6, marginBottom: 36 },
+  progressSegment: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.08)' },
+  progressActive: { backgroundColor: 'rgba(201,168,76,0.55)' },
   keyboardView: { flex: 1 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 40 },
-  heading: { fontSize: 28, fontWeight: '700', color: colors.text.primary, marginBottom: 8 },
-  subheading: { fontSize: 14, color: colors.text.tertiary, marginBottom: 32 },
-  fieldWrapper: { backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.background.cardBorder, borderRadius: 12, padding: 16, marginBottom: 16 },
-  fieldFocused: { borderColor: colors.purple.full },
-  fieldLabel: { fontSize: 12, color: colors.text.tertiary, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 },
-  fieldInput: { fontSize: 16, color: colors.text.primary, padding: 0 },
+  heading: { fontFamily: fonts.cormorant, fontSize: 38, fontWeight: '300', color: 'rgba(255,255,255,0.92)', marginBottom: 6, lineHeight: 44, letterSpacing: -0.4 },
+  subheading: { fontFamily: fonts.cormorantItalic, fontSize: 15, color: 'rgba(255,255,255,0.3)', marginBottom: 32 },
+  fieldWrapper: { backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 8, padding: 16, marginBottom: 12 },
+  fieldFocused: { borderColor: 'rgba(201,168,76,0.4)', backgroundColor: 'rgba(201,168,76,0.025)' },
+  fieldLabel: { fontFamily: fonts.inter, fontSize: 9, color: 'rgba(255,255,255,0.22)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 2 },
+  fieldInput: { fontFamily: fonts.inter, fontSize: 15, color: 'rgba(255,255,255,0.88)', padding: 0 },
   fieldHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  optionalBadge: { fontSize: 11, color: colors.text.muted, backgroundColor: 'rgba(255, 255, 255, 0.05)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
+  optionalBadge: { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(140,110,255,0.52)', letterSpacing: 0.3 },
   dateRow: { flexDirection: 'row', gap: 12 },
   timeRow: { flexDirection: 'row', gap: 12 },
   dateField: { flex: 1 },
   yearField: { flex: 1.5 },
   timeField: { flex: 1 },
-  numInput: { fontSize: 18, color: colors.text.primary, textAlign: 'center', padding: 12, backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' },
-  inputSubLabel: { fontSize: 11, color: colors.text.muted, textAlign: 'center', marginTop: 6 },
+  numInput: { fontFamily: fonts.cormorant, fontSize: 16, color: 'rgba(255,255,255,0.88)', textAlign: 'center', padding: 14, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  inputSubLabel: { fontFamily: fonts.inter, fontSize: 9, color: 'rgba(255,255,255,0.18)', textAlign: 'center', marginTop: 5, textTransform: 'uppercase', letterSpacing: 1.2 },
   ampmContainer: { flex: 1, alignItems: 'center' },
-  ampmButton: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6, backgroundColor: 'rgba(255, 255, 255, 0.03)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', marginVertical: 2 },
-  ampmActive: { backgroundColor: colors.purple.medium, borderColor: colors.purple.high },
-  ampmText: { fontSize: 14, color: colors.text.tertiary },
-  ampmTextActive: { color: colors.purpleLight.high, fontWeight: '600' },
-  unlockRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.purple.medium },
-  unlockIcon: { fontSize: 14, color: colors.purple.full, marginRight: 8 },
-  unlockText: { fontSize: 13, color: colors.purpleLight.high },
+  ampmButton: { paddingVertical: 6, paddingHorizontal: 0, width: '100%', borderRadius: 5, backgroundColor: 'transparent', borderWidth: 0, marginVertical: 2, alignItems: 'center' },
+  ampmActive: { backgroundColor: 'rgba(140,110,255,0.2)' },
+  ampmText: { fontFamily: fonts.inter, fontSize: 12, fontWeight: '500', color: 'rgba(255,255,255,0.2)', letterSpacing: 1 },
+  ampmTextActive: { color: 'rgba(200,180,255,0.95)' },
+  unlockRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', gap: 7 },
+  unlockIcon: { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(140,110,255,0.65)' },
+  unlockText: { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(140,110,255,0.65)', letterSpacing: 0.3 },
   regionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  regionButton: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.03)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' },
-  regionActive: { backgroundColor: 'rgba(123, 97, 255, 0.15)', borderColor: 'rgba(140, 110, 255, 0.5)' },
-  regionText: { fontSize: 12, color: colors.text.tertiary },
-  regionTextActive: { color: 'rgba(200, 180, 255, 0.9)' },
+  regionButton: { paddingVertical: 7, paddingHorizontal: 16, borderRadius: 3, backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  regionActive: { borderColor: 'rgba(201,168,76,0.42)', backgroundColor: 'rgba(201,168,76,0.07)' },
+  regionText: { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 },
+  regionTextActive: { color: 'rgba(201,168,76,0.88)' },
   languageRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  languageButton: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)' },
-  languageActive: { backgroundColor: 'rgba(140, 110, 255, 0.15)', borderColor: 'rgba(140, 110, 255, 0.5)' },
+  languageButton: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 7, paddingHorizontal: 14, borderRadius: 3, backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  languageActive: { borderColor: 'rgba(201,168,76,0.42)', backgroundColor: 'rgba(201,168,76,0.07)' },
   languageFlag: { fontSize: 14 },
-  languageText: { fontSize: 12, color: 'rgba(255, 255, 255, 0.25)' },
-  languageTextActive: { color: 'rgba(200, 180, 255, 0.9)' },
-  questionBlock: { marginBottom: 24 },
-  questionHeader: { flexDirection: 'row', marginBottom: 12 },
-  questionNumber: { fontSize: 14, fontWeight: '600', color: colors.gold.medium, marginRight: 12, minWidth: 24 },
-  questionText: { flex: 1, fontSize: 15, color: colors.text.primary, lineHeight: 22 },
-  optionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginLeft: 36 },
-  optionTile: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.03)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' },
-  optionTileSelected: { backgroundColor: colors.purple.medium, borderColor: colors.purple.full },
-  optionText: { fontSize: 13, color: colors.text.tertiary },
-  optionTextSelected: { color: colors.text.primary, fontWeight: '500' },
-  divider: { height: 1, backgroundColor: 'rgba(255, 255, 255, 0.08)', marginTop: 24, marginLeft: 36 },
-  continueButton: { height: 56, borderRadius: 28, overflow: 'hidden', marginTop: 24 },
-  continueButtonDisabled: { opacity: 0.6 },
-  continueGradient: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  continueText: { fontSize: 16, fontWeight: '600', color: colors.text.primary },
+  languageText: { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 },
+  languageTextActive: { color: 'rgba(201,168,76,0.88)' },
+  questionBlock: { marginBottom: 4 },
+  questionHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, marginBottom: 14 },
+  questionNumber: { fontFamily: fonts.cormorant, fontSize: 22, fontWeight: '300', color: 'rgba(201,168,76,0.4)', lineHeight: 26, flexShrink: 0, minWidth: 28, letterSpacing: 0.3 },
+  questionText: { flex: 1, fontFamily: fonts.inter, fontSize: 16, color: 'rgba(255,255,255,0.72)', lineHeight: 24, fontWeight: '300', paddingTop: 2 },
+  optionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  optionTile: { flex: 1, minHeight: 52, paddingVertical: 13, paddingHorizontal: 16, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  optionTileSelected: { backgroundColor: 'rgba(201,168,76,0.08)', borderColor: 'rgba(201,168,76,0.42)' },
+  optionText: { fontFamily: fonts.inter, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 18 },
+  optionTextSelected: { color: 'rgba(201,168,76,0.9)' },
+  divider: { height: 1, backgroundColor: 'transparent', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)', marginVertical: 24 },
+  continueButton: { borderRadius: 3, marginTop: 28, borderWidth: 1, borderColor: 'rgba(201,168,76,0.32)', backgroundColor: 'transparent', paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
+  continueButtonDisabled: { opacity: 0.22 },
+  continueText: { fontFamily: fonts.inter, fontSize: 12, fontWeight: '400', color: 'rgba(255,255,255,0.72)', letterSpacing: 1.8, textTransform: 'uppercase' },
+  submitButton: { marginTop: 40, backgroundColor: 'rgba(201,168,76,0.1)', borderColor: 'rgba(201,168,76,0.45)' },
+  submitText: { color: 'rgba(201,168,76,0.92)' },
 });

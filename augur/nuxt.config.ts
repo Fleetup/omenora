@@ -3,7 +3,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: process.env.NODE_ENV !== 'production' },
 
-  modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt', '@nuxtjs/sentry'],
+  modules: [
+    '@nuxtjs/tailwindcss',
+    '@pinia/nuxt',
+    ...(process.env.SENTRY_DSN ? ['@nuxtjs/sentry'] : []),
+  ],
 
   runtimeConfig: {
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
@@ -26,7 +30,7 @@ export default defineNuxtConfig({
     experimental: {
       wasm: true,
     },
-    errorHandler: '~/server/error-handler',
+    errorHandler: '~~/server/error-handler',
   },
 
   routeRules: {
