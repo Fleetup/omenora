@@ -32,16 +32,38 @@ export interface SaveReportRequest {
   email: string;
 }
 
-export interface CreatePaymentRequest {
-  reportId: string;
-  productType: 'birth-chart' | 'compatibility' | 'calendar' | 'bundle';
-  amount: number;
-  currency?: string;
+export type MobileProductType =
+  | 'report' | 'oracle' | 'bundle' | 'calendar'
+  | 'compatibility' | 'addon' | 'birth_chart';
+
+export interface CreateMobilePaymentIntentRequest {
+  type: MobileProductType;
+  firstName: string;
+  email: string;
+  archetype: string;
+  tempId: string;
+  region: string;
+  dateOfBirth: string;
+  lifePathNumber?: number;
+  timeOfBirth?: string;
+  partnerName?: string;
 }
 
-export interface CreatePaymentResponse {
+export interface CreateMobilePaymentIntentResponse {
   clientSecret: string;
+  publishableKey: string;
   paymentIntentId: string;
+  amount: number;
+  productName: string;
+}
+
+export interface ConfirmMobilePaymentResponse {
+  paid: boolean;
+  paymentIntentId: string;
+  amount: number;
+  currency: string;
+  metadata: Record<string, string> | null;
+  customerEmail: string | null;
 }
 
 export interface CompatibilityRequest {
@@ -122,9 +144,14 @@ export const api = {
     return response.data;
   },
 
-  // Payments
-  createPayment: async (data: CreatePaymentRequest): Promise<CreatePaymentResponse> => {
-    const response = await apiClient.post('/api/create-payment', data);
+  // Mobile-native payments (Stripe PaymentSheet — no browser redirect)
+  createMobilePaymentIntent: async (data: CreateMobilePaymentIntentRequest): Promise<CreateMobilePaymentIntentResponse> => {
+    const response = await apiClient.post('/api/mobile/create-payment-intent', data);
+    return response.data;
+  },
+
+  confirmMobilePayment: async (paymentIntentId: string): Promise<ConfirmMobilePaymentResponse> => {
+    const response = await apiClient.post('/api/mobile/confirm-payment', { paymentIntentId });
     return response.data;
   },
 

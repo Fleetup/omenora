@@ -9,12 +9,14 @@ import {
   SafeAreaView,
   Animated,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useStripe } from '@stripe/stripe-react-native';
 import { PreviewScreenProps } from '../navigation/types';
 import { useAnalysisStore } from '../stores/analysisStore';
 import { colors } from '../theme/colors';
-import { api } from '../api/endpoints';
+import { api, MobileProductType } from '../api/endpoints';
 
 
 const LOADING_MESSAGES = [
@@ -77,6 +79,7 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({ navigation }) => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [progressWidth] = useState(new Animated.Value(0));
 
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const store = useAnalysisStore();
 
   useEffect(() => {
@@ -130,13 +133,73 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({ navigation }) => {
     if (isProcessingPayment || !email) return;
     setIsProcessingPayment(true);
     store.setEmail(email);
-    setTimeout(() => {
+
+    const typeMap: Record<1 | 2 | 3, MobileProductType> = {
+      1: 'report',
+      2: 'bundle',
+      3: 'oracle',
+    };
+    const productType = typeMap[selectedTier];
+
+    try {
+      // 1. Create PaymentIntent on the server
+      const intent = await api.createMobilePaymentIntent({
+        type: productType,
+        firstName: store.firstName,
+        email,
+        archetype: store.archetype ?? '',
+        tempId: store.tempId,
+        region: store.regionOverride ?? 'western',
+        dateOfBirth: store.dateOfBirth,
+        lifePathNumber: store.lifePathNumber ?? undefined,
+        timeOfBirth: store.timeOfBirth || undefined,
+      });
+
+      // 2. Init the native PaymentSheet
+      const { error: initError } = await initPaymentSheet({
+        paymentIntentClientSecret: intent.clientSecret,
+        merchantDisplayName: 'OMENORA',
+        defaultBillingDetails: { email },
+        allowsDelayedPaymentMethods: false,
+      });
+
+      if (initError) {
+        Alert.alert('Payment Error', initError.message);
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      // 3. Present the PaymentSheet
+      const { error: presentError } = await presentPaymentSheet();
+
+      if (presentError) {
+        if (presentError.code !== 'Canceled') {
+          Alert.alert('Payment Failed', presentError.message);
+        }
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      // 4. Server-side verification — never trust client alone
+      const confirmed = await api.confirmMobilePayment(intent.paymentIntentId);
+
+      if (!confirmed.paid) {
+        Alert.alert('Payment Not Confirmed', 'Your payment could not be verified. Please contact support.');
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      // 5. Update store purchase state
       store.setPaymentComplete(true);
       if (selectedTier === 2) store.setBundlePurchased(true);
       if (selectedTier === 3) store.setOraclePurchased(true);
+
+      navigation.navigate('Report', { reportId: store.report?.archetypeName ?? 'default' });
+    } catch (err) {
+      Alert.alert('Error', 'Something went wrong processing your payment. Please try again.');
+    } finally {
       setIsProcessingPayment(false);
-      navigation.navigate('Report', { reportId: store.report?.archetypeName || 'default' });
-    }, 1500);
+    }
   };
 
   if (isLoading) {
@@ -266,7 +329,7 @@ const styles = StyleSheet.create({
   brandTextSmall: { fontSize: 11, letterSpacing: 3, color: 'rgba(255, 255, 255, 0.25)', marginBottom: 16 },
   loadingMessage: { fontSize: 16, fontWeight: '300', fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.48)', textAlign: 'center', minHeight: 48, lineHeight: 24 },
   progressTrack: { width: 160, height: 1, backgroundColor: 'rgba(255, 255, 255, 0.08)', marginTop: 24, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: colors.primary.main },
+  progressFill: { height: '100%', backgroundColor: colors.purple.full },
   errorContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
   errorText: { fontSize: 14, color: 'rgba(255, 255, 255, 0.4)', textAlign: 'center', marginTop: 16, marginBottom: 24 },
   retryButton: { borderWidth: 1, borderColor: 'rgba(201, 168, 76, 0.35)', borderRadius: 3, paddingVertical: 12, paddingHorizontal: 32 },

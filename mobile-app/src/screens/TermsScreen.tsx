@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   gradient: { flex: 1 },
   scrollContent: { padding: 20 },
-  backLink: { color: colors.primary.main, marginBottom: 20 },
+  backLink: { color: colors.purple.full, marginBottom: 20 },
   title: { fontSize: 28, fontWeight: 'bold', color: colors.text.primary, marginBottom: 20 },
   content: { color: colors.text.secondary, lineHeight: 24 },
 });

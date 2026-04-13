@@ -1,64 +1,65 @@
 /**
- * OMENORA Design System - Colors
- * Matches the web app design exactly
+ * OMENORA Design System — exact token mirror of the web app.
+ *
+ * All values are sourced directly from the web app CSS so every screen
+ * renders identically to its web counterpart.
  */
 
 export const colors = {
-  // Primary Brand Colors
-  primary: {
-    main: '#7B61FF',
-    light: '#9B8AFF',
-    dark: '#5A43CC',
-    gradient: ['#7B61FF', '#9B8AFF'],
-  },
-
-  // Background Colors
+  // ── Background ────────────────────────────────────────────────────────────
   background: {
-    main: '#050410',
-    secondary: '#0a0a1a',
-    tertiary: '#0f0f24',
-    card: 'rgba(255, 255, 255, 0.03)',
+    main:       '#050410',
+    card:       'rgba(255, 255, 255, 0.03)',
     cardBorder: 'rgba(255, 255, 255, 0.08)',
   },
 
-  // Text Colors
+  // ── Text ──────────────────────────────────────────────────────────────────
   text: {
-    primary: '#ffffff',
-    secondary: 'rgba(255, 255, 255, 0.85)',
-    tertiary: 'rgba(255, 255, 255, 0.6)',
-    muted: 'rgba(255, 255, 255, 0.4)',
+    primary:   'rgba(255, 255, 255, 0.93)',
+    secondary: 'rgba(255, 255, 255, 0.72)',
+    tertiary:  'rgba(255, 255, 255, 0.48)',
+    muted:     'rgba(255, 255, 255, 0.25)',
+    dim:       'rgba(255, 255, 255, 0.18)',
   },
 
-  // Accent Colors
-  accent: {
-    gold: '#FFD700',
-    silver: '#C0C0C0',
-    bronze: '#CD7F32',
-    cosmic: '#FF6B6B',
-    mystic: '#4ECDC4',
+  // ── Gold accent (rgba(201, 168, 76, x)) ───────────────────────────────────
+  gold: {
+    full:    'rgba(201, 168, 76, 1)',
+    high:    'rgba(201, 168, 76, 0.92)',
+    medium:  'rgba(201, 168, 76, 0.62)',
+    low:     'rgba(201, 168, 76, 0.38)',
+    subtle:  'rgba(201, 168, 76, 0.22)',
+    ghost:   'rgba(201, 168, 76, 0.07)',
   },
 
-  // Semantic Colors
+  // ── Purple accent (rgba(140, 110, 255, x)) ────────────────────────────────
+  purple: {
+    full:   'rgba(140, 110, 255, 0.88)',
+    high:   'rgba(140, 110, 255, 0.55)',
+    medium: 'rgba(140, 110, 255, 0.22)',
+    low:    'rgba(140, 110, 255, 0.08)',
+  },
+
+  // ── Purple light (rgba(200, 180, 255, x)) ─────────────────────────────────
+  purpleLight: {
+    high:   'rgba(200, 180, 255, 0.95)',
+    medium: 'rgba(200, 180, 255, 0.60)',
+    low:    'rgba(200, 180, 255, 0.42)',
+  },
+
+  // ── Semantic ──────────────────────────────────────────────────────────────
   semantic: {
-    success: '#4CAF50',
-    warning: '#FFC107',
     error: '#FF5252',
-    info: '#2196F3',
   },
 
-  // Gradient Presets
+  // ── Gradient presets (LinearGradient colors arrays) ───────────────────────
   gradients: {
-    cosmic: ['#050410', '#0a0a1a', '#050410'] as const,
-    primary: ['#7B61FF', '#9B8AFF'] as const,
-    dark: ['#0a0a1a', '#050410'] as const,
-    card: ['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)'] as const,
-  },
-
-  // Overlay Colors
-  overlay: {
-    light: 'rgba(255, 255, 255, 0.1)',
-    medium: 'rgba(0, 0, 0, 0.5)',
-    heavy: 'rgba(0, 0, 0, 0.8)',
+    // Dark background — used for SafeAreaView fill behind ScrollView
+    cosmic: ['#050410', '#050410'] as const,
+    // Primary action button (purple)
+    primary: ['rgba(140, 110, 255, 0.88)', 'rgba(140, 110, 255, 1)'] as const,
+    // Gold progress fill
+    goldPurple: ['rgba(140, 110, 255, 0.55)', 'rgba(201, 168, 76, 0.55)'] as const,
   },
 } as const;
 

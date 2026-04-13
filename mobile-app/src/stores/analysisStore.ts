@@ -2,14 +2,25 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export interface ReportSection {
+  title: string;
+  content: string;
+}
+
 export interface Report {
   archetypeSymbol: string;
   archetypeName: string;
   element: string;
   powerTraits: string[];
   sections: {
-    identity: { content: string };
-    [key: string]: { content: string };
+    identity:    ReportSection;
+    science:     ReportSection;
+    forecast:    ReportSection;
+    love:        ReportSection;
+    purpose:     ReportSection;
+    gift:        ReportSection;
+    affirmation: ReportSection;
+    [key: string]: ReportSection;
   };
 }
 

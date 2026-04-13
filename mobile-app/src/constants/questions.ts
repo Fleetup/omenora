@@ -89,7 +89,8 @@ export const LANGUAGES = [
 ];
 
 export const REGION_OPTIONS = [
-  { value: 'western', label: 'Western (Sun sign, psychology)' },
-  { value: 'chinese', label: 'Chinese (Bazi, destiny chart)' },
-  { value: 'vedic', label: 'Vedic (Nakshatra, karma)' },
+  { value: 'western', label: 'Western' },
+  { value: 'india',   label: 'Vedic'   },
+  { value: 'china',   label: 'Chinese' },
+  { value: 'latam',   label: 'Tarot'   },
 ];

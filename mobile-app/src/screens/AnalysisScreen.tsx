@@ -15,6 +15,8 @@ import { AnalysisScreenProps } from '../navigation/types';
 import { useAnalysisStore } from '../stores/analysisStore';
 import { colors } from '../theme/colors';
 import { QUESTIONS, LANGUAGES, REGION_OPTIONS } from '../constants/questions';
+import { calculateLifePathNumber } from '../utils/lifePathNumber';
+import { assignArchetype } from '../utils/archetypes';
 
 export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -40,6 +42,7 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
     firstName,
     city,
     answers,
+    dateOfBirth,
     regionOverride,
     languageOverride,
     setFirstName,
@@ -49,6 +52,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
     setAnswer,
     setRegionOverride,
     setLanguageOverride,
+    setLifePathNumber,
+    setArchetype,
   } = useAnalysisStore();
 
   const computedDateOfBirth = React.useMemo(() => {
@@ -137,7 +142,15 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
   };
 
   const continueToStep2 = () => { if (isStep1Valid) setCurrentStep(2); };
-  const submitAnalysis = () => { navigation.navigate('Preview'); };
+
+  const submitAnalysis = () => {
+    if (!allQuestionsAnswered) return;
+    const lpn = calculateLifePathNumber(dateOfBirth);
+    const archetype = assignArchetype(answers);
+    setLifePathNumber(lpn);
+    setArchetype(archetype);
+    navigation.navigate('Preview');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -295,13 +308,13 @@ const styles = StyleSheet.create({
   stepIndicator: { fontSize: 14, color: colors.text.tertiary },
   progressBar: { flexDirection: 'row', paddingHorizontal: 20, gap: 8, marginBottom: 24 },
   progressSegment: { flex: 1, height: 3, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 2 },
-  progressActive: { backgroundColor: colors.primary.main },
+  progressActive: { backgroundColor: colors.purple.full },
   keyboardView: { flex: 1 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 40 },
   heading: { fontSize: 28, fontWeight: '700', color: colors.text.primary, marginBottom: 8 },
   subheading: { fontSize: 14, color: colors.text.tertiary, marginBottom: 32 },
   fieldWrapper: { backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.background.cardBorder, borderRadius: 12, padding: 16, marginBottom: 16 },
-  fieldFocused: { borderColor: colors.primary.main },
+  fieldFocused: { borderColor: colors.purple.full },
   fieldLabel: { fontSize: 12, color: colors.text.tertiary, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 },
   fieldInput: { fontSize: 16, color: colors.text.primary, padding: 0 },
   fieldHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
@@ -315,12 +328,12 @@ const styles = StyleSheet.create({
   inputSubLabel: { fontSize: 11, color: colors.text.muted, textAlign: 'center', marginTop: 6 },
   ampmContainer: { flex: 1, alignItems: 'center' },
   ampmButton: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6, backgroundColor: 'rgba(255, 255, 255, 0.03)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', marginVertical: 2 },
-  ampmActive: { backgroundColor: 'rgba(123, 97, 255, 0.2)', borderColor: 'rgba(123, 97, 255, 0.5)' },
+  ampmActive: { backgroundColor: colors.purple.medium, borderColor: colors.purple.high },
   ampmText: { fontSize: 14, color: colors.text.tertiary },
-  ampmTextActive: { color: colors.primary.light, fontWeight: '600' },
-  unlockRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(123, 97, 255, 0.2)' },
-  unlockIcon: { fontSize: 14, color: colors.primary.main, marginRight: 8 },
-  unlockText: { fontSize: 13, color: colors.primary.light },
+  ampmTextActive: { color: colors.purpleLight.high, fontWeight: '600' },
+  unlockRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.purple.medium },
+  unlockIcon: { fontSize: 14, color: colors.purple.full, marginRight: 8 },
+  unlockText: { fontSize: 13, color: colors.purpleLight.high },
   regionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   regionButton: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.03)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' },
   regionActive: { backgroundColor: 'rgba(123, 97, 255, 0.15)', borderColor: 'rgba(140, 110, 255, 0.5)' },
@@ -334,11 +347,11 @@ const styles = StyleSheet.create({
   languageTextActive: { color: 'rgba(200, 180, 255, 0.9)' },
   questionBlock: { marginBottom: 24 },
   questionHeader: { flexDirection: 'row', marginBottom: 12 },
-  questionNumber: { fontSize: 14, fontWeight: '600', color: colors.primary.main, marginRight: 12, minWidth: 24 },
+  questionNumber: { fontSize: 14, fontWeight: '600', color: colors.gold.medium, marginRight: 12, minWidth: 24 },
   questionText: { flex: 1, fontSize: 15, color: colors.text.primary, lineHeight: 22 },
   optionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginLeft: 36 },
   optionTile: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.03)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' },
-  optionTileSelected: { backgroundColor: 'rgba(123, 97, 255, 0.2)', borderColor: colors.primary.main },
+  optionTileSelected: { backgroundColor: colors.purple.medium, borderColor: colors.purple.full },
   optionText: { fontSize: 13, color: colors.text.tertiary },
   optionTextSelected: { color: colors.text.primary, fontWeight: '500' },
   divider: { height: 1, backgroundColor: 'rgba(255, 255, 255, 0.08)', marginTop: 24, marginLeft: 36 },
