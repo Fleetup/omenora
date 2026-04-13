@@ -10,6 +10,7 @@ import {
   Animated,
   ActivityIndicator,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,6 +18,8 @@ import { PreviewScreenProps } from '../navigation/types';
 import { useAnalysisStore } from '../stores/analysisStore';
 import { colors } from '../theme/colors';
 import { api, MobileProductType } from '../api/endpoints';
+
+const { width: SW } = Dimensions.get('window');
 
 
 const LOADING_MESSAGES = [
@@ -55,19 +58,28 @@ const orbitalStyles = StyleSheet.create({
   orbitCenter: { width: 7, height: 7, borderRadius: 4, backgroundColor: 'rgba(200, 180, 255, 0.9)' },
 });
 
-const BlurredContent: React.FC = () => (
-  <View style={blurStyles.container}>
-    <View style={[blurStyles.fakeLine, { width: '90%' }]} />
-    <View style={[blurStyles.fakeLine, { width: '75%' }]} />
-    <View style={[blurStyles.fakeLine, { width: '85%' }]} />
-    <View style={[blurStyles.fakeLine, { width: '60%' }]} />
-    <View style={[blurStyles.fakeLine, { width: '80%' }]} />
+const LockedPreview: React.FC<{ text: string }> = ({ text }) => (
+  <View style={lockStyles.wrapper}>
+    <Text style={lockStyles.text} numberOfLines={6}>{text}</Text>
+    <LinearGradient
+      colors={['transparent', 'rgba(5,4,16,0.92)', '#050410']}
+      style={lockStyles.fade}
+      pointerEvents="none"
+    />
+    <View style={lockStyles.badge}>
+      <Text style={lockStyles.badgeIcon}>🔒</Text>
+      <Text style={lockStyles.badgeText}>7 more sections in your full report</Text>
+    </View>
   </View>
 );
 
-const blurStyles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: 'rgba(255, 255, 255, 0.02)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 6 },
-  fakeLine: { height: 7, backgroundColor: 'rgba(255, 255, 255, 0.12)', borderRadius: 4, marginBottom: 9 },
+const lockStyles = StyleSheet.create({
+  wrapper:   { position: 'relative', overflow: 'hidden', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
+  text:      { padding: 18, fontSize: 14, color: 'rgba(255,255,255,0.45)', lineHeight: 24 },
+  fade:      { position: 'absolute', bottom: 0, left: 0, right: 0, height: 80 },
+  badge:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
+  badgeIcon: { fontSize: 11 },
+  badgeText: { fontSize: 10, color: 'rgba(255,255,255,0.28)', letterSpacing: 0.5 },
 });
 
 export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
@@ -205,20 +217,27 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
     );
   }
 
+  const nameWidth = Math.min(SW - 80, 320);
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient colors={colors.gradients.cosmic} style={styles.gradient}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+          {/* Top bar */}
           <View style={styles.topBar}>
             <Text style={styles.brandTextSmall}>OMENORA</Text>
-            <View style={styles.reportBadge}><Text style={styles.reportBadgeText}>Behavioral Report</Text></View>
+            <View style={styles.reportBadge}>
+              <Text style={styles.reportBadgeText}>Report Ready</Text>
+            </View>
           </View>
 
+          {/* Archetype hero */}
           <View style={styles.archetypeBlock}>
             <View style={styles.archetypeGlow} />
             <Text style={styles.archetypeLabel}>Your Destiny Archetype</Text>
             <Text style={styles.archetypeSymbol}>{store.report?.archetypeSymbol || '✦'}</Text>
-            <Text style={styles.archetypeName}>{store.report?.archetypeName || 'The Visionary'}</Text>
+            <Text style={[styles.archetypeName, { maxWidth: nameWidth }]}>{store.report?.archetypeName || 'The Visionary'}</Text>
             <Text style={styles.archetypeMeta}>{store.report?.element || 'Fire'} · Life Path {store.lifePathNumber || '7'}</Text>
             <View style={styles.traitsRow}>
               {(store.report?.powerTraits || ['Intuitive', 'Determined', 'Creative']).map((trait, i) => (
@@ -227,63 +246,151 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
             </View>
           </View>
 
-          <Text style={styles.previewText}>{store.report?.sections?.identity?.content || 'You possess a rare combination of intuition and determination that sets you apart.'}</Text>
-
-          <View style={styles.lockedWrapper}>
-            <BlurredContent />
-            <Text style={styles.lockedLabel}>🔒 8 more sections included</Text>
+          {/* Social proof bar */}
+          <View style={styles.socialBar}>
+            <Text style={styles.socialStars}>★★★★★</Text>
+            <Text style={styles.socialText}>4.9 · 47,823 readings · Trusted worldwide</Text>
           </View>
 
+          {/* Identity section preview + gradient-fade lock */}
+          <LockedPreview text={store.report?.sections?.identity?.content || 'You possess a rare combination of intuition and determination that sets you apart from others. Your life path carries an extraordinary signature — one that blends visionary thinking with grounded purpose. The universe has written a very specific code into your birth data, and what follows reveals what most people never discover about themselves.'} />
+
+          {/* ── Pricing ── */}
           <View style={styles.pricingSection}>
-            <View style={styles.pricingHeader}>
-              <Text style={styles.pricingTitle}>Choose Your Reading</Text>
-              <Text style={styles.pricingSubtitle}>Your destiny has been calculated</Text>
-            </View>
+            <Text style={styles.pricingTitle}>Unlock Your Full Reading</Text>
+            <Text style={styles.pricingSubtitle}>One-time payment · Delivered instantly to your email · Never expires</Text>
 
             <View style={styles.tierList}>
-              <TouchableOpacity style={[styles.tierCard, styles.tierBasic, selectedTier === 1 && styles.tierSelectedBasic]} onPress={() => setSelectedTier(1)} activeOpacity={0.8}>
+
+              {/* Tier 1 — Basic */}
+              <TouchableOpacity
+                style={[styles.tierCard, styles.tierBasic, selectedTier === 1 && styles.tierSelectedBasic]}
+                onPress={() => setSelectedTier(1)}
+                activeOpacity={0.8}
+              >
                 <View style={styles.tierInfo}>
                   <Text style={styles.tierName}>Basic Report</Text>
-                  <Text style={styles.tierDesc}>Core archetype analysis only</Text>
+                  <Text style={styles.tierDesc}>Core archetype analysis · 3 sections</Text>
                 </View>
-                <Text style={styles.tierPrice}>$1.99</Text>
+                <Text style={[styles.tierPrice, selectedTier === 1 && styles.tierPriceSelected]}>$1.99</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.tierCard, styles.tierPopular, selectedTier === 2 && styles.tierSelectedPopular]} onPress={() => setSelectedTier(2)} activeOpacity={0.8}>
+              {/* Tier 2 — Popular (hero) */}
+              <TouchableOpacity
+                style={[styles.tierCard, styles.tierPopular, selectedTier === 2 && styles.tierSelectedPopular]}
+                onPress={() => setSelectedTier(2)}
+                activeOpacity={0.8}
+              >
                 <View style={styles.tierBadge}><Text style={styles.tierBadgeText}>★ MOST POPULAR</Text></View>
                 <View style={styles.tierPopularInner}>
                   <View style={styles.tierInfo}>
                     <Text style={styles.tierNamePopular}>Popular Bundle</Text>
-                    <Text style={styles.tierFeatures}>❆ Full 10-section report{'\n'}❆ Lucky calendar 2026{'\n'}❆ Compatibility reading</Text>
+                    <Text style={styles.tierFeatures}>
+                      {'✦ Full 10-section destiny report\n'}
+                      {'✦ 2026 Lucky Timing Calendar\n'}
+                      {'✦ Compatibility reading'}
+                    </Text>
                   </View>
-                  <View style={styles.tierPriceBlock}><Text style={styles.tierPricePopular}>$4.99</Text><Text style={styles.tierPriceNote}>one-time</Text></View>
+                  <View style={styles.tierPriceBlock}>
+                    <Text style={styles.tierStrike}>$14</Text>
+                    <Text style={styles.tierPricePopular}>$4.99</Text>
+                    <Text style={styles.tierPriceNote}>save 65%</Text>
+                  </View>
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.tierCard, styles.tierOracle, selectedTier === 3 && styles.tierSelectedOracle]} onPress={() => setSelectedTier(3)} activeOpacity={0.8}>
+              {/* Tier 3 — Oracle */}
+              <TouchableOpacity
+                style={[styles.tierCard, styles.tierOracle, selectedTier === 3 && styles.tierSelectedOracle]}
+                onPress={() => setSelectedTier(3)}
+                activeOpacity={0.8}
+              >
                 <View style={styles.tierOracleInner}>
                   <View style={styles.tierInfo}>
                     <Text style={styles.tierNameOracle}>Full Oracle</Text>
-                    <Text style={styles.tierFeaturesOracle}>✦ Full 10-section report{'\n'}✦ Lucky calendar 2026{'\n'}✦ Compatibility reading{'\n'}✦ Full birth chart{'\n'}✦ 30 days daily insights</Text>
+                    <Text style={styles.tierFeaturesOracle}>
+                      {'✦ Full 10-section destiny report\n'}
+                      {'✦ 2026 Lucky Timing Calendar\n'}
+                      {'✦ Compatibility reading\n'}
+                      {'✦ Full birth chart\n'}
+                      {'✦ 30 days daily insights'}
+                    </Text>
                   </View>
-                  <View style={styles.tierPriceBlock}><Text style={styles.tierPriceOracle}>$12.99</Text><Text style={styles.tierPriceNoteOracle}>save $8</Text></View>
+                  <View style={styles.tierPriceBlock}>
+                    <Text style={styles.tierStrikeOracle}>$47</Text>
+                    <Text style={styles.tierPriceOracle}>$12.99</Text>
+                    <Text style={styles.tierPriceNoteOracle}>save 72%</Text>
+                  </View>
                 </View>
               </TouchableOpacity>
             </View>
 
+            {/* Email input */}
             <View style={styles.emailWrapper}>
               <Text style={styles.emailLabel}>Email for Delivery</Text>
-              <TextInput style={styles.emailInput} value={email} onChangeText={setEmail} placeholder="your@email.com" placeholderTextColor={colors.text.muted} keyboardType="email-address" autoCapitalize="none" />
+              <TextInput
+                style={styles.emailInput}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="your@email.com"
+                placeholderTextColor={colors.text.muted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
             </View>
 
-            <TouchableOpacity style={[styles.unlockButton, selectedTier === 1 && styles.unlockButtonBasic, selectedTier === 3 && styles.unlockButtonOracle, (!email || isProcessingPayment) && styles.unlockButtonDisabled]} onPress={handlePayment} disabled={!email || isProcessingPayment} activeOpacity={0.8}>
-              <LinearGradient colors={selectedTier === 1 ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.08)'] : selectedTier === 3 ? ['transparent', 'transparent'] : colors.gradients.primary} style={styles.unlockGradient}>
-                {isProcessingPayment ? <ActivityIndicator color={selectedTier === 1 ? colors.text.tertiary : colors.text.primary} /> : <Text style={[styles.unlockButtonText, selectedTier === 1 && styles.unlockButtonTextBasic, selectedTier === 3 && styles.unlockButtonTextOracle]}>{selectedTier === 1 ? 'Unlock Basic' : selectedTier === 2 ? 'Unlock Popular Bundle ✦' : 'Unlock Full Oracle'}</Text>}
+            {/* Primary CTA */}
+            <TouchableOpacity
+              style={[
+                styles.unlockButton,
+                selectedTier === 1 && styles.unlockButtonBasic,
+                selectedTier === 3 && styles.unlockButtonOracle,
+                (!email || isProcessingPayment) && styles.unlockButtonDisabled,
+              ]}
+              onPress={handlePayment}
+              disabled={!email || isProcessingPayment}
+              activeOpacity={0.82}
+            >
+              <LinearGradient
+                colors={
+                  selectedTier === 1
+                    ? ['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.06)']
+                    : selectedTier === 3
+                    ? ['rgba(201,168,76,0.12)', 'rgba(201,168,76,0.18)']
+                    : colors.gradients.primary
+                }
+                style={styles.unlockGradient}
+              >
+                {isProcessingPayment ? (
+                  <ActivityIndicator color={selectedTier === 3 ? colors.gold.medium : colors.text.primary} />
+                ) : (
+                  <Text style={[
+                    styles.unlockButtonText,
+                    selectedTier === 1 && styles.unlockButtonTextBasic,
+                    selectedTier === 3 && styles.unlockButtonTextOracle,
+                  ]}>
+                    {selectedTier === 1
+                      ? 'Unlock Basic Report  →'
+                      : selectedTier === 2
+                      ? 'Unlock Popular Bundle  ✦'
+                      : 'Unlock Full Oracle  ✦'}
+                  </Text>
+                )}
               </LinearGradient>
             </TouchableOpacity>
 
-            <Text style={styles.trustNote}>Your reading will be emailed to you and never expires</Text>
-            <Text style={styles.trustSecure}>Secured by Stripe</Text>
+            <Text style={styles.ctaSubNote}>
+              {isProcessingPayment ? 'Opening secure payment...' : 'Opens in browser · Returns automatically after payment'}
+            </Text>
+
+            {/* Trust row */}
+            <View style={styles.trustRow}>
+              <Text style={styles.trustItem}>🔒 SSL secured</Text>
+              <Text style={styles.trustDot}>·</Text>
+              <Text style={styles.trustItem}>30-day refund</Text>
+              <Text style={styles.trustDot}>·</Text>
+              <Text style={styles.trustItem}>Stripe</Text>
+            </View>
           </View>
         </ScrollView>
       </LinearGradient>
@@ -292,73 +399,102 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background.main },
-  gradient: { flex: 1 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
-  brandTextSmall: { fontSize: 11, letterSpacing: 3, color: 'rgba(255, 255, 255, 0.25)', marginBottom: 16 },
-  loadingMessage: { fontSize: 16, fontWeight: '300', fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.48)', textAlign: 'center', minHeight: 48, lineHeight: 24 },
-  progressTrack: { width: 160, height: 1, backgroundColor: 'rgba(255, 255, 255, 0.08)', marginTop: 24, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: colors.purple.full },
-  errorContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
-  errorText: { fontSize: 14, color: 'rgba(255, 255, 255, 0.4)', textAlign: 'center', marginTop: 16, marginBottom: 24 },
-  retryButton: { borderWidth: 1, borderColor: 'rgba(201, 168, 76, 0.35)', borderRadius: 3, paddingVertical: 12, paddingHorizontal: 32 },
-  retryButtonText: { fontSize: 12, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(201, 168, 76, 0.78)' },
-  scrollContent: { padding: 20, paddingBottom: 60 },
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
-  reportBadge: { borderWidth: 1, borderColor: 'rgba(201, 168, 76, 0.22)', borderRadius: 2, paddingVertical: 3, paddingHorizontal: 10 },
-  reportBadgeText: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(201, 168, 76, 0.6)' },
-  archetypeBlock: { position: 'relative', borderLeftWidth: 2, borderLeftColor: 'rgba(201, 168, 76, 0.38)', padding: 24, paddingLeft: 28, marginBottom: 24, overflow: 'hidden' },
-  archetypeGlow: { position: 'absolute', top: '50%', left: -80, width: 280, height: 200, backgroundColor: 'rgba(201, 168, 76, 0.06)', borderRadius: 140, transform: [{ translateY: -100 }] },
-  archetypeLabel: { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(201, 168, 76, 0.62)', marginBottom: 12 },
-  archetypeSymbol: { fontSize: 36, marginBottom: 8, opacity: 0.8 },
-  archetypeName: { fontSize: 42, fontWeight: '300', color: 'rgba(255, 255, 255, 0.95)', lineHeight: 48, marginBottom: 8 },
-  archetypeMeta: { fontSize: 12, color: 'rgba(140, 110, 255, 0.58)', letterSpacing: 0.5 },
-  traitsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 16 },
-  traitPill: { borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)', borderRadius: 2, paddingVertical: 4, paddingHorizontal: 10, backgroundColor: 'transparent' },
-  traitPillText: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.35)' },
-  previewText: { fontSize: 15, color: 'rgba(255, 255, 255, 0.58)', lineHeight: 26, marginBottom: 20 },
-  lockedWrapper: { marginBottom: 24 },
-  lockedLabel: { fontSize: 11, color: 'rgba(255, 255, 255, 0.32)', textAlign: 'center', marginTop: 10 },
-  pricingSection: { marginTop: 24 },
-  pricingHeader: { alignItems: 'center', marginBottom: 20 },
-  pricingTitle: { fontSize: 26, fontWeight: '400', color: 'rgba(255, 255, 255, 0.9)', marginBottom: 6 },
-  pricingSubtitle: { fontSize: 12, color: 'rgba(255, 255, 255, 0.27)' },
-  tierList: { gap: 10 },
-  tierCard: { borderRadius: 8, padding: 14 },
-  tierBasic: { backgroundColor: 'rgba(255, 255, 255, 0.02)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.07)', flexDirection: 'row', alignItems: 'center', gap: 12, opacity: 0.62 },
-  tierSelectedBasic: { opacity: 1, borderColor: 'rgba(255, 255, 255, 0.14)' },
-  tierInfo: { flex: 1 },
-  tierName: { fontSize: 13, fontWeight: '500', color: 'rgba(255, 255, 255, 0.6)', marginBottom: 2 },
-  tierDesc: { fontSize: 11, color: 'rgba(255, 255, 255, 0.22)' },
-  tierPrice: { fontSize: 22, fontWeight: '300', color: 'rgba(255, 255, 255, 0.42)' },
-  tierPopular: { backgroundColor: 'rgba(140, 110, 255, 0.07)', borderWidth: 1, borderColor: 'rgba(140, 110, 255, 0.18)', borderLeftWidth: 2, borderLeftColor: 'rgba(201, 168, 76, 0.65)', paddingTop: 22, position: 'relative' },
-  tierSelectedPopular: { borderColor: 'rgba(140, 110, 255, 0.45)', borderLeftColor: 'rgba(201, 168, 76, 0.95)', shadowColor: 'rgba(140, 110, 255, 0.22)', shadowOffset: { width: 0, height: 0 }, shadowRadius: 22, elevation: 8 },
-  tierBadge: { position: 'absolute', top: -10, left: '50%', transform: [{ translateX: -50 }], backgroundColor: 'rgba(201, 168, 76, 0.92)', borderRadius: 2, paddingVertical: 3, paddingHorizontal: 14 },
-  tierBadgeText: { fontSize: 9, fontWeight: '600', color: '#050410', letterSpacing: 1 },
-  tierPopularInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  tierNamePopular: { fontSize: 13, fontWeight: '600', color: 'rgba(255, 255, 255, 0.92)', marginBottom: 8 },
-  tierFeatures: { fontSize: 11, color: 'rgba(200, 180, 255, 0.6)', lineHeight: 20 },
-  tierPriceBlock: { alignItems: 'flex-end' },
-  tierPricePopular: { fontSize: 30, fontWeight: '300', color: 'rgba(200, 180, 255, 0.95)' },
-  tierPriceNote: { fontSize: 10, color: 'rgba(140, 110, 255, 0.42)', marginTop: 2 },
-  tierOracle: { backgroundColor: 'rgba(201, 168, 76, 0.04)', borderWidth: 1, borderColor: 'rgba(201, 168, 76, 0.18)', borderRadius: 10 },
-  tierSelectedOracle: { borderColor: 'rgba(201, 168, 76, 0.32)', shadowColor: 'rgba(201, 168, 76, 0.14)', shadowOffset: { width: 0, height: 0 }, shadowRadius: 18, elevation: 6 },
-  tierOracleInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  tierNameOracle: { fontSize: 13, fontWeight: '500', color: 'rgba(255, 215, 130, 0.78)', marginBottom: 8 },
-  tierFeaturesOracle: { fontSize: 11, color: 'rgba(201, 168, 76, 0.42)', lineHeight: 20 },
-  tierPriceOracle: { fontSize: 26, fontWeight: '300', color: 'rgba(201, 168, 76, 0.62)' },
-  tierPriceNoteOracle: { fontSize: 10, color: 'rgba(201, 168, 76, 0.38)', marginTop: 2 },
-  emailWrapper: { marginTop: 16 },
-  emailLabel: { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.22)', marginBottom: 8 },
-  emailInput: { backgroundColor: 'rgba(255, 255, 255, 0.04)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 6, padding: 13, color: 'rgba(255, 255, 255, 0.88)', fontSize: 14 },
-  unlockButton: { borderRadius: 6, overflow: 'hidden', marginTop: 12 },
-  unlockButtonBasic: { backgroundColor: 'rgba(255, 255, 255, 0.08)' },
-  unlockButtonOracle: { backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(201, 168, 76, 0.5)' },
-  unlockButtonDisabled: { opacity: 0.5 },
-  unlockGradient: { paddingVertical: 17, alignItems: 'center' },
-  unlockButtonText: { fontSize: 14, fontWeight: '500', color: colors.text.primary, letterSpacing: 0.5 },
-  unlockButtonTextBasic: { color: 'rgba(255, 255, 255, 0.5)' },
-  unlockButtonTextOracle: { color: 'rgba(201, 168, 76, 0.88)' },
-  trustNote: { fontSize: 10, color: 'rgba(255, 255, 255, 0.22)', textAlign: 'center', marginTop: 12 },
-  trustSecure: { fontSize: 10, color: 'rgba(255, 255, 255, 0.14)', textAlign: 'center', marginTop: 4 },
+  container:            { flex: 1, backgroundColor: colors.background.main },
+  gradient:             { flex: 1 },
+
+  // Loading / Error
+  loadingContainer:     { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
+  brandTextSmall:       { fontSize: 11, letterSpacing: 3, color: 'rgba(255,255,255,0.25)', marginBottom: 16 },
+  loadingMessage:       { fontSize: 16, fontWeight: '300', fontStyle: 'italic', color: 'rgba(255,255,255,0.48)', textAlign: 'center', minHeight: 48, lineHeight: 24 },
+  progressTrack:        { width: 160, height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginTop: 24, overflow: 'hidden' },
+  progressFill:         { height: '100%', backgroundColor: colors.purple.full },
+  errorContainer:       { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
+  errorText:            { fontSize: 14, color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: 16, marginBottom: 24 },
+  retryButton:          { borderWidth: 1, borderColor: 'rgba(201,168,76,0.35)', borderRadius: 3, paddingVertical: 12, paddingHorizontal: 32 },
+  retryButtonText:      { fontSize: 12, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(201,168,76,0.78)' },
+
+  // Scroll
+  scrollContent:        { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 60 },
+
+  // Top bar
+  topBar:               { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  reportBadge:          { borderWidth: 1, borderColor: 'rgba(140,110,255,0.3)', borderRadius: 2, paddingVertical: 3, paddingHorizontal: 10, backgroundColor: 'rgba(140,110,255,0.07)' },
+  reportBadgeText:      { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(140,110,255,0.7)' },
+
+  // Archetype hero
+  archetypeBlock:       { position: 'relative', borderLeftWidth: 2, borderLeftColor: 'rgba(201,168,76,0.4)', paddingVertical: 20, paddingLeft: 24, paddingRight: 12, marginBottom: 16, overflow: 'hidden' },
+  archetypeGlow:        { position: 'absolute', top: 0, left: -60, width: 240, height: 160, backgroundColor: 'rgba(201,168,76,0.055)', borderRadius: 120 },
+  archetypeLabel:       { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(201,168,76,0.62)', marginBottom: 10 },
+  archetypeSymbol:      { fontSize: 36, marginBottom: 6, opacity: 0.85 },
+  archetypeName:        { fontSize: 36, fontWeight: '300', color: 'rgba(255,255,255,0.95)', lineHeight: 44, marginBottom: 8 },
+  archetypeMeta:        { fontSize: 12, color: 'rgba(140,110,255,0.65)', letterSpacing: 0.4 },
+  traitsRow:            { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 14 },
+  traitPill:            { borderWidth: 1, borderColor: 'rgba(255,255,255,0.09)', borderRadius: 2, paddingVertical: 4, paddingHorizontal: 10 },
+  traitPillText:        { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(255,255,255,0.38)' },
+
+  // Social proof
+  socialBar:            { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, paddingHorizontal: 2 },
+  socialStars:          { fontSize: 10, color: 'rgba(201,168,76,0.72)', letterSpacing: 1 },
+  socialText:           { fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: 0.2 },
+
+  // Pricing
+  pricingSection:       { marginTop: 24 },
+  pricingTitle:         { fontSize: 22, fontWeight: '400', color: 'rgba(255,255,255,0.92)', marginBottom: 6 },
+  pricingSubtitle:      { fontSize: 11, color: 'rgba(255,255,255,0.28)', lineHeight: 18, marginBottom: 20 },
+
+  tierList:             { gap: 10 },
+  tierCard:             { borderRadius: 8, padding: 14 },
+  tierInfo:             { flex: 1 },
+
+  // Basic
+  tierBasic:            { backgroundColor: 'rgba(255,255,255,0.02)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', flexDirection: 'row', alignItems: 'center', gap: 12 },
+  tierSelectedBasic:    { borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.04)' },
+  tierName:             { fontSize: 13, fontWeight: '500', color: 'rgba(255,255,255,0.65)', marginBottom: 3 },
+  tierDesc:             { fontSize: 11, color: 'rgba(255,255,255,0.28)' },
+  tierPrice:            { fontSize: 22, fontWeight: '300', color: 'rgba(255,255,255,0.45)' },
+  tierPriceSelected:    { color: 'rgba(255,255,255,0.72)' },
+
+  // Popular
+  tierPopular:          { backgroundColor: 'rgba(140,110,255,0.08)', borderWidth: 1, borderColor: 'rgba(140,110,255,0.2)', borderLeftWidth: 2, borderLeftColor: 'rgba(201,168,76,0.7)', paddingTop: 24 },
+  tierSelectedPopular:  { borderColor: 'rgba(140,110,255,0.5)', borderLeftColor: colors.gold.high, shadowColor: '#8C6EFF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 20, elevation: 10 },
+  tierBadge:            { position: 'absolute', top: -11, alignSelf: 'center', backgroundColor: 'rgba(201,168,76,0.95)', borderRadius: 2, paddingVertical: 3, paddingHorizontal: 14 },
+  tierBadgeText:        { fontSize: 9, fontWeight: '700', color: '#050410', letterSpacing: 1.2 },
+  tierPopularInner:     { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  tierNamePopular:      { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.95)', marginBottom: 10 },
+  tierFeatures:         { fontSize: 12, color: 'rgba(200,180,255,0.7)', lineHeight: 22 },
+  tierPriceBlock:       { alignItems: 'flex-end', paddingTop: 2 },
+  tierStrike:           { fontSize: 11, color: 'rgba(255,255,255,0.2)', textDecorationLine: 'line-through', marginBottom: 1 },
+  tierStrikeOracle:     { fontSize: 11, color: 'rgba(201,168,76,0.25)', textDecorationLine: 'line-through', marginBottom: 1 },
+  tierPricePopular:     { fontSize: 28, fontWeight: '300', color: 'rgba(200,180,255,1)' },
+  tierPriceNote:        { fontSize: 10, color: 'rgba(140,110,255,0.6)', marginTop: 2, fontWeight: '500' },
+
+  // Oracle
+  tierOracle:           { backgroundColor: 'rgba(201,168,76,0.04)', borderWidth: 1, borderColor: 'rgba(201,168,76,0.2)', borderRadius: 8 },
+  tierSelectedOracle:   { borderColor: 'rgba(201,168,76,0.45)', shadowColor: '#C9A84C', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.18, shadowRadius: 16, elevation: 8 },
+  tierOracleInner:      { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  tierNameOracle:       { fontSize: 14, fontWeight: '500', color: 'rgba(255,215,130,0.9)', marginBottom: 10 },
+  tierFeaturesOracle:   { fontSize: 12, color: 'rgba(201,168,76,0.55)', lineHeight: 22 },
+  tierPriceOracle:      { fontSize: 26, fontWeight: '300', color: 'rgba(201,168,76,0.9)' },
+  tierPriceNoteOracle:  { fontSize: 10, color: 'rgba(201,168,76,0.55)', marginTop: 2, fontWeight: '500' },
+
+  // Email
+  emailWrapper:         { marginTop: 18 },
+  emailLabel:           { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', marginBottom: 8 },
+  emailInput:           { backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 8, paddingVertical: 14, paddingHorizontal: 14, color: 'rgba(255,255,255,0.9)', fontSize: 15 },
+
+  // CTA
+  unlockButton:         { borderRadius: 8, overflow: 'hidden', marginTop: 14 },
+  unlockButtonBasic:    { },
+  unlockButtonOracle:   { borderWidth: 1, borderColor: 'rgba(201,168,76,0.4)' },
+  unlockButtonDisabled: { opacity: 0.45 },
+  unlockGradient:       { paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
+  unlockButtonText:     { fontSize: 15, fontWeight: '600', color: colors.text.primary, letterSpacing: 0.4 },
+  unlockButtonTextBasic:  { color: 'rgba(255,255,255,0.55)', fontWeight: '400' },
+  unlockButtonTextOracle: { color: 'rgba(201,168,76,0.95)' },
+  ctaSubNote:           { fontSize: 10, color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: 10, letterSpacing: 0.2 },
+
+  // Trust
+  trustRow:             { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16 },
+  trustItem:            { fontSize: 10, color: 'rgba(255,255,255,0.22)' },
+  trustDot:             { fontSize: 10, color: 'rgba(255,255,255,0.12)' },
 });

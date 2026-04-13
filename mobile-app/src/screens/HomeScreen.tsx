@@ -7,9 +7,14 @@ import {
   ScrollView,
   SafeAreaView,
   Animated,
+  Dimensions,
 } from 'react-native';
 import { HomeScreenProps } from '../navigation/types';
 import { colors } from '../theme/colors';
+
+const { width: SW } = Dimensions.get('window');
+const brandFontSize  = SW < 375 ? 52 : SW < 420 ? 64 : 72;
+const taglineFontSize = SW < 375 ? 14 : 17;
 
 const AnimatedOrbitalMark: React.FC = () => {
   const rotation = useRef(new Animated.Value(0)).current;
@@ -67,10 +72,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <AnimatedOrbitalMark />
 
         {/* Brand name */}
-        <Text style={styles.brandName}>OMENORA</Text>
+        <Text style={[styles.brandName, { fontSize: brandFontSize }]}>OMENORA</Text>
 
         {/* Tagline */}
-        <Text style={styles.tagline}>
+        <Text style={[styles.tagline, { fontSize: taglineFontSize }]}>
           AI decoded your destiny.{'\n'}Science explains why.
         </Text>
 
@@ -93,6 +98,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {/* Sub-label */}
         <Text style={styles.subLabel}>No login required · Results in 10 seconds</Text>
+
+        {/* Star rating */}
+        <View style={styles.starRow}>
+          <Text style={styles.starGold}>★★★★★</Text>
+          <Text style={styles.starLabel}>4.9 · 47,823 readings</Text>
+        </View>
 
         {/* Feature pills */}
         <View style={styles.featurePills}>
@@ -128,10 +139,10 @@ const styles = StyleSheet.create({
   nebulaGlowSecondary:  { position: 'absolute', top: '38%', left: '48%', width: 190, height: 140, borderRadius: 95, backgroundColor: 'rgba(201,168,76,0.035)', transform: [{ translateX: -95 }, { translateY: -70 }] },
 
   // Brand name — large, light-weight, exact web letter-spacing 0.14em
-  brandName:            { fontSize: 72, fontWeight: '300', letterSpacing: 10, color: colors.text.primary, marginTop: 10, marginBottom: 0, textAlign: 'center' },
+  brandName:            { fontWeight: '300', letterSpacing: 10, color: colors.text.primary, marginTop: 10, marginBottom: 0, textAlign: 'center' },
 
   // Tagline — italic, muted, matching web font-style
-  tagline:              { fontSize: 17, fontStyle: 'italic', fontWeight: '300', color: colors.text.tertiary, letterSpacing: 0.2, lineHeight: 26, textAlign: 'center', marginTop: 16, marginBottom: 0 },
+  tagline:              { fontStyle: 'italic', fontWeight: '300', color: colors.text.tertiary, letterSpacing: 0.2, lineHeight: 26, textAlign: 'center', marginTop: 16, marginBottom: 0 },
 
   // Threshold separator
   threshold:            { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 28, width: '100%', maxWidth: 320 },
@@ -144,6 +155,9 @@ const styles = StyleSheet.create({
   ctaGlyph:             { fontSize: 10, color: colors.gold.medium },
 
   subLabel:             { fontSize: 11, color: colors.text.dim, marginTop: 14, letterSpacing: 0.3 },
+  starRow:              { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
+  starGold:             { fontSize: 11, color: 'rgba(201,168,76,0.65)', letterSpacing: 1 },
+  starLabel:            { fontSize: 11, color: colors.text.dim, letterSpacing: 0.2 },
 
   // Feature pills — square corners (borderRadius 2), very subtle
   featurePills:         { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 24, maxWidth: 360 },
