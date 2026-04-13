@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
-import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from './src/theme/ThemeProvider';
 import { RootNavigator } from './src/navigation/RootNavigator';

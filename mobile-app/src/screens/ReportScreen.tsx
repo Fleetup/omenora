@@ -5,7 +5,7 @@ import { ReportScreenProps } from '../navigation/types';
 import { colors } from '../theme/colors';
 
 export const ReportScreen: React.FC<ReportScreenProps> = ({ route }) => {
-  const { reportId } = route.params;
+  const reportId = route.params?.reportId ?? '';
 
   return (
     <View style={styles.container}>

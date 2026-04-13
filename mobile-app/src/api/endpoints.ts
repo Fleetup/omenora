@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { Report } from '../stores/analysisStore';
 
 // Types
 export interface GenerateReportRequest {
@@ -7,22 +8,28 @@ export interface GenerateReportRequest {
   timeOfBirth?: string;
   city: string;
   answers: Record<string, string>;
+  archetype?: string | null;
+  lifePathNumber?: number;
   region?: string;
+  language?: string;
 }
 
 export interface GenerateReportResponse {
-  id: string;
-  destinyArchetype: string;
+  success: boolean;
+  report: Report;
+}
+
+export interface SaveReportRequest {
+  sessionId: string;
+  report: Report;
+  firstName: string;
+  archetype: string;
   lifePathNumber: number;
-  report: {
-    identity: string;
-    personality: string;
-    forecast2026: string;
-    love: string;
-    career: string;
-    hiddenGift: string;
-    affirmation: string;
-  };
+  answers: Record<string, string>;
+  city: string;
+  dateOfBirth: string;
+  region: string;
+  email: string;
 }
 
 export interface CreatePaymentRequest {
@@ -54,6 +61,11 @@ export const api = {
   // Report Generation
   generateReport: async (data: GenerateReportRequest): Promise<GenerateReportResponse> => {
     const response = await apiClient.post('/api/generate-report', data);
+    return response.data;
+  },
+
+  saveReport: async (data: SaveReportRequest): Promise<{ success: boolean }> => {
+    const response = await apiClient.post('/api/save-report', data);
     return response.data;
   },
 

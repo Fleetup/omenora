@@ -9,7 +9,6 @@ import {
   SafeAreaView,
   Animated,
   ActivityIndicator,
-  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PreviewScreenProps } from '../navigation/types';
@@ -17,7 +16,6 @@ import { useAnalysisStore } from '../stores/analysisStore';
 import { colors } from '../theme/colors';
 import { api } from '../api/endpoints';
 
-const { width } = Dimensions.get('window');
 
 const LOADING_MESSAGES = [
   'Processing your profile...',
