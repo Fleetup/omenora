@@ -79,10 +79,7 @@
     },
     "plugins": [
       "expo-apple-authentication",
-      "expo-constants",
-      "expo-device",
       "expo-font",
-      "expo-linear-gradient",
       "expo-localization",
       "expo-notifications",
       "expo-splash-screen",
@@ -93,11 +90,11 @@
         "expo-build-properties",
         {
           "ios": {
-            "newArchEnabled": false,
+            "newArchEnabled": true,
             "useFrameworks": "static"
           },
           "android": {
-            "newArchEnabled": false
+            "newArchEnabled": true
           }
         }
       ],

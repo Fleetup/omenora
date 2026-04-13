@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "jsx": "react-native",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -18,22 +22,41 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@/components/*": ["src/components/*"],
-      "@/screens/*": ["src/screens/*"],
-      "@/hooks/*": ["src/hooks/*"],
-      "@/stores/*": ["src/stores/*"],
-      "@/utils/*": ["src/utils/*"],
-      "@/api/*": ["src/api/*"],
-      "@/assets/*": ["src/assets/*"],
-      "@/constants/*": ["src/constants/*"],
-      "@/theme/*": ["src/theme/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/screens/*": [
+        "src/screens/*"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
+      ],
+      "@/stores/*": [
+        "src/stores/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/api/*": [
+        "src/api/*"
+      ],
+      "@/assets/*": [
+        "src/assets/*"
+      ],
+      "@/constants/*": [
+        "src/constants/*"
+      ],
+      "@/theme/*": [
+        "src/theme/*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+    "**/*.tsx"
+  ],
+  "extends": "expo/tsconfig.base"
 }
