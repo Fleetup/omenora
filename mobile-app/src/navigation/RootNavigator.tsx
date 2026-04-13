@@ -1,6 +1,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNavigationContainerRef } from '@react-navigation/native';
 import { RootStackParamList } from './types';
+
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 // Screens
 import { HomeScreen } from '../screens/HomeScreen';

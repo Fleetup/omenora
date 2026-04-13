@@ -90,19 +90,11 @@
         "expo-build-properties",
         {
           "ios": {
-            "newArchEnabled": true,
-            "useFrameworks": "static"
+            "newArchEnabled": true
           },
           "android": {
             "newArchEnabled": true
           }
-        }
-      ],
-      [
-        "@stripe/stripe-react-native",
-        {
-          "merchantIdentifier": "merchant.com.omenora",
-          "enableGooglePay": true
         }
       ]
     ],

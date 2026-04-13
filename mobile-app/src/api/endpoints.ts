@@ -36,7 +36,7 @@ export type MobileProductType =
   | 'report' | 'oracle' | 'bundle' | 'calendar'
   | 'compatibility' | 'addon' | 'birth_chart';
 
-export interface CreateMobilePaymentIntentRequest {
+export interface CreateMobileCheckoutSessionRequest {
   type: MobileProductType;
   firstName: string;
   email: string;
@@ -49,21 +49,18 @@ export interface CreateMobilePaymentIntentRequest {
   partnerName?: string;
 }
 
-export interface CreateMobilePaymentIntentResponse {
-  clientSecret: string;
-  publishableKey: string;
-  paymentIntentId: string;
-  amount: number;
-  productName: string;
+export interface CreateMobileCheckoutSessionResponse {
+  url: string;
+  sessionId: string;
 }
 
-export interface ConfirmMobilePaymentResponse {
+export interface VerifyMobileCheckoutSessionResponse {
   paid: boolean;
-  paymentIntentId: string;
-  amount: number;
-  currency: string;
-  metadata: Record<string, string> | null;
+  sessionId: string;
+  amount: number | null;
+  currency: string | null;
   customerEmail: string | null;
+  metadata: Record<string, string> | null;
 }
 
 export interface CompatibilityRequest {
@@ -144,14 +141,14 @@ export const api = {
     return response.data;
   },
 
-  // Mobile-native payments (Stripe PaymentSheet — no browser redirect)
-  createMobilePaymentIntent: async (data: CreateMobilePaymentIntentRequest): Promise<CreateMobilePaymentIntentResponse> => {
-    const response = await apiClient.post('/api/mobile/create-payment-intent', data);
+  // Mobile payments — Stripe Checkout web redirect (avoids Apple/Google IAP fees)
+  createMobileCheckoutSession: async (data: CreateMobileCheckoutSessionRequest): Promise<CreateMobileCheckoutSessionResponse> => {
+    const response = await apiClient.post('/api/mobile/create-checkout-session', data);
     return response.data;
   },
 
-  confirmMobilePayment: async (paymentIntentId: string): Promise<ConfirmMobilePaymentResponse> => {
-    const response = await apiClient.post('/api/mobile/confirm-payment', { paymentIntentId });
+  verifyMobileCheckoutSession: async (sessionId: string): Promise<VerifyMobileCheckoutSessionResponse> => {
+    const response = await apiClient.post('/api/mobile/verify-checkout-session', { sessionId });
     return response.data;
   },
 

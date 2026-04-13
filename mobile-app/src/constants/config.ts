@@ -5,10 +5,6 @@
 // API Configuration
 export const API_BASE_URL = 'https://api.omenora.com';
 
-// Stripe — publishable key (safe to embed in client, prefixed EXPO_PUBLIC)
-// Set EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY in your .env file
-export const STRIPE_PUBLISHABLE_KEY =
-  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 // For local development, use your local IP:
 // export const API_BASE_URL = 'http://192.168.1.X:3000';
 

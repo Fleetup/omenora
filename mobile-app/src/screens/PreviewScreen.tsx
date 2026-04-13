@@ -11,8 +11,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useStripe } from '@stripe/stripe-react-native';
 import { PreviewScreenProps } from '../navigation/types';
 import { useAnalysisStore } from '../stores/analysisStore';
 import { colors } from '../theme/colors';
@@ -70,7 +70,7 @@ const blurStyles = StyleSheet.create({
   fakeLine: { height: 7, backgroundColor: 'rgba(255, 255, 255, 0.12)', borderRadius: 4, marginBottom: 9 },
 });
 
-export const PreviewScreen: React.FC<PreviewScreenProps> = ({ navigation }) => {
+export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
@@ -79,7 +79,6 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({ navigation }) => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [progressWidth] = useState(new Animated.Value(0));
 
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const store = useAnalysisStore();
 
   useEffect(() => {
@@ -142,8 +141,8 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({ navigation }) => {
     const productType = typeMap[selectedTier];
 
     try {
-      // 1. Create PaymentIntent on the server
-      const intent = await api.createMobilePaymentIntent({
+      // 1. Create a Stripe Checkout Session on the server
+      const session = await api.createMobileCheckoutSession({
         type: productType,
         firstName: store.firstName,
         email,
@@ -155,48 +154,18 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = ({ navigation }) => {
         timeOfBirth: store.timeOfBirth || undefined,
       });
 
-      // 2. Init the native PaymentSheet
-      const { error: initError } = await initPaymentSheet({
-        paymentIntentClientSecret: intent.clientSecret,
-        merchantDisplayName: 'OMENORA',
-        defaultBillingDetails: { email },
-        allowsDelayedPaymentMethods: false,
-      });
-
-      if (initError) {
-        Alert.alert('Payment Error', initError.message);
+      if (!session.url) {
+        Alert.alert('Error', 'Could not create payment session. Please try again.');
         setIsProcessingPayment(false);
         return;
       }
 
-      // 3. Present the PaymentSheet
-      const { error: presentError } = await presentPaymentSheet();
-
-      if (presentError) {
-        if (presentError.code !== 'Canceled') {
-          Alert.alert('Payment Failed', presentError.message);
-        }
-        setIsProcessingPayment(false);
-        return;
-      }
-
-      // 4. Server-side verification — never trust client alone
-      const confirmed = await api.confirmMobilePayment(intent.paymentIntentId);
-
-      if (!confirmed.paid) {
-        Alert.alert('Payment Not Confirmed', 'Your payment could not be verified. Please contact support.');
-        setIsProcessingPayment(false);
-        return;
-      }
-
-      // 5. Update store purchase state
-      store.setPaymentComplete(true);
-      if (selectedTier === 2) store.setBundlePurchased(true);
-      if (selectedTier === 3) store.setOraclePurchased(true);
-
-      navigation.navigate('Report', { reportId: store.report?.archetypeName ?? 'default' });
+      // 2. Open Stripe-hosted checkout in Safari / Chrome
+      //    The app will return via omenora://payment/success?session_id=...
+      //    which is handled globally in App.tsx via Linking listener.
+      await Linking.openURL(session.url);
     } catch (err) {
-      Alert.alert('Error', 'Something went wrong processing your payment. Please try again.');
+      Alert.alert('Error', 'Something went wrong. Please try again.');
     } finally {
       setIsProcessingPayment(false);
     }
