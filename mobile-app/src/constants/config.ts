@@ -3,10 +3,9 @@
  */
 
 // API Configuration
-export const API_BASE_URL = 'https://api.omenora.com';
-
-// For local development, use your local IP:
-// export const API_BASE_URL = 'http://192.168.1.X:3000';
+// Set EXPO_PUBLIC_API_BASE_URL in .env to override (e.g. local dev IP)
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://api.omenora.com';
 
 // App Info
 export const APP_NAME = 'OMENORA';
