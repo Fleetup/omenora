@@ -1,23 +1,14 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS",
-    "nixpacksPlan": {
-      "phases": {
-        "setup": {
-          "nixPkgs": ["nodejs_20"]
-        },
-        "build": {
-          "cmds": ["cd augur && npm ci && npm run build"]
-        }
-      }
-    }
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "augur/Dockerfile"
   },
   "deploy": {
-    "startCommand": "cd augur && node .output/server/index.mjs",
+    "startCommand": "node .output/server/index.mjs",
     "healthcheckPath": "/api/health",
-    "healthcheckTimeout": 100,
+    "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "restartPolicyMaxRetries": 3
   }
 }
