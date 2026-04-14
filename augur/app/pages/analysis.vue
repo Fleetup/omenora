@@ -43,42 +43,48 @@
           <div class="wheel-col">
             <div class="wheel-label">DD</div>
             <div class="wheel-drum" ref="dayWheelRef">
-              <div class="wheel-pad" />
-              <div
-                v-for="d in dayOptions"
-                :key="d"
-                class="wheel-item"
-                :class="{ selected: birthDay === d }"
-              >{{ d }}</div>
-              <div class="wheel-pad" />
+              <div class="wheel-track">
+                <div class="wheel-pad" />
+                <div
+                  v-for="d in dayOptions"
+                  :key="d"
+                  class="wheel-item"
+                  :class="{ selected: birthDay === d }"
+                >{{ d }}</div>
+                <div class="wheel-pad" />
+              </div>
             </div>
           </div>
           <!-- Month wheel -->
           <div class="wheel-col">
             <div class="wheel-label">MM</div>
             <div class="wheel-drum" ref="monthWheelRef">
-              <div class="wheel-pad" />
-              <div
-                v-for="m in monthOptions"
-                :key="m"
-                class="wheel-item"
-                :class="{ selected: birthMonth === m }"
-              >{{ m }}</div>
-              <div class="wheel-pad" />
+              <div class="wheel-track">
+                <div class="wheel-pad" />
+                <div
+                  v-for="m in monthOptions"
+                  :key="m"
+                  class="wheel-item"
+                  :class="{ selected: birthMonth === m }"
+                >{{ m }}</div>
+                <div class="wheel-pad" />
+              </div>
             </div>
           </div>
           <!-- Year wheel -->
           <div class="wheel-col wheel-col--wide">
             <div class="wheel-label">YYYY</div>
             <div class="wheel-drum" ref="yearWheelRef">
-              <div class="wheel-pad" />
-              <div
-                v-for="y in yearOptions"
-                :key="y"
-                class="wheel-item"
-                :class="{ selected: birthYear === y }"
-              >{{ y }}</div>
-              <div class="wheel-pad" />
+              <div class="wheel-track">
+                <div class="wheel-pad" />
+                <div
+                  v-for="y in yearOptions"
+                  :key="y"
+                  class="wheel-item"
+                  :class="{ selected: birthYear === y }"
+                >{{ y }}</div>
+                <div class="wheel-pad" />
+              </div>
             </div>
           </div>
         </div>
@@ -117,38 +123,44 @@
           <div class="wheel-col">
             <div class="wheel-label">Hour</div>
             <div class="wheel-drum" ref="hourWheelRef">
-              <div class="wheel-pad" />
-              <div
-                v-for="h in hourOptions"
-                :key="h"
-                class="wheel-item"
-                :class="{ selected: birthHour === h }"
-              >{{ h }}</div>
-              <div class="wheel-pad" />
+              <div class="wheel-track">
+                <div class="wheel-pad" />
+                <div
+                  v-for="h in hourOptions"
+                  :key="h"
+                  class="wheel-item"
+                  :class="{ selected: birthHour === h }"
+                >{{ h }}</div>
+                <div class="wheel-pad" />
+              </div>
             </div>
           </div>
           <!-- Minute wheel -->
           <div class="wheel-col">
             <div class="wheel-label">Min</div>
             <div class="wheel-drum" ref="minuteWheelRef">
-              <div class="wheel-pad" />
-              <div
-                v-for="m in minuteOptions"
-                :key="m"
-                class="wheel-item"
-                :class="{ selected: birthMinute === m }"
-              >{{ m }}</div>
-              <div class="wheel-pad" />
+              <div class="wheel-track">
+                <div class="wheel-pad" />
+                <div
+                  v-for="m in minuteOptions"
+                  :key="m"
+                  class="wheel-item"
+                  :class="{ selected: birthMinute === m }"
+                >{{ m }}</div>
+                <div class="wheel-pad" />
+              </div>
             </div>
           </div>
           <!-- AM/PM wheel -->
           <div class="wheel-col">
             <div class="wheel-label">AM/PM</div>
             <div class="wheel-drum" ref="ampmWheelRef">
-              <div class="wheel-pad" />
-              <div class="wheel-item" :class="{ selected: birthAmPm === 'AM' }">AM</div>
-              <div class="wheel-item" :class="{ selected: birthAmPm === 'PM' }">PM</div>
-              <div class="wheel-pad" />
+              <div class="wheel-track">
+                <div class="wheel-pad" />
+                <div class="wheel-item" :class="{ selected: birthAmPm === 'AM' }">AM</div>
+                <div class="wheel-item" :class="{ selected: birthAmPm === 'PM' }">PM</div>
+                <div class="wheel-pad" />
+              </div>
             </div>
           </div>
         </div>
@@ -308,48 +320,20 @@ const hourWheelRef = ref<HTMLElement>()
 const minuteWheelRef = ref<HTMLElement>()
 const ampmWheelRef = ref<HTMLElement>()
 
-// ── Apple-style momentum wheel engine ────────────────────────────────────────
-// Pointer-capture approach: works identically for mouse drags and touch.
-// Physics: tracks instantaneous velocity, decelerates with friction each frame,
-// then snaps to the nearest item with a smooth ease-out scroll animation.
+// ── Enterprise-grade Apple-style wheel engine ─────────────────────────────────
+// Architecture:
+//   • Position is driven by CSS transform:translateY on the inner .wheel-track.
+//     This runs on the GPU compositor thread — zero layout/paint during drag.
+//   • pointermove/pointerup are registered on `document` so fast drags that
+//     leave the drum element still track correctly.
+//   • Momentum uses a real timestamp delta (dt) each rAF frame — no assumed 16ms.
+//   • Deceleration constant matches Apple's UIScrollView: ~0.998 per ms.
+//   • Click-to-select: if total pointer travel < 5 px treat as tap and compute
+//     the tapped item index from the drum-relative Y position.
+//   • WheelEvent (trackpad/mouse wheel) steps one item per discrete event and
+//     debounces snap so rapid scrolling feels continuous.
 
 const wheelListenerCleanups: Array<() => void> = []
-
-function applyWheelValue(type: string, idx: number) {
-  if (type === 'day') birthDay.value = dayOptions[Math.max(0, Math.min(idx, dayOptions.length - 1))] ?? ''
-  else if (type === 'month') birthMonth.value = monthOptions[Math.max(0, Math.min(idx, monthOptions.length - 1))] ?? ''
-  else if (type === 'year') birthYear.value = yearOptions[Math.max(0, Math.min(idx, yearOptions.length - 1))] ?? ''
-  else if (type === 'hour') birthHour.value = hourOptions[Math.max(0, Math.min(idx, hourOptions.length - 1))] ?? ''
-  else if (type === 'minute') birthMinute.value = minuteOptions[Math.max(0, Math.min(idx, minuteOptions.length - 1))] ?? ''
-  else if (type === 'ampm') birthAmPm.value = idx === 0 ? 'AM' : 'PM'
-}
-
-function smoothScrollTo(el: HTMLElement, target: number, duration: number) {
-  const start = el.scrollTop
-  const delta = target - start
-  if (Math.abs(delta) < 0.5) {
-    el.scrollTop = target
-    return
-  }
-  const startTime = performance.now()
-  function step(now: number) {
-    const elapsed = now - startTime
-    const progress = Math.min(elapsed / duration, 1)
-    // Ease-out cubic — matches Apple's deceleration feel
-    const ease = 1 - Math.pow(1 - progress, 3)
-    el.scrollTop = start + delta * ease
-    if (progress < 1) requestAnimationFrame(step)
-  }
-  requestAnimationFrame(step)
-}
-
-function snapToNearest(type: string, el: HTMLElement) {
-  const idx = Math.round(el.scrollTop / ITEM_H)
-  const clampedIdx = Math.max(0, Math.min(idx, getOptionsLength(type) - 1))
-  const target = clampedIdx * ITEM_H
-  smoothScrollTo(el, target, 180)
-  applyWheelValue(type, clampedIdx)
-}
 
 function getOptionsLength(type: string): number {
   if (type === 'day') return dayOptions.length
@@ -361,110 +345,241 @@ function getOptionsLength(type: string): number {
   return 1
 }
 
-function attachWheelListener(type: string, elArg: HTMLElement) {
-  const el: HTMLElement = elArg
+function applyWheelValue(type: string, idx: number) {
+  const clamp = (n: number, max: number) => Math.max(0, Math.min(n, max))
+  if (type === 'day')    birthDay.value    = dayOptions[clamp(idx, dayOptions.length - 1)]!
+  else if (type === 'month')  birthMonth.value  = monthOptions[clamp(idx, monthOptions.length - 1)]!
+  else if (type === 'year')   birthYear.value   = yearOptions[clamp(idx, yearOptions.length - 1)]!
+  else if (type === 'hour')   birthHour.value   = hourOptions[clamp(idx, hourOptions.length - 1)]!
+  else if (type === 'minute') birthMinute.value = minuteOptions[clamp(idx, minuteOptions.length - 1)]!
+  else if (type === 'ampm')   birthAmPm.value   = idx === 0 ? 'AM' : 'PM'
+}
 
-  // ── State ─────────────────────────────────────────────────────────────────
-  let isDragging = false
-  let lastY = 0
-  let lastTime = 0
-  let velocity = 0          // px/ms
+// Translate the inner track element. offset is how many px from the top
+// the first real item (index 0) sits — starts at 0, negative = scrolled down.
+// We store position as a positive "scroll offset" (like scrollTop) internally.
+
+function getTrack(drum: HTMLElement): HTMLElement {
+  return drum.firstElementChild as HTMLElement
+}
+
+function setTrackY(track: HTMLElement, offset: number) {
+  track.style.transform = `translateY(${-offset}px)`
+}
+
+// Smooth animate from current position to target using ease-out-quart.
+// Cancels any in-flight animation via the returned cancel function.
+function animateTo(
+  track: HTMLElement,
+  fromOffset: number,
+  toOffset: number,
+  duration: number,
+  onDone?: () => void,
+): () => void {
   let rafId = 0
-  const FRICTION = 0.94     // velocity multiplied per frame (~16 ms)
-  const MIN_VELOCITY = 0.08 // px/ms — below this we snap
+  const startTime = performance.now()
+  const delta = toOffset - fromOffset
 
-  function cancelMomentum() {
-    if (rafId) { cancelAnimationFrame(rafId); rafId = 0 }
+  if (Math.abs(delta) < 0.5) {
+    setTrackY(track, toOffset)
+    onDone?.()
+    return () => {}
   }
 
-  function runMomentum() {
-    velocity *= FRICTION
-    el.scrollTop += velocity * 16
-    // Clamp to scroll bounds
-    const maxScroll = (getOptionsLength(type) - 1) * ITEM_H
-    el.scrollTop = Math.max(0, Math.min(el.scrollTop, maxScroll + ITEM_H))
-    if (Math.abs(velocity) > MIN_VELOCITY) {
+  function step(now: number) {
+    const elapsed = now - startTime
+    const t = Math.min(elapsed / duration, 1)
+    // Ease-out quart — very close to Apple's UIScrollView snap curve
+    const ease = 1 - Math.pow(1 - t, 4)
+    setTrackY(track, fromOffset + delta * ease)
+    if (t < 1) {
+      rafId = requestAnimationFrame(step)
+    } else {
+      setTrackY(track, toOffset)
+      onDone?.()
+    }
+  }
+  rafId = requestAnimationFrame(step)
+  return () => { if (rafId) cancelAnimationFrame(rafId) }
+}
+
+function attachWheelListener(type: string, drum: HTMLElement) {
+  const track = getTrack(drum)
+  const maxIdx = getOptionsLength(type) - 1
+  const maxOffset = maxIdx * ITEM_H
+
+  // ── Per-drum state ─────────────────────────────────────────────────────────
+  let offset = 0           // current logical scroll offset in px (positive = scrolled down)
+  let isDragging = false
+  let startClientY = 0
+  let lastClientY = 0
+  let lastTime = 0
+  let velocity = 0         // px/ms  (positive = scrolling down)
+  let cancelAnim = () => {}
+  let rafId = 0
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  const clampOffset = (v: number) => Math.max(0, Math.min(v, maxOffset))
+
+  function snapTo(idx: number, fast = false) {
+    cancelAnim()
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0 }
+    const targetIdx = Math.max(0, Math.min(Math.round(idx), maxIdx))
+    const targetOffset = targetIdx * ITEM_H
+    const dist = Math.abs(targetOffset - offset)
+    // Duration scales with distance but is capped — feels snappy, not slow
+    const duration = fast ? 120 : Math.min(60 + dist * 0.4, 320)
+    cancelAnim = animateTo(track, offset, targetOffset, duration, () => {
+      offset = targetOffset
+      applyWheelValue(type, targetIdx)
+    })
+    // Optimistically update reactive value immediately for responsive UI
+    applyWheelValue(type, targetIdx)
+  }
+
+  function snapToNearest() {
+    snapTo(offset / ITEM_H)
+  }
+
+  // ── Momentum loop ──────────────────────────────────────────────────────────
+  // Uses real dt each frame. Deceleration: Apple UIScrollView ≈ 0.998^ms
+  // which for 60fps frames (≈16.67ms) gives ~0.967 per frame.
+  const DECEL = 0.998  // per ms — change to 0.995 for snappier stop
+  const MIN_V = 0.02   // px/ms — stop threshold
+
+  let lastRafTime = 0
+  function runMomentum(now: number) {
+    const dt = now - lastRafTime
+    lastRafTime = now
+    velocity *= Math.pow(DECEL, dt)
+    offset = clampOffset(offset + velocity * dt)
+    setTrackY(track, offset)
+
+    if (Math.abs(velocity) > MIN_V) {
       rafId = requestAnimationFrame(runMomentum)
     } else {
       rafId = 0
-      snapToNearest(type, el)
+      velocity = 0
+      snapToNearest()
     }
   }
 
-  // ── Pointer down ──────────────────────────────────────────────────────────
+  // ── Pointer down — on drum ─────────────────────────────────────────────────
   function onPointerDown(e: PointerEvent) {
-    cancelMomentum()
+    if (e.button !== 0) return
+    cancelAnim()
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0 }
     isDragging = true
-    lastY = e.clientY
+    startClientY = e.clientY
+    lastClientY = e.clientY
     lastTime = performance.now()
     velocity = 0
-    el.setPointerCapture(e.pointerId)
-    el.dataset.scrolling = '1'
     e.preventDefault()
+    // Track globally so fast drags outside the drum still register
+    document.addEventListener('pointermove', onPointerMove, { passive: false })
+    document.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('pointercancel', onPointerCancel)
   }
 
-  // ── Pointer move ──────────────────────────────────────────────────────────
+  // ── Pointer move — on document ─────────────────────────────────────────────
   function onPointerMove(e: PointerEvent) {
     if (!isDragging) return
     const now = performance.now()
     const dt = Math.max(now - lastTime, 1)
-    const dy = lastY - e.clientY  // positive = scrolling down
-    velocity = dy / dt
-    el.scrollTop += dy
-    // Clamp
-    const maxScroll = (getOptionsLength(type) - 1) * ITEM_H
-    el.scrollTop = Math.max(0, Math.min(el.scrollTop, maxScroll + ITEM_H))
-    lastY = e.clientY
+    const dy = lastClientY - e.clientY  // positive = user dragging up = scroll down
+    // Exponential moving average on velocity for smoother momentum tracking
+    const instantV = dy / dt
+    velocity = velocity * 0.6 + instantV * 0.4
+    offset = clampOffset(offset + dy)
+    setTrackY(track, offset)
+    lastClientY = e.clientY
     lastTime = now
   }
 
-  // ── Pointer up ────────────────────────────────────────────────────────────
+  // ── Pointer up — on document ───────────────────────────────────────────────
   function onPointerUp(e: PointerEvent) {
     if (!isDragging) return
     isDragging = false
-    el.releasePointerCapture(e.pointerId)
-    delete el.dataset.scrolling
-    if (Math.abs(velocity) > MIN_VELOCITY) {
-      // Scale up velocity for momentum feel (Apple uses ~1:1 but with high initial v)
-      velocity *= 18
+    document.removeEventListener('pointermove', onPointerMove)
+    document.removeEventListener('pointerup', onPointerUp)
+    document.removeEventListener('pointercancel', onPointerCancel)
+
+    const totalTravel = Math.abs(e.clientY - startClientY)
+
+    // ── Click-to-select: travel < 5px = tap ───────────────────────────────
+    if (totalTravel < 5) {
+      const drumRect = drum.getBoundingClientRect()
+      const tapY = e.clientY - drumRect.top  // Y within the drum viewport
+      // Center of drum is the selected slot (ITEM_H per slot, pad = ITEM_H)
+      const drumCenter = drumRect.height / 2
+      const relativeSlot = (tapY - drumCenter) / ITEM_H
+      const currentIdx = Math.round(offset / ITEM_H)
+      const tappedIdx = currentIdx + Math.round(relativeSlot)
+      snapTo(tappedIdx, true)
+      return
+    }
+
+    // ── Momentum throw ────────────────────────────────────────────────────
+    if (Math.abs(velocity) > MIN_V) {
+      lastRafTime = performance.now()
       rafId = requestAnimationFrame(runMomentum)
     } else {
-      snapToNearest(type, el)
+      snapToNearest()
     }
   }
 
-  // ── Mouse wheel (desktop trackpad/scroll wheel) ───────────────────────────
-  function onWheel(e: WheelEvent) {
-    e.preventDefault()
-    cancelMomentum()
-    el.scrollTop += e.deltaY
-    const maxScroll = (getOptionsLength(type) - 1) * ITEM_H
-    el.scrollTop = Math.max(0, Math.min(el.scrollTop, maxScroll + ITEM_H))
-    // Debounce snap after wheel stops
-    clearTimeout((el as any)._wheelTimer)
-    ;(el as any)._wheelTimer = setTimeout(() => snapToNearest(type, el), 80)
+  function onPointerCancel() {
+    isDragging = false
+    document.removeEventListener('pointermove', onPointerMove)
+    document.removeEventListener('pointerup', onPointerUp)
+    document.removeEventListener('pointercancel', onPointerCancel)
+    snapToNearest()
   }
 
-  el.addEventListener('pointerdown', onPointerDown)
-  el.addEventListener('pointermove', onPointerMove)
-  el.addEventListener('pointerup', onPointerUp)
-  el.addEventListener('pointercancel', onPointerUp)
-  el.addEventListener('wheel', onWheel, { passive: false })
+  // ── WheelEvent (trackpad / mouse scroll wheel) ─────────────────────────────
+  // Step by one item per discrete event; debounce snap 100ms after last event.
+  let wheelSnapTimer = 0
+  function onWheel(e: WheelEvent) {
+    e.preventDefault()
+    cancelAnim()
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0 }
+
+    // Normalize: trackpads emit fractional deltaY, click-wheels emit ~100px steps
+    const step = Math.abs(e.deltaY) > 50 ? Math.sign(e.deltaY) * ITEM_H : e.deltaY
+    offset = clampOffset(offset + step)
+    setTrackY(track, offset)
+
+    clearTimeout(wheelSnapTimer)
+    wheelSnapTimer = window.setTimeout(() => snapToNearest(), 100)
+  }
+
+  drum.addEventListener('pointerdown', onPointerDown)
+  drum.addEventListener('wheel', onWheel, { passive: false })
 
   wheelListenerCleanups.push(() => {
-    cancelMomentum()
-    clearTimeout((el as any)._wheelTimer)
-    el.removeEventListener('pointerdown', onPointerDown)
-    el.removeEventListener('pointermove', onPointerMove)
-    el.removeEventListener('pointerup', onPointerUp)
-    el.removeEventListener('pointercancel', onPointerUp)
-    el.removeEventListener('wheel', onWheel)
+    cancelAnim()
+    if (rafId) cancelAnimationFrame(rafId)
+    clearTimeout(wheelSnapTimer)
+    drum.removeEventListener('pointerdown', onPointerDown)
+    drum.removeEventListener('wheel', onWheel)
+    document.removeEventListener('pointermove', onPointerMove)
+    document.removeEventListener('pointerup', onPointerUp)
+    document.removeEventListener('pointercancel', onPointerCancel)
   })
+
+  // Expose setIndex for programmatic init
+  ;(drum as any)._wheelSetIndex = (idx: number) => {
+    cancelAnim()
+    offset = clampOffset(idx * ITEM_H)
+    setTrackY(track, offset)
+    applyWheelValue(type, idx)
+  }
 }
 
 function scrollWheelToIndex(el: HTMLElement | undefined, idx: number) {
   if (!el) return
-  el.scrollTop = idx * ITEM_H
+  const fn = (el as any)._wheelSetIndex
+  if (fn) fn(idx)
 }
 
 onUnmounted(() => {
@@ -823,8 +938,7 @@ function submitAnalysis() {
 .wheel-drum {
   width: 100%;
   height: 132px; /* 3 visible items × 44px */
-  overflow-y: hidden;
-  scrollbar-width: none;
+  overflow: hidden;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
@@ -832,7 +946,6 @@ function submitAnalysis() {
   touch-action: none;
   user-select: none;
   cursor: grab;
-  will-change: scroll-position;
   /* Fade mask top/bottom for depth illusion */
   -webkit-mask-image: linear-gradient(
     to bottom,
@@ -858,8 +971,11 @@ function submitAnalysis() {
   cursor: grabbing;
 }
 
-.wheel-drum::-webkit-scrollbar {
-  display: none;
+.wheel-track {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  transform: translateY(0);
 }
 
 .wheel-pad {
@@ -884,9 +1000,6 @@ function submitAnalysis() {
   contain: layout style;
 }
 
-.wheel-drum[data-scrolling] .wheel-item {
-  transition: none;
-}
 
 .wheel-item.selected {
   color: rgba(201, 168, 76, 0.95);
