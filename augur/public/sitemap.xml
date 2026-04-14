@@ -7,7 +7,7 @@
   <!-- Home Page - Main Landing -->
   <url>
     <loc>https://omenora.com/</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://omenora.com/"/>
@@ -17,7 +17,7 @@
   <!-- Legal Pages - Important for Trust & SEO -->
   <url>
     <loc>https://omenora.com/privacy</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://omenora.com/privacy"/>
@@ -25,17 +25,9 @@
 
   <url>
     <loc>https://omenora.com/terms</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://omenora.com/terms"/>
-  </url>
-
-  <!-- Static Assets (for completeness) -->
-  <url>
-    <loc>https://omenora.com/og-image.svg</loc>
-    <lastmod>2026-04-10</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.1</priority>
   </url>
 </urlset>
