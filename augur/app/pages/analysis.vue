@@ -42,7 +42,7 @@
           <!-- Day wheel -->
           <div class="wheel-col">
             <div class="wheel-label">DD</div>
-            <div class="wheel-drum" @scroll.passive="onWheelScroll('day', $event)" ref="dayWheelRef">
+            <div class="wheel-drum" ref="dayWheelRef">
               <div class="wheel-pad" />
               <div
                 v-for="d in dayOptions"
@@ -56,7 +56,7 @@
           <!-- Month wheel -->
           <div class="wheel-col">
             <div class="wheel-label">MM</div>
-            <div class="wheel-drum" @scroll.passive="onWheelScroll('month', $event)" ref="monthWheelRef">
+            <div class="wheel-drum" ref="monthWheelRef">
               <div class="wheel-pad" />
               <div
                 v-for="m in monthOptions"
@@ -70,7 +70,7 @@
           <!-- Year wheel -->
           <div class="wheel-col wheel-col--wide">
             <div class="wheel-label">YYYY</div>
-            <div class="wheel-drum" @scroll.passive="onWheelScroll('year', $event)" ref="yearWheelRef">
+            <div class="wheel-drum" ref="yearWheelRef">
               <div class="wheel-pad" />
               <div
                 v-for="y in yearOptions"
@@ -116,7 +116,7 @@
           <!-- Hour wheel -->
           <div class="wheel-col">
             <div class="wheel-label">Hour</div>
-            <div class="wheel-drum" @scroll.passive="onWheelScroll('hour', $event)" ref="hourWheelRef">
+            <div class="wheel-drum" ref="hourWheelRef">
               <div class="wheel-pad" />
               <div
                 v-for="h in hourOptions"
@@ -130,7 +130,7 @@
           <!-- Minute wheel -->
           <div class="wheel-col">
             <div class="wheel-label">Min</div>
-            <div class="wheel-drum" @scroll.passive="onWheelScroll('minute', $event)" ref="minuteWheelRef">
+            <div class="wheel-drum" ref="minuteWheelRef">
               <div class="wheel-pad" />
               <div
                 v-for="m in minuteOptions"
@@ -144,7 +144,7 @@
           <!-- AM/PM wheel -->
           <div class="wheel-col">
             <div class="wheel-label">AM/PM</div>
-            <div class="wheel-drum" @scroll.passive="onWheelScroll('ampm', $event)" ref="ampmWheelRef">
+            <div class="wheel-drum" ref="ampmWheelRef">
               <div class="wheel-pad" />
               <div class="wheel-item" :class="{ selected: birthAmPm === 'AM' }">AM</div>
               <div class="wheel-item" :class="{ selected: birthAmPm === 'PM' }">PM</div>
@@ -254,7 +254,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { calculateLifePathNumber } from '~/utils/lifePathNumber'
 import { assignArchetype } from '~/utils/archetypes'
@@ -309,20 +309,43 @@ const minuteWheelRef = ref<HTMLElement>()
 const ampmWheelRef = ref<HTMLElement>()
 
 // ── Scroll → value mapping ────────────────────────────────────────────────────
-const scrollTimers: Record<string, ReturnType<typeof setTimeout>> = {}
+// scrollend fires exactly once when ALL momentum has settled (Chrome 114+, Firefox 109+,
+// Safari 26.2+). For older iOS Safari we fall back to a 200ms debounced scroll listener.
+// During the actual scroll motion, zero JS runs — the browser compositor owns the thread.
+const scrollFallbackTimers: Record<string, ReturnType<typeof setTimeout>> = {}
+const wheelListenerCleanups: Array<() => void> = []
 
-function onWheelScroll(type: string, e: Event) {
-  clearTimeout(scrollTimers[type])
-  scrollTimers[type] = setTimeout(() => {
-    const el = e.target as HTMLElement
+function readAndApply(type: string, el: HTMLElement) {
+  requestAnimationFrame(() => {
     const idx = Math.round(el.scrollTop / ITEM_H)
-    snapTo(el, idx)
     applyWheelValue(type, idx)
-  }, 80)
+    delete el.dataset.scrolling
+  })
 }
 
-function snapTo(el: HTMLElement, idx: number) {
-  el.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' })
+function attachWheelListener(type: string, elArg: HTMLElement) {
+  // Capture into a plain typed local to prevent TypeScript's 'in' narrowing
+  // from incorrectly widening the type to 'never' in the else branch.
+  const el: HTMLElement = elArg
+  const supportsScrollEnd = 'onscrollend' in window
+
+  if (supportsScrollEnd) {
+    const handler = () => readAndApply(type, el)
+    el.addEventListener('scrollend', handler, { passive: true })
+    wheelListenerCleanups.push(() => el.removeEventListener('scrollend', handler))
+  } else {
+    // Fallback: debounced scroll listener for older iOS Safari (< 26.2)
+    const handler = () => {
+      if (!el.dataset.scrolling) el.dataset.scrolling = '1'
+      clearTimeout(scrollFallbackTimers[type])
+      scrollFallbackTimers[type] = setTimeout(() => readAndApply(type, el), 200)
+    }
+    el.addEventListener('scroll', handler, { passive: true })
+    wheelListenerCleanups.push(() => {
+      el.removeEventListener('scroll', handler)
+      clearTimeout(scrollFallbackTimers[type])
+    })
+  }
 }
 
 function applyWheelValue(type: string, idx: number) {
@@ -338,6 +361,10 @@ function scrollWheelToIndex(el: HTMLElement | undefined, idx: number) {
   if (!el) return
   el.scrollTop = idx * ITEM_H
 }
+
+onUnmounted(() => {
+  wheelListenerCleanups.forEach(fn => fn())
+})
 
 // ── Initialise wheels to sensible defaults on mount ───────────────────────────
 onMounted(() => {
@@ -356,6 +383,15 @@ onMounted(() => {
     scrollWheelToIndex(hourWheelRef.value, 0)
     scrollWheelToIndex(minuteWheelRef.value, 0)
     scrollWheelToIndex(ampmWheelRef.value, 0)
+
+    // Attach scroll-end listeners AFTER initial positions are set so the
+    // programmatic scrollTop assignment above does not fire value reads.
+    if (dayWheelRef.value) attachWheelListener('day', dayWheelRef.value)
+    if (monthWheelRef.value) attachWheelListener('month', monthWheelRef.value)
+    if (yearWheelRef.value) attachWheelListener('year', yearWheelRef.value)
+    if (hourWheelRef.value) attachWheelListener('hour', hourWheelRef.value)
+    if (minuteWheelRef.value) attachWheelListener('minute', minuteWheelRef.value)
+    if (ampmWheelRef.value) attachWheelListener('ampm', ampmWheelRef.value)
   })
 })
 
@@ -684,12 +720,14 @@ function submitAnalysis() {
   height: 132px; /* 3 visible items × 44px */
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
-  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   scrollbar-width: none;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   position: relative;
+  touch-action: pan-y;
+  will-change: scroll-position;
   /* Fade mask top/bottom for depth illusion */
   -webkit-mask-image: linear-gradient(
     to bottom,
@@ -704,7 +742,6 @@ function submitAnalysis() {
     to bottom,
     transparent 0%,
     rgba(0,0,0,0.4) 20%,
-    rgba(0,0,0,1) 35%,
     rgba(0,0,0,1) 65%,
     rgba(0,0,0,0.4) 80%,
     transparent 100%
@@ -726,15 +763,21 @@ function submitAnalysis() {
   align-items: center;
   justify-content: center;
   scroll-snap-align: center;
+  scroll-snap-stop: always;
   font-family: 'Cormorant Garamond', serif;
   font-size: 18px;
   font-weight: 300;
   color: rgba(255, 255, 255, 0.28);
   cursor: pointer;
   user-select: none;
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.18s ease, background 0.18s ease;
   border-radius: 4px;
   letter-spacing: 0.04em;
+  contain: layout style;
+}
+
+.wheel-drum[data-scrolling] .wheel-item {
+  transition: none;
 }
 
 .wheel-item.selected {
