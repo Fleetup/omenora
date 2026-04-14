@@ -1,8 +1,5 @@
 export default defineEventHandler((event) => {
-  setResponseHeader(event, 'Content-Type', 'text/plain; charset=utf-8')
-  setResponseHeader(event, 'Cache-Control', 'public, max-age=86400')
-
-  return `# OMENORA Robots.txt
+  const txt = `# OMENORA Robots.txt
 # Last Updated: 2026-04-14
 
 # All crawlers
@@ -31,4 +28,6 @@ Disallow: /
 # Sitemap location
 Sitemap: https://omenora.com/sitemap.xml
 `
+
+  return send(event, txt, 'text/plain; charset=utf-8')
 })

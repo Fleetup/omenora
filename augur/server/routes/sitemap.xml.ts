@@ -1,8 +1,5 @@
 export default defineEventHandler((event) => {
-  setResponseHeader(event, 'Content-Type', 'application/xml; charset=utf-8')
-  setResponseHeader(event, 'Cache-Control', 'public, max-age=86400')
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -31,4 +28,6 @@ export default defineEventHandler((event) => {
     <xhtml:link rel="alternate" hreflang="en" href="https://omenora.com/terms"/>
   </url>
 </urlset>`
+
+  return send(event, xml, 'application/xml; charset=utf-8')
 })
