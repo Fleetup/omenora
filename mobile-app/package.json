@@ -1,12 +1,11 @@
 {
   "name": "omenora-mobile",
   "version": "1.0.0",
-  "main": "expo/AppEntry.js",
+  "main": "index.js",
   "scripts": {
-    "postinstall": "node -e \"const fs=require('fs'),p='node_modules/expo-modules-core/package.json';try{const pkg=JSON.parse(fs.readFileSync(p,'utf8'));if(pkg.main==='src/index.ts'){pkg.main='index.js';fs.writeFileSync(p,JSON.stringify(pkg,null,2));console.log('Patched expo-modules-core main field')}}catch(e){}\"",
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
     "lint": "eslint . --ext .ts,.tsx",
