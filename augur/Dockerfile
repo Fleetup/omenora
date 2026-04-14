@@ -3,7 +3,7 @@ WORKDIR /app
 
 FROM base AS deps
 COPY augur/package*.json ./
-RUN npm ci --only=production=false
+RUN npm ci
 
 FROM base AS builder
 WORKDIR /app
