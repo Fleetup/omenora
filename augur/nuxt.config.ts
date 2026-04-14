@@ -90,6 +90,7 @@ export default defineNuxtConfig({
         { name: 'copyright', content: '© 2026 OMENORA. All rights reserved.' },
         { name: 'application-name', content: 'OMENORA' },
         { name: 'apple-mobile-web-app-title', content: 'OMENORA' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
         // Open Graph defaults

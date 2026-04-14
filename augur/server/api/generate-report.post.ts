@@ -20,8 +20,16 @@ export default defineEventHandler(async (event) => {
   assertInput(isValidArchetype(body.archetype), 'Invalid archetype')
   assertInput(answers !== null && typeof answers === 'object', 'Invalid answers')
 
+  const anthropicApiKey = config.anthropicApiKey as string | undefined
+  if (!anthropicApiKey) {
+    throw createError({
+      statusCode: 503,
+      message: 'Report generation service is not configured. Please try again later.',
+    })
+  }
+
   const client = new Anthropic({
-    apiKey: config.anthropicApiKey,
+    apiKey: anthropicApiKey,
   })
 
   const archetypeDescriptions: Record<string, string> = {
@@ -195,11 +203,49 @@ Return ONLY valid JSON with this structure:
   }
 }`
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 1500,
-    messages: [{ role: 'user', content: prompt }],
-  })
+  let message
+  try {
+    message = await client.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }],
+    })
+  } catch (err: any) {
+    const status = err?.status ?? err?.statusCode ?? 0
+    if (status === 401 || status === 403) {
+      throw createError({
+        statusCode: 503,
+        message: 'Report generation service authentication failed. Please contact support.',
+      })
+    }
+    if (status === 429) {
+      throw createError({
+        statusCode: 429,
+        message: 'Report generation is temporarily unavailable due to high demand. Please try again in a moment.',
+      })
+    }
+    if (status === 404) {
+      throw createError({
+        statusCode: 500,
+        message: 'Report generation model is unavailable. Please try again later.',
+      })
+    }
+    if (status >= 500 || err?.code === 'ECONNRESET' || err?.code === 'ETIMEDOUT' || err?.message?.includes('timeout')) {
+      throw createError({
+        statusCode: 504,
+        message: 'Report generation timed out. Please try again.',
+      })
+    }
+    console.error('[generate-report] Anthropic API error:', {
+      status,
+      message: err?.message,
+      code: err?.code,
+    })
+    throw createError({
+      statusCode: 500,
+      message: 'Report generation failed. Please try again.',
+    })
+  }
 
   const firstBlock = message.content[0]
   const rawText = firstBlock?.type === 'text' ? firstBlock.text : ''
@@ -210,11 +256,19 @@ Return ONLY valid JSON with this structure:
   } catch {
     const match = rawText.match(/\{[\s\S]*\}/)
     if (match) {
-      reportData = JSON.parse(match[0])
+      try {
+        reportData = JSON.parse(match[0])
+      } catch {
+        throw createError({
+          statusCode: 500,
+          message: 'Failed to parse report response. Please try again.',
+        })
+      }
     } else {
+      console.error('[generate-report] Failed to parse AI response:', rawText?.slice(0, 200))
       throw createError({
         statusCode: 500,
-        message: 'Failed to parse report',
+        message: 'Failed to parse report response. Please try again.',
       })
     }
   }

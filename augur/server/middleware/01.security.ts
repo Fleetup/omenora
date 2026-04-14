@@ -7,11 +7,12 @@ const MAX_BODY_BYTES = 512_000 // 512 KB
 
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com",
+  "script-src-elem 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://api.stripe.com https://checkout.stripe.com",
+  "connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://cloudflareinsights.com",
   "frame-src https://js.stripe.com https://hooks.stripe.com",
   "object-src 'none'",
   "base-uri 'self'",
