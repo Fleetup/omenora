@@ -37,7 +37,8 @@ export const ALLOWED_REDIRECT_HOSTS: string[] = (() => {
  */
 export function sanitizeString(val: unknown, maxLen = 200): string {
   if (typeof val !== 'string') return ''
-  return val.replace(/[\x00-\x1F\x7F]/g, '').trim().slice(0, maxLen)
+  // eslint-disable-next-line no-control-regex
+  return val.replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, maxLen)
 }
 
 // ── Validators ─────────────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ export function sanitizeString(val: unknown, maxLen = 200): string {
 /** RFC-5321 email format + length cap. */
 export function isValidEmail(val: unknown): val is string {
   if (typeof val !== 'string') return false
-  return val.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)
+  return val.length <= 254 && /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]{2,}$/i.test(val)
 }
 
 /**
@@ -54,7 +55,7 @@ export function isValidEmail(val: unknown): val is string {
  */
 export function isValidSessionId(val: unknown): val is string {
   if (typeof val !== 'string') return false
-  return /^cs_(live|test)_[A-Za-z0-9_]{10,200}$/.test(val)
+  return /^cs_(?:live|test)_\w{10,200}$/.test(val)
 }
 
 /**
@@ -64,8 +65,8 @@ export function isValidSessionId(val: unknown): val is string {
  */
 export function isValidReportId(val: unknown): val is string {
   if (typeof val !== 'string') return false
-  return /^cs_(live|test)_[A-Za-z0-9_]{10,200}$/.test(val) ||
-         /^temp_\d{10,15}_[A-Za-z0-9_\-]{1,60}$/.test(val)
+  return /^cs_(?:live|test)_\w{10,200}$/.test(val) ||
+         /^temp_\d{10,15}[\w-]{1,60}$/.test(val)
 }
 
 /** YYYY-MM-DD date, within valid birth year range. */
@@ -73,7 +74,7 @@ export function isValidDateOfBirth(val: unknown): val is string {
   if (typeof val !== 'string') return false
   if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false
   const d = new Date(val)
-  if (isNaN(d.getTime())) return false
+  if (Number.isNaN(d.getTime())) return false
   const year = d.getFullYear()
   return year >= 1900 && year <= new Date().getFullYear()
 }

@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   const sessionId = sanitizeString(body.sessionId, 200)
 
   assertInput(
-    /^cs_(live|test)_[A-Za-z0-9_]{10,400}$/.test(sessionId),
+    /^cs_(?:live|test)_\w{10,400}$/.test(sessionId),
     'Invalid checkout session ID',
   )
 

@@ -124,7 +124,7 @@ onMounted(async () => {
     if (!store.firstName) store.firstName = meta.firstName || ''
     if (!store.email) store.setEmail(meta.email || paymentData.customerEmail || '')
     if (!store.archetype) store.setArchetype(meta.archetype || '')
-    if (!store.lifePathNumber && meta.lifePathNumber) store.lifePathNumber = parseInt(meta.lifePathNumber)
+    if (!store.lifePathNumber && meta.lifePathNumber) store.lifePathNumber = Number.parseInt(meta.lifePathNumber)
     if (meta.region) store.setRegion(meta.region, store.country)
 
     store.setSubscriptionActive(true)

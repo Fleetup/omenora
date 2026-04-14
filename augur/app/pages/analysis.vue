@@ -24,13 +24,13 @@
       >
         <div class="field-label">{{ t('firstName') }}</div>
         <input
+          v-model="firstName"
           type="text"
           :placeholder="t('firstNamePlaceholder')"
           class="field-input"
-          v-model="firstName"
           @focus="focusedField = 'firstName'"
           @blur="focusedField = null"
-        />
+        >
       </div>
 
       <div class="date-group">
@@ -46,7 +46,7 @@
               placeholder="DD"
               @input="onDayInput"
               @blur="padDay"
-            />
+            >
             <p class="input-sub-label">DD</p>
           </div>
           <div class="num-field-col">
@@ -59,20 +59,20 @@
               placeholder="MM"
               @input="onMonthInput"
               @blur="padMonth"
-            />
+            >
             <p class="input-sub-label">MM</p>
           </div>
           <div class="num-field-col">
             <input
               ref="yearInputRef"
+              v-model="birthYear"
               type="number"
               class="num-input"
-              v-model="birthYear"
               placeholder="YYYY"
               min="1940"
               :max="currentYear"
               @input="onYearInput"
-            />
+            >
             <p class="input-sub-label">YYYY</p>
           </div>
         </div>
@@ -84,13 +84,13 @@
       >
         <div class="field-label">{{ t('cityCountry') }}</div>
         <input
+          v-model="city"
           type="text"
           :placeholder="t('cityPlaceholder')"
           class="field-input"
-          v-model="city"
           @focus="focusedField = 'city'"
           @blur="focusedField = null"
-        />
+        >
       </div>
 
       <!-- Time of Birth -->
@@ -108,7 +108,7 @@
               :value="birthHour"
               placeholder="HH"
               @input="onHourInput"
-            />
+            >
             <p class="input-sub-label">Hour</p>
           </div>
           <div class="num-field-col">
@@ -120,7 +120,7 @@
               :value="birthMinute"
               placeholder="MM"
               @input="onMinuteInput"
-            />
+            >
             <p class="input-sub-label">Minute</p>
           </div>
           <div class="num-field-col">
@@ -164,7 +164,6 @@
           <button
             v-for="lang in LANGUAGES"
             :key="lang.code"
-            @click="selectLanguage(lang.code)"
             :style="{
               padding: '6px 12px',
               borderRadius: '20px',
@@ -183,6 +182,7 @@
               alignItems: 'center',
               gap: '4px',
             }"
+            @click="selectLanguage(lang.code)"
           >
             <span>{{ lang.flag }}</span>
             <span>{{ lang.label }}</span>
@@ -275,8 +275,8 @@ const monthInputRef = ref<HTMLInputElement>()
 const yearInputRef = ref<HTMLInputElement>()
 
 const computedDateOfBirth = computed(() => {
-  const d = parseInt(birthDay.value || '0')
-  const m = parseInt(birthMonth.value || '0')
+  const d = Number.parseInt(birthDay.value || '0')
+  const m = Number.parseInt(birthMonth.value || '0')
   if (!d || !m || !birthYear.value || d < 1 || d > 31 || m < 1 || m > 12) return ''
   return `${birthYear.value}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 })
@@ -292,8 +292,8 @@ const minuteInputRef = ref<HTMLInputElement>()
 
 const timeOfBirth = computed(() => {
   if (!birthHour.value || birthMinute.value === '') return ''
-  const h = parseInt(birthHour.value)
-  const m = parseInt(birthMinute.value)
+  const h = Number.parseInt(birthHour.value)
+  const m = Number.parseInt(birthMinute.value)
   if (isNaN(h) || isNaN(m) || h < 1 || h > 12 || m < 0 || m > 59) return ''
   return `${h}:${String(m).padStart(2, '0')} ${birthAmPm.value}`
 })
@@ -305,7 +305,7 @@ watch(timeOfBirth, (val) => {
 function onDayInput(e: Event) {
   const input = e.target as HTMLInputElement
   const cleaned = input.value.replace(/\D/g, '').slice(0, 2)
-  const num = parseInt(cleaned || '0')
+  const num = Number.parseInt(cleaned || '0')
 
   if (cleaned.length > 0 && num > 31) {
     birthDay.value = '31'
@@ -325,7 +325,7 @@ function onDayInput(e: Event) {
 function onMonthInput(e: Event) {
   const input = e.target as HTMLInputElement
   const cleaned = input.value.replace(/\D/g, '').slice(0, 2)
-  const num = parseInt(cleaned || '0')
+  const num = Number.parseInt(cleaned || '0')
 
   if (cleaned.length > 0 && num > 12) {
     birthMonth.value = '12'
@@ -344,25 +344,25 @@ function onMonthInput(e: Event) {
 
 function onYearInput(e: Event) {
   const input = e.target as HTMLInputElement
-  const val = parseInt(input.value)
+  const val = Number.parseInt(input.value)
   if (val > currentYear) birthYear.value = currentYear
   if (val < 1940 && String(val).length === 4) birthYear.value = 1940
 }
 
 function padDay() {
-  const n = parseInt(birthDay.value || '0')
+  const n = Number.parseInt(birthDay.value || '0')
   birthDay.value = (n >= 1 && n <= 31) ? String(n).padStart(2, '0') : ''
 }
 
 function padMonth() {
-  const n = parseInt(birthMonth.value || '0')
+  const n = Number.parseInt(birthMonth.value || '0')
   birthMonth.value = (n >= 1 && n <= 12) ? String(n).padStart(2, '0') : ''
 }
 
 function onHourInput(e: Event) {
   const input = e.target as HTMLInputElement
   const cleaned = input.value.replace(/\D/g, '').slice(0, 2)
-  const num = parseInt(cleaned || '0')
+  const num = Number.parseInt(cleaned || '0')
 
   if (cleaned.length > 0 && num > 12) {
     birthHour.value = '12'
@@ -382,7 +382,7 @@ function onHourInput(e: Event) {
 function onMinuteInput(e: Event) {
   const input = e.target as HTMLInputElement
   const cleaned = input.value.replace(/\D/g, '').slice(0, 2)
-  const num = parseInt(cleaned || '0')
+  const num = Number.parseInt(cleaned || '0')
 
   if (cleaned.length > 0 && num > 59) {
     birthMinute.value = '59'

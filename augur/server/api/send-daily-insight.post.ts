@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
-  const { email, firstName, insight, archetype } = body
+  const { email, firstName: _firstName, insight, archetype } = body
 
   const resend = new Resend(config.resendApiKey)
 

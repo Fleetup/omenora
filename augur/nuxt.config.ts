@@ -27,6 +27,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    preset: 'node-server',
     experimental: {
       wasm: true,
     },
@@ -63,6 +64,9 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       exclude: ['canvas'],
+    },
+    build: {
+      sourcemap: false,
     },
   },
 

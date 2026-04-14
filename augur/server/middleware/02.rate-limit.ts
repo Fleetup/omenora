@@ -58,7 +58,7 @@ function extractIp(event: Parameters<typeof defineEventHandler>[0] extends (e: i
   const fwd = getHeader(event, 'x-forwarded-for') ?? ''
   const real = getHeader(event, 'x-real-ip') ?? ''
   const raw = fwd ? (fwd.split(',')[0] ?? '').trim() : real
-  return /^[\da-fA-F.:]{7,45}$/.test(raw) ? raw : 'unknown'
+  return /^[\da-f.:]{7,45}$/i.test(raw) ? raw : 'unknown'
 }
 
 export default defineEventHandler((event) => {

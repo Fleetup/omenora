@@ -21,8 +21,8 @@ const CSP = [
 
 export default defineEventHandler((event) => {
   // ── Body size guard ──────────────────────────────────────────────────────
-  const contentLength = parseInt(getHeader(event, 'content-length') ?? '0', 10)
-  if (!isNaN(contentLength) && contentLength > MAX_BODY_BYTES) {
+  const contentLength = Number.parseInt(getHeader(event, 'content-length') ?? '0', 10)
+  if (!Number.isNaN(contentLength) && contentLength > MAX_BODY_BYTES) {
     throw createError({ statusCode: 413, message: 'Request entity too large' })
   }
 

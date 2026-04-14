@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     tarotData,
     calendarData,
     birthChartData,
-    bundlePurchased,
+    bundlePurchased: _bundlePurchased,
     language,
   } = body
 

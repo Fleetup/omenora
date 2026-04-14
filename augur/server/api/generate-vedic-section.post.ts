@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
 
   const {
     firstName,
-    dateOfBirth,
+    dateOfBirth: _dateOfBirth,
     lifePathNumber,
     archetype,
     nakshatra,

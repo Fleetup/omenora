@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     lifePathNumber,
     answers,
     dateOfBirth,
-    city,
+    city: _city,
     language,
   } = body
 

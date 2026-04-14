@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
+    "start": "node .output/server/index.mjs",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
@@ -11,7 +12,7 @@
     "test": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "lint": "eslint .",
+    "lint": "ESLINT_USE_FLAT_CONFIG=true eslint .",
     "typecheck": "npx tsc --noEmit"
   },
   "dependencies": {

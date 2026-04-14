@@ -85,7 +85,7 @@ useSeoMeta({ title: 'Your Love Compatibility Reading', robots: 'noindex, nofollo
 
 const store = useAnalysisStore()
 const route = useRoute()
-const { t } = useLanguage()
+useLanguage()
 
 const isLoading = ref(true)
 const hasError = ref(false)

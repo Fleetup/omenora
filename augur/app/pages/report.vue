@@ -27,20 +27,20 @@
         type="text"
         placeholder="Their first name"
         class="addon-input"
-      />
+      >
       <div class="addon-dob-row">
-        <input v-model="addonBirthDay" type="number" placeholder="DD" min="1" max="31" class="addon-input addon-dob addon-day" />
-        <input v-model="addonBirthMonth" type="number" placeholder="MM" min="1" max="12" class="addon-input addon-dob addon-day" />
-        <input v-model="addonBirthYear" type="number" placeholder="YYYY" min="1940" max="2010" class="addon-input addon-dob addon-year" />
+        <input v-model="addonBirthDay" type="number" placeholder="DD" min="1" max="31" class="addon-input addon-dob addon-day" >
+        <input v-model="addonBirthMonth" type="number" placeholder="MM" min="1" max="12" class="addon-input addon-dob addon-day" >
+        <input v-model="addonBirthYear" type="number" placeholder="YYYY" min="1940" max="2010" class="addon-input addon-dob addon-year" >
       </div>
       <button
-        @click="handleAddonPurchase"
         :disabled="!addonPartnerName || !addonBirthYear || isProcessingAddon"
         class="addon-yes-btn"
+        @click="handleAddonPurchase"
       >
         {{ isProcessingAddon ? t('processingPayment') : t('yesAdd') }}
       </button>
-      <p @click="showAddon = false" class="addon-no-link">{{ t('noThanks') }}</p>
+      <p class="addon-no-link" @click="showAddon = false">{{ t('noThanks') }}</p>
     </div>
   </div>
 
@@ -376,9 +376,9 @@
 
       <!-- Form -->
       <div v-else>
-        <input v-model="partnerName" type="text" placeholder="Their first name" class="compat-input" style="margin-bottom: 10px;" />
-        <input v-model="partnerDob" type="date" class="compat-input compat-input--date" style="margin-bottom: 10px;" />
-        <input v-model="partnerCity" type="text" placeholder="Their city (optional)" class="compat-input" style="margin-bottom: 16px;" />
+        <input v-model="partnerName" type="text" placeholder="Their first name" class="compat-input" style="margin-bottom: 10px;" >
+        <input v-model="partnerDob" type="date" class="compat-input compat-input--date" style="margin-bottom: 10px;" >
+        <input v-model="partnerCity" type="text" placeholder="Their city (optional)" class="compat-input" style="margin-bottom: 16px;" >
         <button
           class="compat-unlock-btn"
           :disabled="!partnerName || !partnerDob || isGeneratingCompatibility"
@@ -534,18 +534,18 @@
             type="text"
             placeholder="Their first name"
             class="compat-input"
-          />
+          >
           <input
             v-model="partnerDob"
             type="date"
             class="compat-input compat-input--date"
-          />
+          >
           <input
             v-model="partnerCity"
             type="text"
             placeholder="Their city (optional)"
             class="compat-input"
-          />
+          >
         </div>
         <button
           class="compat-unlock-btn"
@@ -619,7 +619,6 @@ useSeoMeta({
   robots: 'noindex, nofollow',
 })
 
-const isLoading = ref(true)
 const isLoadingReport = ref(true)
 const hasError = ref(false)
 const vedicData = ref<any>(null)
@@ -951,7 +950,7 @@ onMounted(async () => {
       if (!store.tempId) store.setTempId(meta.tempId || '')
       if (!store.archetype) store.setArchetype(meta.archetype || '')
       if (!store.dateOfBirth && meta.dateOfBirth) store.dateOfBirth = meta.dateOfBirth
-      if (!store.lifePathNumber && meta.lifePathNumber) store.lifePathNumber = parseInt(meta.lifePathNumber)
+      if (!store.lifePathNumber && meta.lifePathNumber) store.lifePathNumber = Number.parseInt(meta.lifePathNumber)
       if (meta.region) store.setRegion(meta.region, store.country)
       if (!store.timeOfBirth && meta.timeOfBirth) store.timeOfBirth = meta.timeOfBirth
 
@@ -1220,7 +1219,6 @@ async function buyCompatibilityReading() {
 }
 
 const isLoadingCalendar = ref(false)
-const showCalendarPreview = ref(false)
 
 async function buyCalendar() {
   if (isLoadingCalendar.value) return

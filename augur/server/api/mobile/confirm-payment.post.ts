@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
   const paymentIntentId = sanitizeString(body.paymentIntentId, 100)
 
   assertInput(
-    /^pi_(live|test)_[A-Za-z0-9_]{10,200}$/.test(paymentIntentId),
+    /^pi_(?:live|test)_\w{10,200}$/.test(paymentIntentId),
     'Invalid payment intent ID',
   )
 

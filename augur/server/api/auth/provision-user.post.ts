@@ -16,7 +16,7 @@
  */
 import Stripe from 'stripe'
 
-const PI_ID_REGEX = /^pi_(live|test)_[A-Za-z0-9_]{10,200}$/
+const PI_ID_REGEX = /^pi_(?:live|test)_\w{10,200}$/
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()

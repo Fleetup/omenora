@@ -126,11 +126,11 @@
       <div class="email-field-wrapper">
         <label class="email-label">{{ t('emailDelivery') }}</label>
         <input
+          v-model="email"
           type="email"
           :placeholder="t('emailPlaceholder')"
           class="email-input"
-          v-model="email"
-        />
+        >
       </div>
 
       <!-- CTA Button -->
