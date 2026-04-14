@@ -257,9 +257,10 @@ useHead({
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0 28px;
+  padding: 0 20px;
   max-width: 520px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* ── Orbital brand mark ── */
@@ -318,7 +319,7 @@ useHead({
 /* ── Brand name ── */
 .brand-name {
   font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(84px, 13vw, 148px);
+  font-size: clamp(52px, 13vw, 148px);
   font-weight: 300;
   color: rgba(255,255,255,0.93);
   letter-spacing: 0.14em;
@@ -453,18 +454,37 @@ useHead({
 /* ── Responsive ── */
 @media (max-width: 640px) {
   .brand-name {
-    font-size: clamp(72px, 20vw, 104px);
+    font-size: clamp(44px, 14vw, 72px);
     letter-spacing: 0.1em;
   }
 
+  .tagline {
+    font-size: 15px;
+  }
+
   .cta-button {
-    padding: 16px 32px;
+    padding: 14px 24px;
     width: 100%;
   }
 
   .nebula-glow {
     width: 340px;
     height: 300px;
+  }
+}
+
+@media (max-width: 390px) {
+  .brand-name {
+    font-size: clamp(38px, 12vw, 56px);
+    letter-spacing: 0.08em;
+  }
+
+  .tagline {
+    font-size: 14px;
+  }
+
+  .content {
+    padding: 0 16px;
   }
 }
 </style>
