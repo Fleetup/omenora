@@ -10,19 +10,21 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
-    anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-    stripeSecretKey: process.env.STRIPE_SECRET_KEY,
-    resendApiKey: process.env.RESEND_API_KEY,
-    supabaseUrl: process.env.SUPABASE_URL,
-    supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
-    stripeDailyPriceId: process.env.STRIPE_DAILY_PRICE_ID,
+    // Empty string defaults — Nitro reads the actual process.env at container
+    // startup (runtime), not at Docker build time when secrets are not present.
+    // Railway variable names stay exactly as set: ANTHROPIC_API_KEY, etc.
+    anthropicApiKey: '',
+    stripeSecretKey: '',
+    resendApiKey: '',
+    supabaseUrl: '',
+    supabaseServiceKey: '',
+    stripeDailyPriceId: '',
     public: {
-      stripePublishableKey: process.env.NUXT_PUBLIC_STRIPE_KEY,
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
-      // Update NUXT_PUBLIC_SITE_URL in .env to match your production domain
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://omenora.com',
-      sentryDsn: process.env.SENTRY_DSN,
+      stripePublishableKey: '',
+      supabaseUrl: '',
+      supabaseAnonKey: '',
+      siteUrl: 'https://omenora.com',
+      sentryDsn: '',
     },
   },
 

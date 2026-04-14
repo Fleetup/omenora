@@ -24,8 +24,11 @@
       >
         <div class="field-label">{{ t('firstName') }}</div>
         <input
+          id="firstName"
           v-model="firstName"
           type="text"
+          name="firstName"
+          autocomplete="given-name"
           :placeholder="t('firstNamePlaceholder')"
           class="field-input"
           @focus="focusedField = 'firstName'"
@@ -35,47 +38,54 @@
 
       <div class="date-group">
         <div class="field-label">{{ t('dateOfBirth') }}</div>
-        <div class="num-fields-row">
-          <div class="num-field-col">
-            <input
-              ref="dayInputRef"
-              type="text"
-              inputmode="numeric"
-              class="num-input"
-              :value="birthDay"
-              placeholder="DD"
-              @input="onDayInput"
-              @blur="padDay"
-            >
-            <p class="input-sub-label">DD</p>
+        <div class="wheel-row">
+          <!-- Day wheel -->
+          <div class="wheel-col">
+            <div class="wheel-label">DD</div>
+            <div class="wheel-drum" @scroll.passive="onWheelScroll('day', $event)" ref="dayWheelRef">
+              <div class="wheel-pad" />
+              <div
+                v-for="d in dayOptions"
+                :key="d"
+                class="wheel-item"
+                :class="{ selected: birthDay === d }"
+              >{{ d }}</div>
+              <div class="wheel-pad" />
+            </div>
           </div>
-          <div class="num-field-col">
-            <input
-              ref="monthInputRef"
-              type="text"
-              inputmode="numeric"
-              class="num-input"
-              :value="birthMonth"
-              placeholder="MM"
-              @input="onMonthInput"
-              @blur="padMonth"
-            >
-            <p class="input-sub-label">MM</p>
+          <!-- Month wheel -->
+          <div class="wheel-col">
+            <div class="wheel-label">MM</div>
+            <div class="wheel-drum" @scroll.passive="onWheelScroll('month', $event)" ref="monthWheelRef">
+              <div class="wheel-pad" />
+              <div
+                v-for="m in monthOptions"
+                :key="m"
+                class="wheel-item"
+                :class="{ selected: birthMonth === m }"
+              >{{ m }}</div>
+              <div class="wheel-pad" />
+            </div>
           </div>
-          <div class="num-field-col">
-            <input
-              ref="yearInputRef"
-              v-model="birthYear"
-              type="number"
-              class="num-input"
-              placeholder="YYYY"
-              min="1940"
-              :max="currentYear"
-              @input="onYearInput"
-            >
-            <p class="input-sub-label">YYYY</p>
+          <!-- Year wheel -->
+          <div class="wheel-col wheel-col--wide">
+            <div class="wheel-label">YYYY</div>
+            <div class="wheel-drum" @scroll.passive="onWheelScroll('year', $event)" ref="yearWheelRef">
+              <div class="wheel-pad" />
+              <div
+                v-for="y in yearOptions"
+                :key="y"
+                class="wheel-item"
+                :class="{ selected: birthYear === y }"
+              >{{ y }}</div>
+              <div class="wheel-pad" />
+            </div>
           </div>
         </div>
+        <!-- Hidden inputs for autofill -->
+        <input id="bday-day" name="bday-day" type="hidden" autocomplete="bday-day" :value="birthDay">
+        <input id="bday-month" name="bday-month" type="hidden" autocomplete="bday-month" :value="birthMonth">
+        <input id="bday-year" name="bday-year" type="hidden" autocomplete="bday-year" :value="birthYear">
       </div>
 
       <div
@@ -84,8 +94,11 @@
       >
         <div class="field-label">{{ t('cityCountry') }}</div>
         <input
+          id="city"
           v-model="city"
           type="text"
+          name="city"
+          autocomplete="address-level2"
           :placeholder="t('cityPlaceholder')"
           class="field-input"
           @focus="focusedField = 'city'"
@@ -99,44 +112,44 @@
           <div class="field-label">{{ t('timeOfBirth') }}</div>
           <span class="field-optional-badge">{{ t('timeOptional') }}</span>
         </div>
-        <div class="num-fields-row">
-          <div class="num-field-col">
-            <input
-              type="text"
-              inputmode="numeric"
-              class="num-input"
-              :value="birthHour"
-              placeholder="HH"
-              @input="onHourInput"
-            >
-            <p class="input-sub-label">Hour</p>
-          </div>
-          <div class="num-field-col">
-            <input
-              ref="minuteInputRef"
-              type="text"
-              inputmode="numeric"
-              class="num-input"
-              :value="birthMinute"
-              placeholder="MM"
-              @input="onMinuteInput"
-            >
-            <p class="input-sub-label">Minute</p>
-          </div>
-          <div class="num-field-col">
-            <div class="ampm-stack">
-              <button
-                class="ampm-opt"
-                :class="{ active: birthAmPm === 'AM' }"
-                @click="birthAmPm = 'AM'"
-              >AM</button>
-              <button
-                class="ampm-opt"
-                :class="{ active: birthAmPm === 'PM' }"
-                @click="birthAmPm = 'PM'"
-              >PM</button>
+        <div class="wheel-row">
+          <!-- Hour wheel -->
+          <div class="wheel-col">
+            <div class="wheel-label">Hour</div>
+            <div class="wheel-drum" @scroll.passive="onWheelScroll('hour', $event)" ref="hourWheelRef">
+              <div class="wheel-pad" />
+              <div
+                v-for="h in hourOptions"
+                :key="h"
+                class="wheel-item"
+                :class="{ selected: birthHour === h }"
+              >{{ h }}</div>
+              <div class="wheel-pad" />
             </div>
-            <p class="input-sub-label">AM / PM</p>
+          </div>
+          <!-- Minute wheel -->
+          <div class="wheel-col">
+            <div class="wheel-label">Min</div>
+            <div class="wheel-drum" @scroll.passive="onWheelScroll('minute', $event)" ref="minuteWheelRef">
+              <div class="wheel-pad" />
+              <div
+                v-for="m in minuteOptions"
+                :key="m"
+                class="wheel-item"
+                :class="{ selected: birthMinute === m }"
+              >{{ m }}</div>
+              <div class="wheel-pad" />
+            </div>
+          </div>
+          <!-- AM/PM wheel -->
+          <div class="wheel-col">
+            <div class="wheel-label">AM/PM</div>
+            <div class="wheel-drum" @scroll.passive="onWheelScroll('ampm', $event)" ref="ampmWheelRef">
+              <div class="wheel-pad" />
+              <div class="wheel-item" :class="{ selected: birthAmPm === 'AM' }">AM</div>
+              <div class="wheel-item" :class="{ selected: birthAmPm === 'PM' }">PM</div>
+              <div class="wheel-pad" />
+            </div>
           </div>
         </div>
         <div v-if="timeOfBirth" class="birth-unlock-row">
@@ -241,7 +254,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { calculateLifePathNumber } from '~/utils/lifePathNumber'
 import { assignArchetype } from '~/utils/archetypes'
@@ -264,139 +277,105 @@ const firstName = computed({
   set: (val: string) => { store.firstName = val },
 })
 
-const currentYear = new Date().getFullYear()
+const city = computed({
+  get: () => store.city,
+  set: (val: string) => { store.city = val },
+})
 
+// ── Wheel options ─────────────────────────────────────────────────────────────
+const currentYear = new Date().getFullYear()
+const ITEM_H = 44 // px — must match .wheel-item height in CSS
+
+const dayOptions = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'))
+const monthOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
+const yearOptions = Array.from({ length: currentYear - 1939 }, (_, i) => String(currentYear - i))
+const hourOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
+const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'))
+
+// ── Wheel selected values ─────────────────────────────────────────────────────
 const birthDay = ref<string>('')
 const birthMonth = ref<string>('')
-const birthYear = ref<number | ''>('')
+const birthYear = ref<string>('')
+const birthHour = ref<string>('')
+const birthMinute = ref<string>('')
+const birthAmPm = ref<'AM' | 'PM'>('AM')
 
-const dayInputRef = ref<HTMLInputElement>()
-const monthInputRef = ref<HTMLInputElement>()
-const yearInputRef = ref<HTMLInputElement>()
+// ── Wheel refs ────────────────────────────────────────────────────────────────
+const dayWheelRef = ref<HTMLElement>()
+const monthWheelRef = ref<HTMLElement>()
+const yearWheelRef = ref<HTMLElement>()
+const hourWheelRef = ref<HTMLElement>()
+const minuteWheelRef = ref<HTMLElement>()
+const ampmWheelRef = ref<HTMLElement>()
 
+// ── Scroll → value mapping ────────────────────────────────────────────────────
+const scrollTimers: Record<string, ReturnType<typeof setTimeout>> = {}
+
+function onWheelScroll(type: string, e: Event) {
+  clearTimeout(scrollTimers[type])
+  scrollTimers[type] = setTimeout(() => {
+    const el = e.target as HTMLElement
+    const idx = Math.round(el.scrollTop / ITEM_H)
+    snapTo(el, idx)
+    applyWheelValue(type, idx)
+  }, 80)
+}
+
+function snapTo(el: HTMLElement, idx: number) {
+  el.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' })
+}
+
+function applyWheelValue(type: string, idx: number) {
+  if (type === 'day') birthDay.value = dayOptions[Math.max(0, Math.min(idx, dayOptions.length - 1))] ?? ''
+  else if (type === 'month') birthMonth.value = monthOptions[Math.max(0, Math.min(idx, monthOptions.length - 1))] ?? ''
+  else if (type === 'year') birthYear.value = yearOptions[Math.max(0, Math.min(idx, yearOptions.length - 1))] ?? ''
+  else if (type === 'hour') birthHour.value = hourOptions[Math.max(0, Math.min(idx, hourOptions.length - 1))] ?? ''
+  else if (type === 'minute') birthMinute.value = minuteOptions[Math.max(0, Math.min(idx, minuteOptions.length - 1))] ?? ''
+  else if (type === 'ampm') birthAmPm.value = idx === 0 ? 'AM' : 'PM'
+}
+
+function scrollWheelToIndex(el: HTMLElement | undefined, idx: number) {
+  if (!el) return
+  el.scrollTop = idx * ITEM_H
+}
+
+// ── Initialise wheels to sensible defaults on mount ───────────────────────────
+onMounted(() => {
+  nextTick(() => {
+    // Default: day=01, month=01, year=1990, hour=12, minute=00, ampm=AM
+    const defaultDayIdx = 0
+    const defaultMonthIdx = 0
+    const defaultYearIdx = yearOptions.indexOf('1990') >= 0 ? yearOptions.indexOf('1990') : 0
+    birthDay.value = dayOptions[defaultDayIdx]!
+    birthMonth.value = monthOptions[defaultMonthIdx]!
+    birthYear.value = yearOptions[defaultYearIdx]!
+    scrollWheelToIndex(dayWheelRef.value, defaultDayIdx)
+    scrollWheelToIndex(monthWheelRef.value, defaultMonthIdx)
+    scrollWheelToIndex(yearWheelRef.value, defaultYearIdx)
+    // Time wheels default empty (optional field) — scroll to 0
+    scrollWheelToIndex(hourWheelRef.value, 0)
+    scrollWheelToIndex(minuteWheelRef.value, 0)
+    scrollWheelToIndex(ampmWheelRef.value, 0)
+  })
+})
+
+// ── Derived values → store ────────────────────────────────────────────────────
 const computedDateOfBirth = computed(() => {
-  const d = Number.parseInt(birthDay.value || '0')
-  const m = Number.parseInt(birthMonth.value || '0')
-  if (!d || !m || !birthYear.value || d < 1 || d > 31 || m < 1 || m > 12) return ''
-  return `${birthYear.value}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  if (!birthDay.value || !birthMonth.value || !birthYear.value) return ''
+  return `${birthYear.value}-${birthMonth.value}-${birthDay.value}`
 })
 
 watch(computedDateOfBirth, (val) => {
   if (val) store.dateOfBirth = val
 })
 
-const birthHour = ref<string>('')
-const birthMinute = ref<string>('')
-const birthAmPm = ref<'AM' | 'PM'>('AM')
-const minuteInputRef = ref<HTMLInputElement>()
-
 const timeOfBirth = computed(() => {
-  if (!birthHour.value || birthMinute.value === '') return ''
-  const h = Number.parseInt(birthHour.value)
-  const m = Number.parseInt(birthMinute.value)
-  if (isNaN(h) || isNaN(m) || h < 1 || h > 12 || m < 0 || m > 59) return ''
-  return `${h}:${String(m).padStart(2, '0')} ${birthAmPm.value}`
+  if (!birthHour.value || !birthMinute.value) return ''
+  return `${birthHour.value}:${birthMinute.value} ${birthAmPm.value}`
 })
 
 watch(timeOfBirth, (val) => {
   store.timeOfBirth = val
-})
-
-function onDayInput(e: Event) {
-  const input = e.target as HTMLInputElement
-  const cleaned = input.value.replace(/\D/g, '').slice(0, 2)
-  const num = Number.parseInt(cleaned || '0')
-
-  if (cleaned.length > 0 && num > 31) {
-    birthDay.value = '31'
-    input.value = '31'
-    monthInputRef.value?.focus()
-    return
-  }
-
-  birthDay.value = cleaned
-  input.value = cleaned
-
-  if (cleaned.length === 2 && num >= 1) {
-    monthInputRef.value?.focus()
-  }
-}
-
-function onMonthInput(e: Event) {
-  const input = e.target as HTMLInputElement
-  const cleaned = input.value.replace(/\D/g, '').slice(0, 2)
-  const num = Number.parseInt(cleaned || '0')
-
-  if (cleaned.length > 0 && num > 12) {
-    birthMonth.value = '12'
-    input.value = '12'
-    yearInputRef.value?.focus()
-    return
-  }
-
-  birthMonth.value = cleaned
-  input.value = cleaned
-
-  if (cleaned.length === 2 && num >= 1) {
-    yearInputRef.value?.focus()
-  }
-}
-
-function onYearInput(e: Event) {
-  const input = e.target as HTMLInputElement
-  const val = Number.parseInt(input.value)
-  if (val > currentYear) birthYear.value = currentYear
-  if (val < 1940 && String(val).length === 4) birthYear.value = 1940
-}
-
-function padDay() {
-  const n = Number.parseInt(birthDay.value || '0')
-  birthDay.value = (n >= 1 && n <= 31) ? String(n).padStart(2, '0') : ''
-}
-
-function padMonth() {
-  const n = Number.parseInt(birthMonth.value || '0')
-  birthMonth.value = (n >= 1 && n <= 12) ? String(n).padStart(2, '0') : ''
-}
-
-function onHourInput(e: Event) {
-  const input = e.target as HTMLInputElement
-  const cleaned = input.value.replace(/\D/g, '').slice(0, 2)
-  const num = Number.parseInt(cleaned || '0')
-
-  if (cleaned.length > 0 && num > 12) {
-    birthHour.value = '12'
-    input.value = '12'
-    minuteInputRef.value?.focus()
-    return
-  }
-
-  birthHour.value = cleaned
-  input.value = cleaned
-
-  if (cleaned.length === 2 && num >= 1) {
-    minuteInputRef.value?.focus()
-  }
-}
-
-function onMinuteInput(e: Event) {
-  const input = e.target as HTMLInputElement
-  const cleaned = input.value.replace(/\D/g, '').slice(0, 2)
-  const num = Number.parseInt(cleaned || '0')
-
-  if (cleaned.length > 0 && num > 59) {
-    birthMinute.value = '59'
-    input.value = '59'
-    return
-  }
-
-  birthMinute.value = cleaned
-  input.value = cleaned
-}
-
-const city = computed({
-  get: () => store.city,
-  set: (val: string) => { store.city = val },
 })
 
 const step1Valid = computed(
@@ -674,91 +653,93 @@ function submitAnalysis() {
   letter-spacing: 0.02em;
 }
 
-/* ── Number fields row ── */
-.num-fields-row {
+/* ── Scroll-wheel drum picker ── */
+.wheel-row {
   display: flex;
   gap: 8px;
+  align-items: flex-start;
 }
 
-.num-field-col {
+.wheel-col {
   flex: 1;
-}
-
-/* ── Number inputs ── */
-.num-input {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 14px 8px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 16px;
-  text-align: center;
-  outline: none;
-  box-sizing: border-box;
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 400;
-  -moz-appearance: textfield;
-  appearance: textfield;
-  transition: border-color 0.22s, background 0.22s;
-}
-
-.num-input:focus {
-  border-color: rgba(201, 168, 76, 0.4);
-  background: rgba(201, 168, 76, 0.03);
-}
-
-.num-input::placeholder {
-  color: rgba(255, 255, 255, 0.18);
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-}
-
-.num-input::-webkit-outer-spin-button,
-.num-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.input-sub-label {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.18);
-  text-align: center;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin: 5px 0 0;
-}
-
-/* ── AM/PM picker ── */
-.ampm-stack {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 5px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
 }
 
-.ampm-opt {
-  flex: 1;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  padding: 6px 0;
+.wheel-col--wide {
+  flex: 1.6;
+}
+
+.wheel-label {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.22);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.wheel-drum {
   width: 100%;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.2);
-  font-family: inherit;
-  letter-spacing: 0.05em;
-  transition: background 0.15s, color 0.15s;
+  height: 132px; /* 3 visible items × 44px */
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  position: relative;
+  /* Fade mask top/bottom for depth illusion */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0,0,0,0.4) 20%,
+    rgba(0,0,0,1) 35%,
+    rgba(0,0,0,1) 65%,
+    rgba(0,0,0,0.4) 80%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0,0,0,0.4) 20%,
+    rgba(0,0,0,1) 35%,
+    rgba(0,0,0,1) 65%,
+    rgba(0,0,0,0.4) 80%,
+    transparent 100%
+  );
 }
 
-.ampm-opt.active {
-  background: rgba(140, 110, 255, 0.2);
-  color: rgba(200, 180, 255, 0.95);
+.wheel-drum::-webkit-scrollbar {
+  display: none;
+}
+
+.wheel-pad {
+  height: 44px; /* one item height — keeps first/last item centerable */
+  flex-shrink: 0;
+}
+
+.wheel-item {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s, background 0.15s;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.wheel-item.selected {
+  color: rgba(201, 168, 76, 0.95);
+  background: rgba(201, 168, 76, 0.07);
 }
 
 /* ── Birth unlock indicator ── */
