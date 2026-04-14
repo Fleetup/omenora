@@ -51,11 +51,11 @@ export default defineEventHandler(async (event) => {
   const totalLatency = Date.now() - start
   const hasErrors = Object.values(checks).some((c) => c.status === 'error')
 
-  // Return appropriate status code
-  event.node.res.statusCode = hasErrors ? 503 : 200
+  // Always return 200 — the server is up. Service degradation is reported in body.
+  event.node.res.statusCode = 200
 
   return {
-    status: hasErrors ? 'unhealthy' : 'healthy',
+    status: hasErrors ? 'degraded' : 'healthy',
     timestamp: new Date().toISOString(),
     version: process.env.npm_package_version || '1.0.0',
     environment: process.env.NODE_ENV || 'development',
