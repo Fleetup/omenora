@@ -1,0 +1,34 @@
+export default defineEventHandler((event) => {
+  setResponseHeader(event, 'Content-Type', 'text/plain; charset=utf-8')
+  setResponseHeader(event, 'Cache-Control', 'public, max-age=86400')
+
+  return `# OMENORA Robots.txt
+# Last Updated: 2026-04-14
+
+# All crawlers
+User-agent: *
+Allow: /$
+Allow: /privacy
+Allow: /terms
+Disallow: /analysis
+Disallow: /preview
+Disallow: /report
+Disallow: /calendar
+Disallow: /compatibility
+Disallow: /subscription
+Disallow: /api/
+
+# AI crawlers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://omenora.com/sitemap.xml
+`
+})
