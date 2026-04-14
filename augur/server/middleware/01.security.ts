@@ -27,6 +27,10 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 413, message: 'Request entity too large' })
   }
 
+  // ── Skip header injection for SEO/static routes ──────────────────────────
+  const reqPath = getRequestURL(event).pathname
+  if (reqPath === '/sitemap.xml' || reqPath === '/robots.txt') return
+
   // ── HTTP security headers ────────────────────────────────────────────────
   setResponseHeaders(event, {
     'X-Frame-Options': 'DENY',

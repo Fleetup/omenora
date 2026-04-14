@@ -127,6 +127,7 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'sitemap', type: 'application/xml', href: 'https://omenora.com/sitemap.xml' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         // Performance: Preconnect to critical third-party domains
@@ -135,6 +136,28 @@ export default defineNuxtConfig({
         { rel: 'dns-prefetch', href: 'https://js.stripe.com' },
         { rel: 'dns-prefetch', href: 'https://api.stripe.com' },
         { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
+      ],
+      script: [
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            '@id': 'https://omenora.com/#website',
+            url: 'https://omenora.com',
+            name: 'OMENORA',
+            description: 'AI-powered astrology and destiny analysis. Free birth chart, life path number, love compatibility & 2026 forecast.',
+            inLanguage: 'en',
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: {
+                '@type': 'EntryPoint',
+                urlTemplate: 'https://omenora.com/analysis?q={search_term_string}',
+              },
+              'query-input': 'required name=search_term_string',
+            },
+          }),
+        },
       ],
     },
   },
