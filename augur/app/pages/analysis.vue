@@ -308,45 +308,12 @@ const hourWheelRef = ref<HTMLElement>()
 const minuteWheelRef = ref<HTMLElement>()
 const ampmWheelRef = ref<HTMLElement>()
 
-// ── Scroll → value mapping ────────────────────────────────────────────────────
-// scrollend fires exactly once when ALL momentum has settled (Chrome 114+, Firefox 109+,
-// Safari 26.2+). For older iOS Safari we fall back to a 200ms debounced scroll listener.
-// During the actual scroll motion, zero JS runs — the browser compositor owns the thread.
-const scrollFallbackTimers: Record<string, ReturnType<typeof setTimeout>> = {}
+// ── Apple-style momentum wheel engine ────────────────────────────────────────
+// Pointer-capture approach: works identically for mouse drags and touch.
+// Physics: tracks instantaneous velocity, decelerates with friction each frame,
+// then snaps to the nearest item with a smooth ease-out scroll animation.
+
 const wheelListenerCleanups: Array<() => void> = []
-
-function readAndApply(type: string, el: HTMLElement) {
-  requestAnimationFrame(() => {
-    const idx = Math.round(el.scrollTop / ITEM_H)
-    applyWheelValue(type, idx)
-    delete el.dataset.scrolling
-  })
-}
-
-function attachWheelListener(type: string, elArg: HTMLElement) {
-  // Capture into a plain typed local to prevent TypeScript's 'in' narrowing
-  // from incorrectly widening the type to 'never' in the else branch.
-  const el: HTMLElement = elArg
-  const supportsScrollEnd = 'onscrollend' in window
-
-  if (supportsScrollEnd) {
-    const handler = () => readAndApply(type, el)
-    el.addEventListener('scrollend', handler, { passive: true })
-    wheelListenerCleanups.push(() => el.removeEventListener('scrollend', handler))
-  } else {
-    // Fallback: debounced scroll listener for older iOS Safari (< 26.2)
-    const handler = () => {
-      if (!el.dataset.scrolling) el.dataset.scrolling = '1'
-      clearTimeout(scrollFallbackTimers[type])
-      scrollFallbackTimers[type] = setTimeout(() => readAndApply(type, el), 200)
-    }
-    el.addEventListener('scroll', handler, { passive: true })
-    wheelListenerCleanups.push(() => {
-      el.removeEventListener('scroll', handler)
-      clearTimeout(scrollFallbackTimers[type])
-    })
-  }
-}
 
 function applyWheelValue(type: string, idx: number) {
   if (type === 'day') birthDay.value = dayOptions[Math.max(0, Math.min(idx, dayOptions.length - 1))] ?? ''
@@ -355,6 +322,144 @@ function applyWheelValue(type: string, idx: number) {
   else if (type === 'hour') birthHour.value = hourOptions[Math.max(0, Math.min(idx, hourOptions.length - 1))] ?? ''
   else if (type === 'minute') birthMinute.value = minuteOptions[Math.max(0, Math.min(idx, minuteOptions.length - 1))] ?? ''
   else if (type === 'ampm') birthAmPm.value = idx === 0 ? 'AM' : 'PM'
+}
+
+function smoothScrollTo(el: HTMLElement, target: number, duration: number) {
+  const start = el.scrollTop
+  const delta = target - start
+  if (Math.abs(delta) < 0.5) {
+    el.scrollTop = target
+    return
+  }
+  const startTime = performance.now()
+  function step(now: number) {
+    const elapsed = now - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    // Ease-out cubic — matches Apple's deceleration feel
+    const ease = 1 - Math.pow(1 - progress, 3)
+    el.scrollTop = start + delta * ease
+    if (progress < 1) requestAnimationFrame(step)
+  }
+  requestAnimationFrame(step)
+}
+
+function snapToNearest(type: string, el: HTMLElement) {
+  const idx = Math.round(el.scrollTop / ITEM_H)
+  const clampedIdx = Math.max(0, Math.min(idx, getOptionsLength(type) - 1))
+  const target = clampedIdx * ITEM_H
+  smoothScrollTo(el, target, 180)
+  applyWheelValue(type, clampedIdx)
+}
+
+function getOptionsLength(type: string): number {
+  if (type === 'day') return dayOptions.length
+  if (type === 'month') return monthOptions.length
+  if (type === 'year') return yearOptions.length
+  if (type === 'hour') return hourOptions.length
+  if (type === 'minute') return minuteOptions.length
+  if (type === 'ampm') return 2
+  return 1
+}
+
+function attachWheelListener(type: string, elArg: HTMLElement) {
+  const el: HTMLElement = elArg
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  let isDragging = false
+  let lastY = 0
+  let lastTime = 0
+  let velocity = 0          // px/ms
+  let rafId = 0
+  const FRICTION = 0.94     // velocity multiplied per frame (~16 ms)
+  const MIN_VELOCITY = 0.08 // px/ms — below this we snap
+
+  function cancelMomentum() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0 }
+  }
+
+  function runMomentum() {
+    velocity *= FRICTION
+    el.scrollTop += velocity * 16
+    // Clamp to scroll bounds
+    const maxScroll = (getOptionsLength(type) - 1) * ITEM_H
+    el.scrollTop = Math.max(0, Math.min(el.scrollTop, maxScroll + ITEM_H))
+    if (Math.abs(velocity) > MIN_VELOCITY) {
+      rafId = requestAnimationFrame(runMomentum)
+    } else {
+      rafId = 0
+      snapToNearest(type, el)
+    }
+  }
+
+  // ── Pointer down ──────────────────────────────────────────────────────────
+  function onPointerDown(e: PointerEvent) {
+    cancelMomentum()
+    isDragging = true
+    lastY = e.clientY
+    lastTime = performance.now()
+    velocity = 0
+    el.setPointerCapture(e.pointerId)
+    el.dataset.scrolling = '1'
+    e.preventDefault()
+  }
+
+  // ── Pointer move ──────────────────────────────────────────────────────────
+  function onPointerMove(e: PointerEvent) {
+    if (!isDragging) return
+    const now = performance.now()
+    const dt = Math.max(now - lastTime, 1)
+    const dy = lastY - e.clientY  // positive = scrolling down
+    velocity = dy / dt
+    el.scrollTop += dy
+    // Clamp
+    const maxScroll = (getOptionsLength(type) - 1) * ITEM_H
+    el.scrollTop = Math.max(0, Math.min(el.scrollTop, maxScroll + ITEM_H))
+    lastY = e.clientY
+    lastTime = now
+  }
+
+  // ── Pointer up ────────────────────────────────────────────────────────────
+  function onPointerUp(e: PointerEvent) {
+    if (!isDragging) return
+    isDragging = false
+    el.releasePointerCapture(e.pointerId)
+    delete el.dataset.scrolling
+    if (Math.abs(velocity) > MIN_VELOCITY) {
+      // Scale up velocity for momentum feel (Apple uses ~1:1 but with high initial v)
+      velocity *= 18
+      rafId = requestAnimationFrame(runMomentum)
+    } else {
+      snapToNearest(type, el)
+    }
+  }
+
+  // ── Mouse wheel (desktop trackpad/scroll wheel) ───────────────────────────
+  function onWheel(e: WheelEvent) {
+    e.preventDefault()
+    cancelMomentum()
+    el.scrollTop += e.deltaY
+    const maxScroll = (getOptionsLength(type) - 1) * ITEM_H
+    el.scrollTop = Math.max(0, Math.min(el.scrollTop, maxScroll + ITEM_H))
+    // Debounce snap after wheel stops
+    clearTimeout((el as any)._wheelTimer)
+    ;(el as any)._wheelTimer = setTimeout(() => snapToNearest(type, el), 80)
+  }
+
+  el.addEventListener('pointerdown', onPointerDown)
+  el.addEventListener('pointermove', onPointerMove)
+  el.addEventListener('pointerup', onPointerUp)
+  el.addEventListener('pointercancel', onPointerUp)
+  el.addEventListener('wheel', onWheel, { passive: false })
+
+  wheelListenerCleanups.push(() => {
+    cancelMomentum()
+    clearTimeout((el as any)._wheelTimer)
+    el.removeEventListener('pointerdown', onPointerDown)
+    el.removeEventListener('pointermove', onPointerMove)
+    el.removeEventListener('pointerup', onPointerUp)
+    el.removeEventListener('pointercancel', onPointerUp)
+    el.removeEventListener('wheel', onWheel)
+  })
 }
 
 function scrollWheelToIndex(el: HTMLElement | undefined, idx: number) {
@@ -718,15 +823,15 @@ function submitAnalysis() {
 .wheel-drum {
   width: 100%;
   height: 132px; /* 3 visible items × 44px */
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  overscroll-behavior-y: contain;
+  overflow-y: hidden;
   scrollbar-width: none;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   position: relative;
-  touch-action: pan-y;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
   will-change: scroll-position;
   /* Fade mask top/bottom for depth illusion */
   -webkit-mask-image: linear-gradient(
@@ -742,10 +847,15 @@ function submitAnalysis() {
     to bottom,
     transparent 0%,
     rgba(0,0,0,0.4) 20%,
+    rgba(0,0,0,1) 35%,
     rgba(0,0,0,1) 65%,
     rgba(0,0,0,0.4) 80%,
     transparent 100%
   );
+}
+
+.wheel-drum:active {
+  cursor: grabbing;
 }
 
 .wheel-drum::-webkit-scrollbar {
@@ -762,8 +872,6 @@ function submitAnalysis() {
   display: flex;
   align-items: center;
   justify-content: center;
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
   font-family: 'Cormorant Garamond', serif;
   font-size: 18px;
   font-weight: 300;
