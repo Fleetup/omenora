@@ -130,6 +130,7 @@
           type="email"
           :placeholder="t('emailPlaceholder')"
           class="email-input"
+          @blur="onEmailBlur"
         >
       </div>
 
@@ -266,7 +267,34 @@ onUnmounted(() => {
 })
 
 const email = ref('')
+const captureSubmitted = ref(false)
 const isProcessingPayment = ref(false)
+
+async function onEmailBlur() {
+  if (!email.value || !email.value.includes('@') || captureSubmitted.value) return
+  captureSubmitted.value = true
+
+  try {
+    await $fetch('/api/capture-email', {
+      method: 'POST',
+      body: {
+        email: email.value,
+        firstName: store.firstName,
+        archetypeName: store.report?.archetypeName || '',
+        archetypeEmoji: store.report?.archetypeSymbol || '✨',
+        archetypeElement: store.report?.element || '',
+        lifePath: store.lifePathNumber ? String(store.lifePathNumber) : '',
+        archetypeTraits: store.report?.powerTraits || [],
+        birthCity: store.city,
+        readingTradition: store.region,
+        language: store.language,
+        sessionId: store.tempId || `temp_${Date.now()}_${store.firstName}`,
+      },
+    })
+  } catch {
+    // Silent fail — never block the UI
+  }
+}
 const selectedTier = ref<1 | 2 | 3>(2)
 
 async function handlePayment() {

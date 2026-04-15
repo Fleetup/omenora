@@ -853,6 +853,14 @@ onMounted(async () => {
 
           const meta = paymentData.metadata || {}
 
+          const _suppressEmail = meta.email || paymentData.customerEmail || store.email
+          if (_suppressEmail) {
+            $fetch('/api/suppress-abandon-sequence', {
+              method: 'POST',
+              body: { email: _suppressEmail },
+            }).catch(() => {})
+          }
+
           if (meta.bundle === 'true') {
             store.setBundlePurchased(true)
             store.setCalendarPurchased(true)
@@ -944,6 +952,14 @@ onMounted(async () => {
       }
 
       const meta = paymentData.metadata || {}
+
+      const _suppressEmail2 = meta.email || paymentData.customerEmail || store.email
+      if (_suppressEmail2) {
+        $fetch('/api/suppress-abandon-sequence', {
+          method: 'POST',
+          body: { email: _suppressEmail2 },
+        }).catch(() => {})
+      }
 
       if (!store.firstName) store.firstName = meta.firstName || ''
       if (!store.email) store.setEmail(meta.email || paymentData.customerEmail || '')
