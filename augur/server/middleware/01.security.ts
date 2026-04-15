@@ -12,7 +12,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://cloudflareinsights.com https://analytics.tiktok.com https://connect.facebook.net https://www.facebook.com",
+  "connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://cloudflareinsights.com https://analytics.tiktok.com https://analytics-ipv6.tiktokw.us https://connect.facebook.net https://www.facebook.com",
   "frame-src https://js.stripe.com https://hooks.stripe.com",
   "object-src 'none'",
   "base-uri 'self'",
