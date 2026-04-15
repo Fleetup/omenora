@@ -613,6 +613,7 @@ const store = useAnalysisStore()
 const route = useRoute()
 const { provisionUser } = useAuth()
 const { t } = useLanguage()
+const { $trackPurchase } = useNuxtApp() as any
 
 useSeoMeta({
   title: () => store.firstName ? `${store.firstName}'s Destiny Report` : 'Your Destiny Report',
@@ -789,6 +790,16 @@ onMounted(async () => {
   if (!sessionId && !store.firstName) {
     navigateTo('/')
     return
+  }
+
+  if (sessionId && !sessionStorage.getItem('omenora_purchase_tracked')) {
+    sessionStorage.setItem('omenora_purchase_tracked', '1')
+    const purchaseAmount = store.oraclePurchased ? 12.99 : store.bundlePurchased ? 4.99 : 1.99
+    $trackPurchase({
+      value: purchaseAmount,
+      currency: 'USD',
+      content_name: 'Destiny Reading',
+    })
   }
 
   isLoadingReport.value = true

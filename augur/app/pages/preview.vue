@@ -158,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
 
@@ -166,6 +166,7 @@ useSeoMeta({ title: 'Your Destiny Preview', robots: 'noindex, nofollow' })
 
 const store = useAnalysisStore()
 const { t } = useLanguage()
+const { $trackViewContent, $trackInitiateCheckout } = useNuxtApp() as any
 
 const isLoading = ref(true)
 const hasError = ref(false)
@@ -242,6 +243,14 @@ async function triggerApiCall() {
     }
 
     isLoading.value = false
+    nextTick(() => {
+      $trackViewContent({
+        content_name: store.report?.archetypeName || 'Destiny Reading Preview',
+        content_id: store.report?.archetypeName || 'preview',
+        value: 4.99,
+        currency: 'USD',
+      })
+    })
   } catch {
     hasError.value = true
     isLoading.value = false
@@ -300,6 +309,14 @@ const selectedTier = ref<1 | 2 | 3>(2)
 async function handlePayment() {
   if (isProcessingPayment.value) return
   if (!email.value) return
+
+  const tierValues: Record<number, number> = { 1: 1.99, 2: 4.99, 3: 12.99 }
+  $trackInitiateCheckout({
+    value: tierValues[selectedTier.value] || 4.99,
+    currency: 'USD',
+    content_name: 'Destiny Reading',
+  })
+
   isProcessingPayment.value = true
 
   store.setEmail(email.value)

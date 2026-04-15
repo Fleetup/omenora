@@ -25,6 +25,8 @@ export default defineNuxtConfig({
       supabaseAnonKey: '',
       siteUrl: 'https://omenora.com',
       sentryDsn: '',
+      tiktokPixelId: '',
+      metaPixelId: '',
     },
   },
 
