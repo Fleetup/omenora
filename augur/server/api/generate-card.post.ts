@@ -1,6 +1,37 @@
-import { createCanvas } from 'canvas'
+import { createCanvas, registerFont } from 'canvas'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { join, dirname } from 'node:path'
+
+// Resolve the fonts directory across environments:
+//   dev  → <project-root>/public/fonts/
+//   prod → .output/public/fonts/  (sibling of .output/server/ where this bundle runs)
+function resolveFontPath(filename: string): string {
+  const candidates = [
+    // Production: font is at .output/public/fonts/ — one level up from .output/server/
+    join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'fonts', filename),
+    // Dev fallback: project root public/fonts/
+    join(process.cwd(), 'public', 'fonts', filename),
+  ]
+  const found = candidates.find(p => existsSync(p))
+  if (!found) throw new Error(`Font file not found: ${filename}. Candidates: ${candidates.join(', ')}`)
+  return found
+}
+
+let fontsRegistered = false
+
+function ensureFonts() {
+  if (fontsRegistered) return
+  registerFont(resolveFontPath('Inter-Light.ttf'),   { family: 'Inter', weight: '300', style: 'normal' })
+  registerFont(resolveFontPath('Inter-Regular.ttf'), { family: 'Inter', weight: '400', style: 'normal' })
+  registerFont(resolveFontPath('Inter-Medium.ttf'),  { family: 'Inter', weight: '500', style: 'normal' })
+  registerFont(resolveFontPath('Inter-Italic.ttf'),  { family: 'Inter', weight: '400', style: 'italic' })
+  fontsRegistered = true
+}
 
 export default defineEventHandler(async (event) => {
+  ensureFonts()
+
   const body = await readBody(event)
   const {
     archetypeName,
@@ -62,7 +93,7 @@ export default defineEventHandler(async (event) => {
   ctx.fillRect(0, 0, width, height)
 
   // --- BRAND NAME TOP ---
-  ctx.font = '500 32px sans-serif'
+  ctx.font = '500 32px Inter'
   ctx.fillStyle = 'rgba(255, 255, 255, 0.25)'
   ctx.textAlign = 'center'
   ctx.fillText('OMENORA', width / 2, 90)
@@ -75,13 +106,13 @@ export default defineEventHandler(async (event) => {
   ctx.stroke()
 
   // --- ARCHETYPE LABEL ---
-  ctx.font = '400 26px sans-serif'
+  ctx.font = '400 26px Inter'
   ctx.fillStyle = 'rgba(140, 110, 255, 0.6)'
   ctx.textAlign = 'center'
   ctx.fillText('YOUR DESTINY ARCHETYPE', width / 2, 220)
 
   // --- SYMBOL ---
-  ctx.font = '500 120px sans-serif'
+  ctx.font = '500 120px Inter'
   ctx.fillStyle = 'rgba(200, 180, 255, 0.5)'
   ctx.textAlign = 'center'
   ctx.fillText(archetypeSymbol || '◆', width / 2, 440)
@@ -101,18 +132,18 @@ export default defineEventHandler(async (event) => {
   // --- ARCHETYPE NAME ---
   const nameParts = (archetypeName || 'The Alchemist').replace('The ', '')
 
-  ctx.font = '400 48px sans-serif'
+  ctx.font = '400 48px Inter'
   ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
   ctx.textAlign = 'center'
   ctx.fillText('The', width / 2, 580)
 
-  ctx.font = '500 88px sans-serif'
+  ctx.font = '500 88px Inter'
   ctx.fillStyle = 'rgba(230, 220, 255, 0.95)'
   ctx.textAlign = 'center'
   ctx.fillText(nameParts, width / 2, 670)
 
   // --- ELEMENT & LIFE PATH ---
-  ctx.font = '400 32px sans-serif'
+  ctx.font = '400 32px Inter'
   ctx.fillStyle = 'rgba(140, 110, 255, 0.55)'
   ctx.textAlign = 'center'
   ctx.fillText(`${element || 'Earth'} · Life Path ${lifePathNumber || 7}`, width / 2, 730)
@@ -129,7 +160,7 @@ export default defineEventHandler(async (event) => {
   const traits: string[] = powerTraits || ['Analytical', 'Driven', 'Strategic']
   const traitY = 870
 
-  ctx.font = '400 28px sans-serif'
+  ctx.font = '400 28px Inter'
   const traitPadding = 32
   const traitGap = 24
   const traitWidths = traits.map((t: string) => ctx.measureText(t).width + traitPadding * 2)
@@ -161,7 +192,7 @@ export default defineEventHandler(async (event) => {
     ctx.lineWidth = 1
     ctx.stroke()
 
-    ctx.font = '400 28px sans-serif'
+    ctx.font = '400 28px Inter'
     ctx.fillStyle = 'rgba(200, 180, 255, 0.75)'
     ctx.textAlign = 'left'
     ctx.fillText(trait, traitX + traitPadding, traitY + 10)
@@ -193,12 +224,12 @@ export default defineEventHandler(async (event) => {
   ctx.lineWidth = 1
   ctx.stroke()
 
-  ctx.font = '400 24px sans-serif'
+  ctx.font = '400 24px Inter'
   ctx.fillStyle = 'rgba(140, 110, 255, 0.5)'
   ctx.textAlign = 'center'
   ctx.fillText('YOUR POWER STATEMENT', width / 2, affirmY + 30)
 
-  ctx.font = 'italic 400 36px sans-serif'
+  ctx.font = 'italic 400 36px Inter'
   ctx.fillStyle = 'rgba(200, 180, 255, 0.85)'
   ctx.textAlign = 'center'
 
@@ -232,7 +263,7 @@ export default defineEventHandler(async (event) => {
   wrapText(ctx, `"${affirmText}"`, width / 2, affirmY + 100, 880, 52)
 
   // --- BOTTOM SECTION ---
-  ctx.font = '400 28px sans-serif'
+  ctx.font = '400 28px Inter'
   ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'
   ctx.textAlign = 'center'
   ctx.fillText('2026 DESTINY REVEALED', width / 2, 1500)
@@ -251,12 +282,12 @@ export default defineEventHandler(async (event) => {
   ctx.lineWidth = 0.5
   ctx.stroke()
 
-  ctx.font = '400 28px sans-serif'
+  ctx.font = '400 28px Inter'
   ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'
   ctx.textAlign = 'center'
   ctx.fillText('omenora.com', width / 2, 1840)
 
-  ctx.font = '400 22px sans-serif'
+  ctx.font = '400 22px Inter'
   ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
   ctx.fillText('Discover yours', width / 2, 1878)
 

@@ -3,7 +3,8 @@
  * Sets HTTP security headers and enforces request body size limits.
  */
 
-const MAX_BODY_BYTES = 512_000 // 512 KB
+const MAX_BODY_BYTES = 512_000 // 512 KB — default for all endpoints
+const MAX_BODY_BYTES_EMAIL = 2_000_000 // 2 MB — for report email (carries full report + calendar + regional data)
 
 const CSP = [
   "default-src 'self'",
@@ -12,7 +13,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://cloudflareinsights.com https://analytics.tiktok.com https://analytics-ipv6.tiktokw.us https://connect.facebook.net https://www.facebook.com",
+  "connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://cloudflareinsights.com https://analytics.tiktok.com https://analytics-ipv6.tiktokw.us https://connect.facebook.net https://www.facebook.com https://scvjjbgejmkomyciabex.supabase.co",
   "frame-src https://js.stripe.com https://hooks.stripe.com",
   "object-src 'none'",
   "base-uri 'self'",
@@ -23,13 +24,14 @@ const CSP = [
 export default defineEventHandler((event) => {
   // ── Body size guard ──────────────────────────────────────────────────────
   const contentLength = Number.parseInt(getHeader(event, 'content-length') ?? '0', 10)
-  if (!Number.isNaN(contentLength) && contentLength > MAX_BODY_BYTES) {
+  const bodyPath = getRequestURL(event).pathname
+  const bodyLimit = bodyPath === '/api/send-report-email' ? MAX_BODY_BYTES_EMAIL : MAX_BODY_BYTES
+  if (!Number.isNaN(contentLength) && contentLength > bodyLimit) {
     throw createError({ statusCode: 413, message: 'Request entity too large' })
   }
 
   // ── Skip header injection for SEO/static routes ──────────────────────────
-  const reqPath = getRequestURL(event).pathname
-  if (reqPath === '/sitemap.xml' || reqPath === '/robots.txt') return
+  if (bodyPath === '/sitemap.xml' || bodyPath === '/robots.txt') return
 
   // ── HTTP security headers ────────────────────────────────────────────────
   setResponseHeaders(event, {
@@ -45,8 +47,7 @@ export default defineEventHandler((event) => {
   })
 
   // ── CORS: reject cross-origin requests to API routes ────────────────────
-  const path = getRequestURL(event).pathname
-  if (path.startsWith('/api/')) {
+  if (bodyPath.startsWith('/api/')) {
     const origin = getHeader(event, 'origin')
     if (origin) {
       if (!isValidRedirectOrigin(origin)) {

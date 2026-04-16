@@ -28,6 +28,13 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (typeof report !== 'object' || typeof report.sections !== 'object' || report.sections === null) {
+    throw createError({
+      statusCode: 400,
+      message: 'Invalid report payload: sections missing'
+    })
+  }
+
   const resend = new Resend(config.resendApiKey as string)
 
   const sections = report.sections
