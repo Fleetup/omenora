@@ -69,14 +69,18 @@ export function isValidReportId(val: unknown): val is string {
          /^temp_\d{10,15}[\w-]{1,60}$/.test(val)
 }
 
-/** YYYY-MM-DD date, within valid birth year range. */
+/** YYYY-MM-DD date, within valid birth year range and not in the future. */
 export function isValidDateOfBirth(val: unknown): val is string {
   if (typeof val !== 'string') return false
   if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false
   const d = new Date(val)
   if (Number.isNaN(d.getTime())) return false
+  const now  = new Date()
   const year = d.getFullYear()
-  return year >= 1900 && year <= new Date().getFullYear()
+  // Min year: 1924 (no user over 100 years old is plausible)
+  // Max: yesterday (can't be born in the future — even partial current day)
+  now.setHours(0, 0, 0, 0)
+  return year >= 1924 && d < now
 }
 
 /** Archetype must be in the allowed set. */

@@ -19,6 +19,9 @@ export default defineNuxtConfig({
     supabaseUrl: '',
     supabaseServiceKey: '',
     stripeDailyPriceId: '',
+    emailJobSecret: '',
+    stripeWebhookSecret: '',
+    redisUrl: '',
     public: {
       stripePublishableKey: '',
       supabaseUrl: '',
@@ -111,11 +114,11 @@ export default defineNuxtConfig({
           content:
             'Your personalized destiny report powered by AI. Free birth chart, life path number, love compatibility & 2026 forecast in 10 seconds.',
         },
-        { property: 'og:image', content: 'https://omenora.com/og-image.svg' },
+        { property: 'og:image', content: 'https://omenora.com/og-image.png' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
         { property: 'og:image:alt', content: 'OMENORA — AI Astrology & Destiny Analysis' },
-        { property: 'og:image:type', content: 'image/svg+xml' },
+        { property: 'og:image:type', content: 'image/png' },
         // Twitter / X
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:site', content: '@omenora' },
@@ -126,7 +129,7 @@ export default defineNuxtConfig({
           content:
             'Personalized destiny report in 10 seconds. AI birth chart, life path number & 2026 forecast. Free, instant, no login required.',
         },
-        { name: 'twitter:image', content: 'https://omenora.com/og-image.svg' },
+        { name: 'twitter:image', content: 'https://omenora.com/og-image.png' },
         { name: 'twitter:image:alt', content: 'OMENORA — AI Astrology & Destiny Analysis' },
       ],
       link: [

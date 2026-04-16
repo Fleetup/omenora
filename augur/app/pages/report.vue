@@ -31,7 +31,7 @@
       <div class="addon-dob-row">
         <input v-model="addonBirthDay" type="number" placeholder="DD" min="1" max="31" class="addon-input addon-dob addon-day" >
         <input v-model="addonBirthMonth" type="number" placeholder="MM" min="1" max="12" class="addon-input addon-dob addon-day" >
-        <input v-model="addonBirthYear" type="number" placeholder="YYYY" min="1940" max="2010" class="addon-input addon-dob addon-year" >
+        <input v-model="addonBirthYear" type="number" placeholder="YYYY" min="1924" max="2010" class="addon-input addon-dob addon-year" >
       </div>
       <button
         :disabled="!addonPartnerName || !addonBirthYear || isProcessingAddon"
@@ -54,6 +54,16 @@
       </div>
       <p class="rload-brand">OMENORA</p>
       <p class="status-text">Something went wrong loading your report.</p>
+      <p style="font-size:13px;color:rgba(255,255,255,0.4);margin:8px 0 20px;">Your payment was processed. Your report will be emailed to you shortly.</p>
+      <button
+        style="background:rgba(140,110,255,0.15);border:1px solid rgba(140,110,255,0.3);color:rgba(200,180,255,0.9);padding:12px 28px;border-radius:8px;font-size:14px;cursor:pointer;margin-bottom:12px;"
+        @click="reloadPage"
+      >
+        Try Again
+      </button>
+      <p style="font-size:12px;color:rgba(255,255,255,0.25);">
+        Need help? <a href="mailto:support@omenora.com" style="color:rgba(140,110,255,0.7);text-decoration:none;">support@omenora.com</a>
+      </p>
     </div>
   </div>
 
@@ -792,16 +802,6 @@ onMounted(async () => {
     return
   }
 
-  if (sessionId && !sessionStorage.getItem('omenora_purchase_tracked')) {
-    sessionStorage.setItem('omenora_purchase_tracked', '1')
-    const purchaseAmount = store.oraclePurchased ? 12.99 : store.bundlePurchased ? 4.99 : 1.99
-    $trackPurchase({
-      value: purchaseAmount,
-      currency: 'USD',
-      content_name: 'Destiny Reading',
-    })
-  }
-
   isLoadingReport.value = true
 
   setTimeout(() => {
@@ -888,6 +888,8 @@ onMounted(async () => {
           if (!store.languageManualOverride && meta.language) {
             store.setLanguage(meta.language)
           }
+
+          trackPurchasePixel(sessionId, meta)
 
           isLoadingReport.value = false
           showAddon.value = false
@@ -994,6 +996,9 @@ onMounted(async () => {
       if (meta.birth_chart === 'true') {
         store.setBirthChartPurchased(true)
       }
+
+      trackPurchasePixel(sessionId, meta)
+
       if (!store.languageManualOverride && meta.language) {
         store.setLanguage(meta.language)
       }
@@ -1106,6 +1111,32 @@ onMounted(async () => {
     await loadRegionalSection()
   }
 })
+
+function reloadPage() {
+  window.location.reload()
+}
+
+function trackPurchasePixel(sessionId: string, meta: Record<string, string>) {
+  const pixelKey = `omenora_purchase_tracked_${sessionId}`
+  if (sessionStorage.getItem(pixelKey)) return
+  sessionStorage.setItem(pixelKey, '1')
+
+  const purchaseAmount = meta.oracle === 'true' ? 12.99
+    : meta.bundle === 'true' ? 5.99
+    : meta.birth_chart === 'true' ? 3.99
+    : 1.99
+
+  const contentName = meta.oracle === 'true' ? 'Oracle Bundle'
+    : meta.bundle === 'true' ? 'Most Popular Bundle'
+    : meta.birth_chart === 'true' ? 'Birth Chart'
+    : 'Destiny Reading'
+
+  $trackPurchase({
+    value: purchaseAmount,
+    currency: 'USD',
+    content_name: contentName,
+  })
+}
 
 const isLoadingBundle = ref(false)
 

@@ -1,5 +1,16 @@
 import { Resend } from 'resend'
 
+/** Escape HTML special characters in user-controlled strings before interpolation into email HTML. */
+function he(str: unknown): string {
+  if (str === null || str === undefined) return ''
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
@@ -37,10 +48,14 @@ export default defineEventHandler(async (event) => {
 
   const resend = new Resend(config.resendApiKey as string)
 
-  const sections = report.sections
-  const powerTraits = report.powerTraits || []
-  const archetypeName = report.archetypeName || archetype
-  const archetypeSymbol = report.archetypeSymbol || '◆'
+  const sanitizedEmail       = he(email)
+  const sanitizedFirstName    = he(sanitizeString(firstName || '', 50))
+  const sections              = report.sections
+  const powerTraits           = report.powerTraits || []
+  const archetypeName         = he(sanitizeString(report.archetypeName || archetype || '', 60))
+  const archetypeSymbol       = he(sanitizeString(report.archetypeSymbol || '◆', 10))
+  const sanitizedElement      = he(sanitizeString(element || '', 20))
+  const sanitizedLifePath     = he(String(lifePathNumber || ''))
 
   const sectionOrder = [
     'identity', 'science', 'forecast',
@@ -62,11 +77,11 @@ export default defineEventHandler(async (event) => {
           <p style="font-size: 11px; font-weight: 500;
             color: #8c6eff; text-transform: uppercase;
             letter-spacing: 0.1em; margin: 0 0 12px;">
-            ${section.title}
+            ${he(section.title)}
           </p>
           <p style="font-size: 18px; color: #c8b4ff;
             font-style: italic; line-height: 1.7; margin: 0;">
-            "${section.content}"
+            &ldquo;${he(section.content)}&rdquo;
           </p>
         </div>
       `
@@ -79,11 +94,11 @@ export default defineEventHandler(async (event) => {
         <p style="font-size: 11px; font-weight: 500;
           color: #8c6eff; text-transform: uppercase;
           letter-spacing: 0.1em; margin: 0 0 10px;">
-          ${section.title}
+          ${he(section.title)}
         </p>
         <p style="font-size: 15px; color: #c0bfbf;
           line-height: 1.8; margin: 0;">
-          ${section.content}
+          ${he(section.content)}
         </p>
       </div>
     `
@@ -96,7 +111,7 @@ export default defineEventHandler(async (event) => {
       border-radius: 20px; padding: 4px 14px;
       margin: 0 6px 6px 0;
       background: rgba(140,110,255,0.06);">
-      ${trait}
+      ${he(trait)}
     </span>
   `).join('')
 
@@ -471,7 +486,7 @@ export default defineEventHandler(async (event) => {
       </h1>
 
       <p style="font-size: 14px; color: #8c6eff; margin: 0 0 16px;">
-        ${element || 'Earth'} · Life Path ${lifePathNumber || 7}
+        ${sanitizedElement || 'Earth'} &middot; Life Path ${sanitizedLifePath || '7'}
       </p>
 
       <div style="margin-top: 16px;">
@@ -482,7 +497,7 @@ export default defineEventHandler(async (event) => {
     <!-- GREETING -->
     <p style="font-size: 16px; color: rgba(255,255,255,0.6);
       line-height: 1.7; margin: 0 0 32px;">
-      ${firstName}, your complete destiny analysis is below.
+      ${sanitizedFirstName}, your complete destiny analysis is below.
       This report was generated specifically for you based on
       your behavioral profile and chronobiological patterns.
     </p>
@@ -561,7 +576,7 @@ export default defineEventHandler(async (event) => {
 
       <p style="font-size: 11px;
         color: rgba(255,255,255,0.1); margin: 0;">
-        This report was generated for ${email}
+        This report was generated for ${sanitizedEmail}
       </p>
     </div>
 
@@ -571,7 +586,7 @@ export default defineEventHandler(async (event) => {
   `
 
   const { data, error } = await resend.emails.send({
-    from: 'OMENORA <onboarding@resend.dev>',
+    from: 'OMENORA <reading@omenora.com>',
     to: [email],
     subject: (() => {
       const subjects: Record<string, string> = {

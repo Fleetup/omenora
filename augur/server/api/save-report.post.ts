@@ -27,23 +27,26 @@ export default defineEventHandler(async (event) => {
 
   const { error } = await supabase
     .from('reports')
-    .insert({
-      session_id: sessionId,
-      first_name: firstName,
-      archetype,
-      life_path_number: lifePathNumber,
-      report_data: body.report,
-      answers: body.answers ?? {},
-      city,
-      date_of_birth: dateOfBirth,
-      email: isValidEmail(email) ? email : '',
-      region,
-      email_sent: false,
-      created_at: new Date().toISOString(),
-    })
+    .upsert(
+      {
+        session_id:       sessionId,
+        first_name:       firstName,
+        archetype,
+        life_path_number: lifePathNumber,
+        report_data:      body.report,
+        answers:          body.answers ?? {},
+        city,
+        date_of_birth:    dateOfBirth,
+        email:            isValidEmail(email) ? email : '',
+        region,
+        email_sent:       false,
+        created_at:       new Date().toISOString(),
+      },
+      { onConflict: 'session_id' },
+    )
 
   if (error) {
-    console.error('Supabase insert error:', error.code)
+    console.error('Supabase upsert error:', error.code)
     throw createError({ statusCode: 500, message: 'Failed to save report' })
   }
 

@@ -48,10 +48,8 @@ export default defineEventHandler(async (event) => {
     return { success: false }
   }
 
-  $fetch('/api/email-sequence/trigger', {
-    method: 'POST',
-    body: { email: email.toLowerCase().trim(), step: 1 },
-  }).catch(() => {})
+  const { scheduleEmailJob, SEQUENCE_DELAYS_MS } = await import('~~/server/utils/email-jobs')
+  scheduleEmailJob(email.toLowerCase().trim(), 1, SEQUENCE_DELAYS_MS[1]!).catch(() => {})
 
   return { success: true }
 })

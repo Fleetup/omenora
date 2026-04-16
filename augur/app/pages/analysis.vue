@@ -300,7 +300,7 @@ const ITEM_H = 44 // px — must match .wheel-item height in CSS
 
 const dayOptions = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'))
 const monthOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
-const yearOptions = Array.from({ length: currentYear - 1939 }, (_, i) => String(currentYear - i))
+const yearOptions = Array.from({ length: currentYear - 1923 }, (_, i) => String(currentYear - 1 - i))
 const hourOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
 const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'))
 

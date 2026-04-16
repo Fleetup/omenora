@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-const SITE_URL = 'https://omenora.com' // Replace with your production domain (matches NUXT_PUBLIC_SITE_URL)
+const { public: { siteUrl: SITE_URL } } = useRuntimeConfig()
 
 useSeoMeta({
   title: 'Free AI Astrology Reading & Destiny Report',
