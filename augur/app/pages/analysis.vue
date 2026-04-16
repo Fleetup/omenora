@@ -874,6 +874,17 @@ function submitAnalysis() {
   color: rgba(255, 255, 255, 0.18);
 }
 
+.field-input:-webkit-autofill,
+.field-input:-webkit-autofill:hover,
+.field-input:-webkit-autofill:focus,
+.field-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #0d0b1e inset !important;
+  box-shadow: 0 0 0 1000px #0d0b1e inset !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
+  caret-color: rgba(255, 255, 255, 0.88);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 /* ── Date group ── */
 .date-group {
   background: rgba(255, 255, 255, 0.03);
