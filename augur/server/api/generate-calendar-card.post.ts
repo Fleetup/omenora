@@ -1,6 +1,31 @@
-import { createCanvas } from 'canvas'
+import { createCanvas, registerFont } from 'canvas'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { join, dirname } from 'node:path'
+
+function resolveFontPath(filename: string): string {
+  const candidates = [
+    join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'fonts', filename),
+    join(process.cwd(), 'public', 'fonts', filename),
+  ]
+  const found = candidates.find(p => existsSync(p))
+  if (!found) throw new Error(`Font file not found: ${filename}`)
+  return found
+}
+
+let calendarFontsRegistered = false
+function ensureCalendarFonts() {
+  if (calendarFontsRegistered) return
+  registerFont(resolveFontPath('Inter-Light.ttf'),   { family: 'Inter', weight: '300', style: 'normal' })
+  registerFont(resolveFontPath('Inter-Regular.ttf'), { family: 'Inter', weight: '400', style: 'normal' })
+  registerFont(resolveFontPath('Inter-Medium.ttf'),  { family: 'Inter', weight: '500', style: 'normal' })
+  registerFont(resolveFontPath('Inter-Italic.ttf'),  { family: 'Inter', weight: '400', style: 'italic' })
+  calendarFontsRegistered = true
+}
 
 export default defineEventHandler(async (event) => {
+  ensureCalendarFonts()
+
   const body = await readBody(event)
   const { firstName, calendar } = body
 
@@ -29,20 +54,20 @@ export default defineEventHandler(async (event) => {
     ctx.fill()
   })
 
-  ctx.font = '400 28px sans-serif'
+  ctx.font = '400 28px Inter'
   ctx.fillStyle = 'rgba(255,255,255,0.2)'
   ctx.textAlign = 'center'
   ctx.fillText('OMENORA', width / 2, 70)
 
-  ctx.font = '500 52px sans-serif'
+  ctx.font = '500 52px Inter'
   ctx.fillStyle = 'rgba(230,220,255,0.95)'
   ctx.fillText(`${firstName}'s`, width / 2, 155)
 
-  ctx.font = '500 40px sans-serif'
+  ctx.font = '500 40px Inter'
   ctx.fillStyle = 'rgba(200,180,255,0.8)'
   ctx.fillText('2026 Lucky Timing', width / 2, 210)
 
-  ctx.font = 'italic 400 26px sans-serif'
+  ctx.font = 'italic 400 26px Inter'
   ctx.fillStyle = 'rgba(255,255,255,0.3)'
   const theme = (calendar.overallTheme || '').slice(0, 60)
   ctx.fillText(theme, width / 2, 265)
@@ -64,7 +89,7 @@ export default defineEventHandler(async (event) => {
         ? 'rgba(200,180,100,0.7)'
         : 'rgba(180,100,100,0.7)'
 
-    ctx.font = '400 22px sans-serif'
+    ctx.font = '400 22px Inter'
     ctx.fillStyle = 'rgba(255,255,255,0.55)'
     ctx.textAlign = 'left'
     ctx.fillText(
@@ -82,12 +107,12 @@ export default defineEventHandler(async (event) => {
     ctx.fillStyle = color
     ctx.fill()
 
-    ctx.font = '500 20px sans-serif'
+    ctx.font = '500 20px Inter'
     ctx.fillStyle = color
     ctx.textAlign = 'right'
     ctx.fillText(String(energy), width - 60, y + 28)
 
-    ctx.font = '400 17px sans-serif'
+    ctx.font = '400 17px Inter'
     ctx.fillStyle = 'rgba(255,255,255,0.22)'
     ctx.textAlign = 'left'
     ctx.fillText(
@@ -104,7 +129,7 @@ export default defineEventHandler(async (event) => {
   })
 
   const footerY = barStartY + 12 * rowH + 30
-  ctx.font = '400 24px sans-serif'
+  ctx.font = '400 24px Inter'
   ctx.fillStyle = 'rgba(255,255,255,0.15)'
   ctx.textAlign = 'center'
   ctx.fillText('omenora.com', width / 2, footerY)
