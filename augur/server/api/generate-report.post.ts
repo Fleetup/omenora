@@ -1,5 +1,20 @@
 import Anthropic from '@anthropic-ai/sdk'
 
+const ARCHETYPE_SYMBOLS: Record<string, string> = {
+  phoenix:   '●',
+  architect: '◆',
+  storm:     '▲',
+  lighthouse:'◇',
+  wanderer:  '○',
+  alchemist: '⬡',
+  guardian:  '□',
+  visionary: '⬟',
+  mirror:    '◉',
+  catalyst:  '✦',
+  sage:      '▽',
+  wildfire:  '★',
+}
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
@@ -271,6 +286,14 @@ Return ONLY valid JSON with this structure:
         message: 'Failed to parse report response. Please try again.',
       })
     }
+  }
+
+  // Always override the AI-generated symbol with the canonical one for this
+  // archetype so the canvas card renderer (which uses Inter font and cannot
+  // display emoji or multi-codepoint sequences) gets a known-good character.
+  const canonicalSymbol = ARCHETYPE_SYMBOLS[archetype]
+  if (canonicalSymbol) {
+    reportData.archetypeSymbol = canonicalSymbol
   }
 
   return { success: true, report: reportData }

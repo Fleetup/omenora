@@ -203,6 +203,21 @@ export default defineEventHandler(async (event) => {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
+const ARCHETYPE_SYMBOLS: Record<string, string> = {
+  phoenix:    '●',
+  architect:  '◆',
+  storm:      '▲',
+  lighthouse: '◇',
+  wanderer:   '○',
+  alchemist:  '⬡',
+  guardian:   '□',
+  visionary:  '⬟',
+  mirror:     '◉',
+  catalyst:   '✦',
+  sage:       '▽',
+  wildfire:   '★',
+}
+
 async function generateReport(opts: {
   config: any
   firstName: string
@@ -287,13 +302,19 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
   const firstBlock = message.content[0]
   const rawText    = firstBlock?.type === 'text' ? firstBlock.text : ''
 
+  let reportData: any
   try {
-    return JSON.parse(rawText)
+    reportData = JSON.parse(rawText)
   } catch {
     const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) return JSON.parse(match[0])
-    throw new Error('Failed to parse AI response')
+    if (match) reportData = JSON.parse(match[0])
+    else throw new Error('Failed to parse AI response')
   }
+
+  const canonicalSymbol = ARCHETYPE_SYMBOLS[opts.archetype]
+  if (canonicalSymbol) reportData.archetypeSymbol = canonicalSymbol
+
+  return reportData
 }
 
 async function sendReportEmailViaWebhook(opts: {

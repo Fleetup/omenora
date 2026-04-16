@@ -39,22 +39,44 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (typeof report !== 'object' || typeof report.sections !== 'object' || report.sections === null) {
+  // Supabase can return JSONB columns as a raw string in some configurations.
+  // Defensively parse if the caller passed a stringified object.
+  let parsedReport = report
+  if (typeof parsedReport === 'string') {
+    try {
+      parsedReport = JSON.parse(parsedReport)
+    } catch {
+      throw createError({
+        statusCode: 400,
+        message: 'Invalid report payload: could not parse report JSON'
+      })
+    }
+  }
+
+  if (typeof parsedReport !== 'object' || typeof parsedReport.sections !== 'object' || parsedReport.sections === null) {
     throw createError({
       statusCode: 400,
       message: 'Invalid report payload: sections missing'
     })
   }
 
-  const resend = new Resend(config.resendApiKey as string)
+  const resendKey = config.resendApiKey as string | undefined
+  if (!resendKey) {
+    throw createError({
+      statusCode: 503,
+      message: 'Email service is not configured'
+    })
+  }
+
+  const resend = new Resend(resendKey)
 
   const sanitizedEmail       = he(email)
   const sanitizedFirstName    = he(sanitizeString(firstName || '', 50))
-  const sections              = report.sections
-  const powerTraits           = report.powerTraits || []
-  const archetypeName         = he(sanitizeString(report.archetypeName || archetype || '', 60))
-  const archetypeSymbol       = he(sanitizeString(report.archetypeSymbol || '◆', 10))
-  const sanitizedElement      = he(sanitizeString(element || '', 20))
+  const sections              = parsedReport.sections
+  const powerTraits           = parsedReport.powerTraits || []
+  const archetypeName         = he(sanitizeString(parsedReport.archetypeName || archetype || '', 60))
+  const archetypeSymbol       = he(sanitizeString(parsedReport.archetypeSymbol || '◆', 10))
+  const sanitizedElement      = he(sanitizeString(element || parsedReport.element || '', 20))
   const sanitizedLifePath     = he(String(lifePathNumber || ''))
 
   const sectionOrder = [
