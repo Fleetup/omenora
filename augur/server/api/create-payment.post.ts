@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
           name: 'OMENORA Destiny Report — Basic',
           description: `Complete destiny analysis — ${archetype}`,
         },
-        unit_amount: 199,
+        unit_amount: 299,
       },
       quantity: 1,
     }],

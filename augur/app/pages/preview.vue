@@ -54,12 +54,7 @@
 
     <!-- Blurred content hook -->
     <div class="blurred-preview">
-      <div class="blurred-lines">
-        <div class="blur-line" style="width: 92%" />
-        <div class="blur-line" style="width: 78%" />
-        <div class="blur-line" style="width: 86%" />
-        <div class="blur-line" style="width: 65%" />
-      </div>
+      <p>The window ahead carries a specific quality of momentum — not the loud kind of progress, but the kind that compounds quietly until it cannot be ignored. You have been building something in a register most people around you cannot yet read.</p>
     </div>
 
     <!-- Locked sections strip -->
@@ -78,11 +73,16 @@
       </ul>
     </div>
 
+    <!--
+      REPLACE THIS WITH REAL BUYER QUOTE after first 10 purchases.
+      Keep quote under 20 words.
+      Keep attribution specific (first name + something real about them).
+    -->
     <!-- Social proof -->
     <div class="social-proof-line">
       <div class="stars">★★★★★</div>
-      <p class="proof-quote">"Described things about me I've never said out loud to anyone."</p>
-      <p class="proof-attribution">— verified buyer</p>
+      <p class="proof-quote">"I built this and tested it on myself. The Hidden Gift section described something about how I work that took me years to understand."</p>
+      <p class="proof-attribution">— Miki, founder of OMENORA</p>
     </div>
 
     <!-- 3-tier pricing selector -->
@@ -145,9 +145,22 @@
         </div>
       </div>
 
+      <!--
+        PRICE VERIFICATION — last checked 2026-04-17
+        Basic:  display $2.99 = Stripe 299 ✓
+        Middle: display $4.99 = Stripe 499 ✓
+        Oracle: display $12.99 = Stripe 1299 ✓
+
+        If display prices change, update corresponding Stripe unit_amount in:
+          server/api/create-payment.post.ts (basic)
+          server/api/create-bundle-payment.post.ts (middle)
+          server/api/create-oracle-payment.post.ts (oracle)
+        Never change display without updating Stripe.
+      -->
+
       <!-- Email input -->
       <div class="email-field-wrapper">
-        <label class="email-label">{{ t('emailDelivery') }}</label>
+        <label class="email-label">WHERE SHOULD WE SEND YOUR READING?</label>
         <input
           v-model="email"
           type="email"
@@ -677,27 +690,20 @@ async function handlePayment() {
 
 /* ── Blurred content hook ── */
 .blurred-preview {
-  position: relative;
-  margin: 0 0 -16px;
-  overflow: hidden;
+  filter: blur(5px);
+  opacity: 0.5;
   pointer-events: none;
+  user-select: none;
+  margin: 24px 0 0;
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  max-height: 60px;
 }
 
-.blurred-lines {
-  padding: 18px 20px;
-  filter: blur(4px);
-  opacity: 0.25;
-}
-
-.blur-line {
-  height: 7px;
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-.blur-line:last-child {
-  margin-bottom: 0;
+.blurred-preview p {
+  margin: 0;
 }
 
 /* ── Locked sections strip ── */
