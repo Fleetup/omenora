@@ -171,15 +171,21 @@
       </div>
 
       <div class="region-section">
-        <p class="region-label">{{ t('readingTradition') }}</p>
-        <div class="region-options">
+        <p class="region-label">{{ t('chooseYourPath') }}</p>
+        <div class="region-cards">
           <button
             v-for="opt in regionOptions"
             :key="opt.value"
-            class="region-btn"
+            class="region-card"
             :class="{ active: store.region === opt.value }"
             @click="selectRegion(opt.value)"
-          >{{ opt.label }}</button>
+          >
+            <span class="region-card-icon">{{ opt.icon }}</span>
+            <span class="region-card-text">
+              <span class="region-card-name">{{ opt.name }}</span>
+              <span class="region-card-sub">{{ opt.sub }}</span>
+            </span>
+          </button>
         </div>
       </div>
 
@@ -731,12 +737,12 @@ function continueToStep2() {
   }
 }
 
-const regionOptions = [
-  { value: 'western', label: 'Western' },
-  { value: 'india', label: 'Vedic' },
-  { value: 'china', label: 'Chinese' },
-  { value: 'latam', label: 'Tarot' },
-]
+const regionOptions = computed(() => [
+  { value: 'western', icon: '⭐', name: t('traditionWesternName'), sub: t('traditionWesternSub') },
+  { value: 'india',   icon: '🕉', name: t('traditionVedicName'),   sub: t('traditionVedicSub') },
+  { value: 'china',   icon: '☯', name: t('traditionChineseName'), sub: t('traditionChineseSub') },
+  { value: 'latam',   icon: '🔮', name: t('traditionTarotName'),   sub: t('traditionTarotSub') },
+])
 
 function selectRegion(value: string) {
   store.setRegionOverride(value)
@@ -1054,35 +1060,70 @@ function submitAnalysis() {
   margin: 0 0 12px;
 }
 
-.region-options {
+.region-cards {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 
-.region-btn {
-  padding: 7px 16px;
-  border-radius: 3px;
-  font-size: 11px;
-  letter-spacing: 0.07em;
-  cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.region-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
   background: transparent;
-  color: rgba(255, 255, 255, 0.25);
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-.region-btn.active {
-  border-color: rgba(201, 168, 76, 0.42);
-  background: rgba(201, 168, 76, 0.07);
-  color: rgba(201, 168, 76, 0.88);
-}
-
-.region-btn:hover:not(.active) {
-  border-color: rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.45);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.region-card.active {
+  border-color: rgba(201, 168, 76, 0.45);
+  background: rgba(201, 168, 76, 0.07);
+}
+
+.region-card:hover:not(.active) {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.region-card-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+.region-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.region-card-name {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.region-card.active .region-card-name {
+  color: rgba(201, 168, 76, 0.95);
+}
+
+.region-card-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.28);
+  letter-spacing: 0.02em;
+}
+
+.region-card.active .region-card-sub {
+  color: rgba(201, 168, 76, 0.55);
 }
 
 /* ── CTA continue button ── */

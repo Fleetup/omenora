@@ -331,7 +331,10 @@
           @click="handleTraditionSwitch(opt.value)"
         >
           <span class="tradition-opt-icon">{{ opt.icon }}</span>
-          <span class="tradition-opt-name">{{ opt.label }}</span>
+          <span class="tradition-opt-text">
+            <span class="tradition-opt-name">{{ opt.label }}</span>
+            <span class="tradition-opt-sub">{{ opt.sub }}</span>
+          </span>
           <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active">{{ t('currentLabel') }}</span>
           <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free">{{ t('freeLabel') }}</span>
           <span v-else class="tradition-opt-tag tradition-opt-tag--paid">$1.99</span>
@@ -1426,12 +1429,12 @@ async function startSubscription() {
 
 // ── Tradition Switcher ────────────────────────────────────────────────────
 
-const TRADITION_OPTIONS = [
-  { value: 'western', label: 'Western',  icon: '⭐' },
-  { value: 'india',   label: 'Vedic',    icon: '🕉' },
-  { value: 'china',   label: 'BaZi',     icon: '☯' },
-  { value: 'latam',   label: 'Tarot',    icon: '🔮' },
-]
+const TRADITION_OPTIONS = computed(() => [
+  { value: 'western', label: t('traditionWesternName'), sub: t('traditionWesternSub'), icon: '⭐' },
+  { value: 'india',   label: t('traditionVedicName'),   sub: t('traditionVedicSub'),   icon: '🕉' },
+  { value: 'china',   label: t('traditionChineseName'), sub: t('traditionChineseSub'), icon: '☯' },
+  { value: 'latam',   label: t('traditionTarotName'),   sub: t('traditionTarotSub'),   icon: '🔮' },
+])
 
 const unlockedTraditions = ref<string[]>([store.region || 'western'])
 const isSwitchingTradition = ref(false)
@@ -1446,7 +1449,7 @@ function isTraditionUnlocked(tradition: string): boolean {
 async function handleTraditionSwitch(newTradition: string) {
   if (isSwitchingTradition.value || store.region === newTradition) return
 
-  const opt = TRADITION_OPTIONS.find(o => o.value === newTradition)
+  const opt = TRADITION_OPTIONS.value.find((o: { value: string }) => o.value === newTradition)
   switchingTraditionLabel.value = opt?.label ?? newTradition
 
   const isAlreadyUnlocked = isTraditionUnlocked(newTradition)
@@ -1530,7 +1533,7 @@ if (_isTraditionSwitch && _traditionSwitchSessionId) {
 
       const newTradition = meta.newTradition
       isSwitchingTradition.value = true
-      const opt = TRADITION_OPTIONS.find(o => o.value === newTradition)
+      const opt = TRADITION_OPTIONS.value.find((o: { value: string }) => o.value === newTradition)
       switchingTraditionLabel.value = opt?.label ?? newTradition
 
       const result = await $fetch<{ success: boolean; report: any; tradition: string }>(
@@ -3060,10 +3063,26 @@ async function downloadReportPDF() {
   flex-shrink: 0;
 }
 
+.tradition-opt-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
 .tradition-opt-name {
   font-size: 13px;
   font-weight: 500;
-  flex: 1;
+}
+
+.tradition-opt-sub {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.28);
+  letter-spacing: 0.02em;
+}
+
+.tradition-opt-active .tradition-opt-sub {
+  color: rgba(201, 168, 76, 0.5);
 }
 
 .tradition-opt-tag {
