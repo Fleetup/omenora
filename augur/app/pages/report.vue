@@ -337,7 +337,7 @@
           </span>
           <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active">{{ t('currentLabel') }}</span>
           <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free">{{ t('freeLabel') }}</span>
-          <span v-else class="tradition-opt-tag tradition-opt-tag--paid">$1.99</span>
+          <span v-else class="tradition-opt-tag tradition-opt-tag--paid">$2.99</span>
         </button>
       </div>
     </div>
@@ -1169,7 +1169,7 @@ function trackPurchasePixel(sessionId: string, meta: Record<string, string>) {
   const purchaseAmount = meta.oracle === 'true' ? 12.99
     : meta.bundle === 'true' ? 5.99
     : meta.birth_chart === 'true' ? 3.99
-    : 1.99
+    : 2.99
 
   const contentName = meta.oracle === 'true' ? 'Oracle Bundle'
     : meta.bundle === 'true' ? 'Most Popular Bundle'

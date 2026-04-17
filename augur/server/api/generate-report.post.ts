@@ -556,7 +556,11 @@ Example of WRONG opening:
 Example of RIGHT opening:
 'There is a version of you that has rebuilt itself so many times in private that the people closest to you have no idea how much has already been burned down and remade.' (This lands because it is specific to their wound profile.)
 
-After the opening sentence: Follow the tradition framework's identity instructions as PRIMARY. Pair the core identity with its tension. Use the archetype as a named, story-rich label — not a descriptor. End with the one thing about ${firstName} that most people in their life have never understood.
+After the opening sentence: Follow the tradition framework's identity instructions as PRIMARY. Pair the core identity with its tension. End with the one thing about ${firstName} that most people in their life have never understood.
+
+When introducing the archetype name, make it DO something — not define something. The archetype name must appear in a sentence that is active and alive, not explanatory.
+WRONG: 'The Wildfire archetype is not about warmth or comfort — it is about transformation through intensity.' (This is a product description.)
+RIGHT: 'The Wildfire does not spread by being contained — it moves by consuming whatever cannot survive its heat, and that includes every version of yourself that no longer fits.' (This makes the archetype name a living force, not a label.)
 
 SCIENCE (4 sentences minimum):
 Follow the tradition framework's science instructions as PRIMARY. Use the actual tradition's analytical system — not chronobiology if this is a Vedic or BaZi reading. Ground in specific calculated data from the profile. Reference life path ${lifePathNumber} only if it fits the tradition naturally; skip it for Vedic and BaZi.
