@@ -2,6 +2,7 @@ import Stripe from 'stripe'
 import { Resend } from 'resend'
 import Anthropic from '@anthropic-ai/sdk'
 import { cancelEmailJobs } from '~~/server/utils/email-jobs'
+import { sendReportEmail } from '~~/server/utils/report-email-builder'
 
 /**
  * POST /api/stripe/webhook
@@ -345,25 +346,27 @@ async function sendReportEmailViaWebhook(opts: {
   const reportToSend = opts.reportData || check?.report_data
   if (!reportToSend) return
 
+  const resendKey = opts.config.resendApiKey as string | undefined
+  if (!resendKey) {
+    console.error('[stripe-webhook] NUXT_RESEND_API_KEY not set — cannot send email for', sessionId)
+    return
+  }
+
   try {
-    await $fetch('/api/send-report-email', {
-      method: 'POST',
-      body: {
-        email,
-        firstName,
-        report: reportToSend,
-        archetype: opts.archetype,
-        lifePathNumber: opts.lifePathNumber,
-        element: reportToSend.element,
-        region: opts.region,
-        vedicData: null,
-        baziData: null,
-        tarotData: null,
-        calendarData: null,
-        birthChartData: null,
-        bundlePurchased: opts.isBundlePurchase || opts.isOraclePurchase,
-        language: opts.language,
-      },
+    await sendReportEmail(resendKey, {
+      email,
+      firstName,
+      report: reportToSend,
+      archetype: opts.archetype,
+      lifePathNumber: opts.lifePathNumber,
+      element: reportToSend.element,
+      region: opts.region,
+      vedicData: null,
+      baziData: null,
+      tarotData: null,
+      calendarData: null,
+      birthChartData: null,
+      language: opts.language,
     })
 
     await supabase
