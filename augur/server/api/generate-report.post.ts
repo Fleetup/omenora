@@ -263,6 +263,7 @@ export default defineEventHandler(async (event) => {
 
   // ── Build tradition-specific framework inputs ────────────────────────────
 
+  let traditionFallback = false
   let traditionFramework = ''
 
   if (region === 'india') {
@@ -302,6 +303,7 @@ Write with spiritual depth and warmth. Use karma, dharma, cosmic blueprint langu
     } catch (err) {
       console.warn('[generate-report] Vedic calculation failed, falling back to western:', err)
       traditionFramework = 'Use Western astrology archetypes, Jungian psychology references, and behavioral science framing.'
+      traditionFallback = true
     }
   } else if (region === 'china') {
     try {
@@ -355,6 +357,7 @@ Write with precision and philosophical depth. Ground everything in the actual Fo
     } catch (err) {
       console.warn('[generate-report] BaZi calculation failed, falling back to western:', err)
       traditionFramework = 'Use Western astrology archetypes, Jungian psychology references, and behavioral science framing.'
+      traditionFallback = true
     }
   } else if (region === 'latam' || region === 'tarot') {
     try {
@@ -404,6 +407,7 @@ Write with passion, warmth, and spiritual fire. Connect to the heart first, mind
     } catch (err) {
       console.warn('[generate-report] Tarot calculation failed, falling back to western:', err)
       traditionFramework = 'Use Western astrology archetypes, Jungian psychology references, and behavioral science framing.'
+      traditionFallback = true
     }
   } else if (region === 'korea') {
     traditionFramework = `Use personality-focused psychological language throughout all 7 sections. Frame identity, science, forecast, love, purpose, gift, and affirmation through the lens of self-understanding, interpersonal dynamics, and personal growth. The archetype (${archetype}) is the user's core personality type. Korean readers have a strong appetite for precise personality analysis (similar to MBTI depth). Reference how the archetype interacts with others, how it shows up in relationships, and what its blind spots are. Keep language clean, insightful, and practical. Avoid heavy mystical language — frame as behavioral science and destiny insight.`
@@ -475,7 +479,7 @@ Write with passion, warmth, and spiritual fire. Connect to the heart first, mind
 
   const prompt = `${langInstruction}
 
-You are writing a personal destiny report for ${firstName}. Your voice is that of a perceptive, warm friend who has been quietly observing ${firstName} for years — someone who finally gets to say out loud the things they have noticed. You are not a psychic. You are not a horoscope. You write with the precision of someone who actually knows this person.
+You are writing a personal destiny report for ${firstName}. Your voice is precise, not warm. Direct, not harsh. You do not comfort — you illuminate. You are not a psychic. You are not a horoscope. You say the thing that makes ${firstName} go quiet because it is true, not because it is flattering. You write as if you have nothing to prove and nothing to sell. The goal is never to make ${firstName} feel good. The goal is to make ${firstName} feel seen. Those are different things.
 
 ---
 
@@ -542,13 +546,23 @@ ABSOLUTE FORBIDDEN PHRASES — never use any of these, they instantly break imme
 SECTION INSTRUCTIONS:
 
 IDENTITY (4-5 sentences minimum):
-Follow the tradition framework's identity instructions as PRIMARY. Open with the hidden self-recognition sentence. Pair the core identity with its tension. Use the archetype as a named, story-rich label — not a descriptor. End with the one thing about ${firstName} that most people in their life have never understood.
+THE VERY FIRST SENTENCE of this entire report — the opening line of the Identity section — is the most important sentence you will write. It must be the single most personally accurate observation in the report. It must make ${firstName} stop reading and re-read it. It must not be about their archetype in general. It must be about THEM specifically — derived from the most emotionally charged input in their profile.
+
+To write this sentence: look at their relationship wound (${relationshipWound}), their core thought (${coreThought}), and their hidden self (${hiddenSelf}). Pick the one that feels most privately true. Write the first sentence from THAT place. Do not open with the archetype name. Do not open with a compliment. Open with the thing they have never heard said out loud about themselves.
+
+Example of WRONG opening:
+'You are The Alchemist — a soul who transforms everything they touch.' (This is a description, not a recognition.)
+
+Example of RIGHT opening:
+'There is a version of you that has rebuilt itself so many times in private that the people closest to you have no idea how much has already been burned down and remade.' (This lands because it is specific to their wound profile.)
+
+After the opening sentence: Follow the tradition framework's identity instructions as PRIMARY. Pair the core identity with its tension. Use the archetype as a named, story-rich label — not a descriptor. End with the one thing about ${firstName} that most people in their life have never understood.
 
 SCIENCE (4 sentences minimum):
 Follow the tradition framework's science instructions as PRIMARY. Use the actual tradition's analytical system — not chronobiology if this is a Vedic or BaZi reading. Ground in specific calculated data from the profile. Reference life path ${lifePathNumber} only if it fits the tradition naturally; skip it for Vedic and BaZi.
 
 FORECAST (5 sentences minimum):
-Follow the tradition framework's forecast instructions as PRIMARY timing guide. Name at least 2 specific months or seasons. Reflect the success pattern '${successResponse}' — describe how ${firstName} will receive the wins coming their way. End with a single sentence that creates forward momentum without being generic.
+Follow the tradition framework's forecast instructions as PRIMARY timing guide. Do NOT name specific calendar months as if they are guaranteed windows — this creates false predictions that damage trust when they do not materialize. Instead, name EXPERIENTIAL triggers: describe what ${firstName} will notice happening around them or within them that signals the window has arrived. Example of WRONG: 'April through June brings a major opening.' Example of RIGHT: 'When you notice the resistance you have been carrying suddenly feels lighter — and you will notice this, probably when you least expect it — that is your window. Do not wait for external confirmation before you move.' For Vedic and BaZi traditions where real timing data exists (Dasha period, Luck Pillar), you MAY reference the actual calculated period from the tradition framework inputs above. For Western and Tarot traditions, use experiential framing only. Reflect the success pattern '${successResponse}' — describe how ${firstName} will receive the wins coming their way. End with a single sentence that creates forward momentum without being generic.
 
 LOVE (4 sentences minimum):
 Follow the tradition framework's love instructions as PRIMARY. Open by naming the relationship wound '${relationshipWound}' without using those exact words — describe the experience, not the label. Use contrast sentence structure. End with what ${firstName} is actually capable of when they feel safe.
@@ -560,9 +574,22 @@ GIFT (3 sentences minimum):
 Follow the tradition framework's gift instructions as PRIMARY. Open with naming the hidden self '${hiddenSelf}' — say what it actually is, what it looks like from the outside, and why almost no one ever names it correctly. Close with a single sentence that makes ${firstName} feel rare — not in a flattering way, but in an accurate way.
 
 AFFIRMATION (1 sentence only):
-Follow the tradition framework's affirmation instructions as PRIMARY. Must include ${firstName}'s name. Must speak directly to the shadow fear '${shadowFear}' without naming it explicitly. Must feel like a sentence someone would write on a piece of paper and keep. No exclamation marks. No "you are" openings. Begin with an action verb or a grounded declaration.
+Follow the tradition framework's affirmation instructions as PRIMARY.
+
+The affirmation must be written in the voice of ${firstName} speaking TO THEMSELVES — not a narrator speaking about them. It must feel like their own internal voice made visible, not a blessing given from the outside.
+
+Must include ${firstName}'s name — placed mid-sentence or at the opening, never at the end. Must address the shadow fear '${shadowFear}' without ever naming it explicitly — speak to the fear's opposite truth. Must feel like a sentence ${firstName} would write on paper and keep somewhere private. No exclamation marks. No 'you are' openings. No 'you have always been' openings. Do not begin with 'I' — this is not a first-person affirmation. Begin with the person's name or an action verb directed at them.
+
+WRONG: 'You are stronger than you know, ${firstName}.' (narrator voice, generic, flattering not true)
+WRONG: 'I am enough and I trust myself.' (first person, sounds like a wellness poster)
+RIGHT: '${firstName} — what you built in silence while everyone else was celebrating is already the answer.' (specific to their shadow, their voice, their truth)
 
 ---
+
+powerTraits: Generate exactly 3 traits for the JSON output. Each trait MUST be a verb phrase describing a specific behavior, not an adjective describing a quality.
+WRONG: 'intuitive', 'determined', 'creative'
+RIGHT: 'reads the room before anyone has spoken', 'rebuilds after losses most people do not survive', 'finds the third option when everyone else sees only two'
+Each verb phrase must be instantly recognizable to ${firstName} as something specific to them — not a compliment that could apply to anyone.
 
 Return ONLY valid JSON. No preamble, no explanation, no markdown.
 
@@ -660,5 +687,10 @@ Return ONLY valid JSON. No preamble, no explanation, no markdown.
     reportData.archetypeSymbol = canonicalSymbol
   }
 
-  return { success: true, report: reportData }
+  return {
+    success: true,
+    report: reportData,
+    traditionFallback,
+    originalTradition: region,
+  }
 })
