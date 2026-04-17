@@ -28,22 +28,18 @@ export default defineEventHandler(async (event) => {
 
     <p style="font-size: 15px; color: rgba(255,255,255,0.6); line-height: 1.8; margin: 0 0 28px;">${insight.insight}</p>
 
-    <div style="padding: 16px 20px; background: rgba(140,110,255,0.06); border: 1px solid rgba(140,110,255,0.15); border-radius: 12px; margin-bottom: 24px;">
-      <p style="font-size: 10px; font-weight: 500; color: rgba(140,110,255,0.6); text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 6px;">Today's Focus</p>
-      <p style="font-size: 14px; color: rgba(200,180,255,0.85); margin: 0; line-height: 1.5;">${insight.action}</p>
-    </div>
-
     <div style="text-align: center; padding: 20px; background: rgba(140,110,255,0.04); border: 1px solid rgba(140,110,255,0.1); border-radius: 12px; margin-bottom: 32px;">
-      <p style="font-size: 10px; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 8px;">Today's Frequency</p>
-      <p style="font-size: 17px; font-weight: 500; font-style: italic; color: rgba(200,180,255,0.9); margin: 0; line-height: 1.4;">"${insight.frequency}"</p>
+      <p style="font-size: 10px; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 10px;">A question worth sitting with</p>
+      <p style="font-size: 15px; font-weight: 400; font-style: italic; color: rgba(200,180,255,0.85); margin: 0; line-height: 1.6;">${insight.reflection_question || insight.action || ''}</p>
     </div>
 
-    <div style="text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.04);">
-      <p style="font-size: 11px; color: rgba(255,255,255,0.1); margin: 0 0 4px;">omenora.com — Daily Destiny Insights</p>
-      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0 0 6px;">${email} · ${archetype}</p>
-      <p style="font-size: 10px; color: rgba(255,255,255,0.05); margin: 0;">
-        OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·
-        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe" style="color: rgba(255,255,255,0.1); text-decoration: underline;">Unsubscribe</a>
+    <div style="border-top: 1px solid rgba(255,255,255,0.08); margin-top: 40px; padding-top: 24px; text-align: center;">
+      <p style="color: rgba(255,255,255,0.25); font-size: 11px; line-height: 1.7; font-family: Inter, sans-serif; margin: 0 0 12px; max-width: 480px; margin-left: auto; margin-right: auto;">
+        OMENORA Daily Insights are for self-reflection and personal exploration only. They are not a substitute for professional advice, therapy, or medical care. If you are experiencing a mental health crisis, support is available 24/7 at 988 (call or text).
+      </p>
+      <p style="color: rgba(255,255,255,0.2); font-size: 11px; font-family: Inter, sans-serif; margin: 0;">
+        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe&body=${encodeURIComponent(email)}" style="color: rgba(255,255,255,0.3); text-decoration: underline;">Unsubscribe</a>
+        &nbsp;·&nbsp; omenora.com
       </p>
     </div>
   </div>
@@ -54,7 +50,7 @@ export default defineEventHandler(async (event) => {
     from: 'OMENORA <reading@omenora.com>',
     replyTo: 'support@omenora.com',
     to: [email],
-    subject: `Your daily insight from OMENORA — ${insight.dayTheme || 'today'}`,
+    subject: insight.subject || `Your daily insight from OMENORA — ${insight.dayTheme || 'today'}`,
     html: htmlContent,
     text: [
       `OMENORA — Daily Insight`,
@@ -63,13 +59,14 @@ export default defineEventHandler(async (event) => {
       ``,
       insight.insight || '',
       ``,
-      `Today's Focus: ${insight.action || ''}`,
-      ``,
-      `Today's Frequency: "${insight.frequency || ''}"`,
+      `A question worth sitting with:`,
+      insight.reflection_question || '',
       ``,
       `---`,
+      `OMENORA Daily Insights are for self-reflection and personal exploration only. They are not a substitute for professional advice, therapy, or medical care. If you are experiencing a mental health crisis, support is available 24/7 at 988 (call or text).`,
+      ``,
       `OMENORA · omenora.com`,
-      `To unsubscribe, email unsubscribe@omenora.com`,
+      `To unsubscribe: mailto:unsubscribe@omenora.com?subject=unsubscribe`,
     ].join('\n'),
   })
 
