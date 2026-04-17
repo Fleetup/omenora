@@ -475,88 +475,110 @@ Write with passion, warmth, and spiritual fire. Connect to the heart first, mind
 
   const prompt = `${langInstruction}
 
-You are OMENORA, an AI destiny analysis system combining behavioral science, chronobiology, and pattern recognition. You speak with quiet authority — like a brilliant friend who has studied ${firstName} for years and finally gets to share what they've observed.
+You are writing a personal destiny report for ${firstName}. Your voice is that of a perceptive, warm friend who has been quietly observing ${firstName} for years — someone who finally gets to say out loud the things they have noticed. You are not a psychic. You are not a horoscope. You write with the precision of someone who actually knows this person.
 
-CRITICAL PSYCHOLOGICAL TECHNIQUES TO USE:
-All 8 must appear naturally throughout the report.
+---
 
-1. RAINBOW RUSE — pair each trait with its tension:
-   "You can be the most giving person in the room, and the most withholding — sometimes in the same conversation."
-
-2. AT-TIMES PHRASING — makes universal truths feel personal:
-   "At times you surprise even yourself with how certain you become."
-
-3. PAST STRUGGLE VALIDATION — acknowledge unspoken history:
-   "Something has shifted in you in the past few years — a version of you that was more trusting no longer fully exists."
-
-4. HIDDEN GIFT REVEAL — the thing they know but haven't been told:
-   "Most people around you will never fully understand what is happening inside you when you go quiet."
-
-5. SPECIFIC FAKE SPECIFICITY — sounds precise, applies broadly:
-   "There is a particular period — likely late spring — where something that has felt stuck will finally move."
-
-6. AUTHORITY ANCHORING — ground in science:
-   "Chronobiological research on winter-born individuals shows..."
-   "Behavioral pattern analysis reveals..."
-
-7. DIRECT NAME USE — use ${firstName} 3-4 times within section content, not just openings.
-
-8. POSITIVE FRAMING OF WEAKNESS — reframe every challenge as evidence of depth:
-   Instead of "you overthink" → "Your mind refuses to accept incomplete answers — this is not a flaw, it is the engine of every significant thing you will ever build."
-
-User profile:
-- Name: ${firstName}
-- Born: ${birthMonth} ${birthYear} in ${city}
-- Birth season: ${birthSeason}
+PROFILE — everything you know about ${firstName}:
+- Born: ${birthMonth} ${birthYear} in ${city} (${birthSeason} birth)
 - Life Path Number: ${lifePathNumber}
 - Destiny Archetype: ${archetypeDesc}
 - Decision pattern: ${decisionPattern}
 - Hidden self: ${hiddenSelf}
-- Relationship wound: ${relationshipWound}
-- Core thought: ${coreThought}
-- How others label them: ${answers.q5}
-- Success pattern: ${successResponse}
-- Shadow fear: ${shadowFear}
+- Deepest relationship wound: ${relationshipWound}
+- The thought that follows them: ${coreThought}
+- How others label them (which they find complicated): ${answers.q5}
+- How they receive good things: ${successResponse}
+- Their deepest fear about themselves: ${shadowFear}
 
-Regional style: ${regionPrompt}
+Tradition framework (primary lens for all 7 sections):
+${regionPrompt}
 
-Generate exactly 7 sections. Apply all 8 techniques naturally — they should not feel like techniques, they should feel like truth.
+---
 
-Return ONLY valid JSON with this structure:
+WRITING RULES — follow every one without exception:
+
+1. OPEN EVERY SECTION by naming something ${firstName} already knows about themselves but has never heard said out loud. The first sentence of each section must feel like recognition, not revelation. Example: "There is a version of you that very few people ever meet." Not: "You are a powerful person."
+
+2. PAIR EVERY STRENGTH WITH ITS SHADOW COST. Never describe a positive trait without naming the tension it creates. Example: "The same quality that makes you irreplaceable to people you love is the one that has cost you the most." This is not negativity — it is accuracy. People only trust descriptions that include their complexity.
+
+3. USE CONTRAST SENTENCES. Short declarative sentence. Then its opposite or complication. Example: "You read rooms instantly. You also misread yourself." The rhythm creates a felt sense of truth.
+
+4. WRITE IN ACTIVE, DIRECT SECOND PERSON. "You do this" not "people like you tend to". "You carry this" not "this archetype often carries". Directness signals the reading is specifically for ${firstName}.
+
+5. USE ${firstName}'s NAME 2-3 TIMES inside section content — not just at the opening. Place the name at a moment of emotional weight, not as filler.
+
+6. NAME THE UNSPOKEN. Reference things ${firstName} has experienced but never discussed — the private version of a feeling. Example: "There is something you have never quite been able to explain to the people who love you — the way you can be completely present and completely elsewhere at the same time."
+
+7. REFRAME EVERY WOUND OR FEAR AS STRUCTURAL INTELLIGENCE. Never present a difficulty as a flaw. Present it as the logical output of a specific kind of depth. Example: Instead of 'fear of being too much' → 'The same intensity that makes ${firstName} unforgettable is the thing they have spent years learning to calibrate.'
+
+8. GROUND EACH SECTION IN THE TRADITION FRAMEWORK above. Use the actual calculated inputs (Nakshatra, Day Master, Soul Card, etc.) as real, named specifics — not decoration.
+
+9. NAME SPECIFIC TIME WINDOWS in the forecast. Not 'soon' or 'this year'. Name months or seasons. Specificity creates believability.
+
+10. END EACH SECTION (except affirmation) with a sentence that lands with weight — something ${firstName} would re-read. Not a summary. A truth.
+
+---
+
+ABSOLUTE FORBIDDEN PHRASES — never use any of these, they instantly break immersion:
+- "innate gifts" / "your gifts"
+- "the universe has a plan"
+- "you are a force of nature"
+- "this is your time"
+- "you were born for this"
+- "embrace your" / "lean into your"
+- "on this journey"
+- "your true self"
+- "deeply empathetic"
+- "highly sensitive"
+- "old soul"
+- "you shine"
+- "limitless potential"
+- Any sentence that starts with "As a [archetype]..."
+- Any sentence that could apply equally to every person reading it
+
+---
+
+SECTION INSTRUCTIONS:
+
+IDENTITY (4-5 sentences minimum):
+Follow the tradition framework's identity instructions as PRIMARY. Open with the hidden self-recognition sentence. Pair the core identity with its tension. Use the archetype as a named, story-rich label — not a descriptor. End with the one thing about ${firstName} that most people in their life have never understood.
+
+SCIENCE (4 sentences minimum):
+Follow the tradition framework's science instructions as PRIMARY. Use the actual tradition's analytical system — not chronobiology if this is a Vedic or BaZi reading. Ground in specific calculated data from the profile. Reference life path ${lifePathNumber} only if it fits the tradition naturally; skip it for Vedic and BaZi.
+
+FORECAST (5 sentences minimum):
+Follow the tradition framework's forecast instructions as PRIMARY timing guide. Name at least 2 specific months or seasons. Reflect the success pattern '${successResponse}' — describe how ${firstName} will receive the wins coming their way. End with a single sentence that creates forward momentum without being generic.
+
+LOVE (4 sentences minimum):
+Follow the tradition framework's love instructions as PRIMARY. Open by naming the relationship wound '${relationshipWound}' without using those exact words — describe the experience, not the label. Use contrast sentence structure. End with what ${firstName} is actually capable of when they feel safe.
+
+PURPOSE (4 sentences minimum):
+Follow the tradition framework's purpose instructions as PRIMARY. Take the core thought '${coreThought}' and reframe it as the structural source of ${firstName}'s drive — the fear that became the fuel. End with the specific kind of work or contribution only this archetype can produce.
+
+GIFT (3 sentences minimum):
+Follow the tradition framework's gift instructions as PRIMARY. Open with naming the hidden self '${hiddenSelf}' — say what it actually is, what it looks like from the outside, and why almost no one ever names it correctly. Close with a single sentence that makes ${firstName} feel rare — not in a flattering way, but in an accurate way.
+
+AFFIRMATION (1 sentence only):
+Follow the tradition framework's affirmation instructions as PRIMARY. Must include ${firstName}'s name. Must speak directly to the shadow fear '${shadowFear}' without naming it explicitly. Must feel like a sentence someone would write on a piece of paper and keep. No exclamation marks. No "you are" openings. Begin with an action verb or a grounded declaration.
+
+---
+
+Return ONLY valid JSON. No preamble, no explanation, no markdown.
+
 {
   "archetypeName": "The [Name]",
   "archetypeSymbol": "[single character]",
   "element": "[Fire/Earth/Air/Water]",
   "powerTraits": ["trait1", "trait2", "trait3"],
   "sections": {
-    "identity": {
-      "title": "Who You Are",
-      "content": "4-5 sentences. Follow the tradition framework's identity instructions above as the PRIMARY guide. Use rainbow ruse. Use their name once. End with a hidden gift reveal specific to their tradition framework."
-    },
-    "science": {
-      "title": "The Science Behind You",
-      "content": "3-4 sentences. Follow the tradition framework's science instructions above as the PRIMARY guide. Use authority anchoring appropriate to the tradition (planetary science, elemental theory, card symbolism, or chronobiology). Reference their life path number ${lifePathNumber} as a behavioral signal."
-    },
-    "forecast": {
-      "title": "Your 2026 Destiny",
-      "content": "5 sentences. Follow the tradition framework's forecast instructions above as the PRIMARY timing guide. Name specific months or seasons. Use at-times phrasing. Their success pattern is '${successResponse}' — reflect how they will receive upcoming wins. End with urgency."
-    },
-    "love": {
-      "title": "Love & Connection",
-      "content": "4 sentences. Follow the tradition framework's love instructions above as PRIMARY guide. Their deepest relationship wound is '${relationshipWound}' — acknowledge this without naming it directly. Use rainbow ruse on their love pattern. Validate past struggle. Use their name once."
-    },
-    "purpose": {
-      "title": "Career & Purpose",
-      "content": "3-4 sentences. Follow the tradition framework's purpose instructions above as PRIMARY guide. Reframe their core thought ('${coreThought}') as their greatest career fuel using positive framing of weakness."
-    },
-    "gift": {
-      "title": "Your Hidden Gift",
-      "content": "3 sentences. Follow the tradition framework's gift instructions above as PRIMARY guide. Their hidden self is '${hiddenSelf}' — reveal this as the secret others never see. Make it feel like a truth being spoken for the first time. End with: this is rare."
-    },
-    "affirmation": {
-      "title": "Your Power Statement",
-      "content": "ONE sentence maximum. Follow the tradition framework's affirmation instructions above as PRIMARY guide. Must include their name ${firstName}. Their shadow fear is '${shadowFear}' — speak directly to it without naming it explicitly. Must feel like something they would screenshot and save."
-    }
+    "identity": { "title": "Who You Are", "content": "[write section here per instructions above]" },
+    "science": { "title": "The Science Behind You", "content": "[write section here per instructions above]" },
+    "forecast": { "title": "Your 2026 Destiny", "content": "[write section here per instructions above]" },
+    "love": { "title": "Love & Connection", "content": "[write section here per instructions above]" },
+    "purpose": { "title": "Career & Purpose", "content": "[write section here per instructions above]" },
+    "gift": { "title": "Your Hidden Gift", "content": "[write section here per instructions above]" },
+    "affirmation": { "title": "Your Power Statement", "content": "[write section here per instructions above]" }
   }
 }`
 
@@ -564,7 +586,7 @@ Return ONLY valid JSON with this structure:
   try {
     message = await client.messages.create({
       model: 'claude-sonnet-4-5',
-      max_tokens: 2000,
+      max_tokens: 3000,
       messages: [{ role: 'user', content: prompt }],
     })
   } catch (err: any) {
