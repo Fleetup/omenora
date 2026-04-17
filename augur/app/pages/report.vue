@@ -872,19 +872,11 @@ onMounted(async () => {
             }).catch(() => {})
           }
 
-          if (meta.bundle === 'true') {
-            store.setBundlePurchased(true)
-            store.setCalendarPurchased(true)
-          }
-          if (meta.oracle === 'true') {
-            store.setOraclePurchased(true)
-            store.setBundlePurchased(true)
-            store.setCalendarPurchased(true)
-            store.setSubscriptionActive(true)
-          }
-          if (meta.birth_chart === 'true') {
-            store.setBirthChartPurchased(true)
-          }
+          store.setBundlePurchased(meta.bundle === 'true' || meta.oracle === 'true')
+          store.setCalendarPurchased(meta.bundle === 'true' || meta.oracle === 'true')
+          store.setOraclePurchased(meta.oracle === 'true')
+          store.setSubscriptionActive(meta.oracle === 'true')
+          store.setBirthChartPurchased(meta.birth_chart === 'true')
           if (!store.languageManualOverride && meta.language) {
             store.setLanguage(meta.language)
           }
@@ -983,19 +975,11 @@ onMounted(async () => {
       if (meta.region) store.setRegion(meta.region, store.country)
       if (!store.timeOfBirth && meta.timeOfBirth) store.timeOfBirth = meta.timeOfBirth
 
-      if (meta.bundle === 'true') {
-        store.setBundlePurchased(true)
-        store.setCalendarPurchased(true)
-      }
-      if (meta.oracle === 'true') {
-        store.setOraclePurchased(true)
-        store.setBundlePurchased(true)
-        store.setCalendarPurchased(true)
-        store.setSubscriptionActive(true)
-      }
-      if (meta.birth_chart === 'true') {
-        store.setBirthChartPurchased(true)
-      }
+      store.setBundlePurchased(meta.bundle === 'true' || meta.oracle === 'true')
+      store.setCalendarPurchased(meta.bundle === 'true' || meta.oracle === 'true')
+      store.setOraclePurchased(meta.oracle === 'true')
+      store.setSubscriptionActive(meta.oracle === 'true')
+      store.setBirthChartPurchased(meta.birth_chart === 'true')
 
       trackPurchasePixel(sessionId, meta)
 
