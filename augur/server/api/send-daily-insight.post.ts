@@ -40,7 +40,11 @@ export default defineEventHandler(async (event) => {
 
     <div style="text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.04);">
       <p style="font-size: 11px; color: rgba(255,255,255,0.1); margin: 0 0 4px;">omenora.com — Daily Destiny Insights</p>
-      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0;">${email} · ${archetype}</p>
+      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0 0 6px;">${email} · ${archetype}</p>
+      <p style="font-size: 10px; color: rgba(255,255,255,0.05); margin: 0;">
+        OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·
+        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe" style="color: rgba(255,255,255,0.1); text-decoration: underline;">Unsubscribe</a>
+      </p>
     </div>
   </div>
 </body>
@@ -48,9 +52,25 @@ export default defineEventHandler(async (event) => {
 
   const { error } = await resend.emails.send({
     from: 'OMENORA <reading@omenora.com>',
+    replyTo: 'support@omenora.com',
     to: [email],
-    subject: `${insight.greeting} ${insight.dayTheme}`,
+    subject: `Your daily insight from OMENORA — ${insight.dayTheme || 'today'}`,
     html: htmlContent,
+    text: [
+      `OMENORA — Daily Insight`,
+      ``,
+      insight.greeting || '',
+      ``,
+      insight.insight || '',
+      ``,
+      `Today's Focus: ${insight.action || ''}`,
+      ``,
+      `Today's Frequency: "${insight.frequency || ''}"`,
+      ``,
+      `---`,
+      `OMENORA · omenora.com`,
+      `To unsubscribe, email unsubscribe@omenora.com`,
+    ].join('\n'),
   })
 
   if (error) {

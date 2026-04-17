@@ -99,13 +99,23 @@ export default defineEventHandler(async (event) => {
       language:         capture.language           || 'EN',
     })
 
+    const plainTextFallback = template.html
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#39;/g, "'")
+      .replace(/[ \t]{2,}/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+
     let sendOk = false
     try {
       await resend.emails.send({
         from: 'OMENORA <reading@omenora.com>',
+        replyTo: 'support@omenora.com',
         to: capture.email,
         subject: template.subject,
         html: template.html,
+        text: plainTextFallback,
         headers: {
           'X-Entity-Ref-ID': `omenora-abandon-${step}-${capture.id}`,
         },

@@ -137,8 +137,13 @@ export default defineEventHandler(async (event) => {
       </p>
 
       <p style="font-size: 11px;
-        color: rgba(255,255,255,0.1); margin: 0;">
+        color: rgba(255,255,255,0.1); margin: 0 0 8px;">
         This reading was generated for ${email}
+      </p>
+
+      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0;">
+        OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·
+        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe" style="color: rgba(255,255,255,0.15); text-decoration: underline;">Unsubscribe</a>
       </p>
     </div>
 
@@ -147,21 +152,40 @@ export default defineEventHandler(async (event) => {
 </html>
   `
 
+  const compatSubjects: Record<string, string> = {
+    en: `${firstName} & ${partnerName} — Your compatibility analysis`,
+    es: `${firstName} & ${partnerName} — Tu análisis de compatibilidad`,
+    pt: `${firstName} & ${partnerName} — Sua análise de compatibilidade`,
+    hi: `${firstName} & ${partnerName} — आपका अनुकूलता विश्लेषण`,
+    ko: `${firstName} & ${partnerName} — 궁합 분석 결과`,
+    zh: `${firstName} & ${partnerName} — 您的合盘分析`,
+  }
+  const compatSubject = compatSubjects[language as string] ?? compatSubjects['en'] ?? `${firstName} & ${partnerName} — Your compatibility analysis`
+
+  const compatPlainText = [
+    `OMENORA — Compatibility Analysis`,
+    ``,
+    `${firstName} & ${partnerName}`,
+    `Compatibility score: ${score}%`,
+    compatTitle ? compatTitle : '',
+    ``,
+    ...sectionOrder.map((key: string) => {
+      const s = sections[key]
+      return s ? `${s.title}\n${s.content}` : ''
+    }).filter(Boolean),
+    ``,
+    `---`,
+    `OMENORA · omenora.com`,
+    `To unsubscribe, email unsubscribe@omenora.com`,
+  ].filter(s => s !== '').join('\n\n')
+
   const { error } = await resend.emails.send({
     from: 'OMENORA <reading@omenora.com>',
+    replyTo: 'support@omenora.com',
     to: [email],
-    subject: (() => {
-      const subjects: Record<string, string> = {
-        en: `${firstName} & ${partnerName} — Your Compatibility Reading`,
-        es: `${firstName} & ${partnerName} — Tu Lectura de Compatibilidad`,
-        pt: `${firstName} & ${partnerName} — Sua Leitura de Compatibilidade`,
-        hi: `${firstName} & ${partnerName} — आपकी अनुकूलता रीडिंग`,
-        ko: `${firstName} & ${partnerName} — 당신의 궁합 리딩`,
-        zh: `${firstName} & ${partnerName} — 您的合盘解读`,
-      }
-      return subjects[language as string] ?? subjects['en'] ?? `${firstName} & ${partnerName} — Your Compatibility Reading`
-    })(),
+    subject: compatSubject,
     html: htmlContent,
+    text: compatPlainText,
   })
 
   if (error) {

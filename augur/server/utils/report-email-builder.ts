@@ -446,8 +446,12 @@ export async function sendReportEmail(
       <p style="font-size: 12px; color: rgba(255,255,255,0.15); margin: 0 0 8px;">
         omenora.com — AI Destiny Analysis
       </p>
-      <p style="font-size: 11px; color: rgba(255,255,255,0.1); margin: 0;">
+      <p style="font-size: 11px; color: rgba(255,255,255,0.1); margin: 0 0 8px;">
         This report was generated for ${sanitizedEmail}
+      </p>
+      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0;">
+        OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·
+        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe&body=${encodeURIComponent(email)}" style="color: rgba(255,255,255,0.15); text-decoration: underline;">Unsubscribe</a>
       </p>
     </div>
   </div>
@@ -456,21 +460,36 @@ export async function sendReportEmail(
   `
 
   const subjects: Record<string, string> = {
-    en: `${firstName}, your destiny has been revealed — OMENORA`,
-    es: `${firstName}, tu destino ha sido revelado — OMENORA`,
-    pt: `${firstName}, seu destino foi revelado — OMENORA`,
-    hi: `${firstName}, आपका भाग्य प्रकट हो गया है — OMENORA`,
-    ko: `${firstName}, 당신의 운명이 밝혀졌습니다 — OMENORA`,
-    zh: `${firstName}，您的命运已经揭晓 — OMENORA`,
+    en: `${firstName}, your destiny analysis is ready — OMENORA`,
+    es: `${firstName}, tu análisis de destino está listo — OMENORA`,
+    pt: `${firstName}, sua análise de destino está pronta — OMENORA`,
+    hi: `${firstName}, आपका भाग्य विश्लेषण तैयार है — OMENORA`,
+    ko: `${firstName}, 당신의 운명 분석이 준비되었습니다 — OMENORA`,
+    zh: `${firstName}，您的命运分析已准备好 — OMENORA`,
   }
-  const subject = subjects[language] ?? subjects['en'] ?? `${firstName}, your destiny has been revealed — OMENORA`
+  const subject = subjects[language] ?? subjects['en'] ?? `${firstName}, your destiny analysis is ready — OMENORA`
+
+  const plainText = [
+    `OMENORA — Your Destiny Analysis`,
+    ``,
+    `${firstName}, your complete destiny analysis is below.`,
+    `This report was generated specifically for you based on your behavioral profile and chronobiological patterns.`,
+    ``,
+    `Visit omenora.com to view your full report.`,
+    ``,
+    `---`,
+    `OMENORA · omenora.com`,
+    `To unsubscribe, email unsubscribe@omenora.com`,
+  ].join('\n')
 
   const resend = new Resend(resendApiKey)
   const { data, error } = await resend.emails.send({
     from: 'OMENORA <reading@omenora.com>',
+    replyTo: 'support@omenora.com',
     to: [email],
     subject,
     html: htmlContent,
+    text: plainText,
   })
 
   if (error) {

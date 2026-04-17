@@ -150,8 +150,12 @@ export default defineEventHandler(async (event) => {
       <p style="font-size:10px; letter-spacing:0.12em; color:#1e1c2a; margin:0 0 4px;">
         OMENORA &nbsp;·&nbsp; omenora.com
       </p>
-      <p style="font-size:10px; color:#181620; margin:0;">
+      <p style="font-size:10px; color:#181620; margin:0 0 6px;">
         ${email}
+      </p>
+      <p style="font-size:10px; color:#181620; margin:0;">
+        OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·
+        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe" style="color:#2a2840; text-decoration:underline;">Unsubscribe</a>
       </p>
     </div>
 
@@ -160,21 +164,42 @@ export default defineEventHandler(async (event) => {
 </html>
   `
 
+  const calendarSubjects: Record<string, string> = {
+    en: `${firstName}, your 2026 timing calendar is ready`,
+    es: `${firstName}, tu calendario de tiempos 2026 está listo`,
+    pt: `${firstName}, seu calendário de timing 2026 está pronto`,
+    hi: `${firstName}, आपका 2026 कालेंडर तैयार है`,
+    ko: `${firstName}, 2026년 타이밍 캘린더가 준비되었습니다`,
+    zh: `${firstName}，您的2026年时机日历已准备好`,
+  }
+  const calendarSubject = calendarSubjects[language as string] ?? calendarSubjects['en'] ?? `${firstName}, your 2026 timing calendar is ready`
+
+  const calendarPlainText = [
+    `OMENORA — Your 2026 Timing Calendar`,
+    ``,
+    `${firstName}, your 2026 destiny calendar is ready.`,
+    calendar.overallTheme ? calendar.overallTheme : '',
+    ``,
+    months.map((m: any) => [
+      `${m.month} — ${m.theme || ''}`,
+      `Love: ${m.love || ''}`,
+      `Money: ${m.money || ''}`,
+      `Career: ${m.career || ''}`,
+      m.warning ? `Note: ${m.warning}` : '',
+    ].filter(Boolean).join('\n')).join('\n\n'),
+    ``,
+    `---`,
+    `OMENORA · omenora.com`,
+    `To unsubscribe, email unsubscribe@omenora.com`,
+  ].filter(s => s !== '').join('\n')
+
   const { error } = await resend.emails.send({
     from: 'OMENORA <reading@omenora.com>',
+    replyTo: 'support@omenora.com',
     to: [email],
-    subject: (() => {
-      const subjects: Record<string, string> = {
-        en: `${firstName}, your 2026 Lucky Timing Calendar is ready`,
-        es: `${firstName}, tu Calendario de Suerte 2026 está listo`,
-        pt: `${firstName}, seu Calendário de Sorte 2026 está pronto`,
-        hi: `${firstName}, आपका 2026 भाग्यशाली कैलेंडर तैयार है`,
-        ko: `${firstName}, 2026 행운 타이밍 캘린더가 준비되었습니다`,
-        zh: `${firstName}，您的2026年幸运日历已准备好`,
-      }
-      return subjects[language as string] ?? subjects['en'] ?? `${firstName}, your 2026 Lucky Timing Calendar is ready`
-    })(),
+    subject: calendarSubject,
     html: htmlContent,
+    text: calendarPlainText,
   })
 
   if (error) {
