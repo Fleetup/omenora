@@ -925,7 +925,28 @@ onMounted(async () => {
             }
           }
         } else {
-          // Email already sent — refresh detected, skip email
+          // Email already sent — refresh detected, skip email but still verify purchase tier
+          const refreshPayment = await $fetch<{
+            paid: boolean
+            customerEmail: string | null
+            metadata: Record<string, string> | null
+          }>('/api/verify-payment', {
+            method: 'POST',
+            body: { sessionId },
+          })
+
+          if (!refreshPayment.paid) {
+            navigateTo('/preview')
+            return
+          }
+
+          const refreshMeta = refreshPayment.metadata || {}
+          store.setBundlePurchased(refreshMeta.bundle === 'true' || refreshMeta.oracle === 'true')
+          store.setCalendarPurchased(refreshMeta.bundle === 'true' || refreshMeta.oracle === 'true')
+          store.setOraclePurchased(refreshMeta.oracle === 'true')
+          store.setSubscriptionActive(refreshMeta.oracle === 'true')
+          store.setBirthChartPurchased(refreshMeta.birth_chart === 'true')
+
           isLoadingReport.value = false
           showAddon.value = false
           if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
