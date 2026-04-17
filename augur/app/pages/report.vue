@@ -721,6 +721,19 @@ async function loadRegionalSection() {
     return
   }
 
+  // Check sessionStorage cache to avoid re-calling AI on page refresh
+  const cacheKey = `omenora_regional_${store.reportSessionId || store.tempId}_${region}`
+  const cached = sessionStorage.getItem(cacheKey)
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached)
+      if (region === 'india') { vedicData.value = parsed; store.setVedicData(parsed) }
+      else if (region === 'china') { baziData.value = parsed; store.setBaziData(parsed) }
+      else { tarotData.value = parsed; store.setTarotData(parsed) }
+      return
+    } catch { /* corrupted cache, fall through to generate */ }
+  }
+
   isLoadingRegional.value = true
   try {
     if (region === 'india') {
@@ -742,6 +755,7 @@ async function loadRegionalSection() {
       })
       vedicData.value = result.vedic
       store.setVedicData(result.vedic)
+      sessionStorage.setItem(cacheKey, JSON.stringify(result.vedic))
     } else if (region === 'china') {
       const pillars = getBaziPillars(store.dateOfBirth)
       const dominantElement = getDominantElement(pillars)
@@ -758,6 +772,7 @@ async function loadRegionalSection() {
       })
       baziData.value = result.bazi
       store.setBaziData(result.bazi)
+      sessionStorage.setItem(cacheKey, JSON.stringify(result.bazi))
     } else if (region === 'latam' || region === 'tarot') {
       const result = await $fetch<{ success: boolean; tarot: any }>('/api/generate-tarot-section', {
         method: 'POST',
@@ -773,6 +788,7 @@ async function loadRegionalSection() {
       })
       tarotData.value = result.tarot
       store.setTarotData(result.tarot)
+      sessionStorage.setItem(cacheKey, JSON.stringify(result.tarot))
     }
   } catch {
     console.error('Regional section failed')
@@ -784,6 +800,17 @@ async function loadRegionalSection() {
 async function generateBundleCalendar(): Promise<any> {
   if (store.calendarData) return store.calendarData
   if (!store.firstName || !store.dateOfBirth) return null
+
+  const calCacheKey = `omenora_calendar_${store.reportSessionId || store.tempId}`
+  const calCached = sessionStorage.getItem(calCacheKey)
+  if (calCached) {
+    try {
+      const parsed = JSON.parse(calCached)
+      store.setCalendarData(parsed)
+      return parsed
+    } catch { /* fall through to generate */ }
+  }
+
   isGeneratingCalendar.value = true
   try {
     const calData = await $fetch<{ success: boolean; calendar: any }>('/api/generate-calendar', {
@@ -799,6 +826,7 @@ async function generateBundleCalendar(): Promise<any> {
       },
     })
     store.setCalendarData(calData.calendar)
+    sessionStorage.setItem(calCacheKey, JSON.stringify(calData.calendar))
     return calData.calendar
   } catch {
     console.error('Calendar generation failed')
@@ -1351,6 +1379,16 @@ const isLoadingBirthChart = ref(false)
 
 async function generateBirthChartAuto() {
   if (isLoadingBirthChart.value || store.birthChartData) return
+
+  const bcCacheKey = `omenora_birthchart_${store.reportSessionId || store.tempId}`
+  const bcCached = sessionStorage.getItem(bcCacheKey)
+  if (bcCached) {
+    try {
+      store.setBirthChartData(JSON.parse(bcCached))
+      return
+    } catch { /* fall through to generate */ }
+  }
+
   isLoadingBirthChart.value = true
   try {
     const result = await $fetch<{ success: boolean; birthChart: any }>('/api/generate-birth-chart', {
@@ -1366,6 +1404,7 @@ async function generateBirthChartAuto() {
       },
     })
     store.setBirthChartData(result.birthChart)
+    sessionStorage.setItem(bcCacheKey, JSON.stringify(result.birthChart))
   } catch {
     console.error('Birth chart generation failed')
   } finally {

@@ -310,7 +310,7 @@ async function handlePayment() {
   if (isProcessingPayment.value) return
   if (!email.value) return
 
-  const tierValues: Record<number, number> = { 1: 1.99, 2: 4.99, 3: 12.99 }
+  const tierValues: Record<number, number> = { 1: 2.99, 2: 4.99, 3: 12.99 }
   $trackInitiateCheckout({
     value: tierValues[selectedTier.value] || 4.99,
     currency: 'USD',
