@@ -52,21 +52,34 @@
     <!-- Free preview: identity section only -->
     <p class="preview-text">{{ report.sections.identity.content }}</p>
 
-    <!-- Blurred locked sections -->
-    <div class="locked-wrapper">
-      <div class="blurred-content">
-        <div class="fake-line" style="width: 90%" />
-        <div class="fake-line" style="width: 75%" />
-        <div class="fake-line" style="width: 85%" />
+    <!-- Locked sections strip -->
+    <div class="locked-sections-strip">
+      <div class="locked-header">
+        <span class="lock-icon">🔒</span>
+        <span class="locked-strip-label">Still locked in your {{ archetypeName }} reading:</span>
       </div>
-      <p class="locked-label">🔒 {{ t('sectionsIncluded') }}</p>
+      <ul class="locked-section-list">
+        <li>◆ Your 2026 Destiny Forecast</li>
+        <li>◆ Love &amp; Relationship Patterns</li>
+        <li>◆ Your Hidden Gift</li>
+        <li>◆ Career &amp; Purpose</li>
+        <li>◆ Your Power Statement</li>
+        <li>◆ {{ traditionSectionLabel }}</li>
+      </ul>
+    </div>
+
+    <!-- Social proof -->
+    <div class="social-proof-line">
+      <div class="stars">★★★★★</div>
+      <p class="proof-quote">"Described things about me I've never said out loud to anyone."</p>
+      <p class="proof-attribution">— verified buyer</p>
     </div>
 
     <!-- 3-tier pricing selector -->
     <div class="pricing-section">
-      <div class="pricing-header">
-        <p class="pricing-title">{{ t('chooseReading') }}</p>
-        <p class="pricing-subtitle">{{ t('destinyCalculated') }}</p>
+      <div class="paywall-header">
+        <p class="paywall-personal-line">{{ store.firstName }}, your {{ archetypeShortName }} reading is 85% complete.</p>
+        <p class="paywall-sub-line">The sections below reveal what the identity section could only begin to show.</p>
       </div>
 
       <div class="tier-list">
@@ -79,7 +92,7 @@
         >
           <div class="tier-info">
             <p class="tier-name">{{ t('basicReport') }}</p>
-            <p class="tier-desc">{{ t('basicDesc') }}</p>
+            <p class="tier-desc">Full 7-section {{ archetypeShortName }} reading revealing why you operate the way you do</p>
           </div>
           <p class="tier-price">$2.99</p>
         </div>
@@ -94,7 +107,7 @@
           <div class="tier-popular-inner">
             <div class="tier-info">
               <p class="tier-name tier-name-popular">{{ t('popularBundle') }}</p>
-              <p class="tier-features">❆ {{ t('fullReport') }}<br>❆ {{ t('luckyCalendar') }}<br>❆ {{ t('compatibilityReading') }}</p>
+              <p class="tier-features">❆ Full reading + 2026 lucky timing calendar + compatibility check with one person</p>
             </div>
             <div class="tier-price-block">
               <p class="tier-price tier-price-popular">$4.99</p>
@@ -112,7 +125,7 @@
           <div class="tier-oracle-inner">
             <div class="tier-info">
               <p class="tier-name tier-name-oracle">{{ t('fullOracle') }}</p>
-              <p class="tier-features tier-features-oracle">✦ {{ t('fullReport') }}<br>✦ {{ t('luckyCalendar') }}<br>✦ {{ t('compatibilityReading') }}<br>✦ Full birth chart<br>✦ 30 days of daily insights</p>
+              <p class="tier-features tier-features-oracle">✦ Complete map — full reading, calendar, compatibility, birth chart, and all traditions unlocked</p>
             </div>
             <div class="tier-price-block">
               <p class="tier-price tier-price-oracle">$12.99</p>
@@ -151,6 +164,14 @@
         <span v-else>{{ t('unlockOracle') }}</span>
       </button>
 
+      <div class="urgency-line">
+        <span class="urgency-icon">⏳</span>
+        Your reading is saved for 24 hours.
+      </div>
+      <div class="guarantee-line">
+        <span class="guarantee-check">✦</span>
+        <span class="guarantee-text">Not what you expected? Full refund within 24 hours — no questions asked.</span>
+      </div>
       <p class="trust-note">{{ t('readingExpires') }}</p>
       <p class="trust-secure">{{ t('securedStripe') }}</p>
     </div>
@@ -159,6 +180,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import type { ComputedRef } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
 
@@ -180,6 +202,24 @@ const loadingMessages = computed(() => [
 ])
 
 const report = computed(() => store.report)
+
+const archetypeName: ComputedRef<string> = computed(() => store.report?.archetypeName ?? '')
+
+const archetypeShortName: ComputedRef<string> = computed(() =>
+  archetypeName.value?.replace(/^The\s+/i, '') ?? 'destiny'
+)
+
+const traditionSectionLabel: ComputedRef<string> = computed(() => {
+  const labels: Record<string, string> = {
+    western: 'Astrological Birth Season Reading',
+    india: 'Your Nakshatra & Karmic Mission',
+    china: 'Four Pillars Element Reading',
+    latam: 'Your Soul Card & Tarot Path',
+    korea: 'Your Personality Destiny Map',
+    middleeast: 'Your Destined Path Reading',
+  }
+  return labels[store.region] ?? 'Your Tradition-Specific Reading'
+})
 
 let messageInterval: ReturnType<typeof setInterval> | null = null
 
@@ -625,65 +665,93 @@ async function handlePayment() {
   margin: 0 0 20px;
 }
 
-/* ── Locked sections ── */
-.locked-wrapper {
-  position: relative;
-  margin-bottom: 24px;
-  overflow: hidden;
+/* ── Locked sections strip ── */
+.locked-sections-strip {
+  background: rgba(140, 110, 255, 0.06);
+  border: 1px solid rgba(140, 110, 255, 0.15);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 32px 0;
 }
 
-.blurred-content {
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  filter: blur(5px);
-  opacity: 0.35;
+.locked-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
-.fake-line {
-  height: 7px;
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  margin-bottom: 9px;
-}
-
-.fake-line:last-child {
-  margin-bottom: 0;
-}
-
-.locked-label {
+.lock-icon {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.32);
+}
+
+.locked-strip-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+.locked-section-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.locked-section-list li {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 15px;
+  line-height: 2.2;
+}
+
+/* ── Social proof ── */
+.social-proof-line {
   text-align: center;
-  margin: 10px 0 0;
-  letter-spacing: 0.04em;
+  margin: 0 0 24px;
+}
+
+.stars {
+  color: #c9a84c;
+  font-size: 14px;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.proof-quote {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0 0 4px;
+}
+
+.proof-attribution {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 12px;
+  margin: 0;
 }
 
 /* ── Pricing section ── */
 .pricing-section {
-  margin-top: 24px;
+  margin-top: 0;
 }
 
-.pricing-header {
+.paywall-header {
   text-align: center;
   margin-bottom: 20px;
 }
 
-.pricing-title {
+.paywall-personal-line {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 400;
+  font-size: 22px;
   color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 6px;
-  letter-spacing: -0.01em;
+  margin: 0 0 8px;
 }
 
-.pricing-subtitle {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.27);
-  margin: 0;
-  line-height: 1.5;
+.paywall-sub-line {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0 0 28px;
 }
 
 /* ── Tier list ── */
@@ -945,6 +1013,42 @@ async function handlePayment() {
 .unlock-btn-processing {
   opacity: 0.62;
   cursor: default;
+}
+
+/* ── Urgency & guarantee ── */
+.urgency-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  margin: 16px 0 8px;
+}
+
+.urgency-icon {
+  font-size: 12px;
+}
+
+.guarantee-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+.guarantee-check {
+  color: rgba(140, 110, 255, 0.6);
+  font-size: 10px;
+}
+
+.guarantee-text {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 /* ── Trust signals ── */
