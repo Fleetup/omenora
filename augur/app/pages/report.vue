@@ -92,7 +92,7 @@
     <!-- Hero block -->
     <div class="hero-block">
       <p class="archetype-label">YOUR DESTINY ARCHETYPE</p>
-      <span class="archetype-symbol">{{ store.report.archetypeSymbol }}</span>
+      <ArchetypeSymbol :symbol="store.report.archetypeSymbol" :size="48" class="archetype-symbol" />
       <h1 class="archetype-name">{{ store.report.archetypeName }}</h1>
       <p class="archetype-meta">{{ store.report.element }} · Life Path {{ store.lifePathNumber }}</p>
       <div class="traits-row">
@@ -587,7 +587,7 @@
       <p class="share-subtitle">{{ t('shareDesc') }}</p>
 
       <div class="share-card">
-        <span class="card-symbol">{{ store.report.archetypeSymbol }}</span>
+        <ArchetypeSymbol :symbol="store.report.archetypeSymbol" :size="32" class="card-symbol" />
         <p class="card-name">{{ store.report.archetypeName }}</p>
         <div class="card-traits">
           <span v-for="trait in store.report.powerTraits" :key="trait" class="card-trait-pill">
@@ -1967,10 +1967,9 @@ async function downloadReportPDF() {
 }
 
 .archetype-symbol {
-  font-size: 40px;
-  color: rgba(200, 180, 255, 0.65);
   display: block;
   margin-bottom: 10px;
+  opacity: 0.85;
 }
 
 .archetype-name {
@@ -2086,8 +2085,7 @@ async function downloadReportPDF() {
 }
 
 .card-symbol {
-  font-size: 28px;
-  color: rgba(200, 180, 255, 0.7);
+  display: block;
 }
 
 .card-name {

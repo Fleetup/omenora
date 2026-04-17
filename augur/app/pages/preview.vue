@@ -39,7 +39,7 @@
     <div class="archetype-block">
       <div class="archetype-glow" aria-hidden="true" />
       <p class="archetype-label">{{ t('yourArchetype') }}</p>
-      <span class="archetype-symbol">{{ report.archetypeSymbol }}</span>
+      <ArchetypeSymbol :symbol="report.archetypeSymbol" :size="44" class="archetype-symbol" />
       <h2 class="archetype-name">{{ report.archetypeName }}</h2>
       <p class="archetype-meta">{{ report.element }} · Life Path {{ store.lifePathNumber }}</p>
       <div class="traits-row">
@@ -576,10 +576,9 @@ async function handlePayment() {
 }
 
 .archetype-symbol {
-  font-size: 36px;
   display: block;
   margin-bottom: 8px;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .archetype-name {

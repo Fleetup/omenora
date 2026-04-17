@@ -29,6 +29,185 @@ function ensureFonts() {
   fontsRegistered = true
 }
 
+/**
+ * Draws each archetype symbol as native canvas paths.
+ * Maps the archetype's Unicode symbol to its corresponding geometric shape.
+ * This is font-independent — identical on dev, Railway Linux, and any OS.
+ *
+ * @param ctx   Canvas 2D context
+ * @param symbol The archetype symbol character (from ARCHETYPES array)
+ * @param cx    Center X
+ * @param cy    Center Y
+ * @param r     Radius / size reference
+ */
+function drawArchetypeSymbol(
+  ctx: any,
+  symbol: string,
+  cx: number,
+  cy: number,
+  r: number,
+): void {
+  const color = 'rgba(200, 180, 255, 0.55)'
+  const strokeW = r * 0.055
+
+  ctx.save()
+  ctx.strokeStyle = color
+  ctx.fillStyle = color
+  ctx.lineWidth = strokeW
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+
+  switch (symbol) {
+    // ● phoenix — filled circle
+    case '●': {
+      ctx.beginPath()
+      ctx.arc(cx, cy, r * 0.72, 0, Math.PI * 2)
+      ctx.fill()
+      break
+    }
+    // ◆ architect — filled diamond
+    case '◆': {
+      ctx.beginPath()
+      ctx.moveTo(cx, cy - r)
+      ctx.lineTo(cx + r * 0.7, cy)
+      ctx.lineTo(cx, cy + r)
+      ctx.lineTo(cx - r * 0.7, cy)
+      ctx.closePath()
+      ctx.fill()
+      break
+    }
+    // ▲ storm — filled upward triangle
+    case '▲': {
+      const h = r * 1.1
+      ctx.beginPath()
+      ctx.moveTo(cx, cy - h * 0.72)
+      ctx.lineTo(cx + h * 0.84, cy + h * 0.48)
+      ctx.lineTo(cx - h * 0.84, cy + h * 0.48)
+      ctx.closePath()
+      ctx.fill()
+      break
+    }
+    // ◇ lighthouse — open diamond
+    case '◇': {
+      ctx.beginPath()
+      ctx.moveTo(cx, cy - r)
+      ctx.lineTo(cx + r * 0.7, cy)
+      ctx.lineTo(cx, cy + r)
+      ctx.lineTo(cx - r * 0.7, cy)
+      ctx.closePath()
+      ctx.stroke()
+      break
+    }
+    // ○ wanderer — open circle
+    case '○': {
+      ctx.beginPath()
+      ctx.arc(cx, cy, r * 0.72, 0, Math.PI * 2)
+      ctx.stroke()
+      break
+    }
+    // ⬡ alchemist — hexagon (flat-top)
+    case '⬡': {
+      ctx.beginPath()
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i - Math.PI / 6
+        const px = cx + r * 0.9 * Math.cos(angle)
+        const py = cy + r * 0.9 * Math.sin(angle)
+        if (i === 0) ctx.moveTo(px, py)
+        else ctx.lineTo(px, py)
+      }
+      ctx.closePath()
+      ctx.stroke()
+      break
+    }
+    // □ guardian — open square
+    case '□': {
+      const s = r * 1.1
+      ctx.beginPath()
+      ctx.rect(cx - s * 0.5, cy - s * 0.5, s, s)
+      ctx.stroke()
+      break
+    }
+    // ⬟ visionary — rotated square (diamond-like but wider)
+    case '⬟': {
+      const s = r * 0.88
+      ctx.beginPath()
+      ctx.moveTo(cx, cy - s)
+      ctx.lineTo(cx + s, cy)
+      ctx.lineTo(cx, cy + s)
+      ctx.lineTo(cx - s, cy)
+      ctx.closePath()
+      ctx.stroke()
+      break
+    }
+    // ◉ mirror — filled circle with outer ring
+    case '◉': {
+      ctx.beginPath()
+      ctx.arc(cx, cy, r * 0.4, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(cx, cy, r * 0.75, 0, Math.PI * 2)
+      ctx.stroke()
+      break
+    }
+    // ✦ catalyst — 4-pointed star
+    case '✦': {
+      const pts = 4
+      const outer = r * 0.9
+      const inner = r * 0.3
+      ctx.beginPath()
+      for (let i = 0; i < pts * 2; i++) {
+        const angle = (Math.PI / pts) * i - Math.PI / 2
+        const rad = i % 2 === 0 ? outer : inner
+        const px = cx + rad * Math.cos(angle)
+        const py = cy + rad * Math.sin(angle)
+        if (i === 0) ctx.moveTo(px, py)
+        else ctx.lineTo(px, py)
+      }
+      ctx.closePath()
+      ctx.fill()
+      break
+    }
+    // ▽ sage — open downward triangle
+    case '▽': {
+      const h = r * 1.1
+      ctx.beginPath()
+      ctx.moveTo(cx - h * 0.84, cy - h * 0.48)
+      ctx.lineTo(cx + h * 0.84, cy - h * 0.48)
+      ctx.lineTo(cx, cy + h * 0.72)
+      ctx.closePath()
+      ctx.stroke()
+      break
+    }
+    // ★ wildfire — 5-pointed filled star
+    case '★': {
+      const pts = 5
+      const outer = r * 0.9
+      const inner = r * 0.38
+      ctx.beginPath()
+      for (let i = 0; i < pts * 2; i++) {
+        const angle = (Math.PI / pts) * i - Math.PI / 2
+        const rad = i % 2 === 0 ? outer : inner
+        const px = cx + rad * Math.cos(angle)
+        const py = cy + rad * Math.sin(angle)
+        if (i === 0) ctx.moveTo(px, py)
+        else ctx.lineTo(px, py)
+      }
+      ctx.closePath()
+      ctx.fill()
+      break
+    }
+    // fallback — filled circle
+    default: {
+      ctx.beginPath()
+      ctx.arc(cx, cy, r * 0.72, 0, Math.PI * 2)
+      ctx.fill()
+      break
+    }
+  }
+
+  ctx.restore()
+}
+
 export default defineEventHandler(async (event) => {
   ensureFonts()
 
@@ -111,11 +290,8 @@ export default defineEventHandler(async (event) => {
   ctx.textAlign = 'center'
   ctx.fillText('YOUR DESTINY ARCHETYPE', width / 2, 220)
 
-  // --- SYMBOL ---
-  ctx.font = '500 120px Inter'
-  ctx.fillStyle = 'rgba(200, 180, 255, 0.5)'
-  ctx.textAlign = 'center'
-  ctx.fillText(archetypeSymbol || '◆', width / 2, 440)
+  // --- SYMBOL (drawn as native canvas paths — font-independent) ---
+  drawArchetypeSymbol(ctx, archetypeSymbol || '◆', width / 2, 390, 80)
 
   ctx.beginPath()
   ctx.arc(width / 2, 390, 130, 0, Math.PI * 2)
