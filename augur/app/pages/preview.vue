@@ -52,11 +52,21 @@
     <!-- Free preview: identity section only -->
     <p class="preview-text">{{ report.sections.identity.content }}</p>
 
+    <!-- Blurred content hook -->
+    <div class="blurred-preview">
+      <div class="blurred-lines">
+        <div class="blur-line" style="width: 92%" />
+        <div class="blur-line" style="width: 78%" />
+        <div class="blur-line" style="width: 86%" />
+        <div class="blur-line" style="width: 65%" />
+      </div>
+    </div>
+
     <!-- Locked sections strip -->
     <div class="locked-sections-strip">
       <div class="locked-header">
         <span class="lock-icon">🔒</span>
-        <span class="locked-strip-label">Still locked in your {{ archetypeName }} reading:</span>
+        <span class="locked-strip-label">Still locked in your {{ archetypeShortName }} reading:</span>
       </div>
       <ul class="locked-section-list">
         <li>◆ Your 2026 Destiny Forecast</li>
@@ -663,6 +673,31 @@ async function handlePayment() {
   line-height: 1.82;
   padding: 0;
   margin: 0 0 20px;
+}
+
+/* ── Blurred content hook ── */
+.blurred-preview {
+  position: relative;
+  margin: 0 0 -16px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blurred-lines {
+  padding: 18px 20px;
+  filter: blur(4px);
+  opacity: 0.25;
+}
+
+.blur-line {
+  height: 7px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.blur-line:last-child {
+  margin-bottom: 0;
 }
 
 /* ── Locked sections strip ── */
