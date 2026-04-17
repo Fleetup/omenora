@@ -25,7 +25,7 @@
       <input
         v-model="addonPartnerName"
         type="text"
-        placeholder="Their first name"
+        :placeholder="t('addonPartnerPlaceholder')"
         class="addon-input"
       >
       <div class="addon-dob-row">
@@ -53,16 +53,16 @@
         <div class="orbit-center" />
       </div>
       <p class="rload-brand">OMENORA</p>
-      <p class="status-text">Something went wrong loading your report.</p>
-      <p style="font-size:13px;color:rgba(255,255,255,0.4);margin:8px 0 20px;">Your payment was processed. Your report will be emailed to you shortly.</p>
+      <p class="status-text">{{ t('reportErrorMsg') }}</p>
+      <p style="font-size:13px;color:rgba(255,255,255,0.4);margin:8px 0 20px;">{{ t('reportErrorEmail') }}</p>
       <button
         style="background:rgba(140,110,255,0.15);border:1px solid rgba(140,110,255,0.3);color:rgba(200,180,255,0.9);padding:12px 28px;border-radius:8px;font-size:14px;cursor:pointer;margin-bottom:12px;"
         @click="reloadPage"
       >
-        Try Again
+        {{ t('tryAgain') }}
       </button>
       <p style="font-size:12px;color:rgba(255,255,255,0.25);">
-        Need help? <a href="mailto:support@omenora.com" style="color:rgba(140,110,255,0.7);text-decoration:none;">support@omenora.com</a>
+        {{ t('needHelp') }} <a href="mailto:support@omenora.com" style="color:rgba(140,110,255,0.7);text-decoration:none;">support@omenora.com</a>
       </p>
     </div>
   </div>
@@ -91,10 +91,10 @@
 
     <!-- Hero block -->
     <div class="hero-block">
-      <p class="archetype-label">YOUR DESTINY ARCHETYPE</p>
+      <p class="archetype-label">{{ t('yourDestinyArchetype') }}</p>
       <ArchetypeSymbol :symbol="store.report.archetypeSymbol" :size="48" class="archetype-symbol" />
       <h1 class="archetype-name">{{ store.report.archetypeName }}</h1>
-      <p class="archetype-meta">{{ store.report.element }} · Life Path {{ store.lifePathNumber }}</p>
+      <p class="archetype-meta">{{ store.report.element }} · {{ t('lifePathLabel') }} {{ store.lifePathNumber }}</p>
       <div class="traits-row">
         <span v-for="trait in store.report.powerTraits" :key="trait" class="trait-pill">
           {{ trait }}
@@ -106,11 +106,9 @@
     <div v-if="store.bundlePurchased || store.oraclePurchased" class="unlock-banner">
       <span class="unlock-banner-icon">✦</span>
       <div>
-        <p class="unlock-banner-title">{{ store.oraclePurchased ? 'Full Oracle unlocked' : 'Bundle unlocked' }}</p>
+        <p class="unlock-banner-title">{{ store.oraclePurchased ? t('oracleUnlocked') : t('bundleUnlocked') }}</p>
         <p class="unlock-banner-desc">
-          {{ store.oraclePurchased
-            ? 'Calendar · Compatibility · Birth Chart · 30 Daily Insights — all included'
-            : 'Calendar · Compatibility Reading — included in your bundle' }}
+          {{ store.oraclePurchased ? t('oracleDesc') : t('bundleDesc') }}
         </p>
       </div>
     </div>
@@ -118,30 +116,30 @@
     <!-- Birth chart: generated data display -->
     <div v-if="store.birthChartData" class="birth-chart-section">
       <div class="birth-chart-section-header">
-        <p class="birth-chart-eyebrow">FULL BIRTH CHART</p>
+        <p class="birth-chart-eyebrow">{{ t('fullBirthChart') }}</p>
         <p class="birth-chart-section-title">{{ store.birthChartData.chartTitle }}</p>
       </div>
       <div class="birth-chart-signs-row">
         <div class="birth-chart-sign-cell">
-          <p class="birth-chart-sign-label">RISING</p>
+          <p class="birth-chart-sign-label">{{ t('risingLabel') }}</p>
           <p class="birth-chart-sign-value">{{ store.birthChartData.risingSign }}</p>
         </div>
         <div class="birth-chart-sign-cell">
-          <p class="birth-chart-sign-label">SUN</p>
+          <p class="birth-chart-sign-label">{{ t('sunLabel') }}</p>
           <p class="birth-chart-sign-value">{{ store.birthChartData.sunSign }}</p>
         </div>
         <div class="birth-chart-sign-cell">
-          <p class="birth-chart-sign-label">MOON</p>
+          <p class="birth-chart-sign-label">{{ t('moonLabel') }}</p>
           <p class="birth-chart-sign-value">{{ store.birthChartData.moonSign }}</p>
         </div>
         <div class="birth-chart-sign-cell">
-          <p class="birth-chart-sign-label">PLANET</p>
+          <p class="birth-chart-sign-label">{{ t('planetLabel') }}</p>
           <p class="birth-chart-sign-value">{{ store.birthChartData.dominantPlanet }}</p>
         </div>
       </div>
       <p class="birth-chart-reading">{{ store.birthChartData.reading }}</p>
       <div class="birth-chart-forecast-box">
-        <p class="birth-chart-forecast-label">2026 PLANETARY FORECAST</p>
+        <p class="birth-chart-forecast-label">{{ t('planetaryForecast') }}</p>
         <p class="birth-chart-forecast-text">{{ store.birthChartData.forecast2026 }}</p>
       </div>
     </div>
@@ -149,32 +147,32 @@
     <!-- Birth chart: oracle/purchased — generate button -->
     <div v-else-if="(store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth" class="birth-chart-banner birth-chart-banner--active">
       <div class="birth-chart-info">
-        <p class="birth-chart-title">✦ Full Birth Chart{{ store.oraclePurchased ? ' — included in Oracle' : '' }}</p>
-        <p class="birth-chart-desc">Rising sign · Houses · Planetary positions{{ store.oraclePurchased ? ' — included' : ' — unlocked' }}</p>
+        <p class="birth-chart-title">✦ {{ store.oraclePurchased ? t('birthChartIncluded') : t('birthChartUnlockedLabel') }}</p>
+        <p class="birth-chart-desc">{{ store.oraclePurchased ? t('birthChartPositionsIncluded') : t('birthChartPositionsUnlocked') }}</p>
       </div>
       <button class="birth-chart-btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
-        {{ isLoadingBirthChart ? 'Generating...' : 'Generate Birth Chart' }}
+        {{ isLoadingBirthChart ? t('generatingBirthChart') : t('generateBirthChart') }}
       </button>
     </div>
 
     <!-- Birth chart: has time of birth, not yet purchased -->
     <div v-else-if="store.timeOfBirth" class="birth-chart-banner birth-chart-banner--active">
       <div class="birth-chart-info">
-        <p class="birth-chart-title">⚡ Your Full Birth Chart is ready</p>
-        <p class="birth-chart-desc">Rising sign · Houses · Planetary positions · $2.99</p>
+        <p class="birth-chart-title">{{ t('birthChartReady') }}</p>
+        <p class="birth-chart-desc">{{ t('birthChartPrice') }}</p>
       </div>
       <button class="birth-chart-btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
-        {{ isLoadingBirthChart ? 'Loading...' : 'Unlock Birth Chart — $2.99' }}
+        {{ isLoadingBirthChart ? t('loadingBirthChart') : t('unlockBirthChart') }}
       </button>
     </div>
 
     <!-- Birth chart: no time of birth -->
     <div v-else class="birth-chart-banner">
       <div class="birth-chart-info">
-        <p class="birth-chart-title birth-chart-title--dim">Full Birth Chart</p>
-        <p class="birth-chart-desc">Add your time of birth to unlock · $2.99</p>
+        <p class="birth-chart-title birth-chart-title--dim">{{ t('birthChartUnlockedLabel') }}</p>
+        <p class="birth-chart-desc">{{ t('birthChartRequiresTime') }}</p>
       </div>
-      <span class="birth-chart-locked-badge">Requires time of birth</span>
+      <span class="birth-chart-locked-badge">{{ t('requiresTimeOfBirth') }}</span>
     </div>
 
     <!-- Report sections -->
@@ -202,27 +200,27 @@
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
         <span style="font-size: 24px;">🕉</span>
         <div>
-          <p style="font-size: 11px; font-weight: 500; color: rgba(255,160,80,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">Vedic Destiny Reading</p>
+          <p style="font-size: 11px; font-weight: 500; color: rgba(255,160,80,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">{{ t('vedicReadingLabel') }}</p>
           <p style="font-size: 16px; font-weight: 500; color: white; margin: 0;">{{ vedicData.vedicTitle }}</p>
         </div>
       </div>
       <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
         <div style="padding: 8px 14px; background: rgba(255,140,50,0.08); border: 1px solid rgba(255,140,50,0.2); border-radius: 10px;">
-          <p style="font-size: 9px; color: rgba(255,160,80,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">Nakshatra</p>
+          <p style="font-size: 9px; color: rgba(255,160,80,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">{{ t('nakshatraLabel') }}</p>
           <p style="font-size: 13px; font-weight: 500; color: rgba(255,200,150,0.9); margin: 0;">{{ vedicData.nakshatraName }}</p>
         </div>
         <div style="padding: 8px 14px; background: rgba(255,140,50,0.08); border: 1px solid rgba(255,140,50,0.2); border-radius: 10px;">
-          <p style="font-size: 9px; color: rgba(255,160,80,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">Ruling Planet</p>
+          <p style="font-size: 9px; color: rgba(255,160,80,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">{{ t('rulingPlanetLabel') }}</p>
           <p style="font-size: 13px; font-weight: 500; color: rgba(255,200,150,0.9); margin: 0;">{{ vedicData.rulingPlanet }}</p>
         </div>
       </div>
       <p style="font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.8; margin-bottom: 16px;">{{ vedicData.reading }}</p>
       <div style="padding: 14px 16px; background: rgba(255,140,50,0.06); border-left: 2px solid rgba(255,160,80,0.4); border-radius: 0 8px 8px 0; margin-bottom: 12px;">
-        <p style="font-size: 10px; color: rgba(255,160,80,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px;">Karmic Mission</p>
+        <p style="font-size: 10px; color: rgba(255,160,80,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px;">{{ t('karmicMissionLabel') }}</p>
         <p style="font-size: 13px; color: rgba(255,200,150,0.8); font-style: italic; margin: 0;">{{ vedicData.karmicMission }}</p>
       </div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-        <span style="font-size: 11px; color: rgba(255,255,255,0.25);">2026 Practice:</span>
+        <span style="font-size: 11px; color: rgba(255,255,255,0.25);">{{ t('practice2026') }}</span>
         <span style="font-size: 12px; color: rgba(255,200,150,0.7); background: rgba(255,140,50,0.08); border: 1px solid rgba(255,140,50,0.15); border-radius: 20px; padding: 3px 12px;">{{ vedicData.remedy }}</span>
       </div>
     </div>
@@ -238,27 +236,27 @@
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
         <span style="font-size: 24px;">☯</span>
         <div>
-          <p style="font-size: 11px; font-weight: 500; color: rgba(220,100,80,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">BaZi Four Pillars Reading</p>
+          <p style="font-size: 11px; font-weight: 500; color: rgba(220,100,80,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">{{ t('baziReadingLabel') }}</p>
           <p style="font-size: 16px; font-weight: 500; color: white; margin: 0;">{{ baziData.baziTitle }}</p>
         </div>
       </div>
       <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
         <div style="padding: 8px 14px; background: rgba(200,80,50,0.08); border: 1px solid rgba(200,80,50,0.2); border-radius: 10px;">
-          <p style="font-size: 9px; color: rgba(220,120,100,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">Day Master</p>
+          <p style="font-size: 9px; color: rgba(220,120,100,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">{{ t('dayMasterLabel') }}</p>
           <p style="font-size: 13px; font-weight: 500; color: rgba(255,180,160,0.9); margin: 0;">{{ baziData.dayMaster }}</p>
         </div>
         <div style="padding: 8px 14px; background: rgba(200,80,50,0.08); border: 1px solid rgba(200,80,50,0.2); border-radius: 10px;">
-          <p style="font-size: 9px; color: rgba(220,120,100,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">Dominant Element</p>
+          <p style="font-size: 9px; color: rgba(220,120,100,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">{{ t('dominantElementLabel') }}</p>
           <p style="font-size: 13px; font-weight: 500; color: rgba(255,180,160,0.9); margin: 0;">{{ baziData.dominantElement }}</p>
         </div>
       </div>
       <p style="font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.8; margin-bottom: 16px;">{{ baziData.reading }}</p>
       <div style="padding: 14px 16px; background: rgba(200,80,50,0.06); border-left: 2px solid rgba(220,100,80,0.4); border-radius: 0 8px 8px 0; margin-bottom: 12px;">
-        <p style="font-size: 10px; color: rgba(220,120,100,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px;">2026 Wealth Luck</p>
+        <p style="font-size: 10px; color: rgba(220,120,100,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px;">{{ t('wealthLuck2026') }}</p>
         <p style="font-size: 13px; color: rgba(255,180,160,0.8); font-style: italic; margin: 0;">{{ baziData.wealthLuck2026 }}</p>
       </div>
       <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <span style="font-size: 11px; color: rgba(255,255,255,0.25);">Lucky directions:</span>
+        <span style="font-size: 11px; color: rgba(255,255,255,0.25);">{{ t('luckyDirections') }}</span>
         <span
           v-for="dir in baziData.luckyDirections"
           :key="dir"
@@ -278,7 +276,7 @@
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
         <span style="font-size: 24px;">🔮</span>
         <div>
-          <p style="font-size: 11px; font-weight: 500; color: rgba(180,120,220,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">Spiritual Destiny Reading</p>
+          <p style="font-size: 11px; font-weight: 500; color: rgba(180,120,220,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">{{ t('tarotReadingLabel') }}</p>
           <p style="font-size: 16px; font-weight: 500; color: white; margin: 0;">{{ tarotData.soulCard }}</p>
         </div>
       </div>
@@ -287,15 +285,15 @@
       </div>
       <p style="font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.8; margin-bottom: 16px;">{{ tarotData.reading }}</p>
       <div style="padding: 14px 16px; background: rgba(160,80,200,0.06); border-left: 2px solid rgba(180,120,220,0.4); border-radius: 0 8px 8px 0; margin-bottom: 16px;">
-        <p style="font-size: 10px; color: rgba(180,120,220,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px;">Love Destiny</p>
+        <p style="font-size: 10px; color: rgba(180,120,220,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px;">{{ t('loveDstiny') }}</p>
         <p style="font-size: 13px; color: rgba(210,170,255,0.85); font-style: italic; margin: 0;">{{ tarotData.loveMessage }}</p>
       </div>
       <div style="padding: 16px 20px; background: rgba(160,80,200,0.04); border: 1px solid rgba(160,80,200,0.12); border-radius: 12px; margin-bottom: 12px; text-align: center;">
-        <p style="font-size: 10px; color: rgba(180,120,220,0.4); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 6px;">A Blessing For You</p>
+        <p style="font-size: 10px; color: rgba(180,120,220,0.4); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 6px;">{{ t('blessingLabel') }}</p>
         <p style="font-size: 13px; color: rgba(210,170,255,0.7); font-style: italic; line-height: 1.6; margin: 0;">{{ tarotData.blessing }}</p>
       </div>
       <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <span style="font-size: 11px; color: rgba(255,255,255,0.25);">Your protective charm:</span>
+        <span style="font-size: 11px; color: rgba(255,255,255,0.25);">{{ t('protectiveCharm') }}</span>
         <span style="font-size: 12px; color: rgba(210,170,255,0.7); background: rgba(160,80,200,0.08); border: 1px solid rgba(160,80,200,0.15); border-radius: 20px; padding: 3px 12px;">{{ tarotData.luckyCharm }}</span>
       </div>
     </div>
@@ -307,10 +305,10 @@
     >
       <p style="font-size: 13px; color: rgba(255,255,255,0.3); margin: 0;">
         {{ store.region === 'india'
-            ? '🕉 Loading your Vedic reading...'
+            ? t('loadingVedic')
             : store.region === 'china'
-              ? '☯ Loading your BaZi reading...'
-              : '🔮 Loading your spiritual reading...' }}
+              ? t('loadingBazi')
+              : t('loadingSpiritual') }}
       </p>
     </div>
 
@@ -334,8 +332,8 @@
         >
           <span class="tradition-opt-icon">{{ opt.icon }}</span>
           <span class="tradition-opt-name">{{ opt.label }}</span>
-          <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active">Current</span>
-          <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free">Free</span>
+          <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active">{{ t('currentLabel') }}</span>
+          <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free">{{ t('freeLabel') }}</span>
           <span v-else class="tradition-opt-tag tradition-opt-tag--paid">$1.99</span>
         </button>
       </div>
@@ -388,7 +386,7 @@
             <p class="rmc-insight"><span class="rmc-icon" style="color:rgba(100,150,255,0.5);">⚡</span> {{ month.career }}</p>
             <p v-if="month.warning" class="rmc-warning">⚠ {{ month.warning }}</p>
           </div>
-          <p class="rmc-lucky">Lucky days: {{ month.luckyDays?.join(', ') }}</p>
+          <p class="rmc-lucky">{{ t('luckyDays') }} {{ month.luckyDays?.join(', ') }}</p>
         </div>
       </div>
     </div>
@@ -398,7 +396,7 @@
       v-if="(store.bundlePurchased || store.oraclePurchased) && !store.calendarData && isGeneratingCalendar"
       style="margin-bottom: 40px; padding: 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;"
     >
-      <p style="font-size: 13px; color: rgba(255,255,255,0.3); margin: 0;">📅 Generating your 2026 destiny calendar...</p>
+      <p style="font-size: 13px; color: rgba(255,255,255,0.3); margin: 0;">{{ t('generatingCalendar') }}</p>
     </div>
 
     <!-- Free compatibility section for bundle/oracle buyers -->
@@ -406,14 +404,14 @@
       v-if="store.bundlePurchased || store.oraclePurchased"
       style="margin-bottom: 40px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.05);"
     >
-      <p style="font-size: 9px; color: #c9a84c; text-transform: uppercase; letter-spacing: 0.18em; margin: 0 0 8px;">Compatibility Reading</p>
-      <p style="font-size: 16px; font-weight: 400; color: white; margin: 0 0 4px; font-family: 'Playfair Display', serif;">Included in your bundle</p>
-      <p style="font-size: 13px; color: rgba(255,255,255,0.35); margin: 0 0 20px;">Enter someone's details to discover your destiny compatibility.</p>
+      <p style="font-size: 9px; color: #c9a84c; text-transform: uppercase; letter-spacing: 0.18em; margin: 0 0 8px;">{{ t('compatReadingLabel') }}</p>
+      <p style="font-size: 16px; font-weight: 400; color: white; margin: 0 0 4px; font-family: 'Playfair Display', serif;">{{ t('compatIncluded') }}</p>
+      <p style="font-size: 13px; color: rgba(255,255,255,0.35); margin: 0 0 20px;">{{ t('compatEnterDetails') }}</p>
 
       <!-- Result -->
       <div v-if="bundleCompatibilityResult" style="margin-top: 8px;">
         <div style="padding: 16px; background: rgba(140,110,255,0.06); border: 1px solid rgba(140,110,255,0.15); border-radius: 8px; margin-bottom: 16px;">
-          <p style="font-size: 9px; color: rgba(140,110,255,0.6); text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 4px;">Compatibility Score</p>
+          <p style="font-size: 9px; color: rgba(140,110,255,0.6); text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 4px;">{{ t('compatScore') }}</p>
           <p style="font-size: 28px; font-weight: 400; color: white; font-family: 'Playfair Display', serif; margin: 0;">{{ bundleCompatibilityResult.compatibilityScore }}%</p>
           <p style="font-size: 13px; color: rgba(200,180,255,0.7); margin: 4px 0 0;">{{ bundleCompatibilityResult.compatibilityTitle }}</p>
         </div>
@@ -425,15 +423,15 @@
 
       <!-- Form -->
       <div v-else>
-        <input v-model="partnerName" type="text" placeholder="Their first name" class="compat-input" style="margin-bottom: 10px;" >
+        <input v-model="partnerName" type="text" :placeholder="t('addonPartnerPlaceholder')" class="compat-input" style="margin-bottom: 10px;" >
         <input v-model="partnerDob" type="date" class="compat-input compat-input--date" style="margin-bottom: 10px;" >
-        <input v-model="partnerCity" type="text" placeholder="Their city (optional)" class="compat-input" style="margin-bottom: 16px;" >
+        <input v-model="partnerCity" type="text" :placeholder="t('partnerCityPlaceholder')" class="compat-input" style="margin-bottom: 16px;" >
         <button
           class="compat-unlock-btn"
           :disabled="!partnerName || !partnerDob || isGeneratingCompatibility"
           @click="generateCompatibilityFree"
         >
-          {{ isGeneratingCompatibility ? 'Generating...' : 'Generate Compatibility Reading →' }}
+          {{ isGeneratingCompatibility ? t('generating') : t('generateCompatFree') }}
         </button>
       </div>
     </div>
@@ -573,15 +571,15 @@
 
       <!-- Form -->
       <div v-else class="compat-form">
-        <p class="compat-form-title">Enter their details</p>
+        <p class="compat-form-title">{{ t('compatFormTitle') }}</p>
         <p class="compat-form-subtitle">
-          Their information is used only to generate your compatibility reading.
+          {{ t('compatFormSubtitle') }}
         </p>
         <div class="compat-fields">
           <input
             v-model="partnerName"
             type="text"
-            placeholder="Their first name"
+            :placeholder="t('addonPartnerPlaceholder')"
             class="compat-input"
           >
           <input
@@ -592,7 +590,7 @@
           <input
             v-model="partnerCity"
             type="text"
-            placeholder="Their city (optional)"
+            :placeholder="t('partnerCityPlaceholder')"
             class="compat-input"
           >
         </div>
@@ -601,10 +599,10 @@
           :disabled="!partnerName || !partnerDob || isProcessingCompatibility"
           @click="buyCompatibilityReading"
         >
-          {{ isProcessingCompatibility ? 'Processing...' : 'Get Compatibility Reading — $2.99' }}
+          {{ isProcessingCompatibility ? t('processingCompatibility') : t('getCompatReading') }}
         </button>
         <button class="compat-cancel-btn" @click="showCompatibilityForm = false">
-          Cancel
+          {{ t('cancelLabel') }}
         </button>
       </div>
     </div>

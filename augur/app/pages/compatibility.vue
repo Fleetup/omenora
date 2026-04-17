@@ -8,7 +8,7 @@
         </div>
       </div>
       <p class="brand-text">OMENORA</p>
-      <p class="status-text">Analyzing your compatibility...</p>
+      <p class="status-text">{{ t('analyzingCompat') }}</p>
     </div>
   </div>
 
@@ -21,7 +21,7 @@
         </div>
       </div>
       <p class="brand-text">OMENORA</p>
-      <p class="status-text">Something went wrong. Please try again.</p>
+      <p class="status-text">{{ t('somethingWrong') }}</p>
     </div>
   </div>
 
@@ -31,12 +31,12 @@
     <!-- Top bar -->
     <div class="top-bar">
       <p class="top-brand">OMENORA</p>
-      <span class="report-label">Compatibility Reading</span>
+      <span class="report-label">{{ t('compatReading') }}</span>
     </div>
 
     <!-- Hero: score + title -->
     <div class="hero-block">
-      <p class="archetype-label">DESTINY COMPATIBILITY</p>
+      <p class="archetype-label">{{ t('destinyCompat') }}</p>
 
       <p class="names-line">
         {{ store.firstName }} &amp; {{ store.partnerName }}
@@ -65,10 +65,10 @@
 
     <!-- Share section -->
     <div class="share-section">
-      <h3 class="share-title">Share Your Reading</h3>
-      <p class="share-subtitle">Download your compatibility card to share with {{ store.partnerName }}</p>
+      <h3 class="share-title">{{ t('shareYourReading') }}</h3>
+      <p class="share-subtitle">{{ t('shareCompatSubtitle').replace('{name}', store.partnerName) }}</p>
       <button class="download-btn" @click="downloadCompatibilityCard">
-        Download Card
+        {{ t('downloadCard2') }}
       </button>
     </div>
 
@@ -85,7 +85,7 @@ useSeoMeta({ title: 'Your Love Compatibility Reading', robots: 'noindex, nofollo
 
 const store = useAnalysisStore()
 const route = useRoute()
-useLanguage()
+const { t } = useLanguage()
 
 const isLoading = ref(true)
 const hasError = ref(false)

@@ -23,7 +23,7 @@
         <div class="orbit-center" />
       </div>
       <p class="brand-text">OMENORA</p>
-      <p class="loading-msg">Something went wrong. Please try again.</p>
+      <p class="loading-msg">{{ t('somethingWrong') }}</p>
     </div>
   </div>
 
@@ -39,20 +39,20 @@
     <!-- Hero -->
     <div class="cal-hero">
       <div class="cal-hero-glow" aria-hidden="true" />
-      <p class="cal-hero-label">2026 DESTINY CALENDAR</p>
-      <h1 class="cal-hero-title">{{ store.firstName }}'s<br>Year of Becoming</h1>
+      <p class="cal-hero-label">{{ t('calDestinyCalendar') }}</p>
+      <h1 class="cal-hero-title">{{ store.firstName }}'s<br>{{ t('yearOfBecoming') }}</h1>
       <p class="cal-hero-theme">{{ calendarData.overallTheme }}</p>
     </div>
 
     <!-- Peak / Caution summary -->
     <div class="cal-summary">
       <div class="cal-summary-row">
-        <span class="summary-label">PEAK MONTHS</span>
+        <span class="summary-label">{{ t('peakMonths') }}</span>
         <span class="peak-months">{{ calendarData.peakMonths.join(' · ') }}</span>
       </div>
       <div class="cal-summary-divider" />
       <div class="cal-summary-row">
-        <span class="summary-label">CAUTION MONTHS</span>
+        <span class="summary-label">{{ t('cautionMonths') }}</span>
         <span class="caution-months">{{ calendarData.cautionMonths.join(' · ') }}</span>
       </div>
     </div>
@@ -76,7 +76,7 @@
           <p class="month-energy" :style="{ color: energyColor(month.energyLevel) }">
             {{ month.energyLevel }}
           </p>
-          <p class="energy-label">energy</p>
+          <p class="energy-label">{{ t('energyLabel') }}</p>
         </div>
       </div>
 
@@ -111,7 +111,7 @@
 
       <!-- Lucky days -->
       <div class="lucky-days">
-        <span class="lucky-label">Lucky days:</span>
+        <span class="lucky-label">{{ t('luckyDays') }}</span>
         <span
           v-for="day in month.luckyDays"
           :key="day"
@@ -124,14 +124,14 @@
     <div class="save-section">
       <div class="save-divider" />
       <p class="save-label">{{ t('savingCalendar') }}</p>
-      <h3 class="save-title">Download or share your 2026 reading</h3>
-      <p class="save-subtitle">PDF delivered instantly · PNG for social sharing</p>
+      <h3 class="save-title">{{ t('downloadShareReading') }}</h3>
+      <p class="save-subtitle">{{ t('pdfInstantPng') }}</p>
       <div class="download-row">
         <button class="download-btn" :disabled="isDownloadingCalendar" @click="downloadCalendar">
-          {{ isDownloadingCalendar ? 'Downloading...' : t('downloadCalendar') }}
+          {{ isDownloadingCalendar ? t('downloading') : t('downloadCalendar') }}
         </button>
         <button class="download-btn download-btn--primary" :disabled="isDownloadingCalPDF" @click="downloadCalendarPDF">
-          {{ isDownloadingCalPDF ? 'Generating...' : 'Full Calendar (PDF)' }}
+          {{ isDownloadingCalPDF ? t('generating') : t('fullCalendarPdf') }}
         </button>
       </div>
     </div>
@@ -140,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
 
@@ -155,12 +155,12 @@ const isLoading = ref(true)
 const hasError = ref(false)
 const calendarData = ref<any>(null)
 
-const loadingMessages = [
-  'Mapping your 2026 energy fields...',
-  'Calculating lucky windows...',
-  'Aligning planetary cycles...',
-  'Building your personal calendar...',
-]
+const loadingMessages = computed(() => [
+  t('calLoading1'),
+  t('calLoading2'),
+  t('calLoading3'),
+  t('calLoading4'),
+])
 const currentMessageIndex = ref(0)
 let messageInterval: ReturnType<typeof setInterval> | null = null
 
@@ -172,7 +172,7 @@ function energyColor(level: number): string {
 
 onMounted(async () => {
   messageInterval = setInterval(() => {
-    currentMessageIndex.value = (currentMessageIndex.value + 1) % loadingMessages.length
+    currentMessageIndex.value = (currentMessageIndex.value + 1) % loadingMessages.value.length
   }, 2000)
 
   const sessionId = route.query.session_id as string
