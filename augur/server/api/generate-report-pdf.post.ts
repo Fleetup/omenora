@@ -1,15 +1,34 @@
 import PDFDocument from 'pdfkit'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { join, dirname } from 'node:path'
 
-/**
- * Draws an archetype symbol as native PDFKit vector paths.
- * Fully font-independent — renders identically on all platforms.
- *
- * @param doc    PDFKit document
- * @param symbol The archetype symbol character (from ARCHETYPE_SYMBOLS map)
- * @param cx     Center X in points
- * @param cy     Center Y in points
- * @param r      Radius / size reference in points
- */
+const SYMBOL_TO_ID: Record<string, string> = {
+  '●': 'phoenix',
+  '◆': 'architect',
+  '▲': 'storm',
+  '◇': 'lighthouse',
+  '○': 'wanderer',
+  '⬡': 'alchemist',
+  '□': 'guardian',
+  '⬟': 'visionary',
+  '◉': 'mirror',
+  '✦': 'catalyst',
+  '▽': 'sage',
+  '★': 'wildfire',
+}
+
+function resolveSymbolPath(symbol: string): string | null {
+  const id = SYMBOL_TO_ID[symbol] ?? 'phoenix'
+  const filename = `${id}@2x.png`
+  const candidates = [
+    join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'symbols', filename),
+    join(process.cwd(), 'public', 'symbols', filename),
+  ]
+  return candidates.find(p => existsSync(p)) ?? null
+}
+
+// Legacy vector draw kept as fallback if PNG not found
 function drawPdfArchetypeSymbol(doc: any, symbol: string, cx: number, cy: number, r: number): void {
   const color = '#c8b4ff'
   const sw = Math.max(1.2, r * 0.06)
@@ -179,8 +198,14 @@ export default defineEventHandler(async (event) => {
     .text(archetypeName, 60, y, { width: 475, align: 'center' })
   y += doc.heightOfString(archetypeName, { width: 475 }) + 14
 
-  drawPdfArchetypeSymbol(doc, report.archetypeSymbol || '◆', W / 2, y + 14, 14)
-  y += 36
+  const symbolPngPath = resolveSymbolPath(report.archetypeSymbol || '◆')
+  const symbolPdfSize = 56
+  if (symbolPngPath) {
+    doc.image(symbolPngPath, W / 2 - symbolPdfSize / 2, y, { width: symbolPdfSize, height: symbolPdfSize })
+  } else {
+    drawPdfArchetypeSymbol(doc, report.archetypeSymbol || '◆', W / 2, y + 28, 14)
+  }
+  y += symbolPdfSize + 8
 
   doc.font('Helvetica')
     .fontSize(14)

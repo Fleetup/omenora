@@ -1,7 +1,33 @@
-import { createCanvas, registerFont } from 'canvas'
+import { createCanvas, registerFont, loadImage } from 'canvas'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join, dirname } from 'node:path'
+
+const SYMBOL_TO_ID: Record<string, string> = {
+  '●': 'phoenix',
+  '◆': 'architect',
+  '▲': 'storm',
+  '◇': 'lighthouse',
+  '○': 'wanderer',
+  '⬡': 'alchemist',
+  '□': 'guardian',
+  '⬟': 'visionary',
+  '◉': 'mirror',
+  '✦': 'catalyst',
+  '▽': 'sage',
+  '★': 'wildfire',
+}
+
+function resolveSymbolPath(archetypeId: string): string {
+  const filename = `${archetypeId}@2x.png`
+  const candidates = [
+    join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'symbols', filename),
+    join(process.cwd(), 'public', 'symbols', filename),
+  ]
+  const found = candidates.find(p => existsSync(p))
+  if (!found) throw new Error(`Symbol PNG not found: ${filename}`)
+  return found
+}
 
 // Resolve the fonts directory across environments:
 //   dev  → <project-root>/public/fonts/
@@ -290,8 +316,11 @@ export default defineEventHandler(async (event) => {
   ctx.textAlign = 'center'
   ctx.fillText('YOUR DESTINY ARCHETYPE', width / 2, 220)
 
-  // --- SYMBOL (drawn as native canvas paths — font-independent) ---
-  drawArchetypeSymbol(ctx, archetypeSymbol || '◆', width / 2, 390, 80)
+  // --- SYMBOL (gold medallion PNG) ---
+  const archetypeId = SYMBOL_TO_ID[archetypeSymbol] ?? 'phoenix'
+  const symbolImg = await loadImage(resolveSymbolPath(archetypeId))
+  const symbolSize = 260
+  ctx.drawImage(symbolImg, width / 2 - symbolSize / 2, 390 - symbolSize / 2, symbolSize, symbolSize)
 
   ctx.beginPath()
   ctx.arc(width / 2, 390, 130, 0, Math.PI * 2)
