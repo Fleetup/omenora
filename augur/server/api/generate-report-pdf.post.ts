@@ -1,5 +1,129 @@
 import PDFDocument from 'pdfkit'
 
+/**
+ * Draws an archetype symbol as native PDFKit vector paths.
+ * Fully font-independent — renders identically on all platforms.
+ *
+ * @param doc    PDFKit document
+ * @param symbol The archetype symbol character (from ARCHETYPE_SYMBOLS map)
+ * @param cx     Center X in points
+ * @param cy     Center Y in points
+ * @param r      Radius / size reference in points
+ */
+function drawPdfArchetypeSymbol(doc: any, symbol: string, cx: number, cy: number, r: number): void {
+  const color = '#c8b4ff'
+  const sw = Math.max(1.2, r * 0.06)
+
+  switch (symbol) {
+    // ● phoenix — filled circle
+    case '●':
+      doc.circle(cx, cy, r * 0.62).fillColor(color).fill()
+      break
+
+    // ◆ architect — filled diamond
+    case '◆':
+      doc.polygon(
+        [cx, cy - r],
+        [cx + r * 0.7, cy],
+        [cx, cy + r],
+        [cx - r * 0.7, cy],
+      ).fillColor(color).fill()
+      break
+
+    // ▲ storm — filled upward triangle
+    case '▲':
+      doc.polygon(
+        [cx, cy - r * 0.8],
+        [cx + r * 0.92, cy + r * 0.53],
+        [cx - r * 0.92, cy + r * 0.53],
+      ).fillColor(color).fill()
+      break
+
+    // ◇ lighthouse — open diamond
+    case '◇':
+      doc.polygon(
+        [cx, cy - r],
+        [cx + r * 0.7, cy],
+        [cx, cy + r],
+        [cx - r * 0.7, cy],
+      ).strokeColor(color).lineWidth(sw).stroke()
+      break
+
+    // ○ wanderer — open circle
+    case '○':
+      doc.circle(cx, cy, r * 0.62).strokeColor(color).lineWidth(sw).stroke()
+      break
+
+    // ⬡ alchemist — open hexagon (pointy-top)
+    case '⬡': {
+      const hex: [number, number][] = Array.from({ length: 6 }, (_, i) => {
+        const angle = (Math.PI / 3) * i - Math.PI / 6
+        return [cx + r * 0.88 * Math.cos(angle), cy + r * 0.88 * Math.sin(angle)] as [number, number]
+      })
+      doc.polygon(...hex).strokeColor(color).lineWidth(sw).stroke()
+      break
+    }
+
+    // □ guardian — open square
+    case '□':
+      doc.rect(cx - r * 0.62, cy - r * 0.62, r * 1.24, r * 1.24)
+        .strokeColor(color).lineWidth(sw).stroke()
+      break
+
+    // ⬟ visionary — open rotated square (wide diamond)
+    case '⬟':
+      doc.polygon(
+        [cx, cy - r * 0.88],
+        [cx + r * 0.88, cy],
+        [cx, cy + r * 0.88],
+        [cx - r * 0.88, cy],
+      ).strokeColor(color).lineWidth(sw).stroke()
+      break
+
+    // ◉ mirror — filled inner circle + open outer ring
+    case '◉':
+      doc.circle(cx, cy, r * 0.28).fillColor(color).fill()
+      doc.circle(cx, cy, r * 0.62).strokeColor(color).lineWidth(sw).stroke()
+      break
+
+    // ✦ catalyst — 4-pointed star
+    case '✦': {
+      const pts4: [number, number][] = Array.from({ length: 8 }, (_, i) => {
+        const angle = (Math.PI / 4) * i - Math.PI / 2
+        const rad = i % 2 === 0 ? r * 0.88 : r * 0.28
+        return [cx + rad * Math.cos(angle), cy + rad * Math.sin(angle)] as [number, number]
+      })
+      doc.polygon(...pts4).fillColor(color).fill()
+      break
+    }
+
+    // ▽ sage — open downward triangle
+    case '▽':
+      doc.polygon(
+        [cx - r * 0.92, cy - r * 0.53],
+        [cx + r * 0.92, cy - r * 0.53],
+        [cx, cy + r * 0.8],
+      ).strokeColor(color).lineWidth(sw).stroke()
+      break
+
+    // ★ wildfire — 5-pointed filled star
+    case '★': {
+      const pts5: [number, number][] = Array.from({ length: 10 }, (_, i) => {
+        const angle = (Math.PI / 5) * i - Math.PI / 2
+        const rad = i % 2 === 0 ? r * 0.88 : r * 0.36
+        return [cx + rad * Math.cos(angle), cy + rad * Math.sin(angle)] as [number, number]
+      })
+      doc.polygon(...pts5).fillColor(color).fill()
+      break
+    }
+
+    // fallback — filled circle
+    default:
+      doc.circle(cx, cy, r * 0.62).fillColor(color).fill()
+      break
+  }
+}
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { firstName, report, lifePathNumber, region, vedicData, baziData, tarotData, calendarData, bundlePurchased, language } = body
@@ -55,11 +179,14 @@ export default defineEventHandler(async (event) => {
     .text(archetypeName, 60, y, { width: 475, align: 'center' })
   y += doc.heightOfString(archetypeName, { width: 475 }) + 14
 
+  drawPdfArchetypeSymbol(doc, report.archetypeSymbol || '◆', W / 2, y + 14, 14)
+  y += 36
+
   doc.font('Helvetica')
     .fontSize(14)
     .fillColor('#8c6eff')
     .text(
-      `${report.archetypeSymbol || ''} ${report.element || ''} · Life Path ${lifePathNumber || ''}`,
+      `${report.element || ''} · Life Path ${lifePathNumber || ''}`,
       60, y, { width: 475, align: 'center' }
     )
   y += 25
