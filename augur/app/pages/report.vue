@@ -316,9 +316,9 @@
 
     <!-- Tradition Switcher -->
     <div v-if="store.report && !isSwitchingTradition && !isSwitchComplete" class="tradition-switcher">
-      <p class="tradition-switcher-label">READING TRADITION</p>
+      <p class="tradition-switcher-label">{{ t('traditionSwitcherLabel') }}</p>
       <p class="tradition-switcher-sub">
-        {{ store.oraclePurchased ? 'Switch your reading tradition — included in Oracle' : 'Explore another tradition — $1.99 each' }}
+        {{ store.oraclePurchased ? t('traditionSwitcherSubOracle') : t('traditionSwitcherSubPaid') }}
       </p>
       <div class="tradition-options">
         <button
@@ -344,13 +344,13 @@
     <!-- Tradition switching loading state -->
     <div v-if="isSwitchingTradition" class="tradition-loading">
       <div class="tradition-loading-ring" />
-      <p class="tradition-loading-text">Generating your {{ switchingTraditionLabel }} reading...</p>
+      <p class="tradition-loading-text">{{ t('traditionGenerating').replace('{tradition}', switchingTraditionLabel) }}</p>
     </div>
 
     <!-- Tradition switch success banner -->
     <div v-if="isSwitchComplete" class="tradition-success-banner">
       <span class="tradition-success-icon">✦</span>
-      <p class="tradition-success-text">{{ switchedTraditionLabel }} reading unlocked</p>
+      <p class="tradition-success-text">{{ t('traditionUnlocked').replace('{tradition}', switchedTraditionLabel) }}</p>
     </div>
 
     <!-- Calendar display for bundle/oracle buyers -->

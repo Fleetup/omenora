@@ -118,6 +118,11 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     q7opt2: 'Succeeds but feels nothing',
     q7opt3: 'Needs someone too much',
     q7opt4: 'Pushes everyone away to stay safe',
+    traditionSwitcherLabel: 'READING TRADITION',
+    traditionSwitcherSubOracle: 'Switch your reading tradition — included in Oracle',
+    traditionSwitcherSubPaid: 'Explore another tradition — $1.99 each',
+    traditionGenerating: 'Generating your {tradition} reading...',
+    traditionUnlocked: '{tradition} reading unlocked',
   },
 
   es: {
@@ -230,6 +235,11 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     q7opt2: 'Triunfa pero no siente nada',
     q7opt3: 'Necesita demasiado a alguien',
     q7opt4: 'Aleja a todos para mantenerse a salvo',
+    traditionSwitcherLabel: 'TRADICIÓN DE LECTURA',
+    traditionSwitcherSubOracle: 'Cambia tu tradición de lectura — incluido en Oracle',
+    traditionSwitcherSubPaid: 'Explora otra tradición — $1.99 cada una',
+    traditionGenerating: 'Generando tu lectura {tradition}...',
+    traditionUnlocked: 'Lectura {tradition} desbloqueada',
   },
 
   pt: {
@@ -342,6 +352,11 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     q7opt2: 'Tem sucesso mas não sente nada',
     q7opt3: 'Precisa demais de alguém',
     q7opt4: 'Afasta todos para se manter seguro/a',
+    traditionSwitcherLabel: 'TRADIÇÃO DE LEITURA',
+    traditionSwitcherSubOracle: 'Mude sua tradição de leitura — incluído no Oracle',
+    traditionSwitcherSubPaid: 'Explore outra tradição — $1.99 cada',
+    traditionGenerating: 'Gerando sua leitura {tradition}...',
+    traditionUnlocked: 'Leitura {tradition} desbloqueada',
   },
 
   hi: {
@@ -454,6 +469,11 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     q7opt2: 'जो सफल हो लेकिन कुछ महसूस न करे',
     q7opt3: 'जो किसी की बहुत जरूरत करे',
     q7opt4: 'जो सुरक्षित रहने के लिए सबको दूर कर दे',
+    traditionSwitcherLabel: 'रीडिंग परंपरा',
+    traditionSwitcherSubOracle: 'अपनी रीडिंग परंपरा बदलें — Oracle में शामिल',
+    traditionSwitcherSubPaid: 'दूसरी परंपरा आज़माएं — $1.99 प्रत्येक',
+    traditionGenerating: 'आपकी {tradition} रीडिंग तैयार हो रही है...',
+    traditionUnlocked: '{tradition} रीडिंग अनलॉक हुई',
   },
 
   ko: {
@@ -566,6 +586,11 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     q7opt2: '성공하지만 아무것도 느끼지 못하는 사람',
     q7opt3: '누군가를 너무 많이 필요로 하는 사람',
     q7opt4: '안전하기 위해 모든 사람을 밀어내는 사람',
+    traditionSwitcherLabel: '리딩 전통',
+    traditionSwitcherSubOracle: '리딩 전통 바꾸기 — Oracle에 포함',
+    traditionSwitcherSubPaid: '다른 전통 탐색 — 각 $1.99',
+    traditionGenerating: '{tradition} 리딩 생성 중...',
+    traditionUnlocked: '{tradition} 리딩 해제됨',
   },
 
   zh: {
@@ -678,6 +703,11 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     q7opt2: '成功了却感受不到任何东西的人',
     q7opt3: '太需要某人的人',
     q7opt4: '为了安全把所有人推开的人',
+    traditionSwitcherLabel: '解读传统',
+    traditionSwitcherSubOracle: '切换解读传统 — Oracle已包含',
+    traditionSwitcherSubPaid: '探索其他传统 — 每个 $1.99',
+    traditionGenerating: '正在生成{tradition}解读...',
+    traditionUnlocked: '{tradition}解读已解锁',
   },
 }
 
