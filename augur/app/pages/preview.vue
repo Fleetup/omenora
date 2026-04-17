@@ -81,7 +81,7 @@
             <p class="tier-name">{{ t('basicReport') }}</p>
             <p class="tier-desc">{{ t('basicDesc') }}</p>
           </div>
-          <p class="tier-price">$1.99</p>
+          <p class="tier-price">$2.99</p>
         </div>
 
         <!-- Tier 2: Most Popular (Target) -->
