@@ -47,8 +47,8 @@ export default defineEventHandler(async (event) => {
 </html>`
 
   const { error } = await resend.emails.send({
-    from: 'OMENORA <onboarding@resend.dev>',
-    to: [process.env.RESEND_TEST_EMAIL || email],
+    from: 'OMENORA <reading@omenora.com>',
+    to: [email],
     subject: `${insight.greeting} ${insight.dayTheme}`,
     html: htmlContent,
   })

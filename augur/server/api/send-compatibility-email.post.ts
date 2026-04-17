@@ -148,8 +148,8 @@ export default defineEventHandler(async (event) => {
   `
 
   const { error } = await resend.emails.send({
-    from: 'OMENORA <onboarding@resend.dev>',
-    to: [process.env.RESEND_TEST_EMAIL || email],
+    from: 'OMENORA <reading@omenora.com>',
+    to: [email],
     subject: (() => {
       const subjects: Record<string, string> = {
         en: `${firstName} & ${partnerName} — Your Compatibility Reading`,
