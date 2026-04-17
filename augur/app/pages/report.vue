@@ -314,6 +314,45 @@
       </p>
     </div>
 
+    <!-- Tradition Switcher -->
+    <div v-if="store.report && !isSwitchingTradition && !isSwitchComplete" class="tradition-switcher">
+      <p class="tradition-switcher-label">READING TRADITION</p>
+      <p class="tradition-switcher-sub">
+        {{ store.oraclePurchased ? 'Switch your reading tradition — included in Oracle' : 'Explore another tradition — $1.99 each' }}
+      </p>
+      <div class="tradition-options">
+        <button
+          v-for="opt in TRADITION_OPTIONS"
+          :key="opt.value"
+          class="tradition-opt-btn"
+          :class="{
+            'tradition-opt-active': store.region === opt.value,
+            'tradition-opt-unlocked': isTraditionUnlocked(opt.value),
+          }"
+          :disabled="store.region === opt.value || isSwitchingTradition"
+          @click="handleTraditionSwitch(opt.value)"
+        >
+          <span class="tradition-opt-icon">{{ opt.icon }}</span>
+          <span class="tradition-opt-name">{{ opt.label }}</span>
+          <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active">Current</span>
+          <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free">Free</span>
+          <span v-else class="tradition-opt-tag tradition-opt-tag--paid">$1.99</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tradition switching loading state -->
+    <div v-if="isSwitchingTradition" class="tradition-loading">
+      <div class="tradition-loading-ring" />
+      <p class="tradition-loading-text">Generating your {{ switchingTraditionLabel }} reading...</p>
+    </div>
+
+    <!-- Tradition switch success banner -->
+    <div v-if="isSwitchComplete" class="tradition-success-banner">
+      <span class="tradition-success-icon">✦</span>
+      <p class="tradition-success-text">{{ switchedTraditionLabel }} reading unlocked</p>
+    </div>
+
     <!-- Calendar display for bundle/oracle buyers -->
     <div v-if="(store.bundlePurchased || store.oraclePurchased) && store.calendarData" class="report-cal-section">
       <div class="report-cal-header">
@@ -1385,6 +1424,142 @@ async function startSubscription() {
     console.error('Subscription start failed')
     isStartingSub.value = false
   }
+}
+
+// ── Tradition Switcher ────────────────────────────────────────────────────
+
+const TRADITION_OPTIONS = [
+  { value: 'western', label: 'Western',  icon: '⭐' },
+  { value: 'india',   label: 'Vedic',    icon: '🕉' },
+  { value: 'china',   label: 'BaZi',     icon: '☯' },
+  { value: 'latam',   label: 'Tarot',    icon: '🔮' },
+]
+
+const unlockedTraditions = ref<string[]>([store.region || 'western'])
+const isSwitchingTradition = ref(false)
+const isSwitchComplete = ref(false)
+const switchingTraditionLabel = ref('')
+const switchedTraditionLabel = ref('')
+
+function isTraditionUnlocked(tradition: string): boolean {
+  return unlockedTraditions.value.includes(tradition)
+}
+
+async function handleTraditionSwitch(newTradition: string) {
+  if (isSwitchingTradition.value || store.region === newTradition) return
+
+  const opt = TRADITION_OPTIONS.find(o => o.value === newTradition)
+  switchingTraditionLabel.value = opt?.label ?? newTradition
+
+  const isAlreadyUnlocked = isTraditionUnlocked(newTradition)
+  const isFree = store.oraclePurchased || isAlreadyUnlocked
+
+  if (isFree) {
+    // Free switch: call switch-tradition directly
+    isSwitchingTradition.value = true
+    try {
+      const result = await $fetch<{ success: boolean; report: any; tradition: string }>(
+        '/api/switch-tradition',
+        {
+          method: 'POST',
+          body: {
+            sessionId:    '',
+            reportId:     store.tempId || store.reportSessionId,
+            newTradition,
+            freeSwitch:   true,
+          },
+        },
+      )
+      store.setReport(result.report)
+      store.setRegion(newTradition, store.country)
+      if (!unlockedTraditions.value.includes(newTradition)) {
+        unlockedTraditions.value = [...unlockedTraditions.value, newTradition]
+      }
+      await loadRegionalSection()
+      switchedTraditionLabel.value = opt?.label ?? newTradition
+      isSwitchComplete.value = true
+      setTimeout(() => { isSwitchComplete.value = false }, 4000)
+    } catch {
+      console.error('Tradition switch failed')
+    } finally {
+      isSwitchingTradition.value = false
+    }
+  } else {
+    // Paid switch: redirect to Stripe
+    isSwitchingTradition.value = true
+    try {
+      const { url } = await $fetch<{ sessionId: string; url: string | null }>(
+        '/api/create-tradition-payment',
+        {
+          method: 'POST',
+          body: {
+            firstName:      store.firstName,
+            email:          store.email,
+            reportId:       store.tempId || store.reportSessionId,
+            newTradition,
+            archetype:      store.archetype,
+            lifePathNumber: store.lifePathNumber,
+            language:       store.language,
+            origin:         window.location.origin,
+          },
+        },
+      )
+      if (url) window.location.href = url
+    } catch {
+      console.error('Tradition payment creation failed')
+      isSwitchingTradition.value = false
+    }
+  }
+}
+
+// Handle returning from a tradition_switch Stripe payment
+const _traditionSwitchSessionId = route.query.session_id as string | undefined
+const _isTraditionSwitch = route.query.tradition_switch === 'true'
+
+if (_isTraditionSwitch && _traditionSwitchSessionId) {
+  onMounted(async () => {
+    try {
+      const paymentData = await $fetch<{
+        paid: boolean
+        metadata: Record<string, string> | null
+      }>('/api/verify-payment', {
+        method: 'POST',
+        body: { sessionId: _traditionSwitchSessionId },
+      })
+      if (!paymentData.paid) return
+      const meta = paymentData.metadata ?? {}
+      if (meta.type !== 'tradition_switch' || !meta.newTradition) return
+
+      const newTradition = meta.newTradition
+      isSwitchingTradition.value = true
+      const opt = TRADITION_OPTIONS.find(o => o.value === newTradition)
+      switchingTraditionLabel.value = opt?.label ?? newTradition
+
+      const result = await $fetch<{ success: boolean; report: any; tradition: string }>(
+        '/api/switch-tradition',
+        {
+          method: 'POST',
+          body: {
+            sessionId:    _traditionSwitchSessionId,
+            reportId:     meta.reportId || store.tempId || store.reportSessionId,
+            newTradition,
+            freeSwitch:   false,
+          },
+        },
+      )
+      store.setReport(result.report)
+      store.setRegion(newTradition, store.country)
+      unlockedTraditions.value = [...new Set([...unlockedTraditions.value, newTradition])]
+      await loadRegionalSection()
+      switchedTraditionLabel.value = opt?.label ?? newTradition
+      isSwitchComplete.value = true
+      setTimeout(() => { isSwitchComplete.value = false }, 4000)
+    } catch {
+      console.error('Tradition switch post-payment failed')
+    } finally {
+      isSwitchingTradition.value = false
+    }
+  })
 }
 
 const isDownloadingPDF = ref(false)
@@ -2817,5 +2992,157 @@ async function downloadReportPDF() {
   color: rgba(255, 255, 255, 0.5);
   margin: 0;
   font-style: italic;
+}
+
+/* ── Tradition Switcher ── */
+.tradition-switcher {
+  margin: 0 0 40px;
+  padding: 20px 20px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.tradition-switcher-label {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(201, 168, 76, 0.55);
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.tradition-switcher-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0 0 16px;
+}
+
+.tradition-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.tradition-opt-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tradition-opt-btn:hover:not(:disabled) {
+  border-color: rgba(201, 168, 76, 0.3);
+  background: rgba(201, 168, 76, 0.04);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tradition-opt-btn:disabled {
+  cursor: default;
+}
+
+.tradition-opt-active {
+  border-color: rgba(201, 168, 76, 0.4) !important;
+  background: rgba(201, 168, 76, 0.06) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.tradition-opt-unlocked:not(.tradition-opt-active) {
+  border-color: rgba(80, 200, 120, 0.2);
+}
+
+.tradition-opt-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.tradition-opt-name {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.tradition-opt-tag {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.tradition-opt-tag--active {
+  background: rgba(201, 168, 76, 0.12);
+  color: rgba(201, 168, 76, 0.8);
+}
+
+.tradition-opt-tag--free {
+  background: rgba(80, 200, 120, 0.1);
+  color: rgba(80, 200, 120, 0.8);
+}
+
+.tradition-opt-tag--paid {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.tradition-loading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+  border: 1px solid rgba(201, 168, 76, 0.12);
+  border-radius: 16px;
+  margin: 0 0 40px;
+  background: rgba(201, 168, 76, 0.03);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.tradition-loading-ring {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(201, 168, 76, 0.2);
+  border-top-color: rgba(201, 168, 76, 0.8);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: spin 0.9s linear infinite;
+}
+
+.tradition-loading-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+}
+
+.tradition-success-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border: 1px solid rgba(80, 200, 120, 0.2);
+  border-radius: 12px;
+  margin: 0 0 40px;
+  background: rgba(80, 200, 120, 0.04);
+}
+
+.tradition-success-icon {
+  font-size: 16px;
+  color: rgba(201, 168, 76, 0.8);
+}
+
+.tradition-success-text {
+  font-size: 13px;
+  color: rgba(80, 200, 120, 0.8);
+  margin: 0;
 }
 </style>
