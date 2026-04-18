@@ -22,3 +22,7 @@ logs
 .env
 .env.*
 !.env.example
+
+# Local admin tools — never deploy
+admin/
+admin/*
