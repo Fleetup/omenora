@@ -502,6 +502,35 @@ ${regionPrompt}
 
 WRITING RULES — follow every one without exception:
 
+LANGUAGE LEVEL — MOST IMPORTANT RULE:
+
+Write at B2 English level (upper intermediate).
+This means:
+- HARD LIMIT: Every single sentence must be 20 words or fewer. Count the words before writing each sentence. If it reaches 21 words, stop and split it into two sentences. No exceptions.
+  WRONG (22 words): 'You have spent years being the person everyone leans on, and somewhere in that you stopped asking who holds you.'
+  RIGHT (split into 2): 'You have spent years being the person everyone leans on. At some point, you stopped asking who holds you.'
+  WRONG (21 words): 'The Phoenix does not rise because it wants to — it rises because staying down was never an option it was given.'
+  RIGHT (split): 'The Phoenix does not rise because it wants to. It rises because staying down was never an option.'
+- No more than 1 em-dash (—) per section
+- No idioms that only work in English
+  (examples to avoid: 'learned to disappear',
+  'built one collapse at a time',
+  'staying in the ash')
+- No metaphors that depend on English
+  cultural context to understand
+- Use concrete images over abstract poetry
+  WRONG: 'somewhere in that usefulness
+         you learned to disappear'
+  RIGHT: 'You have spent your life being
+         useful to people — so much so that
+         you forgot to save something for yourself'
+- Every sentence must be clear on first reading
+  to someone who learned English as a second language
+- Short sentences are stronger than long ones
+- Direct statements are stronger than
+  poetic circumlocutions
+- The goal is feeling SEEN, not feeling impressed
+
 1. OPEN EVERY SECTION by naming something ${firstName} already knows about themselves but has never heard said out loud. The first sentence of each section must feel like recognition, not revelation. Example: "There is a version of you that very few people ever meet." Not: "You are a powerful person."
 
 2. PAIR EVERY STRENGTH WITH ITS SHADOW COST. Never describe a positive trait without naming the tension it creates. Example: "The same quality that makes you irreplaceable to people you love is the one that has cost you the most." This is not negativity — it is accuracy. People only trust descriptions that include their complexity.
@@ -512,6 +541,33 @@ WRITING RULES — follow every one without exception:
 
 5. USE ${firstName}'s NAME 2-3 TIMES inside section content — not just at the opening. Place the name at a moment of emotional weight, not as filler.
 
+Name placement rules:
+- NEVER place ${firstName} mid-sentence after a comma:
+  WRONG: 'They call you independent, ${firstName}, but...'
+  RIGHT: '${firstName}, they call you independent — but what they mean is...'
+  RIGHT: 'The truth is, ${firstName}, [new idea starts here].'
+- Always place the name at the START of a sentence or immediately after a period. Never in the middle of a flowing clause.
+- The name should feel like emphasis, not like an insertion.
+
+HARD BLOCK on name as connector:
+Never use this pattern:
+'[verb phrase], ${firstName}, which means...'
+'[statement], ${firstName}, but...'
+'[observation], ${firstName}, so...'
+
+These patterns insert the name as a mid-clause aside. They always create sentences over 20 words.
+
+When you want to use the name, STOP the current sentence first.
+Start a new sentence with the name.
+
+WRONG:
+'You act on instinct, ${firstName}, which means you have made choices faster than most.'
+
+RIGHT:
+'You act on instinct. ${firstName}, this has meant making choices faster than you could explain them to people around you.'
+
+Two sentences. Name opens the second. Both under 20 words.
+
 6. NAME THE UNSPOKEN. Reference things ${firstName} has experienced but never discussed — the private version of a feeling. Example: "There is something you have never quite been able to explain to the people who love you — the way you can be completely present and completely elsewhere at the same time."
 
 7. REFRAME EVERY WOUND OR FEAR AS STRUCTURAL INTELLIGENCE. Never present a difficulty as a flaw. Present it as the logical output of a specific kind of depth. Example: Instead of 'fear of being too much' → 'The same intensity that makes ${firstName} unforgettable is the thing they have spent years learning to calibrate.'
@@ -521,6 +577,12 @@ WRITING RULES — follow every one without exception:
 9. NAME SPECIFIC TIME WINDOWS in the forecast. Not 'soon' or 'this year'. Name months or seasons. Specificity creates believability.
 
 10. END EACH SECTION (except affirmation) with a sentence that lands with weight — something ${firstName} would re-read. Not a summary. A truth.
+
+Em-dash rule:
+Use a maximum of ONE em-dash (—) per section.
+Em-dashes create rhythm breaks. Too many in one paragraph makes reading choppy, especially for non-native English readers.
+If you find yourself writing two em-dashes in the same section, rewrite one sentence to remove the need for it.
+Prefer short sentences over em-dash clauses.
 
 ---
 
@@ -540,6 +602,14 @@ ABSOLUTE FORBIDDEN PHRASES — never use any of these, they instantly break imme
 - "limitless potential"
 - Any sentence that starts with "As a [archetype]..."
 - Any sentence that could apply equally to every person reading it
+- Any metaphor using 'ash', 'fire', 'flame', 'burn' (except for fire element archetypes where it is factually relevant)
+- 'learned to disappear' or any variant of disappearing as metaphor for self-erasure
+- 'built one [noun] at a time' (English idiom structure)
+- 'in ways they can recognize' or similar subordinate clause after a negative
+- Any sentence longer than 20 words
+- Semicolons — they add complexity without adding clarity
+- 'somewhere in [noun] you [verb]' construction (abstract and poetic)
+- 'the part of you that' construction used more than once per report
 
 ---
 
@@ -594,6 +664,13 @@ powerTraits: Generate exactly 3 traits for the JSON output. Each trait MUST be a
 WRONG: 'intuitive', 'determined', 'creative'
 RIGHT: 'reads the room before anyone has spoken', 'rebuilds after losses most people do not survive', 'finds the third option when everyone else sees only two'
 Each verb phrase must be instantly recognizable to ${firstName} as something specific to them — not a compliment that could apply to anyone.
+
+FINAL CLARITY CHECK:
+Before finalizing each section, read it as if you are a person who learned English as a second language at intermediate level.
+Ask: would every sentence be clear on first reading without needing to re-read it?
+If any sentence requires re-reading to understand, rewrite it as two shorter sentences.
+Clarity and emotional truth are not opposites.
+The most powerful sentences in any language are short, direct, and specific.
 
 Return ONLY valid JSON. No preamble, no explanation, no markdown.
 
