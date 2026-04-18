@@ -7,11 +7,26 @@
  * Persisted fields are deliberately minimal — no full report_data blob (too
  * large), no answers (not needed post-generation). Session recovery is handled
  * by the ?session_id= query param + /api/check-report-exists for paid users.
+ *
+ * Cache versioning: CACHE_VERSION is bumped whenever a change would make
+ * stale cached data incorrect. On version mismatch, assignment fields
+ * (archetype, report session, payment state) are cleared while user
+ * preferences (language, region) are preserved.
  */
 import { watch } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 
 const STORAGE_KEY = 'omenora_store_v2'
+
+/**
+ * Bump this string whenever stale cached assignment data must be cleared.
+ *
+ * v3-archetype-fix — 2026-04-18
+ *   Invalidates all sessions that received 'wildfire' from the broken
+ *   if/else system. Forces a clean archetype assignment on next quiz run.
+ */
+const CACHE_VERSION = 'v3-archetype-fix'
+const VERSION_KEY   = 'omenora_cache_version'
 
 interface PersistedState {
   firstName: string
@@ -52,11 +67,42 @@ function load(): Partial<PersistedState> {
   }
 }
 
+/**
+ * Compare the saved cache version to the current one.
+ * If they differ, clear stale assignment fields from the saved state
+ * while preserving user preference fields (language, region, firstName, email).
+ * Writes the current version to localStorage regardless.
+ */
+function applyVersionMigration(saved: Partial<PersistedState>): Partial<PersistedState> {
+  try {
+    const storedVersion = localStorage.getItem(VERSION_KEY)
+    if (storedVersion === CACHE_VERSION) return saved
+
+    // Version mismatch — clear stale assignment data.
+    // Preserve: firstName, email, language, region, country
+    // Clear: archetype, lifePathNumber, dateOfBirth, timeOfBirth, city,
+    //        tempId, reportSessionId, paymentComplete, all purchase flags
+    const migrated: Partial<PersistedState> = {
+      firstName: saved.firstName,
+      email:     saved.email,
+      language:  saved.language,
+      region:    saved.region,
+      country:   saved.country,
+    }
+
+    localStorage.setItem(VERSION_KEY, CACHE_VERSION)
+    return migrated
+  } catch {
+    return saved
+  }
+}
+
 export default defineNuxtPlugin(() => {
   const store = useAnalysisStore()
 
   // ── Rehydrate from localStorage on boot ──────────────────────────────────
-  const saved = load()
+  const raw   = load()
+  const saved = applyVersionMigration(raw)
 
   if (saved.firstName)            store.firstName            = saved.firstName
   if (saved.email)                store.setEmail(saved.email)
