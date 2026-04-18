@@ -1,3 +1,4 @@
+import Anthropic from '@anthropic-ai/sdk'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
 
 export default defineEventHandler(async (event) => {
@@ -83,24 +84,19 @@ export default defineEventHandler(async (event) => {
     console.warn('[apply-promo-access] promo_code_uses query error (table may not exist yet):', err?.message)
   }
 
-  // ── Step 3: Generate report via Anthropic ─────────────────────────────────
+  // ── Step 3: Generate report via Anthropic directly ──────────────────────
   let reportData: any
   try {
-    const generated = await $fetch<{ success: boolean; report: any }>('/api/generate-report', {
-      method: 'POST',
-      body: {
-        firstName,
-        dateOfBirth,
-        city,
-        archetype,
-        lifePathNumber,
-        region,
-        language,
-        answers,
-        timeOfBirth: sanitizeString(body.timeOfBirth ?? '', 10),
-      },
+    reportData = await generateReport({
+      config,
+      firstName,
+      dateOfBirth,
+      city,
+      archetype,
+      lifePathNumber,
+      region,
+      language,
     })
-    reportData = generated.report
   } catch (err: any) {
     console.error('[apply-promo-access] Report generation failed:', err?.message)
     throw createError({ statusCode: 500, message: 'Failed to generate your reading. Please try again.' })
@@ -211,3 +207,119 @@ export default defineEventHandler(async (event) => {
     message: 'Your complete reading has been sent to your email',
   }
 })
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const ARCHETYPE_SYMBOLS: Record<string, string> = {
+  phoenix:    '●',
+  architect:  '◆',
+  storm:      '▲',
+  lighthouse: '◇',
+  wanderer:   '○',
+  alchemist:  '⬡',
+  guardian:   '□',
+  visionary:  '⬟',
+  mirror:     '◉',
+  catalyst:   '✦',
+  sage:       '▽',
+  wildfire:   '★',
+}
+
+async function generateReport(opts: {
+  config: any
+  firstName: string
+  dateOfBirth: string
+  city: string
+  archetype: string
+  lifePathNumber: number
+  region: string
+  language: string
+}): Promise<any> {
+  const client = new Anthropic({ apiKey: opts.config.anthropicApiKey as string })
+
+  const archetypeDescriptions: Record<string, string> = {
+    phoenix:    'The Phoenix — a soul who rises from destruction stronger than before',
+    architect:  'The Silent Architect — a mind that builds systems others never see',
+    storm:      'The Storm Caller — a force that disrupts, electrifies, and moves things',
+    lighthouse: 'The Lighthouse — a steady guide who illuminates paths for others',
+    wanderer:   'The Wanderer — a seeker who finds meaning in movement and change',
+    alchemist:  'The Alchemist — a transformer who turns pressure into gold',
+    guardian:   'The Guardian — a protector whose strength is rooted in deep loyalty',
+    visionary:  'The Visionary — a dreamer who sees futures others cannot imagine',
+    mirror:     'The Mirror — an empath who reflects and amplifies what surrounds them',
+    catalyst:   'The Catalyst — an activator who makes things happen simply by arriving',
+    sage:       'The Sage — a keeper of pattern and wisdom earned through observation',
+    wildfire:   'The Wildfire — an untameable energy that spreads and transforms everything',
+  }
+
+  const birthMonth  = new Date(opts.dateOfBirth).toLocaleString('default', { month: 'long' })
+  const birthYear   = new Date(opts.dateOfBirth).getFullYear()
+  const month       = new Date(opts.dateOfBirth).getMonth()
+  const birthSeason = month >= 2 && month <= 4 ? 'spring'
+    : month >= 5 && month <= 7 ? 'summer'
+    : month >= 8 && month <= 10 ? 'autumn'
+    : 'winter'
+
+  const archetypeDesc = archetypeDescriptions[opts.archetype] || opts.archetype
+
+  const languageInstructions: Record<string, string> = {
+    en: 'Respond entirely in English.',
+    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
+    pt: 'Responda completamente em português brasileiro.',
+    hi: 'पूरी तरह से हिंदी में जवाब दें।',
+    ko: '전체적으로 한국어로 답변해 주세요.',
+    zh: '完全用简体中文回答。',
+  }
+  const langInstruction = languageInstructions[opts.language] ?? languageInstructions['en'] ?? ''
+
+  const prompt = `${langInstruction}
+
+You are OMENORA, an AI destiny analysis system combining behavioral science, chronobiology, and pattern recognition.
+
+User profile:
+- Name: ${opts.firstName}
+- Born: ${birthMonth} ${birthYear} in ${opts.city || 'unknown city'}
+- Birth season: ${birthSeason}
+- Life Path Number: ${opts.lifePathNumber}
+- Destiny Archetype: ${archetypeDesc}
+
+Generate exactly 7 sections. Return ONLY valid JSON with this structure:
+{
+  "archetypeName": "The [Name]",
+  "archetypeSymbol": "[single character]",
+  "element": "[Fire/Earth/Air/Water]",
+  "powerTraits": ["trait1", "trait2", "trait3"],
+  "sections": {
+    "identity": { "title": "Who You Are", "content": "4-5 sentences." },
+    "science": { "title": "The Science Behind You", "content": "3 sentences." },
+    "forecast": { "title": "Your 2026 Destiny", "content": "5 sentences." },
+    "love": { "title": "Love & Connection", "content": "4 sentences." },
+    "purpose": { "title": "Career & Purpose", "content": "3-4 sentences." },
+    "gift": { "title": "Your Hidden Gift", "content": "3 sentences." },
+    "affirmation": { "title": "Your Power Statement", "content": "ONE sentence maximum. Must include ${opts.firstName}." }
+  }
+}`
+
+  const message = await client.messages.create({
+    model: 'claude-sonnet-4-5',
+    max_tokens: 1500,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const firstBlock = message.content[0]
+  const rawText    = firstBlock?.type === 'text' ? firstBlock.text : ''
+
+  let reportData: any
+  try {
+    reportData = JSON.parse(rawText)
+  } catch {
+    const match = rawText.match(/\{[\s\S]*\}/)
+    if (match) reportData = JSON.parse(match[0])
+    else throw new Error('Failed to parse AI response')
+  }
+
+  const canonicalSymbol = ARCHETYPE_SYMBOLS[opts.archetype]
+  if (canonicalSymbol) reportData.archetypeSymbol = canonicalSymbol
+
+  return reportData
+}

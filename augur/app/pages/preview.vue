@@ -173,10 +173,13 @@
         <template v-else-if="!appliedPromo || appliedPromo.codeType === 'discount_percent'">
           <div class="promo-input-row">
             <input
+              id="promo-code"
               v-model="promoCodeInput"
               type="text"
+              name="promo-code"
               class="promo-input"
               placeholder="Enter code"
+              autocomplete="off"
               :disabled="isValidatingPromo || (appliedPromo?.codeType === 'discount_percent')"
               @input="promoCodeInput = promoCodeInput.toUpperCase()"
               @keydown.enter="validatePromoCode"
@@ -202,12 +205,15 @@
 
       <!-- Email input -->
       <div class="email-field-wrapper">
-        <label class="email-label">WHERE SHOULD WE SEND YOUR READING?</label>
+        <label class="email-label" for="email-address">WHERE SHOULD WE SEND YOUR READING?</label>
         <input
+          id="email-address"
           v-model="email"
           type="email"
+          name="email"
           :placeholder="t('emailPlaceholder')"
           class="email-input"
+          autocomplete="email"
           @blur="onEmailBlur"
         >
       </div>
@@ -245,12 +251,15 @@
       <!-- Full access promo: shown when full_access code applied (replaces pricing section) -->
       <div v-if="appliedPromo?.codeType === 'full_access'" class="pricing-section">
         <div class="email-field-wrapper">
-          <label class="email-label">WHERE SHOULD WE SEND YOUR READING?</label>
+          <label class="email-label" for="email-address-promo">WHERE SHOULD WE SEND YOUR READING?</label>
           <input
+            id="email-address-promo"
             v-model="email"
             type="email"
+            name="email"
             :placeholder="t('emailPlaceholder')"
             class="email-input"
+            autocomplete="email"
             @blur="onEmailBlur"
           />
         </div>
