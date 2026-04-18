@@ -85,8 +85,8 @@
       <p class="proof-attribution">— Miki, founder of OMENORA</p>
     </div>
 
-    <!-- 3-tier pricing selector -->
-    <div class="pricing-section">
+    <!-- 3-tier pricing selector (hidden when full access code applied) -->
+    <div v-if="!appliedPromo || appliedPromo.codeType !== 'full_access'" class="pricing-section">
       <div class="paywall-header">
         <p class="paywall-personal-line">{{ store.firstName }}, your {{ archetypeShortName }} reading is 85% complete.</p>
         <p class="paywall-sub-line">The sections below reveal what the identity section could only begin to show.</p>
@@ -158,6 +158,48 @@
         Never change display without updating Stripe.
       -->
 
+      <!-- Promo code section -->
+      <div class="promo-section">
+        <!-- STATE A: collapsed link -->
+        <button
+          v-if="!promoInputVisible && !appliedPromo"
+          class="promo-toggle-link"
+          @click="promoInputVisible = true"
+        >
+          Have a promo code?
+        </button>
+
+        <!-- STATE B/C/D: expanded -->
+        <template v-else-if="!appliedPromo || appliedPromo.codeType === 'discount_percent'">
+          <div class="promo-input-row">
+            <input
+              v-model="promoCodeInput"
+              type="text"
+              class="promo-input"
+              placeholder="Enter code"
+              :disabled="isValidatingPromo || (appliedPromo?.codeType === 'discount_percent')"
+              @input="promoCodeInput = promoCodeInput.toUpperCase()"
+              @keydown.enter="validatePromoCode"
+            />
+            <button
+              v-if="!appliedPromo"
+              class="promo-apply-btn"
+              :disabled="isValidatingPromo || !promoCodeInput.trim()"
+              @click="validatePromoCode"
+            >
+              {{ isValidatingPromo ? '...' : 'Apply' }}
+            </button>
+          </div>
+          <p v-if="promoValidationResult && !promoValidationResult.valid" class="promo-msg promo-msg-error">
+            {{ promoValidationResult.message }}
+          </p>
+          <p v-if="appliedPromo?.codeType === 'discount_percent'" class="promo-msg promo-msg-success">
+            ✦ {{ appliedPromo.message }}
+          </p>
+        </template>
+
+      </div>
+
       <!-- Email input -->
       <div class="email-field-wrapper">
         <label class="email-label">WHERE SHOULD WE SEND YOUR READING?</label>
@@ -174,14 +216,15 @@
       <button
         class="unlock-btn"
         :class="{
-          'unlock-btn-processing': isProcessingPayment,
-          'unlock-btn-basic': selectedTier === 1,
-          'unlock-btn-oracle': selectedTier === 3,
+          'unlock-btn-processing': isProcessingPayment || isApplyingFreeAccess,
+          'unlock-btn-basic': selectedTier === 1 && !appliedPromo,
+          'unlock-btn-oracle': selectedTier === 3 && !appliedPromo,
         }"
-        :disabled="isProcessingPayment || !email"
-        @click="handlePayment"
+        :disabled="isProcessingPayment || isApplyingFreeAccess || !email"
+        @click="appliedPromo?.codeType === 'full_access' ? applyFreeAccess() : handlePayment()"
       >
-        <span v-if="isProcessingPayment">Processing...</span>
+        <span v-if="isProcessingPayment || isApplyingFreeAccess">Processing...</span>
+        <span v-else-if="appliedPromo?.codeType === 'full_access'">Get My Complete Reading →</span>
         <span v-else-if="selectedTier === 1">{{ t('unlockBasic') }}</span>
         <span v-else-if="selectedTier === 2">{{ t('unlockPopular') }}</span>
         <span v-else>{{ t('unlockOracle') }}</span>
@@ -197,7 +240,31 @@
       </div>
       <p class="trust-note">{{ t('readingExpires') }}</p>
       <p class="trust-secure">{{ t('securedStripe') }}</p>
-    </div>
+      </div><!-- end pricing-section -->
+
+      <!-- Full access promo: shown when full_access code applied (replaces pricing section) -->
+      <div v-if="appliedPromo?.codeType === 'full_access'" class="pricing-section">
+        <div class="email-field-wrapper">
+          <label class="email-label">WHERE SHOULD WE SEND YOUR READING?</label>
+          <input
+            v-model="email"
+            type="email"
+            :placeholder="t('emailPlaceholder')"
+            class="email-input"
+            @blur="onEmailBlur"
+          />
+        </div>
+        <button
+          class="unlock-btn"
+          :class="{ 'unlock-btn-processing': isApplyingFreeAccess }"
+          :disabled="isApplyingFreeAccess || !email"
+          @click="applyFreeAccess"
+        >
+          <span v-if="isApplyingFreeAccess">Processing...</span>
+          <span v-else>Get My Complete Reading →</span>
+        </button>
+        <p v-if="promoErrorMessage" class="promo-msg promo-msg-error" style="margin-top:10px;text-align:center;">{{ promoErrorMessage }}</p>
+      </div>
   </div>
 </template>
 
@@ -342,6 +409,80 @@ const email = ref('')
 const captureSubmitted = ref(false)
 const isProcessingPayment = ref(false)
 
+const promoInputVisible     = ref(false)
+const promoCodeInput        = ref('')
+const isValidatingPromo     = ref(false)
+const promoValidationResult = ref<{ valid: boolean; message: string; codeId?: string; codeType?: string; codeSubtype?: string; discountValue?: number } | null>(null)
+const appliedPromo          = ref<{ valid: boolean; message: string; codeId: string; codeType: string; codeSubtype: string; discountValue: number } | null>(null)
+const isApplyingFreeAccess  = ref(false)
+const promoErrorMessage     = ref('')
+
+async function validatePromoCode() {
+  const code = promoCodeInput.value.trim()
+  if (!code) return
+  isValidatingPromo.value = true
+  promoValidationResult.value = null
+  try {
+    const result = await $fetch<{ valid: boolean; message: string; codeId?: string; codeType?: string; codeSubtype?: string; discountValue?: number }>('/api/validate-promo', {
+      method: 'POST',
+      body: { code, email: email.value || '' },
+    })
+    promoValidationResult.value = result
+    if (result.valid && result.codeId && result.codeType && result.codeSubtype) {
+      appliedPromo.value = {
+        valid:         true,
+        message:       result.message,
+        codeId:        result.codeId,
+        codeType:      result.codeType,
+        codeSubtype:   result.codeSubtype,
+        discountValue: result.discountValue ?? 0,
+      }
+    }
+  } catch {
+    promoValidationResult.value = { valid: false, message: 'Unable to validate code. Please try again.' }
+  } finally {
+    isValidatingPromo.value = false
+  }
+}
+
+async function applyFreeAccess() {
+  if (!email.value || !email.value.includes('@')) {
+    promoErrorMessage.value = 'Please enter your email address first.'
+    return
+  }
+  if (!appliedPromo.value) return
+  isApplyingFreeAccess.value = true
+  promoErrorMessage.value = ''
+  store.setEmail(email.value)
+  try {
+    const result = await $fetch<{ success: boolean; report: any; sessionId: string }>('/api/apply-promo-access', {
+      method: 'POST',
+      body: {
+        codeId:        appliedPromo.value.codeId,
+        code:          promoCodeInput.value.trim(),
+        email:         email.value,
+        firstName:     store.firstName,
+        dateOfBirth:   store.dateOfBirth,
+        city:          store.city,
+        archetype:     store.archetype,
+        lifePathNumber: store.lifePathNumber,
+        region:        store.region,
+        language:      store.language,
+        answers:       store.answers,
+        timeOfBirth:   store.timeOfBirth,
+      },
+    })
+    store.setReport(result.report)
+    store.setPaymentComplete(true)
+    store.setReportSessionId(result.sessionId)
+    await navigateTo('/report')
+  } catch (err: any) {
+    promoErrorMessage.value = err?.data?.message || 'Something went wrong. Please try again.'
+  } finally {
+    isApplyingFreeAccess.value = false
+  }
+}
+
 async function onEmailBlur() {
   if (!email.value || !email.value.includes('@') || captureSubmitted.value) return
   captureSubmitted.value = true
@@ -385,6 +526,31 @@ async function handlePayment() {
   store.setEmail(email.value)
 
   try {
+    // If a discount promo code is applied, route through apply-promo-discount
+    if (appliedPromo.value?.codeType === 'discount_percent') {
+      const tierName = selectedTier.value === 1 ? 'basic' : selectedTier.value === 2 ? 'bundle' : 'oracle'
+      const { url } = await $fetch<{ sessionId: string; url: string | null }>('/api/apply-promo-discount', {
+        method: 'POST',
+        body: {
+          codeId:        appliedPromo.value.codeId,
+          code:          promoCodeInput.value.trim(),
+          email:         email.value,
+          tier:          tierName,
+          firstName:     store.firstName,
+          archetype:     store.archetype,
+          lifePathNumber: store.lifePathNumber,
+          dateOfBirth:   store.dateOfBirth,
+          timeOfBirth:   store.timeOfBirth,
+          tempId:        store.tempId,
+          region:        store.region,
+          language:      store.language,
+          origin:        window.location.origin,
+        },
+      })
+      if (url) window.location.href = url
+      return
+    }
+
     let endpoint = '/api/create-payment'
 
     if (selectedTier.value === 2) {
@@ -1106,5 +1272,136 @@ async function handlePayment() {
   color: rgba(255, 255, 255, 0.14);
   text-align: center;
   margin: 4px 0 0;
+}
+
+/* ── Promo code section ── */
+.promo-section {
+  margin-top: 14px;
+  margin-bottom: 2px;
+}
+
+.promo-toggle-link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  display: block;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 4px;
+  transition: color 0.2s;
+}
+
+.promo-toggle-link:hover {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.promo-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.promo-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  flex: 1;
+  outline: none;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  transition: border-color 0.2s;
+}
+
+.promo-input:focus {
+  border-color: rgba(201, 168, 76, 0.35);
+}
+
+.promo-input::placeholder {
+  color: rgba(255, 255, 255, 0.18);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.promo-input:disabled {
+  opacity: 0.5;
+}
+
+.promo-apply-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 10px 16px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.promo-apply-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.promo-apply-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.promo-msg {
+  font-size: 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  text-align: center;
+}
+
+.promo-msg-error {
+  color: rgba(255, 110, 110, 0.85);
+}
+
+.promo-msg-success {
+  color: rgba(100, 210, 130, 0.85);
+  letter-spacing: 0.02em;
+}
+
+.promo-full-access-block {
+  background: rgba(100, 210, 130, 0.05);
+  border: 1px solid rgba(100, 210, 130, 0.2);
+  border-radius: 8px;
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.promo-full-access-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(100, 210, 130, 0.9);
+  margin: 0 0 6px;
+  letter-spacing: 0.03em;
+}
+
+.promo-full-access-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+  line-height: 1.6;
 }
 </style>

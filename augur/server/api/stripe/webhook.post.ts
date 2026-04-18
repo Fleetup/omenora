@@ -99,6 +99,46 @@ export default defineEventHandler(async (event) => {
   const isBundlePurchase  = meta.bundle === 'true'
   const isOraclePurchase  = meta.oracle === 'true'
 
+  // ── Handle promo discount code post-payment logging ───────────────────────
+  const promoCode   = sanitizeString(meta.promo_code || '', 50)
+  const promoCodeId = sanitizeString(meta.code_id || '', 100)
+
+  if (promoCode && promoCodeId && isValidEmail(email)) {
+    const normalizedPromoEmail = email.toLowerCase().trim()
+    try {
+      const { data: codeRecord } = await supabase
+        .from('promo_codes')
+        .select('id, current_uses, max_uses, code_subtype, locked_to_email')
+        .eq('id', promoCodeId)
+        .maybeSingle()
+
+      if (codeRecord && codeRecord.current_uses < codeRecord.max_uses) {
+        await supabase
+          .from('promo_codes')
+          .update({ current_uses: codeRecord.current_uses + 1 })
+          .eq('id', promoCodeId)
+
+        if (codeRecord.code_subtype === 'personal' && !codeRecord.locked_to_email) {
+          await supabase
+            .from('promo_codes')
+            .update({ locked_to_email: normalizedPromoEmail })
+            .eq('id', promoCodeId)
+        }
+
+        await supabase
+          .from('promo_code_uses')
+          .insert({
+            code_id:  promoCodeId,
+            email:    normalizedPromoEmail,
+            used_at:  new Date().toISOString(),
+            report_id: null,
+          })
+      }
+    } catch (err: any) {
+      console.error('[stripe-webhook] Promo logging failed (non-blocking):', err?.message)
+    }
+  }
+
   // ── If report already in DB (saved by client), just send email if not sent ─
   if (existing && !existing.email_sent) {
     if (isValidEmail(email)) {
