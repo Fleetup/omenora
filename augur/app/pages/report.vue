@@ -23,15 +23,18 @@
         <span class="addon-note">{{ t('todayOnly') }}</span>
       </div>
       <input
+        id="addon-partner-name"
         v-model="addonPartnerName"
         type="text"
+        name="addon-partner-name"
         :placeholder="t('addonPartnerPlaceholder')"
         class="addon-input"
+        autocomplete="off"
       >
       <div class="addon-dob-row">
-        <input v-model="addonBirthDay" type="number" placeholder="DD" min="1" max="31" class="addon-input addon-dob addon-day" >
-        <input v-model="addonBirthMonth" type="number" placeholder="MM" min="1" max="12" class="addon-input addon-dob addon-day" >
-        <input v-model="addonBirthYear" type="number" placeholder="YYYY" min="1924" max="2010" class="addon-input addon-dob addon-year" >
+        <input id="addon-birth-day" v-model="addonBirthDay" type="number" name="addon-birth-day" placeholder="DD" min="1" max="31" class="addon-input addon-dob addon-day" autocomplete="off">
+        <input id="addon-birth-month" v-model="addonBirthMonth" type="number" name="addon-birth-month" placeholder="MM" min="1" max="12" class="addon-input addon-dob addon-day" autocomplete="off">
+        <input id="addon-birth-year" v-model="addonBirthYear" type="number" name="addon-birth-year" placeholder="YYYY" min="1924" max="2010" class="addon-input addon-dob addon-year" autocomplete="off">
       </div>
       <button
         :disabled="!addonPartnerName || !addonBirthYear || isProcessingAddon"
@@ -426,9 +429,9 @@
 
       <!-- Form -->
       <div v-else>
-        <input v-model="partnerName" type="text" :placeholder="t('addonPartnerPlaceholder')" class="compat-input" style="margin-bottom: 10px;" >
-        <input v-model="partnerDob" type="date" class="compat-input compat-input--date" style="margin-bottom: 10px;" >
-        <input v-model="partnerCity" type="text" :placeholder="t('partnerCityPlaceholder')" class="compat-input" style="margin-bottom: 16px;" >
+        <input id="compat-partner-name" v-model="partnerName" type="text" name="compat-partner-name" :placeholder="t('addonPartnerPlaceholder')" class="compat-input" style="margin-bottom: 10px;" autocomplete="off">
+        <input id="compat-partner-dob" v-model="partnerDob" type="date" name="compat-partner-dob" class="compat-input compat-input--date" style="margin-bottom: 10px;" autocomplete="off">
+        <input id="compat-partner-city" v-model="partnerCity" type="text" name="compat-partner-city" :placeholder="t('partnerCityPlaceholder')" class="compat-input" style="margin-bottom: 16px;" autocomplete="off">
         <button
           class="compat-unlock-btn"
           :disabled="!partnerName || !partnerDob || isGeneratingCompatibility"
@@ -580,21 +583,30 @@
         </p>
         <div class="compat-fields">
           <input
+            id="compat-paid-partner-name"
             v-model="partnerName"
             type="text"
+            name="compat-paid-partner-name"
             :placeholder="t('addonPartnerPlaceholder')"
             class="compat-input"
+            autocomplete="off"
           >
           <input
+            id="compat-paid-partner-dob"
             v-model="partnerDob"
             type="date"
+            name="compat-paid-partner-dob"
             class="compat-input compat-input--date"
+            autocomplete="off"
           >
           <input
+            id="compat-paid-partner-city"
             v-model="partnerCity"
             type="text"
+            name="compat-paid-partner-city"
             :placeholder="t('partnerCityPlaceholder')"
             class="compat-input"
+            autocomplete="off"
           >
         </div>
         <button
@@ -1020,9 +1032,10 @@ onMounted(async () => {
           if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
             generateBirthChartAuto()
           }
-          if (store.dateOfBirth && store.region !== 'western') {
-            await loadRegionalSection()
+          if (store.bundlePurchased || store.oraclePurchased) {
+            await generateBundleCalendar()
           }
+          await loadRegionalSection()
         }
 
         // Silently provision Supabase Auth account (non-blocking — report renders regardless)
