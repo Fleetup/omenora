@@ -237,11 +237,31 @@ Exactly this structure:
   let generatedInsight: { insight: string; reflection_question: string; theme: string }
   try {
     generatedInsight = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[generate-daily-insight] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'generate-daily-insight',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype,
+      firstName,
+      region,
+      language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
     if (match) {
       generatedInsight = JSON.parse(match[0])
     } else {
+      console.error('[generate-daily-insight] No JSON object found in AI response', {
+        endpoint: 'generate-daily-insight',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype,
+        firstName,
+        region,
+        language,
+      })
       throw createError({ statusCode: 500, message: 'Failed to parse insight' })
     }
   }

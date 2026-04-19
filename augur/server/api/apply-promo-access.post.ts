@@ -307,7 +307,7 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-5',
-    max_tokens: 1500,
+    max_tokens: 4096,
     messages: [{ role: 'user', content: prompt }],
   })
 
@@ -317,10 +317,33 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
   let reportData: any
   try {
     reportData = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[apply-promo-access:generateReport] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'apply-promo-access:generateReport',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype: opts.archetype,
+      firstName: opts.firstName,
+      region: opts.region,
+      language: opts.language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) reportData = JSON.parse(match[0])
-    else throw new Error('Failed to parse AI response')
+    if (match) {
+      reportData = JSON.parse(match[0])
+    } else {
+      console.error('[apply-promo-access:generateReport] No JSON object found in AI response', {
+        endpoint: 'apply-promo-access:generateReport',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype: opts.archetype,
+        firstName: opts.firstName,
+        region: opts.region,
+        language: opts.language,
+      })
+      throw new Error('Failed to parse AI response')
+    }
   }
 
   const canonicalSymbol = ARCHETYPE_SYMBOLS[opts.archetype]

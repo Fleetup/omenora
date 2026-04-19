@@ -79,11 +79,29 @@ Return ONLY valid JSON:
   let baziData
   try {
     baziData = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[generate-bazi-section] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'generate-bazi-section',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype,
+      firstName,
+      language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
     if (match) {
       baziData = JSON.parse(match[0])
     } else {
+      console.error('[generate-bazi-section] No JSON object found in AI response', {
+        endpoint: 'generate-bazi-section',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype,
+        firstName,
+        language,
+      })
       throw createError({ statusCode: 500, message: 'Failed to parse BaZi section' })
     }
   }

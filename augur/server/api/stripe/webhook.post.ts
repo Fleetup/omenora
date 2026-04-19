@@ -340,7 +340,7 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-5',
-    max_tokens: 1500,
+    max_tokens: 4096,
     messages: [{ role: 'user', content: prompt }],
   })
 
@@ -350,10 +350,33 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
   let reportData: any
   try {
     reportData = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[stripe-webhook:generateReport] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'stripe-webhook:generateReport',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype: opts.archetype,
+      firstName: opts.firstName,
+      region: opts.region,
+      language: opts.language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) reportData = JSON.parse(match[0])
-    else throw new Error('Failed to parse AI response')
+    if (match) {
+      reportData = JSON.parse(match[0])
+    } else {
+      console.error('[stripe-webhook:generateReport] No JSON object found in AI response', {
+        endpoint: 'stripe-webhook:generateReport',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype: opts.archetype,
+        firstName: opts.firstName,
+        region: opts.region,
+        language: opts.language,
+      })
+      throw new Error('Failed to parse AI response')
+    }
   }
 
   const canonicalSymbol = ARCHETYPE_SYMBOLS[opts.archetype]
@@ -549,10 +572,31 @@ Normal months 55-75. Make it feel like a real forecast.`
   let calendarData: any
   try {
     calendarData = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[stripe-webhook:generateCalendar] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'stripe-webhook:generateCalendar',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype: opts.archetype,
+      firstName: opts.firstName,
+      language: opts.language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) calendarData = JSON.parse(match[0])
-    else throw new Error('Failed to parse calendar response')
+    if (match) {
+      calendarData = JSON.parse(match[0])
+    } else {
+      console.error('[stripe-webhook:generateCalendar] No JSON object found in AI response', {
+        endpoint: 'stripe-webhook:generateCalendar',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype: opts.archetype,
+        firstName: opts.firstName,
+        language: opts.language,
+      })
+      throw new Error('Failed to parse calendar response')
+    }
   }
 
   return calendarData

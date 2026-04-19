@@ -122,15 +122,42 @@ Return ONLY valid JSON with no markdown fences:
   let birthChart
   try {
     birthChart = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[generate-birth-chart] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'generate-birth-chart',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype,
+      firstName,
+      language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
     if (match) {
       try {
         birthChart = JSON.parse(match[0])
-      } catch {
+      } catch (fallbackErr: any) {
+        console.error('[generate-birth-chart] Regex fallback parse failed', {
+          endpoint: 'generate-birth-chart',
+          timestamp: new Date().toISOString(),
+          rawResponsePreview: (rawText || '').slice(0, 500),
+          parseError: fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr),
+          archetype,
+          firstName,
+          language,
+        })
         throw createError({ statusCode: 500, message: 'Failed to parse birth chart JSON' })
       }
     } else {
+      console.error('[generate-birth-chart] No JSON object found in AI response', {
+        endpoint: 'generate-birth-chart',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype,
+        firstName,
+        language,
+      })
       throw createError({ statusCode: 500, message: 'No JSON found in birth chart response' })
     }
   }

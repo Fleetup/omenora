@@ -108,11 +108,29 @@ Return ONLY valid JSON, no markdown:
   let compatibilityData
   try {
     compatibilityData = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[generate-compatibility] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'generate-compatibility',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype,
+      firstName,
+      language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
     if (match) {
       compatibilityData = JSON.parse(match[0])
     } else {
+      console.error('[generate-compatibility] No JSON object found in AI response', {
+        endpoint: 'generate-compatibility',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype,
+        firstName,
+        language,
+      })
       throw createError({
         statusCode: 500,
         message: 'Failed to parse compatibility report'

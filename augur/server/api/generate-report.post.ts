@@ -740,19 +740,48 @@ Return ONLY valid JSON. No preamble, no explanation, no markdown.
   let reportData
   try {
     reportData = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[generate-report] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'generate-report',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype,
+      firstName,
+      region,
+      language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
     if (match) {
       try {
         reportData = JSON.parse(match[0])
-      } catch {
+      } catch (fallbackErr: any) {
+        console.error('[generate-report] Regex fallback parse failed', {
+          endpoint: 'generate-report',
+          timestamp: new Date().toISOString(),
+          rawResponsePreview: (rawText || '').slice(0, 500),
+          parseError: fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr),
+          archetype,
+          firstName,
+          region,
+          language,
+        })
         throw createError({
           statusCode: 500,
           message: 'Failed to parse report response. Please try again.',
         })
       }
     } else {
-      console.error('[generate-report] Failed to parse AI response:', rawText?.slice(0, 200))
+      console.error('[generate-report] No JSON object found in AI response', {
+        endpoint: 'generate-report',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype,
+        firstName,
+        region,
+        language,
+      })
       throw createError({
         statusCode: 500,
         message: 'Failed to parse report response. Please try again.',

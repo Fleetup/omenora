@@ -106,10 +106,31 @@ Return ONLY valid JSON:
   let tarotData
   try {
     tarotData = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[generate-tarot-section] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'generate-tarot-section',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype,
+      firstName,
+      language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) tarotData = JSON.parse(match[0])
-    else throw createError({ statusCode: 500, message: 'Failed to parse tarot section' })
+    if (match) {
+      tarotData = JSON.parse(match[0])
+    } else {
+      console.error('[generate-tarot-section] No JSON object found in AI response', {
+        endpoint: 'generate-tarot-section',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype,
+        firstName,
+        language,
+      })
+      throw createError({ statusCode: 500, message: 'Failed to parse tarot section' })
+    }
   }
 
   return { success: true, tarot: tarotData }

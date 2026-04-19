@@ -96,11 +96,29 @@ Normal months 55-75. Make it feel like a real forecast.`
   let calendarData
   try {
     calendarData = JSON.parse(rawText)
-  } catch {
+  } catch (err: any) {
+    console.error('[generate-calendar] JSON.parse failed, attempting regex fallback', {
+      endpoint: 'generate-calendar',
+      timestamp: new Date().toISOString(),
+      rawResponsePreview: (rawText || '').slice(0, 500),
+      parseError: err instanceof Error ? err.message : String(err),
+      archetype,
+      firstName,
+      language,
+    })
     const match = rawText.match(/\{[\s\S]*\}/)
     if (match) {
       calendarData = JSON.parse(match[0])
     } else {
+      console.error('[generate-calendar] No JSON object found in AI response', {
+        endpoint: 'generate-calendar',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        parseError: 'No JSON object matched in response body',
+        archetype,
+        firstName,
+        language,
+      })
       throw createError({ statusCode: 500, message: 'Failed to parse calendar' })
     }
   }
