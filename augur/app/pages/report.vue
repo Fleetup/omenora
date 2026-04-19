@@ -657,6 +657,18 @@
           {{ isDownloadingPDF ? 'Generating...' : t('downloadPDF') }}
         </button>
       </div>
+      <div v-if="store.email" class="download-row" style="margin-top: 10px;">
+        <button
+          class="download-btn download-btn--email"
+          :disabled="isSendingEmail || emailSentToUser"
+          @click="sendReportEmailManual"
+          style="width: 100%;"
+        >
+          <span v-if="isSendingEmail">Sending…</span>
+          <span v-else-if="emailSentToUser">✓ Report sent to {{ store.email }}</span>
+          <span v-else>✉ Send Full Report to {{ store.email }}</span>
+        </button>
+      </div>
     </div>
 
   </div>
@@ -696,6 +708,8 @@ const addonBirthMonth = ref('')
 const addonBirthYear = ref('')
 const isProcessingAddon = ref(false)
 const isGeneratingCalendar = ref(false)
+const isSendingEmail = ref(false)
+const emailSentToUser = ref(false)
 const bundleCompatibilityResult = ref<any>(null)
 const isGeneratingCompatibility = ref(false)
 const addonPartnerDob = computed(() => {
@@ -997,39 +1011,8 @@ onMounted(async () => {
           }
           await loadRegionalSection()
 
-          let bundleCalendar: any = null
           if (store.bundlePurchased || store.oraclePurchased) {
-            bundleCalendar = await generateBundleCalendar()
-          }
-
-          if (store.email) {
-            try {
-              await $fetch('/api/send-report-email', {
-                method: 'POST',
-                body: {
-                  email: store.email,
-                  firstName: store.firstName,
-                  report: store.report,
-                  archetype: store.archetype,
-                  lifePathNumber: store.lifePathNumber,
-                  element: store.report?.element,
-                  region: store.region,
-                  vedicData: vedicData.value || null,
-                  baziData: baziData.value || null,
-                  tarotData: tarotData.value || null,
-                  calendarData: bundleCalendar || null,
-                  birthChartData: store.birthChartData || null,
-                  bundlePurchased: store.bundlePurchased || store.oraclePurchased,
-                  language: store.language,
-                },
-              })
-              await $fetch('/api/mark-email-sent', {
-                method: 'POST',
-                body: { sessionId },
-              })
-            } catch {
-              // Email sending failed, continue silently
-            }
+            await generateBundleCalendar()
           }
         } else {
           // Email already sent — refresh detected, skip email but still verify purchase tier
@@ -1154,54 +1137,8 @@ onMounted(async () => {
       }
       await loadRegionalSection()
 
-      let bundleCalendar2: any = null
       if (store.bundlePurchased || store.oraclePurchased) {
-        bundleCalendar2 = await generateBundleCalendar()
-      }
-
-      if (store.email && store.report) {
-        try {
-          const dedupeId = store.tempId || sessionId
-          const sessionKey = `email_sent_${sessionId}`
-          let shouldSend = !sessionStorage.getItem(sessionKey)
-
-          if (shouldSend && dedupeId) {
-            const emailCheck = await $fetch<{ exists: boolean; emailSent: boolean }>(
-              '/api/check-report-exists',
-              { method: 'POST', body: { sessionId: dedupeId } },
-            )
-            if (emailCheck.emailSent) shouldSend = false
-          }
-
-          if (shouldSend) {
-            await $fetch('/api/send-report-email', {
-              method: 'POST',
-              body: {
-                email: store.email,
-                firstName: store.firstName,
-                report: store.report,
-                archetype: store.archetype,
-                lifePathNumber: store.lifePathNumber,
-                element: store.report?.element,
-                region: store.region,
-                vedicData: vedicData.value || null,
-                baziData: baziData.value || null,
-                tarotData: tarotData.value || null,
-                calendarData: bundleCalendar2 || null,
-                birthChartData: store.birthChartData || null,
-                bundlePurchased: store.bundlePurchased || store.oraclePurchased,
-                language: store.language,
-              },
-            })
-            sessionStorage.setItem(sessionKey, '1')
-            await $fetch('/api/mark-email-sent', {
-              method: 'POST',
-              body: { sessionId: dedupeId },
-            })
-          }
-        } catch {
-          // Email sending failed, continue silently
-        }
+        await generateBundleCalendar()
       }
 
       // Silently provision Supabase Auth account (non-blocking — report renders regardless)
@@ -1214,18 +1151,59 @@ onMounted(async () => {
       hasError.value = true
     }
   } else {
-    // No sessionId — show report from existing store state
+    // No sessionId — show report from existing store state (promo / direct nav)
     isLoadingReport.value = false
     showAddon.value = false
     if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
       generateBirthChartAuto()
     }
     await loadRegionalSection()
+    if (store.bundlePurchased || store.oraclePurchased) {
+      generateBundleCalendar()
+    }
   }
 })
 
 function reloadPage() {
   window.location.reload()
+}
+
+async function sendReportEmailManual() {
+  if (isSendingEmail.value || emailSentToUser.value || !store.email || !store.report) return
+  isSendingEmail.value = true
+  try {
+    await $fetch('/api/send-report-email', {
+      method: 'POST',
+      body: {
+        email: store.email,
+        firstName: store.firstName,
+        report: store.report,
+        archetype: store.archetype,
+        lifePathNumber: store.lifePathNumber,
+        element: store.report?.element,
+        region: store.region,
+        vedicData: vedicData.value || null,
+        baziData: baziData.value || null,
+        tarotData: tarotData.value || null,
+        calendarData: store.calendarData || null,
+        birthChartData: store.birthChartData || null,
+        bundlePurchased: store.bundlePurchased || store.oraclePurchased,
+        language: store.language,
+      },
+    })
+    emailSentToUser.value = true
+    const sessionKey = store.reportSessionId || store.tempId
+    if (sessionKey) {
+      await $fetch('/api/mark-email-sent', {
+        method: 'POST',
+        body: { sessionId: sessionKey },
+      }).catch(() => {})
+    }
+  } catch {
+    console.error('Failed to send report email')
+  } finally {
+    isSendingEmail.value = false
+  }
 }
 
 function trackPurchasePixel(sessionId: string, meta: Record<string, string>) {
@@ -2420,6 +2398,23 @@ async function downloadReportPDF() {
   background: rgba(201, 168, 76, 0.18);
   border-color: rgba(201, 168, 76, 0.65);
   box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
+}
+
+.download-btn--email {
+  background: rgba(140, 110, 255, 0.08);
+  border-color: rgba(140, 110, 255, 0.3);
+  color: rgba(200, 180, 255, 0.85);
+}
+
+.download-btn--email:not(:disabled):hover {
+  background: rgba(140, 110, 255, 0.15);
+  border-color: rgba(140, 110, 255, 0.5);
+  box-shadow: 0 0 20px rgba(140, 110, 255, 0.07);
+}
+
+.download-btn--email:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 /* ── Compatibility upsell ── */

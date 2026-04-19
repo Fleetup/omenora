@@ -64,7 +64,7 @@ Dominant Planet: Choose the planet that most powerfully resonates with both thei
 
 Power House: Identify the most activated house based on their archetype and dominant planet. Name it as "Nth House" with a 5–8 word descriptor of what it rules for them personally.
 
-Chart Title: 4–6 word poetic title that names their essential nature — not their archetype label, but the specific flavor of it revealed by the placements.
+Chart Title: 4–6 word poetic title that names their essential nature as revealed by their planetary placements. CRITICAL: Do NOT use any archetype name (Phoenix, Alchemist, Catalyst, Storm, Sage, Visionary, Guardian, Mirror, Wildfire, Wanderer, Lighthouse, Architect) in this title. Use poetic planetary/elemental language instead.
 
 ---
 
