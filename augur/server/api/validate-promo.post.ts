@@ -55,6 +55,19 @@ export default defineEventHandler(async (event) => {
     return { valid: false, message: 'This code is already linked to another account' }
   }
 
+  if (rawEmail.length > 0 && record.code_subtype === 'personal') {
+    const { data: existingUse } = await supabase
+      .from('promo_code_uses')
+      .select('id')
+      .eq('code_id', record.id)
+      .eq('email', rawEmail)
+      .maybeSingle()
+
+    if (existingUse) {
+      return { valid: false, message: 'This code has already been used with this email address.' }
+    }
+  }
+
   return {
     valid: true,
     codeId: record.id,

@@ -109,33 +109,54 @@ export default defineEventHandler(async (event) => {
   if (promoCode && promoCodeId && isValidEmail(email)) {
     const normalizedPromoEmail = email.toLowerCase().trim()
     try {
-      const { data: codeRecord } = await supabase
-        .from('promo_codes')
-        .select('id, current_uses, max_uses, code_subtype, locked_to_email')
-        .eq('id', promoCodeId)
-        .maybeSingle()
+      // 3A: Atomically claim usage via RPC (replaces non-atomic read-check-write)
+      const { data: claimResult, error: claimError } = await supabase
+        .rpc('claim_promo_use', { p_code_id: promoCodeId })
 
-      if (codeRecord && codeRecord.current_uses < codeRecord.max_uses) {
-        await supabase
-          .from('promo_codes')
-          .update({ current_uses: codeRecord.current_uses + 1 })
-          .eq('id', promoCodeId)
-
-        if (codeRecord.code_subtype === 'personal' && !codeRecord.locked_to_email) {
-          await supabase
-            .from('promo_codes')
-            .update({ locked_to_email: normalizedPromoEmail })
-            .eq('id', promoCodeId)
-        }
-
-        await supabase
+      if (claimError || !claimResult?.[0]?.success) {
+        console.warn('[stripe-webhook] promo claim failed — code at limit or inactive', {
+          codeId: promoCodeId,
+          sessionId: session.id,
+        })
+        // Do not throw — webhook must return 200 to Stripe regardless
+      } else {
+        // 3B: Per-email duplicate guard before inserting into promo_code_uses
+        const { data: existingUse } = await supabase
           .from('promo_code_uses')
-          .insert({
-            code_id:  promoCodeId,
-            email:    normalizedPromoEmail,
-            used_at:  new Date().toISOString(),
-            report_id: null,
+          .select('id')
+          .eq('code_id', promoCodeId)
+          .eq('email', normalizedPromoEmail)
+          .maybeSingle()
+
+        if (existingUse) {
+          console.warn('[stripe-webhook] duplicate promo use detected — skipping', {
+            codeId: promoCodeId,
+            email:  normalizedPromoEmail,
           })
+        } else {
+          // Lock personal code to email if not yet locked
+          const { data: codeRecord } = await supabase
+            .from('promo_codes')
+            .select('code_subtype, locked_to_email')
+            .eq('id', promoCodeId)
+            .maybeSingle()
+
+          if (codeRecord?.code_subtype === 'personal' && !codeRecord.locked_to_email) {
+            await supabase
+              .from('promo_codes')
+              .update({ locked_to_email: normalizedPromoEmail })
+              .eq('id', promoCodeId)
+          }
+
+          await supabase
+            .from('promo_code_uses')
+            .insert({
+              code_id:   promoCodeId,
+              email:     normalizedPromoEmail,
+              used_at:   new Date().toISOString(),
+              report_id: null,
+            })
+        }
       }
     } catch (err: any) {
       console.error('[stripe-webhook] Promo logging failed (non-blocking):', err?.message)

@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
   const region        = isValidRegion(body.region) ? body.region : 'western'
   const language      = sanitizeString(body.language || 'en', 5)
   const answers       = body.answers && typeof body.answers === 'object' ? body.answers : {}
-  const accessTier    = sanitizeString(body.accessTier || 'oracle', 10)
 
   assertInput(codeId.length > 0, 'codeId is required')
   assertInput(rawCode.length > 0, 'code is required')
@@ -84,8 +83,9 @@ export default defineEventHandler(async (event) => {
     }
   } catch (err: any) {
     if (err.statusCode) throw err
-    // Table may not exist yet — log and continue
-    console.warn('[apply-promo-access] promo_code_uses query error (table may not exist yet):', err?.message)
+    // DB error on duplicate check must block — never fail open
+    console.error('[apply-promo-access] promo_code_uses check failed — blocking request', { codeId, error: err?.message })
+    throw createError({ statusCode: 500, message: 'Unable to verify code status. Please try again.' })
   }
 
   // ── Step 3: Generate report via Anthropic directly ──────────────────────
@@ -107,7 +107,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // ── Step 4: Save report to Supabase ───────────────────────────────────────
-  const promoSessionId = `promo_${Date.now()}_${firstName.replace(/\s+/g, '')}`
+  const promoSessionId = `promo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${firstName.replace(/\s+/g, '').slice(0, 10)}`
   let savedReportId: string | null = null
 
   try {
@@ -184,12 +184,15 @@ export default defineEventHandler(async (event) => {
     if (lockErr) console.error('[apply-promo-access] Lock email failed:', lockErr.code)
   }
 
-  // ── Step 8: Increment usage count ────────────────────────────────────────
-  const { error: incErr } = await supabase
-    .from('promo_codes')
-    .update({ current_uses: codeRecord.current_uses + 1 })
-    .eq('id', codeId)
-  if (incErr) console.error('[apply-promo-access] Increment uses failed:', incErr.code)
+  // ── Step 8: Atomically claim usage (replaces non-atomic read-check-write) ─
+  const { data: claimResult, error: claimError } = await supabase
+    .rpc('claim_promo_use', { p_code_id: codeId })
+  if (claimError || !claimResult?.[0]?.success) {
+    throw createError({
+      statusCode: 400,
+      message: 'This code has reached its usage limit or is no longer active.',
+    })
+  }
 
   // ── Step 9: Log usage in promo_code_uses ─────────────────────────────────
   const { error: useErr } = await supabase
@@ -203,7 +206,7 @@ export default defineEventHandler(async (event) => {
   if (useErr) console.error('[apply-promo-access] Usage log failed:', useErr.code)
 
   // ── Step 10: Return ───────────────────────────────────────────────────────
-  const resolvedTier = codeRecord.access_tier || accessTier || 'oracle'
+  const resolvedTier = codeRecord.access_tier || 'oracle'
   return {
     success: true,
     reportId: savedReportId,

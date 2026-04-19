@@ -63,6 +63,28 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'This code is not a discount code' })
   }
 
+  // ── 3C: Fresh uses check immediately before session creation ─────────────────
+  // Closes the window where multiple Stripe sessions could be created before any
+  // webhook fires and increments current_uses. The atomic RPC in the webhook is
+  // the final enforcement; this is an early rejection for already-exhausted codes.
+  let freshCode: any
+  try {
+    const { data: freshData, error: freshErr } = await supabase
+      .from('promo_codes')
+      .select('current_uses, max_uses')
+      .eq('id', codeId)
+      .maybeSingle()
+    if (freshErr) throw new Error(freshErr.message)
+    freshCode = freshData
+  } catch (err: any) {
+    console.error('[apply-promo-discount] Fresh uses check error:', err?.message)
+    throw createError({ statusCode: 500, message: 'Unable to validate code. Please try again.' })
+  }
+
+  if (!freshCode || freshCode.current_uses >= freshCode.max_uses) {
+    throw createError({ statusCode: 400, message: 'This code has reached its usage limit.' })
+  }
+
   // ── Calculate discounted amount ────────────────────────────────────────────
   const tierInfo = TIER_BASE_PRICES[tier]!
   const discountValue = codeRecord.discount_value ?? 0
