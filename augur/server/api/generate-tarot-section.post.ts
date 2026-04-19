@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { TarotSectionSchema, type TarotSectionType } from '~~/server/utils/ai-schemas'
+import { withAiRetry } from '~~/server/utils/ai-retry'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -110,12 +111,14 @@ Return ONLY valid JSON:
     required: ['soulCard', 'soulCardMeaning', 'reading', 'loveMessage', 'transformativePeriod', 'blessing', 'spiritColors', 'luckyCharm'],
   } as const
 
-  const message = await client.messages.parse({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 800,
-    messages: [{ role: 'user', content: prompt }],
-    output_config: { format: jsonSchemaOutputFormat(tarotJsonSchema) },
-  })
+  const message = await withAiRetry('generate-tarot-section', () =>
+    client.messages.parse({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 800,
+      messages: [{ role: 'user', content: prompt }],
+      output_config: { format: jsonSchemaOutputFormat(tarotJsonSchema) },
+    })
+  )
 
   const rawParsed = message.parsed_output
 

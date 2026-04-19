@@ -5,6 +5,7 @@ import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { cancelEmailJobs } from '~~/server/utils/email-jobs'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
 import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
+import { withAiRetry } from '~~/server/utils/ai-retry'
 
 /**
  * POST /api/stripe/webhook
@@ -364,12 +365,14 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
     required: ['archetypeName', 'archetypeSymbol', 'element', 'powerTraits', 'sections'],
   } as const
 
-  const message = await client.messages.parse({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 4096,
-    messages: [{ role: 'user', content: prompt }],
-    output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
-  })
+  const message = await withAiRetry('stripe-webhook:generateReport', () =>
+    client.messages.parse({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }],
+      output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
+    })
+  )
 
   const rawParsed = message.parsed_output
 
@@ -616,12 +619,14 @@ Normal months 55-75. Make it feel like a real forecast.`
     required: ['overallTheme', 'peakMonths', 'cautionMonths', 'months'],
   } as const
 
-  const message = await client.messages.parse({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 3000,
-    messages: [{ role: 'user', content: prompt }],
-    output_config: { format: jsonSchemaOutputFormat(calendarJsonSchema) },
-  })
+  const message = await withAiRetry('stripe-webhook:generateCalendar', () =>
+    client.messages.parse({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 3000,
+      messages: [{ role: 'user', content: prompt }],
+      output_config: { format: jsonSchemaOutputFormat(calendarJsonSchema) },
+    })
+  )
 
   const rawCalParsed = message.parsed_output
 

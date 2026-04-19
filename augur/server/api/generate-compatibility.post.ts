@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { CompatibilitySchema, type CompatibilityType } from '~~/server/utils/ai-schemas'
+import { withAiRetry } from '~~/server/utils/ai-retry'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -118,12 +119,14 @@ Return ONLY valid JSON, no markdown:
     required: ['compatibilityScore', 'compatibilityTitle', 'sections'],
   } as const
 
-  const message = await client.messages.parse({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 1000,
-    messages: [{ role: 'user', content: prompt }],
-    output_config: { format: jsonSchemaOutputFormat(compatibilityJsonSchema) },
-  })
+  const message = await withAiRetry('generate-compatibility', () =>
+    client.messages.parse({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }],
+      output_config: { format: jsonSchemaOutputFormat(compatibilityJsonSchema) },
+    })
+  )
 
   const rawParsed = message.parsed_output
 

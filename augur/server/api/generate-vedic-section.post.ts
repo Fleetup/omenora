@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { VedicSectionSchema, type VedicSectionType } from '~~/server/utils/ai-schemas'
+import { withAiRetry } from '~~/server/utils/ai-retry'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -83,12 +84,14 @@ Return ONLY valid JSON:
     required: ['nakshatraName', 'rulingPlanet', 'vedicTitle', 'reading', 'karmicMission', 'remedy', 'auspiciousColors', 'auspiciousDays'],
   } as const
 
-  const message = await client.messages.parse({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 800,
-    messages: [{ role: 'user', content: prompt }],
-    output_config: { format: jsonSchemaOutputFormat(vedicJsonSchema) },
-  })
+  const message = await withAiRetry('generate-vedic-section', () =>
+    client.messages.parse({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 800,
+      messages: [{ role: 'user', content: prompt }],
+      output_config: { format: jsonSchemaOutputFormat(vedicJsonSchema) },
+    })
+  )
 
   const rawParsed = message.parsed_output
 

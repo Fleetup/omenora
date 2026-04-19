@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { ReportSchema, type ReportType } from '~~/server/utils/ai-schemas'
+import { withAiRetry } from '~~/server/utils/ai-retry'
 
 // ── Inline Vedic utilities (mirrored from app/utils/vedic.ts) ──────────────
 
@@ -718,12 +719,14 @@ Return ONLY valid JSON. No preamble, no explanation, no markdown.
 
   let message
   try {
-    message = await client.messages.parse({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }],
-      output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
-    })
+    message = await withAiRetry('generate-report', () =>
+      client.messages.parse({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }],
+        output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
+      })
+    )
   } catch (err: any) {
     const status = err?.status ?? err?.statusCode ?? 0
     if (status === 401 || status === 403) {

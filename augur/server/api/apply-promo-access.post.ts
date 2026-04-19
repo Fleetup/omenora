@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
 import { ReportSchema, type ReportType } from '~~/server/utils/ai-schemas'
+import { withAiRetry } from '~~/server/utils/ai-retry'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -331,12 +332,14 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
     required: ['archetypeName', 'archetypeSymbol', 'element', 'powerTraits', 'sections'],
   } as const
 
-  const message = await client.messages.parse({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 4096,
-    messages: [{ role: 'user', content: prompt }],
-    output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
-  })
+  const message = await withAiRetry('apply-promo-access:generateReport', () =>
+    client.messages.parse({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }],
+      output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
+    })
+  )
 
   const rawParsed = message.parsed_output
 

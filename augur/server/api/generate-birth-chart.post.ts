@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { BirthChartSchema, validateBirthChartTitle, type BirthChartType } from '~~/server/utils/ai-schemas'
+import { withAiRetry } from '~~/server/utils/ai-retry'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -126,13 +127,15 @@ Return ONLY valid JSON with no markdown fences:
     required: ['risingSign', 'sunSign', 'moonSign', 'dominantPlanet', 'powerHouse', 'chartTitle', 'reading', 'forecast2026'],
   } as const
 
-  const message = await client.messages.parse({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 1800,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-    output_config: { format: jsonSchemaOutputFormat(birthChartJsonSchema) },
-  })
+  const message = await withAiRetry('generate-birth-chart', () =>
+    client.messages.parse({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1800,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+      output_config: { format: jsonSchemaOutputFormat(birthChartJsonSchema) },
+    })
+  )
 
   const rawParsed = message.parsed_output
 

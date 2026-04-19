@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { CalendarSchema, type CalendarType } from '~~/server/utils/ai-schemas'
+import { withAiRetry } from '~~/server/utils/ai-retry'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -117,12 +118,14 @@ Normal months 55-75. Make it feel like a real forecast.`
     required: ['overallTheme', 'peakMonths', 'cautionMonths', 'months'],
   } as const
 
-  const message = await client.messages.parse({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 3000,
-    messages: [{ role: 'user', content: prompt }],
-    output_config: { format: jsonSchemaOutputFormat(calendarJsonSchema) },
-  })
+  const message = await withAiRetry('generate-calendar', () =>
+    client.messages.parse({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 3000,
+      messages: [{ role: 'user', content: prompt }],
+      output_config: { format: jsonSchemaOutputFormat(calendarJsonSchema) },
+    })
+  )
 
   const rawParsed = message.parsed_output
 

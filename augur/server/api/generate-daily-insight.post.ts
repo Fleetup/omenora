@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { createClient } from '@supabase/supabase-js'
 import { DailyInsightSchema, type DailyInsightType } from '~~/server/utils/ai-schemas'
+import { withAiRetry } from '~~/server/utils/ai-retry'
 
 // ── 30-theme rotation ─────────────────────────────────────────────────────
 const INSIGHT_THEMES = [
@@ -237,12 +238,14 @@ Exactly this structure:
     required: ['insight', 'reflection_question', 'theme'],
   } as const
 
-  const message = await client.messages.parse({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 700,
-    messages: [{ role: 'user', content: insightPrompt }],
-    output_config: { format: jsonSchemaOutputFormat(dailyInsightJsonSchema) },
-  })
+  const message = await withAiRetry('generate-daily-insight', () =>
+    client.messages.parse({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 700,
+      messages: [{ role: 'user', content: insightPrompt }],
+      output_config: { format: jsonSchemaOutputFormat(dailyInsightJsonSchema) },
+    })
+  )
 
   const rawParsed = message.parsed_output
 
