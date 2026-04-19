@@ -813,18 +813,35 @@ async function generateBundleCalendar(): Promise<any> {
   if (store.calendarData) return store.calendarData
   if (!store.firstName || !store.dateOfBirth) return null
 
-  const calCacheKey = `omenora_calendar_${store.reportSessionId || store.tempId}`
+  const sessionKey = store.reportSessionId || store.tempId
+  const calCacheKey = `omenora_calendar_${sessionKey}`
   const calCached = sessionStorage.getItem(calCacheKey)
   if (calCached) {
     try {
       const parsed = JSON.parse(calCached)
       store.setCalendarData(parsed)
       return parsed
-    } catch { /* fall through to generate */ }
+    } catch { /* fall through */ }
   }
 
   isGeneratingCalendar.value = true
   try {
+    // ── Step 1: Check DB first (webhook may have already generated & saved it) ──
+    if (sessionKey) {
+      try {
+        const { calendar: dbCal } = await $fetch<{ calendar: { calendar_data: any } | null }>(
+          '/api/get-calendar',
+          { method: 'POST', body: { sessionId: sessionKey } },
+        )
+        if (dbCal?.calendar_data) {
+          store.setCalendarData(dbCal.calendar_data)
+          sessionStorage.setItem(calCacheKey, JSON.stringify(dbCal.calendar_data))
+          return dbCal.calendar_data
+        }
+      } catch { /* not in DB yet — generate below */ }
+    }
+
+    // ── Step 2: Generate via AI ────────────────────────────────────────────────
     const calData = await $fetch<{ success: boolean; calendar: any }>('/api/generate-calendar', {
       method: 'POST',
       body: {
@@ -835,10 +852,20 @@ async function generateBundleCalendar(): Promise<any> {
         answers: store.answers,
         dateOfBirth: store.dateOfBirth,
         city: store.city,
+        language: store.language,
       },
     })
     store.setCalendarData(calData.calendar)
     sessionStorage.setItem(calCacheKey, JSON.stringify(calData.calendar))
+
+    // ── Step 3: Persist to DB so hard refreshes don't regenerate ──────────────
+    if (sessionKey) {
+      $fetch('/api/save-calendar', {
+        method: 'POST',
+        body: { sessionId: sessionKey, calendarData: calData.calendar, firstName: store.firstName },
+      }).catch(() => {})
+    }
+
     return calData.calendar
   } catch {
     console.error('Calendar generation failed')
@@ -1135,7 +1162,6 @@ onMounted(async () => {
       if (store.email && store.report) {
         try {
           const dedupeId = store.tempId || sessionId
-          const isUpgrade = store.bundlePurchased || store.oraclePurchased || store.birthChartPurchased
           const sessionKey = `email_sent_${sessionId}`
           let shouldSend = !sessionStorage.getItem(sessionKey)
 
@@ -1144,7 +1170,7 @@ onMounted(async () => {
               '/api/check-report-exists',
               { method: 'POST', body: { sessionId: dedupeId } },
             )
-            if (emailCheck.emailSent && !isUpgrade) shouldSend = false
+            if (emailCheck.emailSent) shouldSend = false
           }
 
           if (shouldSend) {

@@ -155,6 +155,8 @@ export default defineEventHandler(async (event) => {
         isOraclePurchase,
         reportData: null, // will load from tempId below
         supabase,
+        dateOfBirth,
+        answers: {},
       })
     }
     return { received: true }
@@ -236,6 +238,8 @@ export default defineEventHandler(async (event) => {
       isOraclePurchase,
       reportData,
       supabase,
+      dateOfBirth,
+      answers: {},
     })
   }
 
@@ -371,6 +375,8 @@ async function sendReportEmailViaWebhook(opts: {
   isOraclePurchase: boolean
   reportData: any
   supabase: any
+  dateOfBirth?: string
+  answers?: Record<string, string>
 }): Promise<void> {
   const { email, firstName, sessionId, supabase } = opts
 
@@ -392,6 +398,44 @@ async function sendReportEmailViaWebhook(opts: {
     return
   }
 
+  // ── Generate calendar for bundle/oracle purchases ────────────────────────
+  let calendarData: any = null
+  if ((opts.isBundlePurchase || opts.isOraclePurchase) && opts.dateOfBirth && opts.firstName) {
+    try {
+      // Check if already saved to calendars table first
+      const { data: existingCal } = await supabase
+        .from('calendars')
+        .select('calendar_data')
+        .eq('session_id', sessionId)
+        .maybeSingle()
+
+      if (existingCal?.calendar_data) {
+        calendarData = existingCal.calendar_data
+      } else {
+        calendarData = await generateCalendar({
+          config: opts.config,
+          firstName: opts.firstName,
+          archetype: opts.archetype,
+          element: reportToSend.element,
+          lifePathNumber: opts.lifePathNumber,
+          answers: opts.answers || {},
+          dateOfBirth: opts.dateOfBirth,
+          language: opts.language,
+        })
+        if (calendarData) {
+          await supabase.from('calendars').upsert({
+            session_id: sessionId,
+            first_name: opts.firstName,
+            calendar_data: calendarData,
+            created_at: new Date().toISOString(),
+          }, { onConflict: 'session_id' })
+        }
+      }
+    } catch (calErr: any) {
+      console.error('[stripe-webhook] Calendar generation failed (non-blocking):', calErr?.message)
+    }
+  }
+
   try {
     await sendReportEmail(resendKey, {
       email,
@@ -404,7 +448,7 @@ async function sendReportEmailViaWebhook(opts: {
       vedicData: null,
       baziData: null,
       tarotData: null,
-      calendarData: null,
+      calendarData,
       birthChartData: null,
       language: opts.language,
     })
@@ -416,4 +460,100 @@ async function sendReportEmailViaWebhook(opts: {
   } catch (err: any) {
     console.error('[stripe-webhook] Email send failed for', sessionId, err?.message)
   }
+}
+
+async function generateCalendar(opts: {
+  config: any
+  firstName: string
+  archetype: string
+  element: string
+  lifePathNumber: number
+  answers: Record<string, string>
+  dateOfBirth: string
+  language: string
+}): Promise<any> {
+  const client = new Anthropic({ apiKey: opts.config.anthropicApiKey as string })
+
+  const languageInstructions: Record<string, string> = {
+    en: 'Respond entirely in English.',
+    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
+    pt: 'Responda completamente em português brasileiro. Use tom caloroso e pessoal.',
+    hi: 'पूरी तरह से हिंदी में जवाब दें।',
+    ko: '전체적으로 한국어로 답변해 주세요.',
+    zh: '完全用简体中文回答。',
+  }
+  const langInstruction = languageInstructions[opts.language] ?? languageInstructions['en'] ?? ''
+
+  const birthMonth = new Date(opts.dateOfBirth).toLocaleString('default', { month: 'long' })
+  const birthMonthNum = new Date(opts.dateOfBirth).getMonth()
+  const birthSeason = birthMonthNum >= 2 && birthMonthNum <= 4 ? 'spring'
+    : birthMonthNum >= 5 && birthMonthNum <= 7 ? 'summer'
+    : birthMonthNum >= 8 && birthMonthNum <= 10 ? 'autumn'
+    : 'winter'
+
+  const prompt = `${langInstruction}
+
+You are OMENORA, an AI destiny system.
+Generate a highly specific month-by-month lucky timing calendar for 2026 for ${opts.firstName}.
+
+Their profile:
+- Archetype: ${opts.archetype}
+- Element: ${opts.element}
+- Life Path: ${opts.lifePathNumber}
+- Born in: ${birthSeason} (${birthMonth})
+- Decision style: ${opts.answers?.q1 === 'gut' ? 'intuition' : 'logic'}
+- Core fear: ${opts.answers?.q4 || 'unknown'}
+- Energy pattern: ${opts.answers?.q2 || 'unknown'}
+
+Rules:
+- Be SPECIFIC to this person — reference their archetype, element, and life path in predictions
+- Each month must feel genuinely different and personal
+- Use real 2026 astrological events as anchors (Mercury retrograde Jan 25-Feb 14, Eclipse Apr 8, Jupiter enters Cancer Jun 9, Saturn retrograde Jul 12, Eclipse Oct 14, Mercury retrograde Oct 23-Nov 12)
+- Vary the energy levels — not every month is great, some are warning months, some are neutral
+- Write directly to ${opts.firstName} in second person
+
+Return ONLY valid JSON, no markdown:
+{
+  "overallTheme": "One sentence about ${opts.firstName}'s 2026 overall energy",
+  "peakMonths": ["April", "September"],
+  "cautionMonths": ["January", "October"],
+  "months": [
+    {
+      "month": "January",
+      "number": 1,
+      "energyLevel": 65,
+      "theme": "Short theme title (3-5 words)",
+      "love": "One specific sentence about love/relationships",
+      "money": "One specific sentence about money/finances",
+      "career": "One specific sentence about career/purpose",
+      "warning": "One specific caution or null if none",
+      "luckyDays": [7, 14, 22],
+      "color": "one hex color that represents this month energy"
+    }
+  ]
+}
+
+Generate all 12 months. Energy levels 0-100.
+Peak months should be 75-95. Caution months 30-55.
+Normal months 55-75. Make it feel like a real forecast.`
+
+  const message = await client.messages.create({
+    model: 'claude-sonnet-4-5',
+    max_tokens: 3000,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const firstContent = message.content[0]
+  const rawText = firstContent && firstContent.type === 'text' ? firstContent.text : ''
+
+  let calendarData: any
+  try {
+    calendarData = JSON.parse(rawText)
+  } catch {
+    const match = rawText.match(/\{[\s\S]*\}/)
+    if (match) calendarData = JSON.parse(match[0])
+    else throw new Error('Failed to parse calendar response')
+  }
+
+  return calendarData
 }
