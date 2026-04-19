@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
+import { ReportSchema, type ReportType } from '~~/server/utils/ai-schemas'
 
 // ── Inline Vedic utilities (mirrored from app/utils/vedic.ts) ──────────────
 
@@ -690,12 +692,37 @@ Return ONLY valid JSON. No preamble, no explanation, no markdown.
   }
 }`
 
+  const reportJsonSchema = {
+    type: 'object',
+    properties: {
+      archetypeName:   { type: 'string' },
+      archetypeSymbol: { type: 'string' },
+      element:         { type: 'string', enum: ['Fire', 'Earth', 'Air', 'Water'] },
+      powerTraits:     { type: 'array', items: { type: 'string' }, minItems: 3, maxItems: 3 },
+      sections: {
+        type: 'object',
+        properties: {
+          identity:    { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          science:     { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          forecast:    { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          love:        { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          purpose:     { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          gift:        { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          affirmation: { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+        },
+        required: ['identity', 'science', 'forecast', 'love', 'purpose', 'gift', 'affirmation'],
+      },
+    },
+    required: ['archetypeName', 'archetypeSymbol', 'element', 'powerTraits', 'sections'],
+  } as const
+
   let message
   try {
-    message = await client.messages.create({
+    message = await client.messages.parse({
       model: 'claude-sonnet-4-5',
       max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }],
+      output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
     })
   } catch (err: any) {
     const status = err?.status ?? err?.statusCode ?? 0
@@ -734,60 +761,44 @@ Return ONLY valid JSON. No preamble, no explanation, no markdown.
     })
   }
 
-  const firstBlock = message.content[0]
-  const rawText = firstBlock?.type === 'text' ? firstBlock.text : ''
+  const rawParsed = message.parsed_output
 
-  let reportData
-  try {
-    reportData = JSON.parse(rawText)
-  } catch (err: any) {
-    console.error('[generate-report] JSON.parse failed, attempting regex fallback', {
+  if (!rawParsed) {
+    const firstBlock = message.content[0]
+    const rawText = firstBlock?.type === 'text' ? firstBlock.text : ''
+    console.error('[generate-report] Structured output returned null parsed_output', {
       endpoint: 'generate-report',
       timestamp: new Date().toISOString(),
       rawResponsePreview: (rawText || '').slice(0, 500),
-      parseError: err instanceof Error ? err.message : String(err),
       archetype,
       firstName,
       region,
       language,
     })
-    const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) {
-      try {
-        reportData = JSON.parse(match[0])
-      } catch (fallbackErr: any) {
-        console.error('[generate-report] Regex fallback parse failed', {
-          endpoint: 'generate-report',
-          timestamp: new Date().toISOString(),
-          rawResponsePreview: (rawText || '').slice(0, 500),
-          parseError: fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr),
-          archetype,
-          firstName,
-          region,
-          language,
-        })
-        throw createError({
-          statusCode: 500,
-          message: 'Failed to parse report response. Please try again.',
-        })
-      }
-    } else {
-      console.error('[generate-report] No JSON object found in AI response', {
-        endpoint: 'generate-report',
-        timestamp: new Date().toISOString(),
-        rawResponsePreview: (rawText || '').slice(0, 500),
-        parseError: 'No JSON object matched in response body',
-        archetype,
-        firstName,
-        region,
-        language,
-      })
-      throw createError({
-        statusCode: 500,
-        message: 'Failed to parse report response. Please try again.',
-      })
-    }
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to parse report response. Please try again.',
+    })
   }
+
+  const zodResult = ReportSchema.safeParse(rawParsed)
+  if (!zodResult.success) {
+    console.error('[generate-report] Schema validation failed after structured output', {
+      endpoint: 'generate-report',
+      timestamp: new Date().toISOString(),
+      zodErrors: zodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+      archetype,
+      firstName,
+      region,
+      language,
+    })
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to parse report response. Please try again.',
+    })
+  }
+
+  let reportData: ReportType = zodResult.data
 
   // Always override the AI-generated symbol with the canonical one for this
   // archetype so the canvas card renderer (which uses Inter font and cannot
