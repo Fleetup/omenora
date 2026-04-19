@@ -421,8 +421,8 @@ const isProcessingPayment = ref(false)
 const promoInputVisible     = ref(false)
 const promoCodeInput        = ref('')
 const isValidatingPromo     = ref(false)
-const promoValidationResult = ref<{ valid: boolean; message: string; codeId?: string; codeType?: string; codeSubtype?: string; discountValue?: number } | null>(null)
-const appliedPromo          = ref<{ valid: boolean; message: string; codeId: string; codeType: string; codeSubtype: string; discountValue: number } | null>(null)
+const promoValidationResult = ref<{ valid: boolean; message: string; codeId?: string; codeType?: string; codeSubtype?: string; discountValue?: number; accessTier?: string } | null>(null)
+const appliedPromo          = ref<{ valid: boolean; message: string; codeId: string; codeType: string; codeSubtype: string; discountValue: number; accessTier: string } | null>(null)
 const isApplyingFreeAccess  = ref(false)
 const promoErrorMessage     = ref('')
 
@@ -432,7 +432,7 @@ async function validatePromoCode() {
   isValidatingPromo.value = true
   promoValidationResult.value = null
   try {
-    const result = await $fetch<{ valid: boolean; message: string; codeId?: string; codeType?: string; codeSubtype?: string; discountValue?: number }>('/api/validate-promo', {
+    const result = await $fetch<{ valid: boolean; message: string; codeId?: string; codeType?: string; codeSubtype?: string; discountValue?: number; accessTier?: string }>('/api/validate-promo', {
       method: 'POST',
       body: { code, email: email.value || '' },
     })
@@ -445,6 +445,7 @@ async function validatePromoCode() {
         codeType:      result.codeType,
         codeSubtype:   result.codeSubtype,
         discountValue: result.discountValue ?? 0,
+        accessTier:    result.accessTier || 'oracle',
       }
     }
   } catch {
@@ -464,7 +465,7 @@ async function applyFreeAccess() {
   promoErrorMessage.value = ''
   store.setEmail(email.value)
   try {
-    const result = await $fetch<{ success: boolean; report: any; sessionId: string }>('/api/apply-promo-access', {
+    const result = await $fetch<{ success: boolean; report: any; sessionId: string; bundlePurchased: boolean; oraclePurchased: boolean; accessTier: string }>('/api/apply-promo-access', {
       method: 'POST',
       body: {
         codeId:        appliedPromo.value.codeId,
@@ -479,11 +480,21 @@ async function applyFreeAccess() {
         language:      store.language,
         answers:       store.answers,
         timeOfBirth:   store.timeOfBirth,
+        accessTier:    appliedPromo.value.accessTier,
       },
     })
     store.setReport(result.report)
     store.setPaymentComplete(true)
     store.setReportSessionId(result.sessionId)
+    if (result.bundlePurchased) {
+      store.setBundlePurchased(true)
+      store.setCalendarPurchased(true)
+    }
+    if (result.oraclePurchased) {
+      store.setOraclePurchased(true)
+      store.setSubscriptionActive(true)
+      store.setBirthChartPurchased(true)
+    }
     await navigateTo('/report')
   } catch (err: any) {
     promoErrorMessage.value = err?.data?.message || 'Something went wrong. Please try again.'

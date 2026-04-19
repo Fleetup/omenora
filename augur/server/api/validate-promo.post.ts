@@ -61,6 +61,7 @@ export default defineEventHandler(async (event) => {
     codeType: record.code_type,
     codeSubtype: record.code_subtype,
     discountValue: record.discount_value ?? 0,
+    accessTier: (record.access_tier as string) || 'oracle',
     message: record.code_type === 'full_access'
       ? 'Full access unlocked'
       : `${record.discount_value ?? 0}% discount applied`,

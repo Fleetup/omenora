@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
   const region        = isValidRegion(body.region) ? body.region : 'western'
   const language      = sanitizeString(body.language || 'en', 5)
   const answers       = body.answers && typeof body.answers === 'object' ? body.answers : {}
+  const accessTier    = sanitizeString(body.accessTier || 'oracle', 10)
 
   assertInput(codeId.length > 0, 'codeId is required')
   assertInput(rawCode.length > 0, 'code is required')
@@ -199,11 +200,15 @@ export default defineEventHandler(async (event) => {
   if (useErr) console.error('[apply-promo-access] Usage log failed:', useErr.code)
 
   // ── Step 10: Return ───────────────────────────────────────────────────────
+  const resolvedTier = codeRecord.access_tier || accessTier || 'oracle'
   return {
     success: true,
     reportId: savedReportId,
     report: reportData,
     sessionId: promoSessionId,
+    accessTier: resolvedTier,
+    bundlePurchased: resolvedTier === 'bundle' || resolvedTier === 'oracle',
+    oraclePurchased: resolvedTier === 'oracle',
     message: 'Your complete reading has been sent to your email',
   }
 })
