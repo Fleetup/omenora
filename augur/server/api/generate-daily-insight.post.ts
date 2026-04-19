@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { createClient } from '@supabase/supabase-js'
+import { DailyInsightSchema, type DailyInsightType } from '~~/server/utils/ai-schemas'
 
 // ── 30-theme rotation ─────────────────────────────────────────────────────
 const INSIGHT_THEMES = [
@@ -225,46 +227,55 @@ Exactly this structure:
   // ── Call Claude ───────────────────────────────────────────────────────
   const client = new Anthropic({ apiKey: config.anthropicApiKey })
 
-  const message = await client.messages.create({
+  const dailyInsightJsonSchema = {
+    type: 'object',
+    properties: {
+      insight:             { type: 'string' },
+      reflection_question: { type: 'string' },
+      theme:               { type: 'string' },
+    },
+    required: ['insight', 'reflection_question', 'theme'],
+  } as const
+
+  const message = await client.messages.parse({
     model: 'claude-sonnet-4-5',
     max_tokens: 700,
     messages: [{ role: 'user', content: insightPrompt }],
+    output_config: { format: jsonSchemaOutputFormat(dailyInsightJsonSchema) },
   })
 
-  const firstBlock = message.content[0]
-  const rawText = firstBlock?.type === 'text' ? firstBlock.text : ''
+  const rawParsed = message.parsed_output
 
-  let generatedInsight: { insight: string; reflection_question: string; theme: string }
-  try {
-    generatedInsight = JSON.parse(rawText)
-  } catch (err: any) {
-    console.error('[generate-daily-insight] JSON.parse failed, attempting regex fallback', {
+  if (!rawParsed) {
+    const firstBlock = message.content[0]
+    const rawText = firstBlock?.type === 'text' ? firstBlock.text : ''
+    console.error('[generate-daily-insight] Structured output returned null parsed_output', {
       endpoint: 'generate-daily-insight',
       timestamp: new Date().toISOString(),
       rawResponsePreview: (rawText || '').slice(0, 500),
-      parseError: err instanceof Error ? err.message : String(err),
       archetype,
       firstName,
       region,
       language,
     })
-    const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) {
-      generatedInsight = JSON.parse(match[0])
-    } else {
-      console.error('[generate-daily-insight] No JSON object found in AI response', {
-        endpoint: 'generate-daily-insight',
-        timestamp: new Date().toISOString(),
-        rawResponsePreview: (rawText || '').slice(0, 500),
-        parseError: 'No JSON object matched in response body',
-        archetype,
-        firstName,
-        region,
-        language,
-      })
-      throw createError({ statusCode: 500, message: 'Failed to parse insight' })
-    }
+    throw createError({ statusCode: 500, message: 'Failed to parse insight' })
   }
+
+  const zodResult = DailyInsightSchema.safeParse(rawParsed)
+  if (!zodResult.success) {
+    console.error('[generate-daily-insight] Schema validation failed after structured output', {
+      endpoint: 'generate-daily-insight',
+      timestamp: new Date().toISOString(),
+      zodErrors: zodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+      archetype,
+      firstName,
+      region,
+      language,
+    })
+    throw createError({ statusCode: 500, message: 'Failed to parse insight' })
+  }
+
+  const generatedInsight: DailyInsightType = zodResult.data
 
   // ── Log insight after generation (used post-send by caller) ───────────
   if (email) {

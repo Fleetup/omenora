@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
+import { VedicSectionSchema, type VedicSectionType } from '~~/server/utils/ai-schemas'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -66,44 +68,58 @@ Return ONLY valid JSON:
   "auspiciousDays": ["Monday", "Thursday"]
 }`
 
-  const message = await client.messages.create({
+  const vedicJsonSchema = {
+    type: 'object',
+    properties: {
+      nakshatraName:    { type: 'string' },
+      rulingPlanet:     { type: 'string' },
+      vedicTitle:       { type: 'string' },
+      reading:          { type: 'string' },
+      karmicMission:    { type: 'string' },
+      remedy:           { type: 'string' },
+      auspiciousColors: { type: 'array', items: { type: 'string' } },
+      auspiciousDays:   { type: 'array', items: { type: 'string' } },
+    },
+    required: ['nakshatraName', 'rulingPlanet', 'vedicTitle', 'reading', 'karmicMission', 'remedy', 'auspiciousColors', 'auspiciousDays'],
+  } as const
+
+  const message = await client.messages.parse({
     model: 'claude-sonnet-4-5',
     max_tokens: 800,
     messages: [{ role: 'user', content: prompt }],
+    output_config: { format: jsonSchemaOutputFormat(vedicJsonSchema) },
   })
 
-  const firstBlock = message.content[0]
-  const rawText = firstBlock?.type === 'text' ? firstBlock.text : ''
+  const rawParsed = message.parsed_output
 
-  let vedicData
-  try {
-    vedicData = JSON.parse(rawText)
-  } catch (err: any) {
-    console.error('[generate-vedic-section] JSON.parse failed, attempting regex fallback', {
+  if (!rawParsed) {
+    const firstBlock = message.content[0]
+    const rawText = firstBlock?.type === 'text' ? firstBlock.text : ''
+    console.error('[generate-vedic-section] Structured output returned null parsed_output', {
       endpoint: 'generate-vedic-section',
       timestamp: new Date().toISOString(),
       rawResponsePreview: (rawText || '').slice(0, 500),
-      parseError: err instanceof Error ? err.message : String(err),
       archetype,
       firstName,
       language,
     })
-    const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) {
-      vedicData = JSON.parse(match[0])
-    } else {
-      console.error('[generate-vedic-section] No JSON object found in AI response', {
-        endpoint: 'generate-vedic-section',
-        timestamp: new Date().toISOString(),
-        rawResponsePreview: (rawText || '').slice(0, 500),
-        parseError: 'No JSON object matched in response body',
-        archetype,
-        firstName,
-        language,
-      })
-      throw createError({ statusCode: 500, message: 'Failed to parse Vedic section' })
-    }
+    throw createError({ statusCode: 500, message: 'Failed to parse Vedic section' })
   }
+
+  const zodResult = VedicSectionSchema.safeParse(rawParsed)
+  if (!zodResult.success) {
+    console.error('[generate-vedic-section] Schema validation failed after structured output', {
+      endpoint: 'generate-vedic-section',
+      timestamp: new Date().toISOString(),
+      zodErrors: zodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+      archetype,
+      firstName,
+      language,
+    })
+    throw createError({ statusCode: 500, message: 'Failed to parse Vedic section' })
+  }
+
+  const vedicData: VedicSectionType = zodResult.data
 
   return { success: true, vedic: vedicData }
 })

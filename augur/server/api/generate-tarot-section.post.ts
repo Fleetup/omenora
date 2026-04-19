@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
+import { TarotSectionSchema, type TarotSectionType } from '~~/server/utils/ai-schemas'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -93,45 +95,58 @@ Return ONLY valid JSON:
   "luckyCharm": "One specific object or symbol for protection"
 }`
 
-  const message = await client.messages.create({
+  const tarotJsonSchema = {
+    type: 'object',
+    properties: {
+      soulCard:             { type: 'string' },
+      soulCardMeaning:      { type: 'string' },
+      reading:              { type: 'string' },
+      loveMessage:          { type: 'string' },
+      transformativePeriod: { type: 'string' },
+      blessing:             { type: 'string' },
+      spiritColors:         { type: 'array', items: { type: 'string' } },
+      luckyCharm:           { type: 'string' },
+    },
+    required: ['soulCard', 'soulCardMeaning', 'reading', 'loveMessage', 'transformativePeriod', 'blessing', 'spiritColors', 'luckyCharm'],
+  } as const
+
+  const message = await client.messages.parse({
     model: 'claude-sonnet-4-5',
     max_tokens: 800,
     messages: [{ role: 'user', content: prompt }],
+    output_config: { format: jsonSchemaOutputFormat(tarotJsonSchema) },
   })
 
-  const firstContent = message.content[0]
-  const rawText = firstContent?.type === 'text'
-    ? (firstContent as { type: 'text'; text: string }).text : ''
+  const rawParsed = message.parsed_output
 
-  let tarotData
-  try {
-    tarotData = JSON.parse(rawText)
-  } catch (err: any) {
-    console.error('[generate-tarot-section] JSON.parse failed, attempting regex fallback', {
+  if (!rawParsed) {
+    const firstContent = message.content[0]
+    const rawText = firstContent?.type === 'text' ? firstContent.text : ''
+    console.error('[generate-tarot-section] Structured output returned null parsed_output', {
       endpoint: 'generate-tarot-section',
       timestamp: new Date().toISOString(),
       rawResponsePreview: (rawText || '').slice(0, 500),
-      parseError: err instanceof Error ? err.message : String(err),
       archetype,
       firstName,
       language,
     })
-    const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) {
-      tarotData = JSON.parse(match[0])
-    } else {
-      console.error('[generate-tarot-section] No JSON object found in AI response', {
-        endpoint: 'generate-tarot-section',
-        timestamp: new Date().toISOString(),
-        rawResponsePreview: (rawText || '').slice(0, 500),
-        parseError: 'No JSON object matched in response body',
-        archetype,
-        firstName,
-        language,
-      })
-      throw createError({ statusCode: 500, message: 'Failed to parse tarot section' })
-    }
+    throw createError({ statusCode: 500, message: 'Failed to parse tarot section' })
   }
+
+  const zodResult = TarotSectionSchema.safeParse(rawParsed)
+  if (!zodResult.success) {
+    console.error('[generate-tarot-section] Schema validation failed after structured output', {
+      endpoint: 'generate-tarot-section',
+      timestamp: new Date().toISOString(),
+      zodErrors: zodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+      archetype,
+      firstName,
+      language,
+    })
+    throw createError({ statusCode: 500, message: 'Failed to parse tarot section' })
+  }
+
+  const tarotData: TarotSectionType = zodResult.data
 
   return { success: true, tarot: tarotData }
 })

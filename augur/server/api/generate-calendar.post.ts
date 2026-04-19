@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
+import { CalendarSchema, type CalendarType } from '~~/server/utils/ai-schemas'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -84,44 +86,74 @@ Generate all 12 months. Energy levels 0-100.
 Peak months should be 75-95. Caution months 30-55.
 Normal months 55-75. Make it feel like a real forecast.`
 
-  const message = await client.messages.create({
+  const calendarJsonSchema = {
+    type: 'object',
+    properties: {
+      overallTheme:  { type: 'string' },
+      peakMonths:    { type: 'array', items: { type: 'string' } },
+      cautionMonths: { type: 'array', items: { type: 'string' } },
+      months: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            month:       { type: 'string' },
+            number:      { type: 'number' },
+            energyLevel: { type: 'number' },
+            theme:       { type: 'string' },
+            love:        { type: 'string' },
+            money:       { type: 'string' },
+            career:      { type: 'string' },
+            warning:     { type: ['string', 'null'] },
+            luckyDays:   { type: 'array', items: { type: 'number' } },
+            color:       { type: 'string' },
+          },
+          required: ['month', 'number', 'energyLevel', 'theme', 'love', 'money', 'career', 'warning', 'luckyDays', 'color'],
+        },
+        minItems: 12,
+        maxItems: 12,
+      },
+    },
+    required: ['overallTheme', 'peakMonths', 'cautionMonths', 'months'],
+  } as const
+
+  const message = await client.messages.parse({
     model: 'claude-sonnet-4-5',
     max_tokens: 3000,
     messages: [{ role: 'user', content: prompt }],
+    output_config: { format: jsonSchemaOutputFormat(calendarJsonSchema) },
   })
 
-  const firstContent = message.content[0]
-  const rawText = firstContent && firstContent.type === 'text' ? firstContent.text : ''
+  const rawParsed = message.parsed_output
 
-  let calendarData
-  try {
-    calendarData = JSON.parse(rawText)
-  } catch (err: any) {
-    console.error('[generate-calendar] JSON.parse failed, attempting regex fallback', {
+  if (!rawParsed) {
+    const firstContent = message.content[0]
+    const rawText = firstContent?.type === 'text' ? firstContent.text : ''
+    console.error('[generate-calendar] Structured output returned null parsed_output', {
       endpoint: 'generate-calendar',
       timestamp: new Date().toISOString(),
       rawResponsePreview: (rawText || '').slice(0, 500),
-      parseError: err instanceof Error ? err.message : String(err),
       archetype,
       firstName,
       language,
     })
-    const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) {
-      calendarData = JSON.parse(match[0])
-    } else {
-      console.error('[generate-calendar] No JSON object found in AI response', {
-        endpoint: 'generate-calendar',
-        timestamp: new Date().toISOString(),
-        rawResponsePreview: (rawText || '').slice(0, 500),
-        parseError: 'No JSON object matched in response body',
-        archetype,
-        firstName,
-        language,
-      })
-      throw createError({ statusCode: 500, message: 'Failed to parse calendar' })
-    }
+    throw createError({ statusCode: 500, message: 'Failed to parse calendar' })
   }
+
+  const zodResult = CalendarSchema.safeParse(rawParsed)
+  if (!zodResult.success) {
+    console.error('[generate-calendar] Schema validation failed after structured output', {
+      endpoint: 'generate-calendar',
+      timestamp: new Date().toISOString(),
+      zodErrors: zodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+      archetype,
+      firstName,
+      language,
+    })
+    throw createError({ statusCode: 500, message: 'Failed to parse calendar' })
+  }
+
+  const calendarData: CalendarType = zodResult.data
 
   return { success: true, calendar: calendarData }
 })

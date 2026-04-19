@@ -1,8 +1,10 @@
 import Stripe from 'stripe'
 import { Resend } from 'resend'
 import Anthropic from '@anthropic-ai/sdk'
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { cancelEmailJobs } from '~~/server/utils/email-jobs'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
+import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
 
 /**
  * POST /api/stripe/webhook
@@ -338,46 +340,69 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
   }
 }`
 
-  const message = await client.messages.create({
+  const reportJsonSchema = {
+    type: 'object',
+    properties: {
+      archetypeName:   { type: 'string' },
+      archetypeSymbol: { type: 'string' },
+      element:         { type: 'string', enum: ['Fire', 'Earth', 'Air', 'Water'] },
+      powerTraits:     { type: 'array', items: { type: 'string' }, minItems: 3, maxItems: 3 },
+      sections: {
+        type: 'object',
+        properties: {
+          identity:    { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          science:     { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          forecast:    { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          love:        { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          purpose:     { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          gift:        { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          affirmation: { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+        },
+        required: ['identity', 'science', 'forecast', 'love', 'purpose', 'gift', 'affirmation'],
+      },
+    },
+    required: ['archetypeName', 'archetypeSymbol', 'element', 'powerTraits', 'sections'],
+  } as const
+
+  const message = await client.messages.parse({
     model: 'claude-sonnet-4-5',
     max_tokens: 4096,
     messages: [{ role: 'user', content: prompt }],
+    output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
   })
 
-  const firstBlock = message.content[0]
-  const rawText    = firstBlock?.type === 'text' ? firstBlock.text : ''
+  const rawParsed = message.parsed_output
 
-  let reportData: any
-  try {
-    reportData = JSON.parse(rawText)
-  } catch (err: any) {
-    console.error('[stripe-webhook:generateReport] JSON.parse failed, attempting regex fallback', {
+  if (!rawParsed) {
+    const firstBlock = message.content[0]
+    const rawText = firstBlock?.type === 'text' ? firstBlock.text : ''
+    console.error('[stripe-webhook:generateReport] Structured output returned null parsed_output', {
       endpoint: 'stripe-webhook:generateReport',
       timestamp: new Date().toISOString(),
       rawResponsePreview: (rawText || '').slice(0, 500),
-      parseError: err instanceof Error ? err.message : String(err),
       archetype: opts.archetype,
       firstName: opts.firstName,
       region: opts.region,
       language: opts.language,
     })
-    const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) {
-      reportData = JSON.parse(match[0])
-    } else {
-      console.error('[stripe-webhook:generateReport] No JSON object found in AI response', {
-        endpoint: 'stripe-webhook:generateReport',
-        timestamp: new Date().toISOString(),
-        rawResponsePreview: (rawText || '').slice(0, 500),
-        parseError: 'No JSON object matched in response body',
-        archetype: opts.archetype,
-        firstName: opts.firstName,
-        region: opts.region,
-        language: opts.language,
-      })
-      throw new Error('Failed to parse AI response')
-    }
+    throw new Error('Failed to parse AI response')
   }
+
+  const zodResult = ReportSchema.safeParse(rawParsed)
+  if (!zodResult.success) {
+    console.error('[stripe-webhook:generateReport] Schema validation failed after structured output', {
+      endpoint: 'stripe-webhook:generateReport',
+      timestamp: new Date().toISOString(),
+      zodErrors: zodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+      archetype: opts.archetype,
+      firstName: opts.firstName,
+      region: opts.region,
+      language: opts.language,
+    })
+    throw new Error('Failed to parse AI response')
+  }
+
+  const reportData: ReportType = zodResult.data
 
   const canonicalSymbol = ARCHETYPE_SYMBOLS[opts.archetype]
   if (canonicalSymbol) reportData.archetypeSymbol = canonicalSymbol
@@ -560,44 +585,74 @@ Generate all 12 months. Energy levels 0-100.
 Peak months should be 75-95. Caution months 30-55.
 Normal months 55-75. Make it feel like a real forecast.`
 
-  const message = await client.messages.create({
+  const calendarJsonSchema = {
+    type: 'object',
+    properties: {
+      overallTheme:  { type: 'string' },
+      peakMonths:    { type: 'array', items: { type: 'string' } },
+      cautionMonths: { type: 'array', items: { type: 'string' } },
+      months: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            month:       { type: 'string' },
+            number:      { type: 'number' },
+            energyLevel: { type: 'number' },
+            theme:       { type: 'string' },
+            love:        { type: 'string' },
+            money:       { type: 'string' },
+            career:      { type: 'string' },
+            warning:     { type: ['string', 'null'] },
+            luckyDays:   { type: 'array', items: { type: 'number' } },
+            color:       { type: 'string' },
+          },
+          required: ['month', 'number', 'energyLevel', 'theme', 'love', 'money', 'career', 'warning', 'luckyDays', 'color'],
+        },
+        minItems: 12,
+        maxItems: 12,
+      },
+    },
+    required: ['overallTheme', 'peakMonths', 'cautionMonths', 'months'],
+  } as const
+
+  const message = await client.messages.parse({
     model: 'claude-sonnet-4-5',
     max_tokens: 3000,
     messages: [{ role: 'user', content: prompt }],
+    output_config: { format: jsonSchemaOutputFormat(calendarJsonSchema) },
   })
 
-  const firstContent = message.content[0]
-  const rawText = firstContent && firstContent.type === 'text' ? firstContent.text : ''
+  const rawCalParsed = message.parsed_output
 
-  let calendarData: any
-  try {
-    calendarData = JSON.parse(rawText)
-  } catch (err: any) {
-    console.error('[stripe-webhook:generateCalendar] JSON.parse failed, attempting regex fallback', {
+  if (!rawCalParsed) {
+    const firstContent = message.content[0]
+    const rawText = firstContent?.type === 'text' ? firstContent.text : ''
+    console.error('[stripe-webhook:generateCalendar] Structured output returned null parsed_output', {
       endpoint: 'stripe-webhook:generateCalendar',
       timestamp: new Date().toISOString(),
       rawResponsePreview: (rawText || '').slice(0, 500),
-      parseError: err instanceof Error ? err.message : String(err),
       archetype: opts.archetype,
       firstName: opts.firstName,
       language: opts.language,
     })
-    const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) {
-      calendarData = JSON.parse(match[0])
-    } else {
-      console.error('[stripe-webhook:generateCalendar] No JSON object found in AI response', {
-        endpoint: 'stripe-webhook:generateCalendar',
-        timestamp: new Date().toISOString(),
-        rawResponsePreview: (rawText || '').slice(0, 500),
-        parseError: 'No JSON object matched in response body',
-        archetype: opts.archetype,
-        firstName: opts.firstName,
-        language: opts.language,
-      })
-      throw new Error('Failed to parse calendar response')
-    }
+    throw new Error('Failed to parse calendar response')
   }
+
+  const calZodResult = CalendarSchema.safeParse(rawCalParsed)
+  if (!calZodResult.success) {
+    console.error('[stripe-webhook:generateCalendar] Schema validation failed after structured output', {
+      endpoint: 'stripe-webhook:generateCalendar',
+      timestamp: new Date().toISOString(),
+      zodErrors: calZodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+      archetype: opts.archetype,
+      firstName: opts.firstName,
+      language: opts.language,
+    })
+    throw new Error('Failed to parse calendar response')
+  }
+
+  const calendarData: CalendarType = calZodResult.data
 
   return calendarData
 }

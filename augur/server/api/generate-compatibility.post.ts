@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
+import { CompatibilitySchema, type CompatibilityType } from '~~/server/utils/ai-schemas'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -96,47 +98,63 @@ Return ONLY valid JSON, no markdown:
   }
 }`
 
-  const message = await client.messages.create({
+  const compatibilityJsonSchema = {
+    type: 'object',
+    properties: {
+      compatibilityScore: { type: 'number' },
+      compatibilityTitle: { type: 'string' },
+      sections: {
+        type: 'object',
+        properties: {
+          bond:      { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          strength:  { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          challenge: { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          forecast:  { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          advice:    { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+        },
+        required: ['bond', 'strength', 'challenge', 'forecast', 'advice'],
+      },
+    },
+    required: ['compatibilityScore', 'compatibilityTitle', 'sections'],
+  } as const
+
+  const message = await client.messages.parse({
     model: 'claude-sonnet-4-5',
     max_tokens: 1000,
     messages: [{ role: 'user', content: prompt }],
+    output_config: { format: jsonSchemaOutputFormat(compatibilityJsonSchema) },
   })
 
-  const firstContent = message.content[0]
-  const rawText = firstContent && firstContent.type === 'text' ? firstContent.text : ''
+  const rawParsed = message.parsed_output
 
-  let compatibilityData
-  try {
-    compatibilityData = JSON.parse(rawText)
-  } catch (err: any) {
-    console.error('[generate-compatibility] JSON.parse failed, attempting regex fallback', {
+  if (!rawParsed) {
+    const firstContent = message.content[0]
+    const rawText = firstContent?.type === 'text' ? firstContent.text : ''
+    console.error('[generate-compatibility] Structured output returned null parsed_output', {
       endpoint: 'generate-compatibility',
       timestamp: new Date().toISOString(),
       rawResponsePreview: (rawText || '').slice(0, 500),
-      parseError: err instanceof Error ? err.message : String(err),
       archetype,
       firstName,
       language,
     })
-    const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) {
-      compatibilityData = JSON.parse(match[0])
-    } else {
-      console.error('[generate-compatibility] No JSON object found in AI response', {
-        endpoint: 'generate-compatibility',
-        timestamp: new Date().toISOString(),
-        rawResponsePreview: (rawText || '').slice(0, 500),
-        parseError: 'No JSON object matched in response body',
-        archetype,
-        firstName,
-        language,
-      })
-      throw createError({
-        statusCode: 500,
-        message: 'Failed to parse compatibility report'
-      })
-    }
+    throw createError({ statusCode: 500, message: 'Failed to parse compatibility report' })
   }
+
+  const zodResult = CompatibilitySchema.safeParse(rawParsed)
+  if (!zodResult.success) {
+    console.error('[generate-compatibility] Schema validation failed after structured output', {
+      endpoint: 'generate-compatibility',
+      timestamp: new Date().toISOString(),
+      zodErrors: zodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+      archetype,
+      firstName,
+      language,
+    })
+    throw createError({ statusCode: 500, message: 'Failed to parse compatibility report' })
+  }
+
+  const compatibilityData: CompatibilityType = zodResult.data
 
   return { success: true, compatibility: compatibilityData }
 })

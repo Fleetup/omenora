@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
+import { ReportSchema, type ReportType } from '~~/server/utils/ai-schemas'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -305,46 +307,69 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
   }
 }`
 
-  const message = await client.messages.create({
+  const reportJsonSchema = {
+    type: 'object',
+    properties: {
+      archetypeName:   { type: 'string' },
+      archetypeSymbol: { type: 'string' },
+      element:         { type: 'string', enum: ['Fire', 'Earth', 'Air', 'Water'] },
+      powerTraits:     { type: 'array', items: { type: 'string' }, minItems: 3, maxItems: 3 },
+      sections: {
+        type: 'object',
+        properties: {
+          identity:    { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          science:     { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          forecast:    { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          love:        { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          purpose:     { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          gift:        { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          affirmation: { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+        },
+        required: ['identity', 'science', 'forecast', 'love', 'purpose', 'gift', 'affirmation'],
+      },
+    },
+    required: ['archetypeName', 'archetypeSymbol', 'element', 'powerTraits', 'sections'],
+  } as const
+
+  const message = await client.messages.parse({
     model: 'claude-sonnet-4-5',
     max_tokens: 4096,
     messages: [{ role: 'user', content: prompt }],
+    output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
   })
 
-  const firstBlock = message.content[0]
-  const rawText    = firstBlock?.type === 'text' ? firstBlock.text : ''
+  const rawParsed = message.parsed_output
 
-  let reportData: any
-  try {
-    reportData = JSON.parse(rawText)
-  } catch (err: any) {
-    console.error('[apply-promo-access:generateReport] JSON.parse failed, attempting regex fallback', {
+  if (!rawParsed) {
+    const firstBlock = message.content[0]
+    const rawText = firstBlock?.type === 'text' ? firstBlock.text : ''
+    console.error('[apply-promo-access:generateReport] Structured output returned null parsed_output', {
       endpoint: 'apply-promo-access:generateReport',
       timestamp: new Date().toISOString(),
       rawResponsePreview: (rawText || '').slice(0, 500),
-      parseError: err instanceof Error ? err.message : String(err),
       archetype: opts.archetype,
       firstName: opts.firstName,
       region: opts.region,
       language: opts.language,
     })
-    const match = rawText.match(/\{[\s\S]*\}/)
-    if (match) {
-      reportData = JSON.parse(match[0])
-    } else {
-      console.error('[apply-promo-access:generateReport] No JSON object found in AI response', {
-        endpoint: 'apply-promo-access:generateReport',
-        timestamp: new Date().toISOString(),
-        rawResponsePreview: (rawText || '').slice(0, 500),
-        parseError: 'No JSON object matched in response body',
-        archetype: opts.archetype,
-        firstName: opts.firstName,
-        region: opts.region,
-        language: opts.language,
-      })
-      throw new Error('Failed to parse AI response')
-    }
+    throw new Error('Failed to parse AI response')
   }
+
+  const zodResult = ReportSchema.safeParse(rawParsed)
+  if (!zodResult.success) {
+    console.error('[apply-promo-access:generateReport] Schema validation failed after structured output', {
+      endpoint: 'apply-promo-access:generateReport',
+      timestamp: new Date().toISOString(),
+      zodErrors: zodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+      archetype: opts.archetype,
+      firstName: opts.firstName,
+      region: opts.region,
+      language: opts.language,
+    })
+    throw new Error('Failed to parse AI response')
+  }
+
+  const reportData: ReportType = zodResult.data
 
   const canonicalSymbol = ARCHETYPE_SYMBOLS[opts.archetype]
   if (canonicalSymbol) reportData.archetypeSymbol = canonicalSymbol
