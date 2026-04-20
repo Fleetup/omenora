@@ -5,18 +5,27 @@ import { withAiRetry } from '~~/server/utils/ai-retry'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+
+  // ── Auth guard — only internal server callers may invoke AI generation ────
+  const incomingSecret = getHeader(event, 'x-job-secret') ?? ''
+  const expectedSecret = (config.emailJobSecret as string | undefined) ?? ''
+  if (!expectedSecret || incomingSecret !== expectedSecret) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
   const body = await readBody(event)
 
-  const {
-    firstName,
-    dateOfBirth: _dateOfBirth,
-    lifePathNumber,
-    archetype,
-    nakshatra,
-    vedicPlanet,
-    vedicElement,
-    language,
-  } = body
+  const firstName      = sanitizeString(body.firstName, 50)
+  const archetype      = sanitizeString(body.archetype, 30)
+  const vedicPlanet    = sanitizeString(body.vedicPlanet, 20)
+  const vedicElement   = sanitizeString(body.vedicElement, 20)
+  const lifePathNumber = Number(body.lifePathNumber)
+  const language       = sanitizeString(body.language || 'en', 5)
+  const nakshatra      = body.nakshatra && typeof body.nakshatra === 'object' ? body.nakshatra : null
+
+  assertInput(!!firstName, 'firstName is required')
+  assertInput(isValidArchetype(archetype), 'Invalid archetype')
+  assertInput(nakshatra !== null, 'nakshatra is required')
 
   const languageInstructions: Record<string, string> = {
     en: 'Respond entirely in English.',

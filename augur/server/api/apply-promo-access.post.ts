@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { randomBytes } from 'node:crypto'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
 import { ReportSchema, type ReportType } from '~~/server/utils/ai-schemas'
@@ -107,7 +108,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // ── Step 4: Save report to Supabase ───────────────────────────────────────
-  const promoSessionId = `promo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${firstName.replace(/\s+/g, '').slice(0, 10)}`
+  const promoSessionId = `promo_${randomBytes(16).toString('hex')}`
   let savedReportId: string | null = null
 
   try {

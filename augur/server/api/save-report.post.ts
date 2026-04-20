@@ -47,7 +47,6 @@ export default defineEventHandler(async (event) => {
         date_of_birth:    dateOfBirth,
         email:            isValidEmail(email) ? email : '',
         region,
-        email_sent:       false,
         created_at:       new Date().toISOString(),
       },
       { onConflict: 'session_id' },

@@ -5,19 +5,32 @@ import { withAiRetry } from '~~/server/utils/ai-retry'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+
+  // ── Auth guard — only internal server callers may invoke AI generation ────
+  const incomingSecret = getHeader(event, 'x-job-secret') ?? ''
+  const expectedSecret = (config.emailJobSecret as string | undefined) ?? ''
+  if (!expectedSecret || incomingSecret !== expectedSecret) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
   const body = await readBody(event)
 
-  const {
-    firstName,
-    archetype,
-    element,
-    lifePathNumber,
-    powerTraits,
-    partnerName,
-    partnerDob,
-    partnerCity,
-    language,
-  } = body
+  const firstName      = sanitizeString(body.firstName, 50)
+  const archetype      = sanitizeString(body.archetype, 30)
+  const element        = sanitizeString(body.element, 20)
+  const lifePathNumber = Number(body.lifePathNumber)
+  const powerTraits    = Array.isArray(body.powerTraits)
+    ? (body.powerTraits as unknown[]).slice(0, 5).map((t) => sanitizeString(String(t ?? ''), 80))
+    : []
+  const partnerName    = sanitizeString(body.partnerName, 50)
+  const partnerDob     = sanitizeString(body.partnerDob, 10)
+  const partnerCity    = sanitizeString(body.partnerCity, 100)
+  const language       = sanitizeString(body.language || 'en', 5)
+
+  assertInput(!!firstName, 'firstName is required')
+  assertInput(isValidArchetype(archetype), 'Invalid archetype')
+  assertInput(isValidDateOfBirth(partnerDob), 'Invalid partner date of birth')
+  assertInput(!!partnerName, 'partnerName is required')
 
   const languageInstructions: Record<string, string> = {
     en: 'Respond entirely in English.',

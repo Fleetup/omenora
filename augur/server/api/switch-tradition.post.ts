@@ -106,8 +106,9 @@ export default defineEventHandler(async (event) => {
   let newReportData: any
   try {
     const result = await $fetch<{ success: boolean; report: any }>('/api/generate-report', {
-      method: 'POST',
-      body:   generateBody,
+      method:  'POST',
+      headers: { 'x-job-secret': (config.emailJobSecret as string | undefined) ?? '' },
+      body:    generateBody,
     })
     newReportData = result.report
   } catch (err: any) {

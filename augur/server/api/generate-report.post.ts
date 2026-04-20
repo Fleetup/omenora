@@ -219,23 +219,53 @@ const ARCHETYPE_SYMBOLS: Record<string, string> = {
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+
+  // ── Auth guard — only internal server callers may invoke AI generation ────
+  const incomingSecret = getHeader(event, 'x-job-secret') ?? ''
+  const expectedSecret = (config.emailJobSecret as string | undefined) ?? ''
+  if (!expectedSecret || incomingSecret !== expectedSecret) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
   const body = await readBody(event)
 
   const firstName      = sanitizeString(body.firstName, 50)
   const dateOfBirth    = sanitizeString(body.dateOfBirth, 10)
   const city           = sanitizeString(body.city, 100)
   const archetype      = sanitizeString(body.archetype, 30)
-  const lifePathNumber = body.lifePathNumber
+  const lifePathNumber = Number(body.lifePathNumber)
   const region         = isValidRegion(body.region) ? body.region : 'western'
   const language       = sanitizeString(body.language || 'en', 5)
-  const answers        = body.answers
+  const rawAnswers     = body.answers
 
   assertInput(!!firstName, 'firstName is required')
   assertInput(!!dateOfBirth, 'dateOfBirth is required')
   assertInput(isValidDateOfBirth(dateOfBirth), 'Invalid dateOfBirth')
   assertInput(!!city, 'city is required')
-  assertInput(isValidArchetype(body.archetype), 'Invalid archetype')
-  assertInput(answers !== null && typeof answers === 'object', 'Invalid answers')
+  assertInput(isValidArchetype(archetype), 'Invalid archetype')
+  assertInput(rawAnswers !== null && typeof rawAnswers === 'object', 'Invalid answers')
+
+  // Validate lifePathNumber is a known numerology value
+  const VALID_LIFE_PATHS = new Set([1,2,3,4,5,6,7,8,9,11,22,33])
+  assertInput(VALID_LIFE_PATHS.has(lifePathNumber), 'Invalid lifePathNumber')
+
+  // Validate and whitelist each answer enum value
+  const VALID_Q1 = new Set(['trust','wait','talk','push'])
+  const VALID_Q2 = new Set(['softer','sharper','ambitious','uncertain'])
+  const VALID_Q3 = new Set(['leaving','unseen','giving','burden'])
+  const VALID_Q4 = new Set(['capable','alone','matters','toomuch'])
+  const VALID_Q6 = new Set(['enjoy','wonder','share','next'])
+  const VALID_Q7 = new Set(['givesup','feelsnothing','needstoo','isolates'])
+
+  const answers = {
+    q1: VALID_Q1.has(rawAnswers.q1) ? rawAnswers.q1 : 'push',
+    q2: VALID_Q2.has(rawAnswers.q2) ? rawAnswers.q2 : 'uncertain',
+    q3: VALID_Q3.has(rawAnswers.q3) ? rawAnswers.q3 : 'burden',
+    q4: VALID_Q4.has(rawAnswers.q4) ? rawAnswers.q4 : 'toomuch',
+    q5: sanitizeString(rawAnswers.q5 ?? '', 80),
+    q6: VALID_Q6.has(rawAnswers.q6) ? rawAnswers.q6 : 'next',
+    q7: VALID_Q7.has(rawAnswers.q7) ? rawAnswers.q7 : 'isolates',
+  }
 
   const anthropicApiKey = config.anthropicApiKey as string | undefined
   if (!anthropicApiKey) {
