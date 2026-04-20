@@ -130,9 +130,13 @@
         <!-- Tier 1: Basic (Decoy) -->
         <div
           class="tier-card tier-basic"
-          :class="{ 'tier-selected-basic': selectedTier === 1 }"
+          :class="{ 'tier-selected-basic': selectedTier === 1, 'tier-deprioritized': isPriceTest }"
           @click="selectedTier = 1"
         >
+          <div
+            v-if="isPriceTest"
+            style="font-size:10px; color:rgba(255,255,255,0.15); text-align:center; padding:2px 0;"
+          >variant: deprioritize-1</div>
           <div class="tier-info">
             <p class="tier-name">{{ t('basicReport') }}</p>
             <p class="tier-desc">Full 7-section {{ archetypeShortName }} reading revealing why you operate the way you do</p>
@@ -159,7 +163,8 @@
           </div>
         </div>
 
-        <!-- Tier 3: Full Oracle (Anchor) -->
+        <!-- Tier 3: Full Oracle (Anchor) — hidden in 2-tier canary -->
+        <template v-if="!isTwoTierVariant">
         <div
           class="tier-card tier-oracle"
           :class="{ 'tier-selected-oracle': selectedTier === 3 }"
@@ -176,6 +181,12 @@
             </div>
           </div>
         </div>
+        </template>
+        <div
+          v-if="isTwoTierVariant"
+          style="font-size:10px; color:rgba(255,255,255,0.15); text-align:center; padding:4px 0;"
+        >variant: 2-tier</div>
+
       </div>
 
       <!--
@@ -332,6 +343,7 @@ const currentTestimonial = computed(() => REAL_TESTIMONIALS[0] ?? { quote: '', a
 useSeoMeta({ title: 'Your Destiny Preview', robots: 'noindex, nofollow' })
 
 const store = useAnalysisStore()
+const route = useRoute()
 const { t } = useLanguage()
 const { $trackViewContent, $trackInitiateCheckout, $trackPreviewLoadingStart, $trackPreviewLoaded, $trackPaywallView, $trackTierSelected, $trackEmailCaptureSuccess } = useNuxtApp() as any
 
@@ -473,7 +485,6 @@ onMounted(async () => {
   // If the store is empty (user arrived via email CTA, not via the quiz flow),
   // attempt to restore report state from the saved temp record before applying
   // the firstName guard. Uses POST /api/get-report which accepts { sessionId }.
-  const route = useRoute()
   const tempIdParam = route.query.tempId as string | undefined
   if (tempIdParam && !store.report) {
     try {
@@ -622,6 +633,13 @@ async function onEmailBlur() {
   }
 }
 const selectedTier = ref<1 | 2 | 3>(2)
+
+// ── B6-2: 2-tier paywall canary (?preview_variant=2tier) ────────────
+const previewVariant = computed(() => route.query.preview_variant as string | undefined)
+const isTwoTierVariant = computed(() => previewVariant.value === '2tier')
+
+// ── B6-3: Tier 1 de-emphasis canary (?price_test=deprioritize1) ─────
+const isPriceTest = computed(() => route.query.price_test === 'deprioritize1')
 
 async function handlePayment() {
   if (isProcessingPayment.value) return
@@ -1224,6 +1242,12 @@ async function handlePayment() {
   font-weight: 300;
   color: rgba(255, 255, 255, 0.42);
   margin: 0;
+}
+
+/* ── Tier 1 de-emphasis canary (B6-3) ── */
+.tier-deprioritized {
+  opacity: 0.55;
+  transform: scale(0.97);
 }
 
 /* Tier 2: Popular */

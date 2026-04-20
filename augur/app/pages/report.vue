@@ -86,6 +86,24 @@
 
   <!-- Full report -->
   <div v-else class="report-page">
+    <!-- Payment confirmation banner (U-4) -->
+    <Transition name="banner-fade">
+      <div
+        v-if="showPaymentBanner"
+        class="payment-confirmation-banner"
+      >
+        <span class="banner-text">
+          ❆ Your complete reading has been sent to
+          {{ store.email }}
+        </span>
+        <button
+          class="banner-dismiss"
+          aria-label="Dismiss"
+          @click="showPaymentBanner = false"
+        >×</button>
+      </div>
+    </Transition>
+
     <!-- Top bar -->
     <div class="top-bar">
       <span class="brand-text top-brand">OMENORA</span>
@@ -685,7 +703,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useAuth } from '~/composables/useAuth'
 import { useLanguage } from '~/composables/useLanguage'
@@ -706,6 +724,7 @@ useSeoMeta({
 
 const isLoadingReport = ref(true)
 const hasError = ref(false)
+const showPaymentBanner = ref(false)
 const vedicData = ref<any>(null)
 const baziData = ref<any>(null)
 const tarotData = ref<any>(null)
@@ -926,6 +945,13 @@ async function generateCompatibilityFree() {
 }
 
 onMounted(async () => {
+  if (store.paymentComplete) {
+    showPaymentBanner.value = true
+    setTimeout(() => {
+      showPaymentBanner.value = false
+    }, 5000)
+  }
+
   const sessionId = route.query.session_id as string
 
   if (!sessionId && !store.firstName) {
@@ -1693,6 +1719,50 @@ async function downloadReportPDF() {
 </script>
 
 <style scoped>
+/* ── Payment confirmation banner (U-4) ── */
+.payment-confirmation-banner {
+  width: 100%;
+  background: rgba(201, 168, 76, 0.08);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.banner-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.4;
+}
+
+.banner-dismiss {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.banner-dismiss:hover {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.banner-fade-enter-active,
+.banner-fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+
+.banner-fade-enter-from,
+.banner-fade-leave-to {
+  opacity: 0;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(0.95); }
