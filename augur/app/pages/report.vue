@@ -1169,7 +1169,8 @@ function reloadPage() {
 }
 
 async function sendReportEmailManual() {
-  if (isSendingEmail.value || emailSentToUser.value || !store.email || !store.report) return
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (isSendingEmail.value || emailSentToUser.value || !store.email || !emailRegex.test(store.email) || !store.report) return
   isSendingEmail.value = true
   try {
     await $fetch('/api/send-report-email', {

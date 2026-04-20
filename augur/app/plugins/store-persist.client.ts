@@ -104,24 +104,32 @@ export default defineNuxtPlugin(() => {
   const raw   = load()
   const saved = applyVersionMigration(raw)
 
-  if (saved.firstName)            store.firstName            = saved.firstName
-  if (saved.email)                store.setEmail(saved.email)
-  if (saved.archetype)            store.setArchetype(saved.archetype)
-  if (saved.lifePathNumber)       store.lifePathNumber       = saved.lifePathNumber
-  if (saved.dateOfBirth)          store.dateOfBirth          = saved.dateOfBirth
-  if (saved.timeOfBirth)          store.timeOfBirth          = saved.timeOfBirth
-  if (saved.city)                 store.city                 = saved.city
-  if (saved.region && saved.country) store.setRegion(saved.region, saved.country)
-  if (saved.language)             store.setLanguage(saved.language)
-  if (saved.tempId)               store.setTempId(saved.tempId)
-  if (saved.reportSessionId)      store.setReportSessionId(saved.reportSessionId)
-  if (saved.paymentComplete)      store.setPaymentComplete(saved.paymentComplete)
-  if (saved.calendarPurchased)    store.setCalendarPurchased(saved.calendarPurchased)
-  if (saved.bundlePurchased)      store.setBundlePurchased(saved.bundlePurchased)
-  if (saved.oraclePurchased)      store.setOraclePurchased(saved.oraclePurchased)
-  if (saved.birthChartPurchased)  store.setBirthChartPurchased(saved.birthChartPurchased)
-  if (saved.subscriptionActive)   store.setSubscriptionActive(saved.subscriptionActive)
-  if (saved.addonPurchased)       store.addonPurchased       = saved.addonPurchased
+  // Field-level type guards: only accept primitives of the expected type.
+  // A tampered or corrupt localStorage entry cannot inject unexpected types.
+  const str = (v: unknown, max = 200): string =>
+    typeof v === 'string' && v.length <= max ? v : ''
+  const num = (v: unknown): number =>
+    typeof v === 'number' && Number.isFinite(v) ? v : 0
+
+  const s = saved as Record<string, unknown>
+  if (str(s.firstName, 50))   store.firstName      = str(s.firstName, 50)
+  if (str(s.email, 254))      store.setEmail(str(s.email, 254))
+  if (str(s.archetype, 30))   store.setArchetype(str(s.archetype, 30))
+  if (num(s.lifePathNumber))  store.lifePathNumber = num(s.lifePathNumber)
+  if (str(s.dateOfBirth, 10)) store.dateOfBirth    = str(s.dateOfBirth, 10)
+  if (str(s.timeOfBirth, 10)) store.timeOfBirth    = str(s.timeOfBirth, 10)
+  if (str(s.city, 100))       store.city           = str(s.city, 100)
+  if (str(s.region, 20) && str(s.country, 10)) store.setRegion(str(s.region, 20), str(s.country, 10))
+  if (str(s.language, 5))     store.setLanguage(str(s.language, 5))
+  if (str(s.tempId, 200))     store.setTempId(str(s.tempId, 200))
+  if (str(s.reportSessionId, 200)) store.setReportSessionId(str(s.reportSessionId, 200))
+
+  // ── Purchase flags are intentionally NOT rehydrated from localStorage. ────
+  // They must only be set from the server-verified Stripe payment response
+  // (report.vue onMounted → /api/verify-payment). Rehydrating them from
+  // localStorage would let a user set bundlePurchased:true in DevTools and
+  // get locked sections to render without a valid payment.
+  // All flags default to false in the Pinia store definition.
 
   // ── Persist on every change ───────────────────────────────────────────────
   watch(

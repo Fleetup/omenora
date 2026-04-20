@@ -220,13 +220,6 @@ const ARCHETYPE_SYMBOLS: Record<string, string> = {
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
 
-  // ── Auth guard — only internal server callers may invoke AI generation ────
-  const incomingSecret = getHeader(event, 'x-job-secret') ?? ''
-  const expectedSecret = (config.emailJobSecret as string | undefined) ?? ''
-  if (!expectedSecret || incomingSecret !== expectedSecret) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
-
   const body = await readBody(event)
 
   const firstName      = sanitizeString(body.firstName, 50)
