@@ -3,6 +3,10 @@ import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { ReportSchema, type ReportType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
 
+// ── Prompt version — increment on every prompt change ─────────────────────────
+// Format: v<major>.<minor> — major for structural changes, minor for phrasing/copy
+export const PROMPT_VERSION = 'v1.0'
+
 // ── Inline Vedic utilities (mirrored from app/utils/vedic.ts) ──────────────
 
 const NAKSHATRAS_DATA = [
@@ -834,9 +838,66 @@ Return ONLY valid JSON. No preamble, no explanation, no markdown.
     reportData.archetypeSymbol = canonicalSymbol
   }
 
+  // ── B-2: Red-flag quality logging (non-blocking) ───────────────────────────
+  try {
+    const identityContent = reportData.sections?.identity?.content ?? ''
+    const allContent = Object.values(reportData.sections ?? {}).map((s: any) => s?.content ?? '').join(' ')
+
+    const flags: string[] = []
+
+    // Flag 1: Identity opening is too short (under 15 words)
+    const identityFirstSentence = identityContent.split(/[.!?]/)[0] ?? ''
+    if (identityFirstSentence.trim().split(/\s+/).length < 15) {
+      flags.push('identity_opening_too_short')
+    }
+
+    // Flag 2: Affirmation is longer than 30 words (must be exactly 1 sentence)
+    const affirmationContent = reportData.sections?.affirmation?.content ?? ''
+    if (affirmationContent.trim().split(/\s+/).length > 30) {
+      flags.push('affirmation_too_long')
+    }
+
+    // Flag 3: Detect repeated exact phrases across sections (≥ 8 word run duplicated)
+    const sectionTexts = Object.entries(reportData.sections ?? {}).map(([k, v]: [string, any]) => ({ key: k, text: v?.content ?? '' }))
+    const seenPhrases = new Set<string>()
+    let hasDuplicate = false
+    for (const { text } of sectionTexts) {
+      const words = text.split(/\s+/)
+      for (let i = 0; i <= words.length - 8; i++) {
+        const phrase = words.slice(i, i + 8).join(' ').toLowerCase()
+        if (seenPhrases.has(phrase)) { hasDuplicate = true; break }
+        seenPhrases.add(phrase)
+      }
+      if (hasDuplicate) break
+    }
+    if (hasDuplicate) flags.push('repeated_phrase_across_sections')
+
+    // Flag 4: Forbidden phrases still present
+    const FORBIDDEN = ['innate gifts', 'your gifts', 'the universe has a plan', 'this is your time', 'you were born for this', 'on this journey', 'your true self', 'deeply empathetic', 'highly sensitive', 'old soul', 'you shine', 'limitless potential']
+    for (const phrase of FORBIDDEN) {
+      if (allContent.toLowerCase().includes(phrase)) {
+        flags.push(`forbidden_phrase:${phrase.replace(/\s+/g, '_')}`)
+      }
+    }
+
+    if (flags.length > 0) {
+      console.warn('[B-2] report quality flags', {
+        promptVersion: PROMPT_VERSION,
+        archetype,
+        language,
+        region,
+        flags,
+        timestamp: new Date().toISOString(),
+      })
+    }
+  } catch (flagErr: any) {
+    console.error('[B-2] red-flag logging failed (non-blocking):', flagErr?.message)
+  }
+
   return {
     success: true,
     report: reportData,
+    promptVersion: PROMPT_VERSION,
     traditionFallback,
     originalTradition: region,
   }

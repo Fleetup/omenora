@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
   const dateOfBirth    = sanitizeString(body.dateOfBirth, 10)
   const email          = sanitizeString(body.email, 254)
   const region         = isValidRegion(body.region) ? body.region : 'western'
+  const promptVersion  = sanitizeString(body.promptVersion ?? '', 20) || null
 
   assertInput(isValidReportId(sessionId), 'Invalid session ID')
   assertInput(!!firstName, 'firstName is required')
@@ -33,28 +34,42 @@ export default defineEventHandler(async (event) => {
     config.supabaseServiceKey as string,
   )
 
-  const { error } = await supabase
+  const reportRow = {
+    session_id:       sessionId,
+    first_name:       firstName,
+    archetype,
+    life_path_number: lifePathNumber,
+    report_data:      validatedReport,
+    answers:          body.answers ?? {},
+    city,
+    date_of_birth:    dateOfBirth,
+    email:            isValidEmail(email) ? email : '',
+    region,
+    prompt_version:   promptVersion,
+    created_at:       new Date().toISOString(),
+  }
+
+  let { error } = await supabase
     .from('reports')
-    .upsert(
-      {
-        session_id:       sessionId,
-        first_name:       firstName,
-        archetype,
-        life_path_number: lifePathNumber,
-        report_data:      validatedReport,
-        answers:          body.answers ?? {},
-        city,
-        date_of_birth:    dateOfBirth,
-        email:            isValidEmail(email) ? email : '',
-        region,
-        created_at:       new Date().toISOString(),
-      },
-      { onConflict: 'session_id' },
-    )
+    .upsert(reportRow, { onConflict: 'session_id' })
 
   if (error) {
-    console.error('[save-report] Upsert error:', error.code)
-    throw createError({ statusCode: 500, message: 'Failed to save report' })
+    // If the column doesn't exist yet (schema gap), retry without prompt_version
+    // so report delivery is never blocked by a missing migration.
+    if (error.code === '42703' || error.message?.includes('prompt_version')) {
+      console.error('[B-2] promptVersion write failed (column missing — run migration):', error.message)
+      const { prompt_version: _pv, ...rowWithoutVersion } = reportRow
+      const retryResult = await supabase
+        .from('reports')
+        .upsert(rowWithoutVersion, { onConflict: 'session_id' })
+      if (retryResult.error) {
+        console.error('[save-report] Upsert error after fallback:', retryResult.error.code)
+        throw createError({ statusCode: 500, message: 'Failed to save report' })
+      }
+    } else {
+      console.error('[save-report] Upsert error:', error.code)
+      throw createError({ statusCode: 500, message: 'Failed to save report' })
+    }
   }
 
   return { success: true }
