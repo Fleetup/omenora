@@ -172,6 +172,7 @@
 
       <div class="region-section">
         <p class="region-label">{{ t('chooseYourPath') }}</p>
+        <p class="tradition-explanation">This determines which ancient system interprets your destiny.</p>
         <div class="region-cards">
           <button
             v-for="opt in regionOptions"
@@ -253,11 +254,20 @@
                 store.answers[question.id as keyof typeof store.answers] ===
                 option.value,
             }"
-            @click="store.setAnswer(question.id, option.value)"
+            @click="handleAnswerSelect(question.id, option.value)"
           >
             {{ option.label }}
           </button>
         </div>
+        <Transition name="fade">
+          <div
+            v-if="showPersonalization && (question.id === 'q1' || question.id === 'q4') && personalizationQuestionId === question.id"
+            ref="personalizationRef"
+            class="personalization-interstitial"
+          >
+            {{ personalizationMessage }}
+          </div>
+        </Transition>
         <div v-if="index < questions.length - 1" class="divider" />
       </div>
 
@@ -280,6 +290,8 @@ import { calculateLifePathNumber } from '~/utils/lifePathNumber'
 import { assignArchetype } from '~/utils/archetypes'
 import { LANGUAGES } from '~/utils/translations'
 import { useLanguage } from '~/composables/useLanguage'
+
+const { $trackStep1Complete, $trackQuestionAnswered, $trackAnalysisSubmit } = useNuxtApp() as any
 
 useSeoMeta({ title: 'Your Free AI Destiny Analysis', robots: 'noindex, nofollow' })
 
@@ -342,6 +354,15 @@ const ampmWheelRef = ref<HTMLElement>()
 //     debounces snap so rapid scrolling feels continuous.
 
 const wheelListenerCleanups: Array<() => void> = []
+
+// ── B5-1: Personalization interstitial state ──────────────────────────
+const shownInterstitials = new Set<string>()
+const personalizationMessage = ref('')
+const personalizationQuestionId = ref('')
+const showPersonalization = ref(false)
+let personalizationTimer: ReturnType<typeof setTimeout> | null = null
+const personalizationRef = ref<HTMLElement | null>(null)
+
 
 function getOptionsLength(type: string): number {
   if (type === 'day') return dayOptions.length
@@ -592,6 +613,10 @@ function scrollWheelToIndex(el: HTMLElement | undefined, idx: number) {
 
 onUnmounted(() => {
   wheelListenerCleanups.forEach(fn => fn())
+  if (personalizationTimer !== null) {
+    clearTimeout(personalizationTimer)
+    personalizationTimer = null
+  }
 })
 
 // ── Initialise wheels to sensible defaults on mount ───────────────────────────
@@ -633,6 +658,18 @@ watch(computedDateOfBirth, (val) => {
   if (val) store.dateOfBirth = val
 })
 
+watch(
+  () => store.answers,
+  (newAnswers, oldAnswers) => {
+    for (const [key, val] of Object.entries(newAnswers)) {
+      if (val && val !== (oldAnswers as Record<string, string>)?.[key]) {
+        $trackQuestionAnswered({ questionId: key, answer: val as string, language: store.language })
+      }
+    }
+  },
+  { deep: true },
+)
+
 const timeOfBirth = computed(() => {
   if (!birthHour.value || !birthMinute.value) return ''
   return `${birthHour.value}:${birthMinute.value} ${birthAmPm.value}`
@@ -641,6 +678,46 @@ const timeOfBirth = computed(() => {
 watch(timeOfBirth, (val) => {
   store.timeOfBirth = val
 })
+
+const interstitialMessages: Record<string, Record<string, string>> = {
+  q1: {
+    trust: 'Someone who moves on instinct. Your reading maps where that instinct comes from.',
+    wait:  'Someone who reads before they act. Your reading reveals what you\'re actually watching for.',
+    talk:  'Someone who processes through connection. Your reading explains how your network shapes you.',
+    push:  'Someone who moves through discomfort. Your reading shows what you\'re really pushing toward.',
+  },
+  q4: {
+    capable: 'The doubt behind competence is one of the most powerful patterns in your archetype.',
+    alone:   'Connection and independence are the core tension in your destiny path.',
+    matters: 'Purpose-seeking is a defining trait of your archetype family.',
+    toomuch: 'Depth of feeling is one of your primary gifts — your reading shows how to channel it.',
+  },
+}
+
+function handleAnswerSelect(questionId: string, answerValue: string) {
+  store.setAnswer(questionId, answerValue)
+  if ((questionId === 'q1' || questionId === 'q4') && !shownInterstitials.has(questionId)) {
+    const msg = interstitialMessages[questionId]?.[answerValue]
+    if (!msg) return
+    shownInterstitials.add(questionId)
+    personalizationMessage.value = msg
+    personalizationQuestionId.value = questionId
+    showPersonalization.value = true
+    nextTick(() => {
+      if (personalizationRef.value) {
+        (Array.isArray(personalizationRef.value)
+          ? personalizationRef.value[0]
+          : personalizationRef.value
+        )?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    })
+    if (personalizationTimer !== null) clearTimeout(personalizationTimer)
+    personalizationTimer = setTimeout(() => {
+      showPersonalization.value = false
+      personalizationTimer = null
+    }, 2500)
+  }
+}
 
 const step1Valid = computed(
   () => !!store.firstName && !!computedDateOfBirth.value && !!store.city,
@@ -735,6 +812,7 @@ function goBack() {
 
 function continueToStep2() {
   if (step1Valid.value) {
+    $trackStep1Complete({ language: store.language })
     currentStep.value = 2
   }
 }
@@ -756,6 +834,7 @@ function submitAnalysis() {
     const archetype = assignArchetype(store.answers)
     store.setLifePathNumber(lpn)
     store.setArchetype(archetype)
+    $trackAnalysisSubmit({ archetype, lifePathNumber: lpn, language: store.language, region: store.region })
     navigateTo('/preview')
   }
 }
@@ -1237,6 +1316,11 @@ function submitAnalysis() {
 }
 
 /* ── Oracle tiles (Step 2 options) ── */
+@keyframes tilePulse {
+  0%   { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
 .option-tile {
   flex: 1 0 calc(50% - 4px);
   min-height: 52px;
@@ -1250,7 +1334,7 @@ function submitAnalysis() {
   font-family: inherit;
   text-align: left;
   line-height: 1.35;
-  transition: border-color 0.18s, background 0.18s, color 0.18s;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
 .option-tile:hover {
@@ -1263,6 +1347,36 @@ function submitAnalysis() {
   background: rgba(201, 168, 76, 0.08);
   border-color: rgba(201, 168, 76, 0.42);
   color: rgba(201, 168, 76, 0.9);
+  transform: scale(1.02);
+  animation: tilePulse 0.15s ease forwards;
+}
+
+/* ── Personalization interstitial (C-1) ── */
+.personalization-interstitial {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.65;
+  text-align: center;
+  padding: 14px 20px;
+  margin: 8px 0;
+  font-style: italic;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+/* ── Tradition explanation (U-2) ── */
+.tradition-explanation {
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.28);
+  text-align: center;
+  margin: 0 0 14px;
 }
 
 /* ── Question divider ── */
