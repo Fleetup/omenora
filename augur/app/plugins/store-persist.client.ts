@@ -41,13 +41,9 @@ interface PersistedState {
   language: string
   tempId: string
   reportSessionId: string
-  paymentComplete: boolean
-  calendarPurchased: boolean
-  bundlePurchased: boolean
-  oraclePurchased: boolean
-  birthChartPurchased: boolean
-  subscriptionActive: boolean
-  addonPurchased: boolean
+  // Purchase flags are intentionally excluded: they are set exclusively
+  // from the server-verified Stripe response and must never be persisted
+  // or rehydrated from localStorage.
 }
 
 function save(state: PersistedState) {
@@ -131,28 +127,23 @@ export default defineNuxtPlugin(() => {
   // get locked sections to render without a valid payment.
   // All flags default to false in the Pinia store definition.
 
-  // ── Persist on every change ───────────────────────────────────────────────
+  // ── Persist on every change ──────────────────────────────────
+  // Only persist non-sensitive identity and preference fields.
+  // Purchase flags are explicitly excluded — see PersistedState.
   watch(
     () => ({
-      firstName:           store.firstName,
-      email:               store.email,
-      archetype:           store.archetype,
-      lifePathNumber:      store.lifePathNumber,
-      dateOfBirth:         store.dateOfBirth,
-      timeOfBirth:         store.timeOfBirth,
-      city:                store.city,
-      region:              store.region,
-      country:             store.country,
-      language:            store.language,
-      tempId:              store.tempId,
-      reportSessionId:     store.reportSessionId,
-      paymentComplete:     store.paymentComplete,
-      calendarPurchased:   store.calendarPurchased,
-      bundlePurchased:     store.bundlePurchased,
-      oraclePurchased:     store.oraclePurchased,
-      birthChartPurchased: store.birthChartPurchased,
-      subscriptionActive:  store.subscriptionActive,
-      addonPurchased:      store.addonPurchased,
+      firstName:       store.firstName,
+      email:           store.email,
+      archetype:       store.archetype,
+      lifePathNumber:  store.lifePathNumber,
+      dateOfBirth:     store.dateOfBirth,
+      timeOfBirth:     store.timeOfBirth,
+      city:            store.city,
+      region:          store.region,
+      country:         store.country,
+      language:        store.language,
+      tempId:          store.tempId,
+      reportSessionId: store.reportSessionId,
     }),
     (snapshot) => save(snapshot),
     { deep: true },

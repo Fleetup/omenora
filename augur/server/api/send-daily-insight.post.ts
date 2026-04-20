@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { he } from '~~/server/utils/report-email-builder'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -15,10 +16,23 @@ export default defineEventHandler(async (event) => {
   const email     = sanitizeString(body.email ?? '', 254)
   const _firstName = sanitizeString(body.firstName ?? '', 50)
   const archetype = sanitizeString(body.archetype ?? '', 30)
-  const insight   = body.insight && typeof body.insight === 'object' ? body.insight : null
+  const rawInsight = body.insight && typeof body.insight === 'object' ? body.insight : null
 
   assertInput(isValidEmail(email), 'Valid email is required')
-  assertInput(insight !== null, 'insight object is required')
+  assertInput(rawInsight !== null, 'insight object is required')
+
+  // Validate that all required fields are non-empty strings before interpolation.
+  const insight = {
+    moonPhase:           sanitizeString(rawInsight.moonPhase, 100),
+    dayTheme:            sanitizeString(rawInsight.dayTheme, 100),
+    greeting:            sanitizeString(rawInsight.greeting, 300),
+    insight:             sanitizeString(rawInsight.insight, 2000),
+    reflection_question: sanitizeString(rawInsight.reflection_question ?? rawInsight.action ?? '', 500),
+    subject:             sanitizeString(rawInsight.subject ?? '', 200),
+  }
+
+  assertInput(!!insight.greeting, 'insight.greeting is required')
+  assertInput(!!insight.insight, 'insight.insight is required')
 
   const resend = new Resend(config.resendApiKey)
 
@@ -35,16 +49,16 @@ export default defineEventHandler(async (event) => {
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
       <p style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.2); letter-spacing: 0.15em; margin: 0;">OMENORA</p>
-      <p style="font-size: 11px; color: rgba(140,110,255,0.6); margin: 0;">${insight.moonPhase} · ${insight.dayTheme}</p>
+      <p style="font-size: 11px; color: rgba(140,110,255,0.6); margin: 0;">${he(insight.moonPhase)} · ${he(insight.dayTheme)}</p>
     </div>
 
-    <p style="font-size: 22px; font-weight: 500; color: rgba(230,220,255,0.95); margin: 0 0 20px;">${insight.greeting}</p>
+    <p style="font-size: 22px; font-weight: 500; color: rgba(230,220,255,0.95); margin: 0 0 20px;">${he(insight.greeting)}</p>
 
-    <p style="font-size: 15px; color: rgba(255,255,255,0.6); line-height: 1.8; margin: 0 0 28px;">${insight.insight}</p>
+    <p style="font-size: 15px; color: rgba(255,255,255,0.6); line-height: 1.8; margin: 0 0 28px;">${he(insight.insight)}</p>
 
     <div style="text-align: center; padding: 20px; background: rgba(140,110,255,0.04); border: 1px solid rgba(140,110,255,0.1); border-radius: 12px; margin-bottom: 32px;">
       <p style="font-size: 10px; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 10px;">A question worth sitting with</p>
-      <p style="font-size: 15px; font-weight: 400; font-style: italic; color: rgba(200,180,255,0.85); margin: 0; line-height: 1.6;">${insight.reflection_question || insight.action || ''}</p>
+      <p style="font-size: 15px; font-weight: 400; font-style: italic; color: rgba(200,180,255,0.85); margin: 0; line-height: 1.6;">${he(insight.reflection_question)}</p>
     </div>
 
     <div style="border-top: 1px solid rgba(255,255,255,0.08); margin-top: 40px; padding-top: 24px; text-align: center;">
@@ -65,6 +79,7 @@ export default defineEventHandler(async (event) => {
     replyTo: 'support@omenora.com',
     to: [email],
     subject: insight.subject || `Your daily insight from OMENORA — ${insight.dayTheme || 'today'}`,
+    // subject is plain text — no escaping needed for email subject lines
     html: htmlContent,
     text: [
       `OMENORA — Daily Insight`,
