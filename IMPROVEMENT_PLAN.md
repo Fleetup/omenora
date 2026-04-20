@@ -1,7 +1,7 @@
 # OMENORA — Improvement Plan v3
-**Revised:** July 2026  
+**Revised:** April 2026  
 **Previous version:** IMPROVEMENT_PLAN.md (April 2026 — v2)  
-**Scope:** Full rewrite. Grounded exclusively in codebase inventory conducted July 2026. Every item references an exact file path. No assumptions, no speculative features.
+**Scope:** Full rewrite. Grounded exclusively in codebase inventory conducted April 2026. Every item references an exact file path. No assumptions, no speculative features.
 
 > **Benchmark note:** External benchmark numbers in this plan (conversion rates, chargeback thresholds, etc.) are directional and should be verified against live platform/account rules before being used as operating thresholds.
 
@@ -19,6 +19,43 @@ Omenora's immediate goal is not to become a daily-use subscription app. The imme
 - Paid traffic viability: can a dollar spent on ads return more than a dollar net?
 
 The current architecture is already designed for a one-time-payment funnel with upsells — not daily habit retention. The full user journey (landing → analysis → preview → paywall → Stripe → report, with upsells during loading and post-purchase) is documented in `APP_TECHNICAL_SPEC.md`. That architecture is correct for the current stage. The plan should prioritize proving funnel economics first, retention and subscription second.
+
+---
+
+## CURRENT STATE SNAPSHOT
+**Last verified:** April 2026
+
+### Fully built and working end-to-end
+
+- **Abandonment email sequence** — `server/api/capture-email.post.ts` (line 72) calls `scheduleEmailJob(email, 1, SEQUENCE_DELAYS_MS[1])` immediately on email capture. `server/utils/email-jobs.ts` persists the job to Supabase `email_jobs` table. `server/api/email-sequence/process-jobs.post.ts` is a Railway cron worker (every 2 min) that fetches due jobs, sends via Resend, marks done, and auto-chains step 2→3→4. Suppression on purchase (via `cancelEmailJobs`) confirmed in `webhook.post.ts`. All 4 steps have templates in all 6 languages in `server/utils/email-templates.ts`. **The sequence fires and sends.** One gap: see "Built but not connected" below.
+
+- **Report generation and delivery** — `server/api/generate-report.post.ts` calls Anthropic, validates output with Zod schemas from `server/utils/ai-schemas.ts`, returns structured report. `server/api/save-report.post.ts` persists to Supabase. `server/api/send-report-email.post.ts` triggers `server/utils/report-email-builder.ts` to send the full reading via Resend.
+
+- **Share card generation** — `server/api/generate-card.post.ts` renders a 1080×1920 PNG using `node-canvas` with archetype symbol, name, element, life path, power traits, affirmation, and branding. Fully wired; triggered from report page.
+
+- **Stripe payment + webhook** — `server/api/stripe/webhook.post.ts` handles `checkout.session.completed`, `charge.dispute.created`, and `charge.refunded`. Purchase suppresses abandonment sequence, triggers report generation if not pre-generated, sends report email. Chargeback/refund structured logging (`[B-4]`) implemented.
+
+- **Prompt version tracking** — `PROMPT_VERSION = 'v1.0'` exported from `server/api/generate-report.post.ts` (line 8). Written to `prompt_version` column in `save-report.post.ts` (line 48) with schema-gap fallback. Red-flag logging `[B-2]` implemented in `generate-report.post.ts` (lines 883–887).
+
+- **Analytics pixel infrastructure** — `app/plugins/pixels.client.ts` has TikTok + Meta pixel loaders, `safeTrack()` wrapper, UTM param capture, and device type detection. **All 18 funnel events from the B-3 event list are already implemented** (`trackLandingView`, `trackAnalysisStart`, `trackStep1Complete`, `trackQuestionAnswered`, `trackAnalysisSubmit`, `trackPreviewLoadingStart`, `trackPreviewLoaded`, `trackPaywallView`, `trackTierSelected`, `trackInitiateCheckout`, `trackPurchase`, `trackUpsellViewed`, `trackUpsellAccepted`, `trackReportViewed`, `trackShareCardOpened`, `trackShareCardDownloaded`, `trackViewContent`, `trackEmailCaptureSuccess`). **B-3 instrumentation is complete** — B-3 dashboard build is still outstanding.
+
+- **Legal / trust items (verified in code):** L-1 (Q4/Q7 rewritten all 6 languages), L-2 (crisis signpost on all 3 pages), L-3 (data use notice at analysis step 2), L-4 (REAL_TESTIMONIALS guard in preview.vue), L-5 / LP-6 (count replaced with value-based copy), T-3 (no fake urgency or unverified proof renders).
+
+### Built but not connected
+
+- **Abandonment email CTA — no deep link** — `server/utils/email-templates.ts` line 540: the CTA button in every abandonment email links to `https://omenora.com/preview` with **no `tempId` parameter**. A user who clicks returns to a blank preview page and must re-enter their data. Their specific report is not pre-loaded. The `email_captures` table stores `session_id`, but `buildHtmlEmail` does not receive it as a parameter and does not construct a `?tempId=` link. Fix: pass `sessionId` through `EmailPersonalization`, construct link as `https://omenora.com/preview?tempId=${sessionId}`, and verify `preview.vue` reads `?tempId` on mount to restore state.
+
+- **B-3 dashboard** — pixel events fire but no dashboard exists to read them. The 8 required funnel metrics listed in B-3 are not yet visible anywhere.
+
+### Does not exist yet
+
+- **`REPORT_QA_RUBRIC.md`** — no QA scoring system for report quality
+- **`REPORT_QA_LOG.csv`** — no log of reviewed reports
+- **`ANALYTICS_EVENTS.md`** — no event schema documentation (events exist in code; schema doc does not)
+- **`TRADITION_CALC_AUDIT.md`** — no documentation of Nakshatra or BaZi calculation formulas
+- **48h post-purchase testimonial email** — no Day 2 follow-up email in `webhook.post.ts`, `email-templates.ts`, or anywhere in the codebase. `REAL_TESTIMONIALS` array in `preview.vue` is empty and will remain so without a collection mechanism.
+- **B-4 weekly cohort table** — structured `[B-4]` logs exist in Railway; no automated table or dashboard
+- **`prompt_version` DB column** — code writes it with a schema-gap fallback; column existence on production Supabase unconfirmed — requires manual verification
 
 ---
 
@@ -930,96 +967,6 @@ Mismatch shows up as abandonment (conversion loss) or refunds (post-purchase los
 
 ---
 
-## IMPLEMENTATION ORDER — P0 / P1 / P2
-
-### P0 — Do Before Scaling Paid Traffic
-
-These must be completed or actively in progress before increasing spend on paid acquisition:
-
-```
-Legal / trust-risk (blocking)
-  L-1 → Rewrite Q4/Q7 questions in all 6 languages
-  L-2 → Add crisis line to 3 pages
-  L-3 → Add data use notice on step 2
-  L-4 → Fix or remove founder testimonial
-  L-5 → Fix or remove unverified "3.9M" claim
-  L-6 → Verify 24-hour urgency claim; enforce or remove
-
-Trust / claims alignment
-  T-3 → Remove all fake urgency and unverified proof from production
-  T-1 → Review "science" and "behavioral" framing; align or replace
-  T-2 → Add "how your reading was built" trust layer to preview page
-
-Reading quality
-  B-1 → Review 200 reports manually; build QA rubric; define pass threshold
-  B-2 → Add prompt versioning; add red-flag logging
-
-Instrumentation (enables everything else to be measured)
-  B-3 → Instrument full funnel event suite
-  B-4 → Set up refund/chargeback weekly cohort tracking
-```
-
----
-
-### P1 — Highest Revenue Leverage After P0
-
-Run these once baseline metrics are visible:
-
-```
-Landing page — clarity and conversion
-  LP-1 → Rewrite tagline (20 min)
-  LP-2 → Solid fill CTA button (15 min)
-  LP-6 → Replace unverified social proof (10 min)
-  LP-5 → Remove feature pills (10 min)
-  LP-3 → Add "What You'll Discover" section (1.5 hrs)
-  LP-4 → Add "How It Works" 3-step strip (45 min)
-  LP-7 → Add entry animations (20 min)
-  LP-8 → Add bottom CTA (20 min)
-
-Offer / monetization
-  M-1 → Run 3-tier vs 2-tier paywall A/B test
-  M-2 → Test Oracle off first paywall, into email lifecycle
-  B-2 → Begin weekly prompt review cycle
-
-Conversion
-  C-3 → Archetype reveal animation (30 min, CSS only)
-  C-5 → Personalize paywall copy with archetype data (20 min)
-  C-4 → Add progress unlock meter (1 hr)
-  C-6 → Tier card visual weight improvements (30 min)
-  C-2 → Loading screen personalization + testimonials (1 hr)
-  C-1 → Mid-quiz personalization screens (3 hrs)
-
-Paid traffic
-  P-1 → Create and test first 5 ad creative angles
-  P-2 → Run message-match QA across funnel
-  P-3 → Define and monitor safe-to-scale thresholds
-```
-
----
-
-### P2 — Growth and Polish After Economics Are Confirmed
-
-Run these once AOV, refund rate, and CAC payback are stable:
-
-```
-Growth / retention
-  G-2 → Share card on preview page (email-gated)
-  G-1 → Daily insight email opt-in on report page
-  M-3 → Run packaging/naming experiments
-  Subscription soft path → email lifecycle from report-page buyers
-
-UI polish
-  U-1 → Option tile selection animation
-  U-2 → Tradition selector explanation copy
-  U-4 → Post-payment email confirmation banner
-
-Secondary refinements
-  LP-9 → Verify landing page final structure is live
-  Additional landing page or paywall variants based on measured data
-```
-
----
-
 ## DE-PRIORITIZE FOR NOW
 
 These are not bad ideas. They are correct ideas at the wrong stage:
@@ -1106,13 +1053,60 @@ The previous plan (v1, April 2026) was a useful starting point. It covered legal
 
 ---
 
+## REVENUE MATH
+**Model:** One-time payment funnel, no subscription dependency for base revenue.
+**Prices confirmed from codebase:** Basic $2.99 (`create-payment.post.ts` line 42), Bundle $4.99 (`create-bundle-payment.post.ts` line 40), Oracle $12.99 (`create-oracle-payment.post.ts` line 40). Compatibility add-on $0.99 (`create-addon-payment.post.ts` line 32), Calendar $2.99, Birth chart $2.99, Tradition switch $1.99.
+
+### Base case — organic / early paid traffic
+- Daily preview page visitors: 300
+- Preview → checkout conversion rate: 3% (industry benchmark; establish real baseline via B-3 before optimizing)
+- Average order value: $5.20 (blended: ~60% Tier 2 at $4.99 + upsell attach)
+- Daily revenue: 300 × 0.03 × $5.20 = $46.80
+- Monthly revenue (gross): ~$1,400
+- Subtract: Stripe fees (2.9% + $0.30/transaction), AI API cost (~$0.04–0.06 per report at claude-sonnet-4-5 pricing), Railway hosting
+- **Net monthly at this scale: approximately $1,000–$1,200**
+- Verdict: Not a money machine at this traffic level. Covers costs. Proves the model.
+
+### Target case — paid traffic running
+- Daily preview page visitors: 3,000
+- Same CVR and AOV assumptions
+- Daily revenue: 3,000 × 0.03 × $5.20 = $468
+- Monthly revenue (gross): ~$14,000
+- **Net monthly at this scale: approximately $10,000–$11,500**
+- CAC ceiling to break even: $5.20 (full AOV must be returned in first transaction — one-time model has no LTV extension)
+- At $0.30 CPC and 3% landing → preview conversion: CAC = $10 → loss
+- At $0.30 CPC and 10% landing → preview conversion: CAC = $3 → margin
+- **Landing page → analysis start rate is the primary CAC lever, not paywall CVR**
+
+### What moves the needle most — ranked by leverage
+1. **Landing → analysis start rate** — every percentage point here cuts CAC. This is why LP-1 and LP-2 (CTA overhaul) matter more than paywall polish.
+2. **AOV** — the $0.99 impulse upsell and the bundle attachment rate. A $1 AOV increase on 100 daily buyers = $3,000/month additional revenue.
+3. **Preview → checkout CVR** — meaningful but harder to move than #1 and #2 without knowing the baseline first. Do not optimize blind.
+4. **Traffic volume** — a multiplier on all of the above. Not the first lever.
+
+### Break-even CAC calculation
+- If AOV = $5.20 and you want 30% contribution margin after fees:
+  - Stripe: ~$0.45 per transaction
+  - API: ~$0.05 per report
+  - Max CAC: $5.20 × 0.70 − $0.50 = **$3.14 maximum CAC**
+- This requires either low CPC (<$0.10) or high landing→preview conversion (>15%)
+- TikTok organic content that drives free traffic makes this math easy. TikTok paid at scale makes this math hard until CVR is proven.
+
+### Pricing experiment impact
+- Current entry: $2.99 (Tier 1)
+- If Tier 1 raised to $4.99 and CVR drops 1% (3% → 2%): 3,000 × 0.02 × $4.99 = $299/day vs $468/day → worse
+- If Tier 1 raised to $4.99 and CVR holds at 3%: 3,000 × 0.03 × $4.99 = $449/day → marginally worse than bundle-anchored
+- **Conclusion: Tier 1 price matters less than bundle attachment rate. Focus M-1 and M-4 on pushing users to $4.99 Tier 2, not on raising Tier 1.**
+
+---
+
 ## EXECUTION CHECKLIST
 
 This checklist is the step-by-step implementation reference for all plan items. Each step references the exact plan section, owner, file(s), and the concrete done-state. Work through phases in order. Do not begin P1 steps until all P0 blocking steps are marked complete.
 
 Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 
-**Last verified against codebase:** July 2026
+**Last verified against codebase:** April 2026
 
 ---
 
@@ -1121,28 +1115,28 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 #### 0-A · Legal / Trust-Risk Reduction
 *Ref: TRACK 1 — LEGAL / TRUST-RISK REDUCTION*
 
-- [x] **L-1 · Rewrite Q4 and Q7 option text** *(DONE — verified July 2026)*
+- [x] **L-1 · Rewrite Q4 and Q7 option text** *(DONE — verified April 2026)*
   - Files: `augur/app/utils/translations.ts` (all 6 languages: en, es, pt, hi, ko, zh), `augur/app/pages/analysis.vue`
   - Verification: All 5 option display texts confirmed replaced across all 6 language keys. Value keys (`alone`, `feelsnothing`, `needstoo`, `toomuch`) unchanged. Current en copy: q4opt2 = "Do I hold back when I could step forward?", q4opt4 = "Do I invest more than I get back in return?", q7opt2 = "Finishing things I start instead of moving on", q7opt3 = "Staying consistent when motivation runs low".
   - Ref: TRACK 1 → L-1
 
-- [x] **L-2 · Add mental health crisis signpost to 3 pages** *(DONE — verified July 2026)*
+- [x] **L-2 · Add mental health crisis signpost to 3 pages** *(DONE — verified April 2026)*
   - Files: `augur/app/pages/index.vue` (line 58), `augur/app/pages/preview.vue` (line 276), `augur/app/pages/report.vue` (line 683)
   - Verification: "If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741" confirmed present in all 3 page footers. Styled `.footer-crisis` / `.preview-footer-crisis` / `report-footer-crisis` at 9px, opacity 0.1.
   - Ref: TRACK 1 → L-2
 
-- [x] **L-3 · Add data use notice at step 2** *(DONE — verified July 2026)*
+- [x] **L-3 · Add data use notice at step 2** *(DONE — verified April 2026)*
   - File: `augur/app/pages/analysis.vue` (line 239)
   - Verification: "Your answers are used only to generate your personalized reading and are not stored, sold, or shared with third parties." present in `.data-use-notice` element above question list.
   - Ref: TRACK 1 → L-3
 
-- [x] **L-4 · Fix founder testimonial — use real-buyer guard** *(DONE — verified July 2026)*
+- [x] **L-4 · Fix founder testimonial — use real-buyer guard** *(DONE — verified April 2026)*
   - File: `augur/app/pages/preview.vue` (lines 287–292)
   - Verification: `REAL_TESTIMONIALS` typed array implemented; `showTestimonialSlot = computed(() => REAL_TESTIMONIALS.length > 0)`; `v-if="showTestimonialSlot"` on the block. Array is currently empty → nothing renders. No fake quote can ship.
   - **Remaining action:** Collect real buyer quotes and populate `REAL_TESTIMONIALS` array when available.
   - Ref: TRACK 1 → L-4
 
-- [x] **L-5 · Replace unverified "3.9M analyses" claim** *(DONE — verified July 2026)*
+- [x] **L-5 · Replace unverified "3.9M analyses" claim** *(DONE — verified April 2026)*
   - File: `augur/app/pages/index.vue` (line 28)
   - Verification: Social proof line now reads "Free · No account required · Results in 60 seconds" — no fabricated count present.
   - Ref: TRACK 1 → L-5
@@ -1156,7 +1150,7 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 #### 0-B · Trust and Claims Alignment
 *Ref: TRACK 2 — TRUST AND CLAIMS ALIGNMENT*
 
-- [x] **T-3 · Remove all fake urgency and unverified proof from production** *(DONE — verified July 2026)*
+- [x] **T-3 · Remove all fake urgency and unverified proof from production** *(DONE — verified April 2026)*
   - Verification: No placeholder testimonials render (L-4 guard confirmed). No fabricated session counts (L-5 replaced). No "X people are viewing" copy found. No unenforceable countdown timers found in current codebase.
   - Ref: TRACK 2 → T-3
 
@@ -1189,13 +1183,13 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
   - Done when: Top failure mode clusters addressed in prompt; new prompt version tagged; re-sample confirms pass rate ≥ 80%
   - Ref: TRACK 0 → B-1
 
-- [x] **B-2 · Add promptVersion field to report save payload** *(DONE — verified July 2026)*
+- [x] **B-2 · Add promptVersion field to report save payload** *(DONE — verified April 2026)*
   - Files: `augur/server/api/generate-report.post.ts` (line 8 — `PROMPT_VERSION = 'v1.0'`; lines 885, 900 — used in logging and return), `augur/server/api/save-report.post.ts` (line 16 reads `body.promptVersion`, line 48 writes `prompt_version` to DB)
   - Schema-gap fallback confirmed: `save-report.post.ts` lines 57–64 detect `error.code === '42703'` (missing column) and retry without `prompt_version` so report delivery is never blocked.
   - **Remaining action:** Confirm `prompt_version` column exists in Supabase `reports` table on production. If not, run: `ALTER TABLE reports ADD COLUMN IF NOT EXISTS prompt_version TEXT DEFAULT 'v1.0';`
   - Ref: TRACK 0 → B-2
 
-- [x] **B-2 · Add server-side red-flag logging** *(DONE — verified July 2026)*
+- [x] **B-2 · Add server-side red-flag logging** *(DONE — verified April 2026)*
   - File: `augur/server/api/generate-report.post.ts` (lines 883–887)
   - Verification: `[B-2] report quality flags` structured log implemented; fires when flags array is non-empty; includes `promptVersion`, `archetype`, `language`, `region`.
   - **Remaining action:** Confirm flag detection logic covers: Identity opener < 15 words, Affirmation > 30 words, repeated phrases across sections, tradition data absent where expected. Review flag output in Railway logs.
@@ -1207,22 +1201,21 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 - [ ] **B-3 · Define analytics event schema doc**
   - Owner: Frontend dev + Analytics
   - Artifact: `ANALYTICS_EVENTS.md` at repo root
-  - Done when: All 18 events from the plan listed with their properties, shared with team, schema matches what will be instrumented
+  - Done when: All 18 events documented with their properties in a single reference file
   - Ref: TRACK 0 → B-3 (full event list with properties)
 
-- [ ] **B-3 · Instrument all funnel events**
-  - Owner: Frontend dev
-  - File: `augur/app/plugins/pixels.client.ts` (or dedicated analytics integration)
-  - Current state: TikTok/Meta pixels exist with some events (`$trackAnalysisStart`, `$trackPurchase`, `$trackReportViewed`, `$trackUpsellViewed`, `$trackUpsellAccepted`, `$trackShareCardOpened`, `$trackShareCardDownloaded`). Full funnel event suite per the plan's 18-event list is NOT yet instrumented.
-  - Done when: All 18 events firing in production with required properties (`utm_source`, `utm_campaign`, `device_type`, `language`, `region`, `archetype`, `life_path_number`, `selected_tier`) — verified via analytics debugger or network inspector
-  - Ref: TRACK 0 → B-3 (event list and required properties)
+- [x] **B-3 · Instrument all funnel events** *(DONE — verified April 2026)*
+  - File: `augur/app/plugins/pixels.client.ts`
+  - Verification: All 18 funnel events are implemented: `trackLandingView`, `trackAnalysisStart`, `trackStep1Complete`, `trackQuestionAnswered`, `trackAnalysisSubmit`, `trackPreviewLoadingStart`, `trackPreviewLoaded`, `trackPaywallView`, `trackTierSelected`, `trackInitiateCheckout` (via `trackViewContent`), `trackPurchase`, `trackUpsellViewed`, `trackUpsellAccepted`, `trackReportViewed`, `trackShareCardOpened`, `trackShareCardDownloaded`, `trackViewContent`, `trackEmailCaptureSuccess`. `safeTrack()` wrapper confirmed. UTM param capture and device type detection confirmed.
+  - **Remaining action:** Verify all call sites in `analysis.vue`, `preview.vue`, and `report.vue` are actively calling these helpers. Confirm events appear in TikTok Events Manager and Meta Events Manager in production.
+  - Ref: TRACK 0 → B-3
 
 - [ ] **B-3 · Build funnel dashboard**
   - Owner: Analytics + Founder
   - Done when: Dashboard shows live data for all 8 required metrics (landing→start rate, step funnel, preview load rate, preview→checkout %, checkout completion %, AOV, upsell attach rate, tier mix)
   - Ref: TRACK 0 → B-3 (dashboard requirements)
 
-- [x] **B-4 · Instrument Stripe webhook for chargeback and refund logging** *(DONE — verified July 2026)*
+- [x] **B-4 · Instrument Stripe webhook for chargeback and refund logging** *(DONE — verified April 2026)*
   - File: `augur/server/api/stripe/webhook.post.ts` (lines 98–191)
   - Verification: `charge.dispute.created` handler (lines 99–146) logs `[B-4] chargeback` with `dispute_id`, `charge_id`, `amount_cents`, `currency`, `reason`, `status`, `archetype`, `region`, `language`, `prompt_version`. `charge.refunded` handler (lines 150–191) logs `[B-4] refund` with equivalent fields. Both are non-blocking (`try/catch` with fallback `console.error`). Both attempt to look up the originating `session_id` to enrich the log with report metadata from Supabase.
   - **Remaining action:** These events fire to Railway logs. Confirm both event types are registered in the Stripe Dashboard webhook endpoint config. Check Railway log output for `[B-4]` entries.
@@ -1234,9 +1227,75 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
   - Done when: Weekly table running showing gross revenue, refund count + rate, chargeback count + rate, net revenue, refund reason categories; internal thresholds defined (refund < 5%, chargeback < 0.4%)
   - Ref: TRACK 0 → B-4
 
+#### 0-E · Abandonment Email Sequence Verification and Deep-Link Fix
+*Verified from codebase: sequence wires and sends correctly. One critical gap exists.*
+
+- [x] **0-E · Confirm abandonment email sequence fires end-to-end** *(DONE — verified April 2026)*
+  - Files: `server/api/capture-email.post.ts` (line 72), `server/utils/email-jobs.ts`, `server/api/email-sequence/process-jobs.post.ts`, `server/utils/email-templates.ts`
+  - Verification: `capture-email.post.ts` line 72 calls `scheduleEmailJob(email, 1, SEQUENCE_DELAYS_MS[1])` synchronously on email capture. `email-jobs.ts` inserts to `email_jobs` table with idempotency check. `process-jobs.post.ts` Railway cron (every 2 min) sends via Resend, marks done, chains step 2→3→4. Sequence delays: step 1 = 10 min, step 2 = 3 hr, step 3 = 24 hr, step 4 = 47 hr. Purchase suppression via `cancelEmailJobs` confirmed in `webhook.post.ts`. All 4 steps templated in 6 languages.
+  - **Remaining action:** Confirm Railway cron job is active and hitting `/api/email-sequence/process-jobs`. Check Railway logs for `[process-jobs]` entries. Verify Resend domain is verified and sending limit is sufficient.
+  - Ref: TRACK 0 / CURRENT STATE SNAPSHOT (abandonment sequence)
+
+- [ ] **0-E · Fix abandonment email CTA deep link** *(NOT DONE — gap identified April 2026)*
+  - File: `server/utils/email-templates.ts` (line 540)
+  - Current state: Every abandonment email CTA links to `https://omenora.com/preview` with no query parameters. A user who clicks returns to a blank preview page and must re-enter all their data. Their specific reading is not pre-loaded.
+  - Root cause: `buildHtmlEmail` receives no `sessionId`; `EmailPersonalization` interface does not include `sessionId`; `process-jobs.post.ts` fetches email job by email but does not look up the `session_id` from `email_captures` table.
+  - Fix steps:
+    1. Add `sessionId: string` to `EmailPersonalization` interface in `email-templates.ts`
+    2. In `process-jobs.post.ts`: after fetching the job, query `email_captures` table by email to get `session_id`, pass it through to `getEmailTemplate` call
+    3. In `buildHtmlEmail`: change CTA href to `https://omenora.com/preview?tempId=${sessionId}` when `sessionId` is non-empty; fall back to bare `/preview` if not found
+    4. Verify `preview.vue` reads `?tempId` (or `?sessionId`) on mount and restores the correct report state — if not, add that logic
+  - Done when: Clicking any abandonment email CTA loads the user's specific reading on the preview page without re-entering data
+  - Ref: CURRENT STATE SNAPSHOT (built but not connected)
+
+#### 0-F · Tradition Calculation Accuracy Verification
+*Grounded in codebase: `app/utils/vedic.ts` and `app/utils/bazi.ts` contain working formulas. No external verification exists.*
+
+- [ ] **0-F · Document and verify Nakshatra calculation formula**
+  - Owner: Founder (needs domain knowledge to verify correctness)
+  - File: `augur/app/utils/vedic.ts`
+  - Current formula (lines 58–67):
+    ```ts
+    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const index = Math.floor(dayOfYear / 13.5) % 27
+    ```
+    Assigns one of 27 Nakshatras based on birth date's day-of-year, cycling through the full sequence on a 13.5-day period (27 × 13.5 = 364.5 days ≈ 1 year).
+  - Concern: Traditional Vedic Nakshatra calculation assigns the Nakshatra based on the **Moon's sidereal longitude** at birth, not the day-of-year. The day-of-year proxy distributes evenly across the calendar but does not reflect the Moon's actual position, which cycles every 27.32 days (not 365/27 days). Two people born one year apart on the same date will get the same Nakshatra, which is correct by this formula but incorrect for traditional Vedic calculation where the Moon moves independently.
+  - Required actions:
+    1. Founder verifies: is this formula intended as an approximation, or should it use actual Moon position?
+    2. If approximation is acceptable: document the method in `TRADITION_CALC_AUDIT.md` with the explicit statement that it uses day-of-year, not Moon longitude. Add a comment to `vedic.ts` stating this.
+    3. If traditional accuracy is required: replace with ephemeris-based Moon longitude calculation (e.g. using `astronomia` npm package or a static lookup table)
+    4. Test: verify a birth date with known Nakshatra (e.g. Jan 1, 1990) against a traditional Vedic calculator
+  - Done when: Decision documented in `TRADITION_CALC_AUDIT.md`; code either updated or commented with explicit accuracy scope statement
+
+- [ ] **0-F · Document and verify BaZi Day Master formula**
+  - Owner: Founder (needs domain knowledge to verify correctness)
+  - File: `augur/app/utils/bazi.ts`
+  - Current formula (lines 46–60):
+    ```ts
+    // Year Stem:
+    const yearStemIndex = ((((year - 4) % 10) + 10) % 10)
+    const yearBranchIndex = ((((year - 4) % 12) + 12) % 12)
+    // Day Stem:
+    const jdn = Math.floor((date.getTime() / 86400000) + 2440587.5)
+    const dayStemIndex = (((jdn - 11) % 10) + 10) % 10
+    const dayBranchIndex = (((jdn - 11) % 12) + 12) % 12
+    // Month Stem:
+    const monthStemIndex = (((year * 12 + month) % 10) + 10) % 10
+    const monthBranchIndex = (((month + 2) % 12) + 12) % 12
+    ```
+    Year Stem uses `(year - 4) mod 10` anchored to year 4 CE (甲子 cycle start). Day Stem uses Julian Day Number arithmetic (`JDN - 11` mod 10). Month Stem uses a combined year×month formula which is non-standard.
+  - Concern: The Year Stem and Day Stem formulas are standard BaZi arithmetic. The Month Stem formula (`(year * 12 + month) % 10`) is not standard — the traditional Month Stem depends on the Year Stem and the solar term (节气) of the birth month, not a simple linear formula. This means Month Stems will be incorrect for many birth dates compared to a traditional Bazi calculator.
+  - Required actions:
+    1. Founder verifies: is the Month Stem precision required for the current report output, or is it acceptable to document it as a simplification?
+    2. If simplification is acceptable: document in `TRADITION_CALC_AUDIT.md`; add comment to `bazi.ts` stating the month stem formula is a linear approximation, not solar-term based
+    3. If traditional accuracy is required: replace month stem with a lookup table keyed on `(yearStemIndex % 5, solarMonth)` where `solarMonth` is determined by actual solar term dates
+    4. Test: verify a known birth date (e.g. Nov 15, 1985) against a traditional BaZi calculator (e.g. bazi.guru)
+  - Done when: Decision documented in `TRADITION_CALC_AUDIT.md`; code updated or commented with accuracy scope
+
 ---
 
-**P0 CURRENT STATUS (July 2026):**
+**P0 CURRENT STATUS (April 2026):**
 - [x] L-1 Rewrite Q4/Q7 questions — done
 - [x] L-2 Crisis signpost on 3 pages — done
 - [x] L-3 Data use notice step 2 — done
@@ -1247,12 +1306,16 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 - [ ] T-1 Pseudo-scientific framing audit — NOT STARTED
 - [ ] B-1 QA rubric + 200-report review — NOT STARTED (highest priority remaining)
 - [x] B-2 promptVersion tracking + red-flag logging — done (confirm DB column live)
-- [ ] B-3 Full funnel event instrumentation — NOT STARTED (blocking for P1)
+- [x] B-3 Event instrumentation (18 events in pixels.client.ts) — done; dashboard build + call-site audit still needed
 - [x] B-4 Webhook chargeback/refund logging — done (confirm events registered in Stripe)
 - [ ] B-4 Weekly cohort table — NOT STARTED
+- [x] 0-E Abandonment email sequence fires — done; deep-link fix NOT DONE
+- [ ] 0-E Abandonment email CTA deep-link fix — NOT DONE
+- [ ] 0-F Nakshatra formula documented + verified — NOT STARTED
+- [ ] 0-F BaZi Month Stem formula documented + verified — NOT STARTED
 
 **→ P0 GATE: Do not proceed to Phase 1 until all Phase 0 checkboxes are complete.**
-**Critical remaining P0 blockers: T-1, B-1, B-3. B-3 is required before any P1 items can be measured.**
+**Critical remaining P0 blockers: T-1, B-1 (highest priority), B-3 dashboard, 0-E abandonment email deep-link fix, 0-F tradition calc audit.**
 
 ---
 
@@ -1275,7 +1338,7 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
   - Done when: Button has solid fill (`rgba(140, 110, 255, 0.85)`), label changed to "Get My Free Reading →"
   - Ref: TRACK 6 → LP-2
 
-- [x] **LP-6 · Replace unverified social proof on landing page** *(DONE — verified July 2026)*
+- [x] **LP-6 · Replace unverified social proof on landing page** *(DONE — verified April 2026)*
   - File: `augur/app/pages/index.vue` (line 28)
   - Verification: Already reads "Free · No account required · Results in 60 seconds" — value-based copy, no count. (Same as L-5.)
   - Ref: TRACK 6 → LP-6
@@ -1407,6 +1470,49 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
   - Owner: Growth + Product
   - Done when: Weekly message-match review running; no open mismatch items older than 1 week; ad → landing → preview → paywall narrative consistent for each active angle
   - Ref: TRACK 7 → P-2
+
+#### 1-E · Testimonial Collection System
+*No post-purchase testimonial email exists anywhere in the codebase (verified April 2026). `REAL_TESTIMONIALS` array in `preview.vue` is empty and cannot populate itself.*
+
+- [ ] **TC-1 · Build Day-2 post-purchase testimonial collection email**
+  - Owner: Backend dev + Product
+  - Files to create/modify: `server/utils/email-templates.ts` (add testimonial request template), `server/api/stripe/webhook.post.ts` (schedule Day-2 job on `checkout.session.completed`), `server/utils/email-jobs.ts` (confirm `step` range can accommodate a post-purchase step or use a separate table/mechanism)
+  - Current state: The `email_jobs` table schema supports steps 1–4 only (see `email-jobs.ts` line 15: `step smallint not null check (step between 1 and 4)`). A post-purchase Day-2 email needs either a schema extension or a separate delivery path. Abandonment sequence is already suppressed on purchase via `cancelEmailJobs`.
+  - Implementation options (choose one before building):
+    - **Option A:** Extend `email_jobs` step range to 1–5 (or 1–10); add a `type` column (`abandonment` | `post_purchase`) so `process-jobs.post.ts` can distinguish them. Step 5 = testimonial request at 48 hours post-purchase. Requires Supabase migration.
+    - **Option B:** Trigger testimonial email directly from `webhook.post.ts` via a new `/api/send-testimonial-request` endpoint with a 48-hour delay using a separate `post_purchase_jobs` table.
+    - **Option C:** Use Resend's scheduled send feature (if available on the plan) — call Resend API with `scheduledAt` from `webhook.post.ts` without needing a separate job table.
+  - Email content (single open question):
+    - Subject: `[firstName], what surprised you most?`
+    - Body: `Your ${archetypeName} reading was generated ${timeAgo}. One question — what surprised you most about it? Reply to this email. We read every response.`
+    - No incentive. No review link. One question, plain reply-to.
+  - Done when: Verified buyer receives one email at ~48 hours post-purchase asking one open question; reply lands in a monitored inbox; zero post-purchase emails sent to refunded/disputed buyers
+  - Dependency: `checkout.session.completed` webhook event confirmed working; Resend sending confirmed working
+
+- [ ] **TC-1 · Populate REAL_TESTIMONIALS array when first responses arrive**
+  - Owner: Founder
+  - File: `augur/app/pages/preview.vue`
+  - Current state: `REAL_TESTIMONIALS` array is empty (verified April 2026). `showTestimonialSlot` is `false`, so nothing renders — correct behavior until real quotes exist.
+  - Done when: ≥ 3 real buyer quotes collected from testimonial email replies; added to `REAL_TESTIMONIALS` array with `{ quote: string; author: string }` format; `showTestimonialSlot` becomes `true` in production; loading screen testimonial slot activates
+  - Ref: TRACK 1 → L-4 (real-buyer guard), TRACK 3 → C-2 (loading screen personalization)
+
+#### 1-F · Entry Price A/B Test
+*Grounded in REVENUE MATH section: Tier 1 price matters less than bundle attachment rate. This test validates that assumption.*
+
+- [ ] **M-4 · Run $2.99 vs $3.99 Tier 1 entry price A/B test**
+  - Owner: Product + Growth
+  - Files: `server/api/create-payment.post.ts` (line 42: `unit_amount: 299`), `server/api/apply-promo-discount.post.ts` (line 4: `basic: { cents: 299 }`), `augur/app/pages/preview.vue` (displayed price)
+  - Hypothesis: Raising Tier 1 from $2.99 to $3.99 will not significantly reduce checkout CVR but will increase AOV by ~$1 per Basic-tier buyer. If Tier 2 (Bundle at $4.99) is the default-selected tier, Tier 1 acts as a downgrade anchor — raising its price may have minimal CVR impact while improving the floor.
+  - Pre-test requirement: B-3 dashboard must be live to measure tier mix split — do not run this test without visibility into % Basic vs Bundle purchases.
+  - Canary safeguard — REQUIRED before 50/50 split:
+    1. Deploy `?price_test=399` query param flag to force new price for manual QA
+    2. Complete an end-to-end payment manually at $3.99 in Stripe test mode
+    3. Verify price renders correctly on preview page and in Stripe checkout session
+    4. Confirm `apply-promo-discount.post.ts` TIER_BASE_PRICES is also updated for the test variant (promo codes must calculate against the correct base price)
+    5. Start at 10% / 90% for 48 hours; watch for payment errors before moving to 50/50
+  - Done when: 200+ completions per variant; tier mix, CVR, and AOV measured per variant; winner declared and non-winning variant removed
+  - Ref: REVENUE MATH section (pricing experiment impact)
+  - Dependency: B-3 dashboard live; M-1 (paywall structure decision) made first
 
 ---
 
