@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   // ── 1. Pull existing report from Supabase first (needed for both paths) ──
   const { data: reportRow, error: fetchError } = await supabase
     .from('reports')
-    .select('*')
+    .select('oracle_purchased, traditions_unlocked, first_name, date_of_birth, city, archetype, life_path_number, answers, time_of_birth, language, report_data_vedic, report_data_bazi, report_data_latam')
     .eq('session_id', reportId)
     .single()
 
@@ -81,10 +81,11 @@ export default defineEventHandler(async (event) => {
     tarot: 'report_data_latam',
   }
   const cacheColumn = cachedColumnMap[newTradition]
-  if (cacheColumn && reportRow[cacheColumn]) {
+  const reportRowAny = reportRow as Record<string, any>
+  if (cacheColumn && reportRowAny[cacheColumn]) {
     return {
       success:    true,
-      report:     reportRow[cacheColumn],
+      report:     reportRowAny[cacheColumn],
       fromCache:  true,
       tradition:  newTradition,
     }

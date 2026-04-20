@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   try {
     const { data, error } = await supabase
       .from('promo_codes')
-      .select('*')
+      .select('id, code_type, code_subtype, discount_value, max_uses, current_uses, expires_at, active, locked_to_email, access_tier')
       .eq('code', rawCode)
       .limit(1)
       .maybeSingle()

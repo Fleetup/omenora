@@ -89,7 +89,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Unable to verify code status. Please try again.' })
   }
 
-  // ── Step 3: Generate report via Anthropic directly ──────────────────────
+  // ── Step 3: Atomically claim usage — authoritative gate before irreversible work ──
+  // This must fire BEFORE report generation and email send. The pre-checks
+  // in Steps 1-2 are fast read-only hints; this RPC is the enforcement gate
+  // that increments current_uses atomically under row-level lock.
+  const { data: claimResult, error: claimError } = await supabase
+    .rpc('claim_promo_use', { p_code_id: codeId })
+  if (claimError || !claimResult?.[0]?.success) {
+    throw createError({
+      statusCode: 400,
+      message: 'This code has reached its usage limit or is no longer active.',
+    })
+  }
+
+  // ── Step 4: Generate report via Anthropic directly ──────────────────────
   let reportData: any
   try {
     reportData = await generateReport({
@@ -107,7 +120,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Failed to generate your reading. Please try again.' })
   }
 
-  // ── Step 4: Save report to Supabase ───────────────────────────────────────
+  // ── Step 5: Save report to Supabase ───────────────────────────────────────
   const promoSessionId = `promo_${randomBytes(16).toString('hex')}`
   let savedReportId: string | null = null
 
@@ -140,7 +153,7 @@ export default defineEventHandler(async (event) => {
     console.error('[apply-promo-access] Save error:', err?.message)
   }
 
-  // ── Step 5: Send report email ─────────────────────────────────────────────
+  // ── Step 6: Send report email ─────────────────────────────────────────────
   const resendKey = config.resendApiKey as string | undefined
   let emailSent = false
 
@@ -167,7 +180,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // ── Step 6: Mark email sent in reports table ──────────────────────────────
+  // ── Step 7: Mark email sent in reports table ──────────────────────────────
   if (emailSent && savedReportId) {
     const { error: markErr } = await supabase
       .from('reports')
@@ -176,23 +189,13 @@ export default defineEventHandler(async (event) => {
     if (markErr) console.error('[apply-promo-access] Failed to mark email sent:', markErr.code)
   }
 
-  // ── Step 7: Lock personal code to email ──────────────────────────────────
+  // ── Step 8: Lock personal code to email ──────────────────────────────────
   if (codeRecord.code_subtype === 'personal' && !codeRecord.locked_to_email) {
     const { error: lockErr } = await supabase
       .from('promo_codes')
       .update({ locked_to_email: normalizedEmail })
       .eq('id', codeId)
     if (lockErr) console.error('[apply-promo-access] Lock email failed:', lockErr.code)
-  }
-
-  // ── Step 8: Atomically claim usage (replaces non-atomic read-check-write) ─
-  const { data: claimResult, error: claimError } = await supabase
-    .rpc('claim_promo_use', { p_code_id: codeId })
-  if (claimError || !claimResult?.[0]?.success) {
-    throw createError({
-      statusCode: 400,
-      message: 'This code has reached its usage limit or is no longer active.',
-    })
   }
 
   // ── Step 9: Log usage in promo_code_uses ─────────────────────────────────
