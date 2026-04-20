@@ -14,7 +14,6 @@ export default defineEventHandler(async (event) => {
     supabase
       .from('email_captures')
       .update({
-        purchased:          true,
         sequence_completed: true,
         updated_at:         new Date().toISOString(),
       })

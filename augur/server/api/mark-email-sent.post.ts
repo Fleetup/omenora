@@ -12,10 +12,15 @@ export default defineEventHandler(async (event) => {
     config.supabaseServiceKey as string
   )
 
-  await supabase
+  const { error } = await supabase
     .from('reports')
     .update({ email_sent: true })
     .eq('session_id', sessionId)
+    .eq('email_sent', false) // idempotent: only flip once — prevents re-suppression
+
+  if (error) {
+    console.error('[mark-email-sent] Update error:', error.code)
+  }
 
   return { success: true }
 })

@@ -97,7 +97,7 @@ export default defineEventHandler(async (event) => {
       birthCity:        capture.birth_city         || '',
       readingTradition: capture.reading_tradition  || 'Western',
       language:         capture.language           || 'EN',
-    })
+    }, expectedSecret)
 
     const plainTextFallback = template.html
       .replace(/<style[\s\S]*?<\/style>/gi, '')

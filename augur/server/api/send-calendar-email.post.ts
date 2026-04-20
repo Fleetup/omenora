@@ -1,29 +1,40 @@
 import { Resend } from 'resend'
+import { CalendarSchema } from '~~/server/utils/ai-schemas'
+import { he } from '~~/server/utils/report-email-builder'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
-  const { email, firstName, calendar, language } = body
+  const email     = sanitizeString(body.email ?? '', 254)
+  const firstName = sanitizeString(body.firstName ?? '', 50)
+  const language  = sanitizeString(body.language || 'en', 5)
 
-  if (!email || !calendar) {
-    throw createError({
-      statusCode: 400,
-      message: 'Email and calendar data required'
-    })
+  assertInput(isValidEmail(email), 'Valid email is required')
+  assertInput(!!firstName, 'firstName is required')
+  assertInput(
+    body.calendar !== null && typeof body.calendar === 'object',
+    'calendar object is required',
+  )
+
+  const calendarParse = CalendarSchema.safeParse(body.calendar)
+  if (!calendarParse.success) {
+    console.warn('[send-calendar-email] Schema validation failed:', calendarParse.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', '))
+    throw createError({ statusCode: 422, message: 'Invalid calendar payload' })
   }
+  const calendar = calendarParse.data
 
   const resend = new Resend(config.resendApiKey as string)
 
-  const months = calendar.months || []
-  const peakMonths = calendar.peakMonths || []
-  const cautionMonths = calendar.cautionMonths || []
+  const months        = calendar.months
+  const peakMonths    = calendar.peakMonths
+  const cautionMonths = calendar.cautionMonths
 
-  const monthsHtml = months.map((month: any) => {
-    const energy = month.energyLevel || 60
+  const monthsHtml = months.map((month) => {
+    const energy = (month as any).energyLevel || 60
     const energyColor = energy >= 75 ? '#c9a84c' : energy >= 55 ? '#8c6eff' : '#8a4444'
     const barPct = Math.round(energy)
-    const accentColor = month.color || energyColor
+    const accentColor = he((month as any).color || energyColor)
 
     return `
       <div style="margin-bottom: 10px; padding: 16px 18px 14px 20px;
@@ -33,15 +44,15 @@ export default defineEventHandler(async (event) => {
         <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:6px;">
           <tr>
             <td style="font-size:18px; font-weight:600; color:#ede8ff; font-family:Georgia,serif;">
-              ${month.month}
+              ${he(month.month)}
             </td>
             <td align="right" style="font-size:14px; color:${energyColor}; font-weight:500;">
-              ${energy}
+              ${he(String(energy))}
             </td>
           </tr>
           <tr>
             <td style="font-size:10px; color:#3d3a52; text-transform:uppercase; letter-spacing:0.1em; padding-top:2px;">
-              ${month.theme || ''}
+              ${he(month.theme || '')}
             </td>
           </tr>
         </table>
@@ -53,15 +64,15 @@ export default defineEventHandler(async (event) => {
         <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
           <tr>
             <td style="font-size:11px; color:#4a4760; padding-right:6px; white-space:nowrap;">Love</td>
-            <td style="font-size:12px; color:#6b6880; line-height:1.5;">${month.love || ''}</td>
+            <td style="font-size:12px; color:#6b6880; line-height:1.5;">${he(month.love || '')}</td>
           </tr>
           <tr>
             <td style="font-size:11px; color:#4a4760; padding-right:6px; white-space:nowrap;">Money</td>
-            <td style="font-size:12px; color:#6b6880; line-height:1.5;">${month.money || ''}</td>
+            <td style="font-size:12px; color:#6b6880; line-height:1.5;">${he(month.money || '')}</td>
           </tr>
           <tr>
             <td style="font-size:11px; color:#4a4760; padding-right:6px; white-space:nowrap;">Career</td>
-            <td style="font-size:12px; color:#6b6880; line-height:1.5;">${month.career || ''}</td>
+            <td style="font-size:12px; color:#6b6880; line-height:1.5;">${he(month.career || '')}</td>
           </tr>
         </table>
 
@@ -69,16 +80,16 @@ export default defineEventHandler(async (event) => {
           <div style="margin-bottom:8px; padding:7px 10px;
             background:#180d0d; border:1px solid #3a1a1a;
             font-size:11px; color:#7a3a3a;">
-            ${month.warning}
+            ${he(month.warning)}
           </div>
         ` : ''}
 
         <div style="font-size:10px; color:#3a3550; letter-spacing:0.04em;">
           Lucky days &nbsp;
-          ${(month.luckyDays || []).map((d: string | number) =>
+          ${((month as any).luckyDays || []).map((d: string | number) =>
             `<span style="display:inline-block; margin-right:4px; padding:1px 7px;
               background:#1a1508; border:1px solid #3d3018;
-              font-size:10px; color:#7a6530;">${d}</span>`
+              font-size:10px; color:#7a6530;">${he(String(d))}</span>`
           ).join('')}
         </div>
       </div>
@@ -109,12 +120,12 @@ export default defineEventHandler(async (event) => {
 
       <h1 style="font-size:30px; font-weight:400; color:#ede8ff;
         margin:0 0 10px; line-height:1.2; font-family:Georgia,serif;">
-        ${firstName}'s 2026 Destiny Calendar
+        ${he(firstName)}'s 2026 Destiny Calendar
       </h1>
 
       <p style="font-size:13px; font-style:italic; color:#3d3a52;
         margin:0 0 24px; line-height:1.65;">
-        ${calendar.overallTheme || ''}
+        ${he(calendar.overallTheme)}
       </p>
 
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -124,7 +135,7 @@ export default defineEventHandler(async (event) => {
             <span style="font-size:10px; color:#7a6530; text-transform:uppercase;
               letter-spacing:0.1em;">Peak Months &nbsp;</span>
             <span style="font-size:11px; color:#c9a84c;">
-              ${peakMonths.join(' &nbsp;·&nbsp; ')}
+              ${peakMonths.map(he).join(' &nbsp;·&nbsp; ')}
             </span>
           </td>
           <td width="12"></td>
@@ -133,7 +144,7 @@ export default defineEventHandler(async (event) => {
             <span style="font-size:10px; color:#5a2a2a; text-transform:uppercase;
               letter-spacing:0.1em;">Caution &nbsp;</span>
             <span style="font-size:11px; color:#8a4444;">
-              ${cautionMonths.join(' &nbsp;·&nbsp; ')}
+              ${cautionMonths.map(he).join(' &nbsp;·&nbsp; ')}
             </span>
           </td>
         </tr>
@@ -151,7 +162,7 @@ export default defineEventHandler(async (event) => {
         OMENORA &nbsp;·&nbsp; omenora.com
       </p>
       <p style="font-size:10px; color:#181620; margin:0 0 6px;">
-        ${email}
+        ${he(email)}
       </p>
       <p style="font-size:10px; color:#181620; margin:0;">
         OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·

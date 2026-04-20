@@ -1,27 +1,38 @@
 import { Resend } from 'resend'
+import { CompatibilitySchema } from '~~/server/utils/ai-schemas'
+import { he } from '~~/server/utils/report-email-builder'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
-  const { email, firstName, partnerName, compatibility, language } = body
+  const email       = sanitizeString(body.email ?? '', 254)
+  const firstName   = sanitizeString(body.firstName ?? '', 50)
+  const partnerName = sanitizeString(body.partnerName ?? '', 50)
+  const language    = sanitizeString(body.language || 'en', 5)
 
-  if (!email || !compatibility) {
-    throw createError({
-      statusCode: 400,
-      message: 'Email and compatibility data required'
-    })
+  assertInput(isValidEmail(email), 'Valid email is required')
+  assertInput(!!firstName, 'firstName is required')
+  assertInput(
+    body.compatibility !== null && typeof body.compatibility === 'object',
+    'compatibility object is required',
+  )
+
+  const compatParse = CompatibilitySchema.safeParse(body.compatibility)
+  if (!compatParse.success) {
+    console.warn('[send-compatibility-email] Schema validation failed:', compatParse.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', '))
+    throw createError({ statusCode: 422, message: 'Invalid compatibility payload' })
   }
+  const compatibility = compatParse.data
 
   const resend = new Resend(config.resendApiKey as string)
 
-  const sections = compatibility.sections
-  const score = compatibility.compatibilityScore
+  const sections    = compatibility.sections
+  const score       = compatibility.compatibilityScore
   const compatTitle = compatibility.compatibilityTitle
 
-  const sectionOrder = [
-    'bond', 'strength', 'challenge', 'forecast', 'advice'
-  ]
+  type SectionKey = keyof typeof sections
+  const sectionOrder: SectionKey[] = ['bond', 'strength', 'challenge', 'forecast', 'advice']
 
   const scoreColor = score >= 80
     ? '#8c6eff'
@@ -29,7 +40,7 @@ export default defineEventHandler(async (event) => {
       ? '#c89632'
       : '#b45050'
 
-  const sectionsHtml = sectionOrder.map((key: string) => {
+  const sectionsHtml = sectionOrder.map((key) => {
     const section = sections[key]
     if (!section) return ''
 
@@ -44,11 +55,11 @@ export default defineEventHandler(async (event) => {
           <p style="font-size: 11px; font-weight: 500;
             color: #8c6eff; text-transform: uppercase;
             letter-spacing: 0.1em; margin: 0 0 12px;">
-            ${section.title}
+            ${he(section.title)}
           </p>
           <p style="font-size: 17px; color: #c8b4ff;
             font-style: italic; line-height: 1.7; margin: 0;">
-            "${section.content}"
+            &ldquo;${he(section.content)}&rdquo;
           </p>
         </div>
       `
@@ -61,11 +72,11 @@ export default defineEventHandler(async (event) => {
         <p style="font-size: 11px; font-weight: 500;
           color: #8c6eff; text-transform: uppercase;
           letter-spacing: 0.1em; margin: 0 0 10px;">
-          ${section.title}
+          ${he(section.title)}
         </p>
         <p style="font-size: 15px; color: #c0bfbf;
           line-height: 1.8; margin: 0;">
-          ${section.content}
+          ${he(section.content)}
         </p>
       </div>
     `
@@ -106,19 +117,19 @@ export default defineEventHandler(async (event) => {
       <p style="font-size: 72px; font-weight: 500;
         color: ${scoreColor}; margin: 0 0 8px;
         line-height: 1;">
-        ${score}%
+        ${he(String(score))}%
       </p>
 
       <h1 style="font-size: 20px; font-weight: 500;
         color: rgba(230,220,255,0.85);
         margin: 0 0 8px; line-height: 1.4;
         font-style: italic;">
-        ${compatTitle}
+        ${he(compatTitle)}
       </h1>
 
       <p style="font-size: 14px;
         color: rgba(255,255,255,0.3); margin: 16px 0 0;">
-        ${firstName} &amp; ${partnerName}
+        ${he(firstName)} &amp; ${he(partnerName)}
       </p>
     </div>
 
@@ -138,7 +149,7 @@ export default defineEventHandler(async (event) => {
 
       <p style="font-size: 11px;
         color: rgba(255,255,255,0.1); margin: 0 0 8px;">
-        This reading was generated for ${email}
+        This reading was generated for ${he(email)}
       </p>
 
       <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0;">
@@ -169,7 +180,7 @@ export default defineEventHandler(async (event) => {
     `Compatibility score: ${score}%`,
     compatTitle ? compatTitle : '',
     ``,
-    ...sectionOrder.map((key: string) => {
+    ...sectionOrder.map((key) => {
       const s = sections[key]
       return s ? `${s.title}\n${s.content}` : ''
     }).filter(Boolean),

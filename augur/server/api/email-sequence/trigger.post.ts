@@ -12,6 +12,15 @@ import { scheduleEmailJob, SEQUENCE_DELAYS_MS } from '~~/server/utils/email-jobs
  * by HTTP timeouts on every cloud platform.
  */
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig()
+
+  // ── Auth guard — only internal callers may enqueue jobs ───────────────────
+  const incomingSecret = getHeader(event, 'x-job-secret') ?? ''
+  const expectedSecret = (config.emailJobSecret as string | undefined) ?? ''
+  if (!expectedSecret || incomingSecret !== expectedSecret) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
   const body  = await readBody(event)
   const email = sanitizeString(body.email, 254)
   const step  = Number(body.step)
