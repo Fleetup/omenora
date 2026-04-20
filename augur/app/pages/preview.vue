@@ -73,16 +73,11 @@
       </ul>
     </div>
 
-    <!--
-      REPLACE THIS WITH REAL BUYER QUOTE after first 10 purchases.
-      Keep quote under 20 words.
-      Keep attribution specific (first name + something real about them).
-    -->
-    <!-- Social proof -->
-    <div class="social-proof-line">
+    <!-- Social proof: renders only when REAL_TESTIMONIALS array is populated -->
+    <div v-if="showTestimonialSlot" class="social-proof-line">
       <div class="stars">★★★★★</div>
-      <p class="proof-quote">"I built this and tested it on myself. The Hidden Gift section described something about how I work that took me years to understand."</p>
-      <p class="proof-attribution">— Miki, founder of OMENORA</p>
+      <p class="proof-quote">"{{ currentTestimonial.quote }}"</p>
+      <p class="proof-attribution">— {{ currentTestimonial.author }}</p>
     </div>
 
     <!-- 3-tier pricing selector (hidden when full access code applied) -->
@@ -236,15 +231,10 @@
         <span v-else>{{ t('unlockOracle') }}</span>
       </button>
 
-      <div class="urgency-line">
-        <span class="urgency-icon">⏳</span>
-        Your reading is saved for 24 hours.
-      </div>
       <div class="guarantee-line">
         <span class="guarantee-check">✦</span>
         <span class="guarantee-text">Not what you expected? Full refund within 24 hours — no questions asked.</span>
       </div>
-      <p class="trust-note">{{ t('readingExpires') }}</p>
       <p class="trust-secure">{{ t('securedStripe') }}</p>
       </div><!-- end pricing-section -->
 
@@ -275,6 +265,16 @@
         <p v-if="promoErrorMessage" class="promo-msg promo-msg-error" style="margin-top:10px;text-align:center;">{{ promoErrorMessage }}</p>
       </div>
   </div>
+
+  <!-- Crisis signpost footer -->
+  <footer class="preview-footer" role="contentinfo">
+    <nav aria-label="Legal">
+      <NuxtLink to="/privacy" class="preview-footer-link">Privacy Policy</NuxtLink>
+      <span class="preview-footer-sep" aria-hidden="true">·</span>
+      <NuxtLink to="/terms" class="preview-footer-link">Terms of Service</NuxtLink>
+    </nav>
+    <p class="preview-footer-crisis">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
+  </footer>
 </template>
 
 <script setup lang="ts">
@@ -282,6 +282,14 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import type { ComputedRef } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
+
+
+const REAL_TESTIMONIALS: Array<{ quote: string; author: string }> = [
+  // ADD REAL BUYER QUOTES HERE — leave empty until collected from post-purchase emails
+  // Format: { quote: 'Under 20 words verbatim.', author: 'First name · something specific' }
+]
+const showTestimonialSlot = computed(() => REAL_TESTIMONIALS.length > 0)
+const currentTestimonial = computed(() => REAL_TESTIMONIALS[0] ?? { quote: '', author: '' })
 
 useSeoMeta({ title: 'Your Destiny Preview', robots: 'noindex, nofollow' })
 
@@ -1423,5 +1431,44 @@ async function handlePayment() {
   color: rgba(255, 255, 255, 0.45);
   margin: 0;
   line-height: 1.6;
+}
+
+.preview-footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 20px 28px;
+  box-sizing: border-box;
+  margin-top: 8px;
+}
+
+.preview-footer nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.preview-footer-link {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.18);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+}
+
+.preview-footer-sep {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.1);
+}
+
+.preview-footer-crisis {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.1);
+  margin: 0;
+  letter-spacing: 0.02em;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 320px;
 }
 </style>

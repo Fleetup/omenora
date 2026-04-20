@@ -236,6 +236,8 @@
       <h1 class="heading">{{ t('fiveQuestions') }}</h1>
       <p class="subheading">{{ t('tapAnswer') }}</p>
 
+      <p class="data-use-notice">Your answers are used only to generate your personalized reading and are not stored, sold, or shared with third parties.</p>
+
       <div v-for="(question, index) in questions" :key="question.id" class="question-block">
         <div class="question-header">
           <span class="question-number">{{ String(index + 1).padStart(2, '0') }}</span>
@@ -840,7 +842,15 @@ function submitAnalysis() {
   font-size: 13px;
   font-style: italic;
   color: rgba(255, 255, 255, 0.3);
-  margin: 0 0 32px;
+  margin: 0 0 16px;
+}
+
+.data-use-notice {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.18);
+  margin: 0 0 24px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
 }
 
 /* ── Text input fields ── */

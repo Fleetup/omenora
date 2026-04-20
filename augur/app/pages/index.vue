@@ -25,7 +25,7 @@
       <!-- Threshold separator -->
       <div class="threshold">
         <div class="threshold-rule" aria-hidden="true" />
-        <p class="social-proof">3.9M analyses complete</p>
+        <p class="social-proof">Free · No account required · Results in 60 seconds</p>
         <div class="threshold-rule" aria-hidden="true" />
       </div>
 
@@ -55,6 +55,7 @@
         <NuxtLink to="/terms" class="footer-link">Terms of Service</NuxtLink>
       </nav>
       <p class="footer-copy">&copy; 2026 OMENORA. All rights reserved.</p>
+      <p class="footer-crisis">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
     </footer>
   </div>
 </template>
@@ -65,7 +66,7 @@ const { public: { siteUrl: SITE_URL } } = useRuntimeConfig()
 useSeoMeta({
   title: 'Free AI Astrology Reading & Destiny Report',
   description:
-    "Discover your destiny in 10 seconds with OMENORA's AI astrology analysis. Free birth chart, life path number, love compatibility & 2026 forecast. No signup required. 3.9M+ readings complete.",
+    "Discover your destiny in 60 seconds with OMENORA's AI astrology analysis. Free birth chart, life path number, love compatibility & 2026 forecast. No signup required.",
   ogTitle: 'Free AI Astrology Reading — OMENORA',
   ogDescription:
     'Your personalized destiny report powered by AI. Free birth chart, life path number, love compatibility & 2026 forecast. No account needed, instant results.',
@@ -142,7 +143,7 @@ useHead({
                 name: 'How accurate is AI astrology?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'OMENORA uses advanced AI models combined with established astrological and numerological frameworks. With over 3.9 million readings completed, the platform consistently delivers personalized insights users describe as remarkably accurate.',
+                  text: 'OMENORA uses advanced AI models combined with established astrological and numerological frameworks, consistently delivering personalized insights users describe as remarkably accurate.',
                 },
               },
               {
@@ -444,6 +445,15 @@ useHead({
 }
 
 /* ── Footer ── */
+.footer-crisis {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.1);
+  margin: 0;
+  letter-spacing: 0.02em;
+  text-align: center;
+  line-height: 1.5;
+}
+
 .site-footer {
   position: absolute;
   bottom: 0;

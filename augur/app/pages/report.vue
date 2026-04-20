@@ -672,6 +672,16 @@
     </div>
 
   </div>
+
+  <!-- Crisis signpost footer -->
+  <footer class="report-footer" role="contentinfo">
+    <nav aria-label="Legal">
+      <NuxtLink to="/privacy" class="report-footer-link">Privacy Policy</NuxtLink>
+      <span class="report-footer-sep" aria-hidden="true">·</span>
+      <NuxtLink to="/terms" class="report-footer-link">Terms of Service</NuxtLink>
+    </nav>
+    <p class="report-footer-crisis">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
+  </footer>
 </template>
 
 <script setup lang="ts">
@@ -3235,5 +3245,43 @@ async function downloadReportPDF() {
   font-size: 13px;
   color: rgba(80, 200, 120, 0.8);
   margin: 0;
+}
+
+.report-footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 20px 36px;
+  box-sizing: border-box;
+}
+
+.report-footer nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.report-footer-link {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.18);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+}
+
+.report-footer-sep {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.1);
+}
+
+.report-footer-crisis {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.1);
+  margin: 0;
+  letter-spacing: 0.02em;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 320px;
 }
 </style>
