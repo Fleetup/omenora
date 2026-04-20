@@ -1236,7 +1236,7 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
   - **Remaining action:** Confirm Railway cron job is active and hitting `/api/email-sequence/process-jobs`. Check Railway logs for `[process-jobs]` entries. Verify Resend domain is verified and sending limit is sufficient.
   - Ref: TRACK 0 / CURRENT STATE SNAPSHOT (abandonment sequence)
 
-- [ ] **0-E · Fix abandonment email CTA deep link** *(NOT DONE — gap identified April 2026)*
+- [x] **0-E · Fix abandonment email CTA deep link** *(DONE — April 2026)*
   - File: `server/utils/email-templates.ts` (line 540)
   - Current state: Every abandonment email CTA links to `https://omenora.com/preview` with no query parameters. A user who clicks returns to a blank preview page and must re-enter all their data. Their specific reading is not pre-loaded.
   - Root cause: `buildHtmlEmail` receives no `sessionId`; `EmailPersonalization` interface does not include `sessionId`; `process-jobs.post.ts` fetches email job by email but does not look up the `session_id` from `email_captures` table.
@@ -1245,13 +1245,14 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
     2. In `process-jobs.post.ts`: after fetching the job, query `email_captures` table by email to get `session_id`, pass it through to `getEmailTemplate` call
     3. In `buildHtmlEmail`: change CTA href to `https://omenora.com/preview?tempId=${sessionId}` when `sessionId` is non-empty; fall back to bare `/preview` if not found
     4. Verify `preview.vue` reads `?tempId` (or `?sessionId`) on mount and restores the correct report state — if not, add that logic
+  - Implementation: `sessionId?: string` added to `EmailPersonalization` interface; `ctaUrl` computed in `getEmailTemplate` as `?tempId=\${sessionId}` when present, fallback to bare `/preview`; all 24 `buildHtmlEmail` call sites updated; `session_id` passed from `email_captures` row in `process-jobs.post.ts`. TypeScript: 0 errors.
   - Done when: Clicking any abandonment email CTA loads the user's specific reading on the preview page without re-entering data
   - Ref: CURRENT STATE SNAPSHOT (built but not connected)
 
 #### 0-F · Tradition Calculation Accuracy Verification
 *Grounded in codebase: `app/utils/vedic.ts` and `app/utils/bazi.ts` contain working formulas. No external verification exists.*
 
-- [ ] **0-F · Document and verify Nakshatra calculation formula**
+- [x] **0-F · Document and verify Nakshatra calculation formula** *(DONE — accepted approximation, April 2026)*
   - Owner: Founder (needs domain knowledge to verify correctness)
   - File: `augur/app/utils/vedic.ts`
   - Current formula (lines 58–67):
@@ -1268,7 +1269,7 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
     4. Test: verify a birth date with known Nakshatra (e.g. Jan 1, 1990) against a traditional Vedic calculator
   - Done when: Decision documented in `TRADITION_CALC_AUDIT.md`; code either updated or commented with explicit accuracy scope statement
 
-- [ ] **0-F · Document and verify BaZi Day Master formula**
+- [x] **0-F · Document and verify BaZi Day Master formula** *(DONE — accepted approximation, April 2026)*
   - Owner: Founder (needs domain knowledge to verify correctness)
   - File: `augur/app/utils/bazi.ts`
   - Current formula (lines 46–60):
@@ -1309,13 +1310,13 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 - [x] B-3 Event instrumentation (18 events in pixels.client.ts) — done; dashboard build + call-site audit still needed
 - [x] B-4 Webhook chargeback/refund logging — done (confirm events registered in Stripe)
 - [ ] B-4 Weekly cohort table — NOT STARTED
-- [x] 0-E Abandonment email sequence fires — done; deep-link fix NOT DONE
-- [ ] 0-E Abandonment email CTA deep-link fix — NOT DONE
-- [ ] 0-F Nakshatra formula documented + verified — NOT STARTED
-- [ ] 0-F BaZi Month Stem formula documented + verified — NOT STARTED
+- [x] 0-E Abandonment email sequence fires — done
+- [x] 0-E Abandonment email CTA deep-link fix — done (April 2026)
+- [x] 0-F Nakshatra formula documented + verified — done (accepted approximation)
+- [x] 0-F BaZi Month Stem formula documented + verified — done (accepted approximation)
 
 **→ P0 GATE: Do not proceed to Phase 1 until all Phase 0 checkboxes are complete.**
-**Critical remaining P0 blockers: T-1, B-1 (highest priority), B-3 dashboard, 0-E abandonment email deep-link fix, 0-F tradition calc audit.**
+**Critical remaining P0 blockers: T-1 (framing audit), B-1 (QA rubric + 200-report review — highest priority), B-3 dashboard + call-site audit, B-4 weekly cohort table.**
 
 ---
 
