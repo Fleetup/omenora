@@ -55,6 +55,8 @@ const props = defineProps<{
   error: NuxtError
 }>()
 
+useSeoMeta({ robots: 'noindex, nofollow' })
+
 const handleAction = () => {
   if (props.error.statusCode === 404) {
     navigateTo('/')

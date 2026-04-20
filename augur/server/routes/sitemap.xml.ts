@@ -1,4 +1,6 @@
 export default defineEventHandler((event) => {
+  const today = new Date().toISOString().split('T')[0]
+
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
@@ -8,7 +10,7 @@ export default defineEventHandler((event) => {
     '        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">',
     '  <url>',
     '    <loc>https://omenora.com</loc>',
-    '    <lastmod>2026-04-14</lastmod>',
+    `    <lastmod>${today}</lastmod>`,
     '    <changefreq>weekly</changefreq>',
     '    <priority>1.0</priority>',
     '    <xhtml:link rel="alternate" hreflang="en" href="https://omenora.com"/>',
@@ -16,17 +18,19 @@ export default defineEventHandler((event) => {
     '  </url>',
     '  <url>',
     '    <loc>https://omenora.com/privacy</loc>',
-    '    <lastmod>2026-04-14</lastmod>',
+    '    <lastmod>2026-04-10</lastmod>',
     '    <changefreq>monthly</changefreq>',
-    '    <priority>0.3</priority>',
+    '    <priority>0.4</priority>',
     '    <xhtml:link rel="alternate" hreflang="en" href="https://omenora.com/privacy"/>',
+    '    <xhtml:link rel="alternate" hreflang="x-default" href="https://omenora.com/privacy"/>',
     '  </url>',
     '  <url>',
     '    <loc>https://omenora.com/terms</loc>',
-    '    <lastmod>2026-04-14</lastmod>',
+    '    <lastmod>2026-04-10</lastmod>',
     '    <changefreq>monthly</changefreq>',
-    '    <priority>0.3</priority>',
+    '    <priority>0.4</priority>',
     '    <xhtml:link rel="alternate" hreflang="en" href="https://omenora.com/terms"/>',
+    '    <xhtml:link rel="alternate" hreflang="x-default" href="https://omenora.com/terms"/>',
     '  </url>',
     '</urlset>',
   ].join('\n')

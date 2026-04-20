@@ -363,3 +363,60 @@ The OMENORA application has been upgraded to enterprise-grade SEO standards. All
 5. Monitor "Page with redirect" count in GSC Coverage report — should clear within 1–2 crawl cycles.
 6. Request indexing for `/privacy` and `/terms` via URL Inspection tool.
 7. Verify Rich Results Test passes for homepage structured data.
+
+---
+
+## Comprehensive SEO Audit — April 20, 2026
+
+### Audit Trigger
+Google Search Console showing: 5 not indexed (2 noindex, 1 redirect, 2 discovered-not-indexed), only 1 page indexed.
+
+### Bugs Found & Fixed
+
+| # | File | Bug | Fix Applied |
+|---|------|-----|-------------|
+| 1 | `server/routes/robots.txt.ts` + `public/robots.txt` | `Allow: /$` — `$` is NOT valid robots.txt syntax; treated as literal path `/$` not root. Googlebot may mis-parse root allow rule. | Changed to `Allow: /` (valid). Googlebot-specific rules added before `User-agent: *` fallback. |
+| 2 | `app/pages/index.vue` | **Orphan pages** — `/privacy` and `/terms` had no crawlable internal links from homepage. Google's Googlebot needs `<a href>` tags to discover pages, sitemap alone is insufficient for new domains. Root cause of "Discovered – currently not indexed". | Added `<footer>` with `<NuxtLink>` to `/privacy` and `/terms`. |
+| 3 | `app/app.vue` | Google Fonts loaded via `@import url(...)` for ALL fonts including Inter — render-blocking, worsens LCP, delays first paint | Self-hosted Inter via `@font-face` using existing TTFs in `/public/fonts/`. `font-display: swap` on all weights. Google Fonts now only used for display fonts (Cormorant + Playfair). |
+| 4 | `nuxt.config.ts` | No `site.webmanifest` / PWA manifest linked — missing mobile installability, Google uses for PWA signals | Added `<link rel="manifest">` + `<link rel="apple-touch-icon">` |
+| 5 | `app/error.vue` | Error pages (404/500) had no `noindex` directive — Google could crawl and try to index error pages | Added `useSeoMeta({ robots: 'noindex, nofollow' })` |
+| 6 | `nuxt.config.ts` | Global `WebSite` schema was standalone, not part of `@graph` — Organization node not linked via `publisher`. Logo was just `favicon.ico`, no dimensions. `sameAs` missing. | Wrapped in `@graph`, added full Organization with logo (og-image.png, 1200×630), `sameAs`, `contactPoint`, `foundingDate`, `publisher` cross-reference. |
+| 7 | `server/routes/sitemap.xml.ts` | `lastmod` hardcoded to `2026-04-14` — stale date = lower freshness signal | Homepage `lastmod` now uses `new Date().toISOString().split('T')[0]` (dynamic). Legal pages use their publish date. |
+| 8 | `nuxt.config.ts` | Missing `og:image:secure_url` — some OG parsers (LinkedIn, Slack) require this for HTTPS images | Added `{ property: 'og:image:secure_url', content: '...' }` |
+| 9 | `server/routes/robots.txt.ts` + `public/robots.txt` | Missing modern AI crawlers: `OAI-SearchBot`, `Claude-Web`, `ClaudeBot`, `anthropic-ai`, `CCBot`, `Amazonbot`, `Meta-ExternalAgent`, `Bytespider`, `YouBot`, `Applebot`, `Googlebot-Image` | All added with correct rules |
+| 10 | `server/routes/sitemap.xml.ts` | Legal pages at priority `0.3` with no `x-default` hreflang | Priority raised to `0.4`, `x-default` hreflang added |
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `server/routes/robots.txt.ts` | Full rewrite with valid syntax, Googlebot/Bingbot/Applebot specific rules, 10+ AI crawlers |
+| `public/robots.txt` | Synced with server route |
+| `server/routes/sitemap.xml.ts` | Dynamic `lastmod` for homepage, priority 0.4 for legal, x-default hreflang |
+| `public/sitemap.xml` | Synced with server route |
+| `nuxt.config.ts` | Added manifest, apple-touch-icon, og:image:secure_url, Inter preload, Global @graph schema with full Organization |
+| `app/app.vue` | Self-hosted Inter via @font-face + font-display: swap, Google Fonts only for display fonts |
+| `app/pages/index.vue` | Added `<footer>` with NuxtLink to /privacy and /terms |
+| `app/error.vue` | Added noindex, nofollow robots directive |
+| `public/site.webmanifest` | Created PWA manifest with icons, colors, screenshots |
+
+### Post-Deploy Action Steps (April 20 audit)
+1. **Generate icon assets** — Create `android-chrome-192x192.png`, `android-chrome-512x512.png`, and `apple-touch-icon.png` from the OMENORA logo (currently referenced in manifest but not yet on disk).
+2. **Deploy** the updated build.
+3. **GSC → Sitemaps** → resubmit `https://omenora.com/sitemap.xml`.
+4. **GSC → URL Inspection** → inspect `/privacy` → click "Request Indexing".
+5. **GSC → URL Inspection** → inspect `/terms` → click "Request Indexing".
+6. **Google Rich Results Test** → test `https://omenora.com` → verify FAQ, WebApplication, Organization schemas pass.
+7. **Google Schema Markup Validator** → test homepage structured data at `https://validator.schema.org/`.
+8. Monitor "Discovered – currently not indexed" count — should clear within 1–2 crawl cycles after footer links are live.
+
+### Remaining Gaps (Future Work)
+
+| Priority | Item | Action |
+|----------|------|--------|
+| 🔴 High | **Icon assets missing** | Generate 192×192 and 512×512 PNG icons + apple-touch-icon.png for PWA manifest |
+| 🟡 Medium | **Cormorant Garamond + Playfair Display** still on Google CDN | Self-host these fonts too for full LCP elimination |
+| 🟡 Medium | **No blog/content hub** | Google rewards topical depth; 1 page = thin site signal |
+| 🟡 Medium | **No `<link rel="canonical">` on homepage in global head** | Currently set per-page in `index.vue`; add globally for fallback |
+| 🟠 Low | **AggregateRating `ratingCount: 3900000`** | Unverifiable rating counts can be flagged; consider removing if not genuine |
+| 🟠 Low | **`twitter:site` = `@omenora`** | Verify this Twitter handle exists; invalid handles hurt credibility |

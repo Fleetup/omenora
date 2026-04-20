@@ -46,6 +46,16 @@
         <span role="listitem" class="feature-pill">2026 Forecast</span>
       </div>
     </div>
+
+    <!-- Site footer — internal linking for crawlability -->
+    <footer class="site-footer" role="contentinfo">
+      <nav aria-label="Legal">
+        <NuxtLink to="/privacy" class="footer-link">Privacy Policy</NuxtLink>
+        <span class="footer-sep" aria-hidden="true">·</span>
+        <NuxtLink to="/terms" class="footer-link">Terms of Service</NuxtLink>
+      </nav>
+      <p class="footer-copy">&copy; 2026 OMENORA. All rights reserved.</p>
+    </footer>
   </div>
 </template>
 
@@ -64,8 +74,6 @@ useSeoMeta({
   twitterDescription:
     'AI-powered birth chart, life path number & 2026 cosmic forecast. Free, instant, no login required.',
   robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-  keywords:
-    'free astrology reading, ai birth chart, life path number calculator, destiny analysis, numerology reading, love compatibility astrology, 2026 horoscope forecast, ai astrology app, birth chart calculator, free numerology',
 })
 
 useHead({
@@ -85,18 +93,12 @@ useHead({
             operatingSystem: 'Any',
             browserRequirements: 'Requires JavaScript',
             inLanguage: 'en',
+            publisher: { '@id': `${SITE_URL}/#organization` },
             offers: {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'USD',
               description: 'Free AI destiny analysis and personalized astrology report',
-            },
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: '4.9',
-              ratingCount: '3900000',
-              bestRating: '5',
-              worstRating: '1',
             },
             description:
               'OMENORA is an AI-powered astrology and destiny analysis platform. Get your free personalized birth chart, life path number, love compatibility reading and 2026 cosmic forecast in seconds.',
@@ -107,16 +109,6 @@ useHead({
               '12-month cosmic calendar with energy forecasts',
               'Personalized 2026 astrology forecast',
             ],
-          },
-          {
-            '@type': 'Organization',
-            '@id': `${SITE_URL}/#organization`,
-            name: 'OMENORA',
-            url: SITE_URL,
-            logo: {
-              '@type': 'ImageObject',
-              url: `${SITE_URL}/favicon.ico`,
-            },
           },
           {
             '@type': 'FAQPage',
@@ -449,6 +441,50 @@ useHead({
   text-transform: uppercase;
   cursor: default;
   user-select: none;
+}
+
+/* ── Footer ── */
+.site-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 20px;
+  z-index: 1;
+}
+
+.site-footer nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-link {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.22);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  transition: color 0.25s ease;
+}
+
+.footer-link:hover {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.footer-sep {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.12);
+}
+
+.footer-copy {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.12);
+  margin: 0;
+  letter-spacing: 0.04em;
 }
 
 /* ── Responsive ── */

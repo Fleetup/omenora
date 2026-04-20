@@ -1,99 +1,302 @@
 <template>
   <div class="legal-page">
     <div class="top-bar">
-      <span class="brand-text">OMENORA</span>
+      <NuxtLink to="/" class="brand-text">OMENORA</NuxtLink>
     </div>
 
     <div class="content">
       <h1 class="title">Terms of Service</h1>
-      <p class="last-updated">Last Updated: April 10, 2026</p>
+      <p class="last-updated">Last Updated: April 20, 2026 · Effective Date: April 20, 2026</p>
 
-      <div class="section">
+      <div class="notice-box">
+        <p><strong>Important:</strong> These Terms contain a binding arbitration clause and class action waiver in Section 14. Please read Section 14 carefully. If you do not agree, do not use our services.</p>
+      </div>
+
+      <div class="toc">
+        <p class="toc-label">Contents</p>
+        <ol class="toc-list">
+          <li><a href="#t1" class="toc-link">Acceptance of Terms</a></li>
+          <li><a href="#t2" class="toc-link">Description of Service</a></li>
+          <li><a href="#t3" class="toc-link">AI-Generated Content Disclaimer</a></li>
+          <li><a href="#t4" class="toc-link">Eligibility</a></li>
+          <li><a href="#t5" class="toc-link">User Responsibilities &amp; Prohibited Conduct</a></li>
+          <li><a href="#t6" class="toc-link">Payments, Pricing &amp; Billing</a></li>
+          <li><a href="#t7" class="toc-link">Subscriptions &amp; Auto-Renewal</a></li>
+          <li><a href="#t8" class="toc-link">Refund Policy</a></li>
+          <li><a href="#t9" class="toc-link">Intellectual Property</a></li>
+          <li><a href="#t10" class="toc-link">Disclaimer of Warranties</a></li>
+          <li><a href="#t11" class="toc-link">Limitation of Liability</a></li>
+          <li><a href="#t12" class="toc-link">Indemnification</a></li>
+          <li><a href="#t13" class="toc-link">Termination</a></li>
+          <li><a href="#t14" class="toc-link">Binding Arbitration &amp; Class Action Waiver</a></li>
+          <li><a href="#t15" class="toc-link">Governing Law</a></li>
+          <li><a href="#t16" class="toc-link">Force Majeure</a></li>
+          <li><a href="#t17" class="toc-link">Modifications to Terms</a></li>
+          <li><a href="#t18" class="toc-link">Severability &amp; Entire Agreement</a></li>
+          <li><a href="#t19" class="toc-link">Contact Information</a></li>
+        </ol>
+      </div>
+
+      <div id="t1" class="section">
         <h2>1. Acceptance of Terms</h2>
-        <p>By accessing or using OMENORA's services, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.</p>
+        <p>These Terms of Service ("Terms") constitute a legally binding agreement between you ("you," "your," or "User") and OMENORA ("OMENORA," "we," "our," or "us"), governing your access to and use of the website located at <strong>omenora.com</strong> and all related services, content, and functionality (collectively, the "Services").</p>
+        <p>By accessing or using the Services in any way — including browsing the website, initiating an analysis, or making a purchase — you represent that you have read, understood, and agree to be bound by these Terms in their entirety. If you do not agree to these Terms, you must immediately cease using the Services.</p>
+        <p>We reserve the right to update these Terms at any time. Material changes will be communicated via email (where we hold your address) or a prominent notice on the website. Your continued use after any update constitutes acceptance of the revised Terms.</p>
       </div>
 
-      <div class="section">
+      <div id="t2" class="section">
         <h2>2. Description of Service</h2>
-        <p>OMENORA provides AI-generated astrology, numerology, and destiny analysis reports for entertainment and personal insight purposes. Our reports are generated using artificial intelligence and should be treated as entertainment content, not professional advice.</p>
+        <p>OMENORA provides AI-powered astrology, numerology, and destiny analysis services. Our Services include:</p>
+        <ul>
+          <li>Free initial destiny analysis based on your birth data (name, date of birth, time of birth, city of birth)</li>
+          <li>Paid comprehensive destiny reports delivered by email</li>
+          <li>Paid supplementary content including cosmic calendars, love compatibility readings, and extended forecasts</li>
+          <li>Optional daily subscription services providing ongoing cosmic insights</li>
+        </ul>
+        <p>All Services are provided for <strong>personal, non-commercial use only</strong> unless otherwise agreed in writing with OMENORA.</p>
       </div>
 
-      <div class="section">
-        <h2>3. User Accounts and Data</h2>
-        <h3>3.1 Account Creation</h3>
-        <p>While you can access basic reports without an account, certain features require account creation through our authentication providers.</p>
-
-        <h3>3.2 Data Accuracy</h3>
-        <p>You are responsible for providing accurate birth information (date, time, and location) for personalized reports. Inaccurate information will result in incorrect calculations.</p>
-
-        <h3>3.3 Prohibited Activities</h3>
+      <div id="t3" class="section">
+        <h2>3. AI-Generated Content Disclaimer</h2>
+        <div class="highlight-box">
+          <p><strong>OMENORA's reports and analyses are generated by artificial intelligence and are intended exclusively for entertainment, personal enrichment, and inspirational purposes.</strong></p>
+        </div>
+        <p>You expressly acknowledge and agree that:</p>
         <ul>
-          <li>Using automated systems to access our services</li>
-          <li>Attempting to bypass security measures</li>
-          <li>Reselling or redistributing our reports</li>
-          <li>Using our services for illegal purposes</li>
-          <li>Interfering with other users' access</li>
+          <li>All astrological, numerological, and destiny-related content produced by OMENORA is generated by AI language models and does not represent the advice, opinion, or analysis of any qualified professional.</li>
+          <li>OMENORA reports do not constitute and should not be relied upon as: (i) medical or mental health advice; (ii) financial, investment, or legal advice; (iii) psychological counselling or therapy; or (iv) any form of professional guidance.</li>
+          <li>Astrological and numerological systems are not scientifically validated, and interpretations may differ across traditions and practitioners.</li>
+          <li>The accuracy, completeness, or fitness for any particular purpose of AI-generated content is not guaranteed.</li>
+          <li>Life decisions should not be made solely or primarily on the basis of any content generated by OMENORA.</li>
+          <li>If you are experiencing a mental health crisis or require professional support, please contact a qualified professional or emergency services.</li>
+        </ul>
+        <p>OMENORA explicitly disclaims all liability arising from your reliance on AI-generated content for any purpose other than personal entertainment and reflection.</p>
+      </div>
+
+      <div id="t4" class="section">
+        <h2>4. Eligibility</h2>
+        <p>The Services are available only to individuals who are <strong>18 years of age or older</strong> and who can form legally binding contracts under applicable law. By using the Services, you represent and warrant that you meet these eligibility requirements.</p>
+        <p>We do not knowingly provide Services to, or collect personal data from, individuals under 18. If we become aware that a person under 18 has used our Services or provided personal data, we will delete that data and terminate access to the Services.</p>
+        <p>The Services are available worldwide except where prohibited by applicable law. You are responsible for compliance with all local laws and regulations applicable to your use of the Services.</p>
+      </div>
+
+      <div id="t5" class="section">
+        <h2>5. User Responsibilities &amp; Prohibited Conduct</h2>
+        <h3>5.1 Your Responsibilities</h3>
+        <ul>
+          <li>Provide accurate and complete birth information (name, date of birth, time of birth, city of birth). Inaccurate data will produce inaccurate reports; no refund is available for reports based on information you provided incorrectly.</li>
+          <li>Keep your email address current and accessible for report delivery.</li>
+          <li>Maintain the confidentiality of any account credentials.</li>
+          <li>Use the Services in compliance with these Terms and all applicable laws.</li>
+        </ul>
+
+        <h3>5.2 Prohibited Conduct</h3>
+        <p>You agree not to:</p>
+        <ul>
+          <li>Use automated scripts, bots, scrapers, spiders, or other automated tools to access the Services or extract content</li>
+          <li>Attempt to probe, scan, or test the vulnerability of any OMENORA system or network, or bypass any security measures</li>
+          <li>Reverse engineer, decompile, disassemble, or otherwise attempt to derive the source code of any aspect of the Services</li>
+          <li>Resell, sublicense, redistribute, or commercially exploit any content, report, or other output from the Services</li>
+          <li>Use the Services to harass, harm, threaten, or defraud any person</li>
+          <li>Use the Services in violation of any applicable law or regulation, including consumer protection and privacy laws</li>
+          <li>Interfere with or disrupt the integrity or performance of the Services or third-party data contained therein</li>
+          <li>Attempt to gain unauthorised access to the Services, any related systems, or the data of other users</li>
+          <li>Use the Services for any fraudulent or deceptive purpose, including providing false birth information to obtain altered results</li>
+          <li>Remove, alter, or obscure any proprietary notices or labels on or within the Services</li>
+        </ul>
+        <p>Violation of these prohibitions may result in immediate termination of your access and may expose you to civil or criminal liability.</p>
+      </div>
+
+      <div id="t6" class="section">
+        <h2>6. Payments, Pricing &amp; Billing</h2>
+        <h3>6.1 Pricing</h3>
+        <p>All prices are displayed in United States Dollars (USD) unless otherwise indicated at checkout for your region. Prices may vary by country based on local market conditions and applicable taxes. The applicable price will be clearly displayed before you complete any purchase.</p>
+        <p>We reserve the right to change our pricing at any time. Price changes will not affect purchases already completed, but will apply to future purchases and subscription renewals.</p>
+
+        <h3>6.2 Payment Processing</h3>
+        <p>All payments are processed securely by <strong>Stripe, Inc.</strong>, a PCI DSS Level 1 certified payment processor. OMENORA does not store, process, or transmit your full card number, CVC, or expiration date. By providing payment information, you agree to Stripe's <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" class="external-link">Privacy Policy</a> and <a href="https://stripe.com/legal/end-users" target="_blank" rel="noopener noreferrer" class="external-link">Terms of Service</a>.</p>
+
+        <h3>6.3 Taxes</h3>
+        <p>Prices may be subject to applicable sales tax, VAT, GST, or other taxes depending on your jurisdiction. Any applicable taxes will be displayed at checkout before purchase is completed. You are responsible for any taxes applicable to your purchase.</p>
+
+        <h3>6.4 Failed Payments</h3>
+        <p>If a payment fails, we may retry the charge one or more times. If the charge continues to fail, your access to paid Services or subscriptions may be suspended until payment is successfully processed.</p>
+      </div>
+
+      <div id="t7" class="section">
+        <h2>7. Subscriptions &amp; Auto-Renewal</h2>
+        <div class="highlight-box">
+          <p><strong>Auto-Renewal Disclosure:</strong> If you purchase a subscription (such as our Daily Cosmic Insights plan), your subscription will automatically renew at the end of each billing period at the then-current price unless you cancel before the renewal date.</p>
+        </div>
+
+        <h3>7.1 How Subscriptions Work</h3>
+        <ul>
+          <li>Subscription billing periods are as described at the time of purchase (e.g. daily, weekly, or monthly).</li>
+          <li>Your payment method will be charged automatically at the start of each renewal period.</li>
+          <li>You will receive a receipt via email for each successful charge.</li>
+        </ul>
+
+        <h3>7.2 Cancellation</h3>
+        <p>You may cancel your subscription at any time by emailing <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a> with the subject line "Cancel Subscription." Cancellations must be received at least <strong>24 hours before</strong> your next scheduled renewal date to take effect for that period. You will retain access to subscription benefits through the end of the current paid billing period. We aim to process all cancellation requests within 1 business day.</p>
+
+        <h3>7.3 Price Changes for Subscriptions</h3>
+        <p>We will provide at least <strong>14 days' advance notice</strong> of any price change to your subscription by email. If you do not cancel before the new price takes effect, you will be deemed to have accepted the new price.</p>
+
+        <h3>7.4 Free Trials</h3>
+        <p>If we offer a free trial period, we will clearly state the trial duration and the price that will apply upon conversion. Your payment method will be charged the stated price automatically at the end of the free trial unless you cancel before the trial expires.</p>
+      </div>
+
+      <div id="t8" class="section">
+        <h2>8. Refund Policy</h2>
+        <h3>8.1 One-Time Digital Purchases</h3>
+        <p>All one-time purchases of digital reports, content upgrades, and add-ons are <strong>final and non-refundable</strong> once the content has been delivered or made available to you. This applies regardless of whether you have read or used the report.</p>
+        <p>We will provide a full refund or replacement in the following circumstances:</p>
+        <ul>
+          <li>Technical failure on our part that prevents delivery of purchased content (and we are unable to remedy delivery within 72 hours of your report)</li>
+          <li>You were charged twice for the same order due to a processing error</li>
+          <li>You did not receive any content within 24 hours of purchase and our support team has confirmed a delivery failure</li>
+        </ul>
+
+        <h3>8.2 Subscription Refunds</h3>
+        <p>Subscription fees are non-refundable for any portion of a billing period already charged. There are no prorated refunds for early cancellation. If you cancel a subscription, you will retain access until the end of the paid period.</p>
+
+        <h3>8.3 Dispute Resolution</h3>
+        <p>To request a refund or report a billing issue, contact us at <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a> within <strong>7 days</strong> of the charge. We will investigate and respond within 5 business days.</p>
+        <p>Initiating a chargeback with your payment provider without first contacting us is a violation of these Terms and may result in suspension of your access and/or referral to collections.</p>
+      </div>
+
+      <div id="t9" class="section">
+        <h2>9. Intellectual Property</h2>
+        <h3>9.1 Our Intellectual Property</h3>
+        <p>All content, software, designs, graphics, text, trademarks, trade names, logos, and other materials comprising the Services ("OMENORA Content") are owned by or licensed to OMENORA and are protected by applicable intellectual property laws including copyright, trademark, and trade secret law.</p>
+
+        <h3>9.2 Your Licence to Use Reports</h3>
+        <p>Upon successful payment, OMENORA grants you a limited, non-exclusive, non-transferable, non-sublicensable, personal licence to access and use any purchased report content for your own personal, non-commercial purposes only. This licence does not include the right to:</p>
+        <ul>
+          <li>Reproduce, distribute, publish, or transmit any report content to third parties</li>
+          <li>Use report content for commercial purposes, resale, or redistribution</li>
+          <li>Create derivative works based on the report content</li>
+          <li>Use OMENORA's name, brand, or trademarks without prior written consent</li>
+          <li>Claim authorship of AI-generated content produced by OMENORA</li>
+        </ul>
+
+        <h3>9.3 AI-Generated Output Ownership</h3>
+        <p>OMENORA retains all intellectual property rights in the AI system, prompts, and methodologies used to generate reports. To the extent permitted by applicable law, OMENORA assigns to you any copyright in the specific text of your personal report output, subject to the licence restrictions set out in Section 9.2.</p>
+
+        <h3>9.4 Feedback</h3>
+        <p>If you submit feedback, suggestions, or ideas about the Services, you grant OMENORA a perpetual, irrevocable, royalty-free, worldwide licence to use and incorporate such feedback into the Services without any obligation to you.</p>
+      </div>
+
+      <div id="t10" class="section">
+        <h2>10. Disclaimer of Warranties</h2>
+        <p>THE SERVICES AND ALL CONTENT ARE PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO:</p>
+        <ul>
+          <li>Any implied warranty of merchantability, fitness for a particular purpose, or non-infringement</li>
+          <li>Any warranty that the Services will be uninterrupted, error-free, or free of viruses or other harmful components</li>
+          <li>Any warranty regarding the accuracy, reliability, completeness, or timeliness of any content or report</li>
+          <li>Any warranty that defects will be corrected</li>
+        </ul>
+        <p>Some jurisdictions do not allow the exclusion of implied warranties. In such jurisdictions, the above exclusions apply to the maximum extent permitted by applicable law.</p>
+        <p>OMENORA does not warrant that its AI-generated analyses will accurately predict any future events or life circumstances. All content is for entertainment purposes only.</p>
+      </div>
+
+      <div id="t11" class="section">
+        <h2>11. Limitation of Liability</h2>
+        <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:</p>
+        <ul>
+          <li>OMENORA, its officers, directors, employees, agents, licensors, and service providers shall not be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages arising from your use of, or inability to use, the Services — including but not limited to loss of profits, data, goodwill, or other intangible losses.</li>
+          <li>OMENORA's total aggregate liability to you for all claims arising out of or relating to the Services or these Terms shall not exceed the greater of: (i) the total amount you paid to OMENORA in the 12 months preceding the claim; or (ii) USD $50.00.</li>
+          <li>These limitations apply regardless of the theory of liability (contract, tort, statute, or otherwise) and regardless of whether OMENORA has been advised of the possibility of such damages.</li>
+        </ul>
+        <p>Nothing in these Terms shall exclude or limit OMENORA's liability where such exclusion or limitation is prohibited by mandatory applicable law (including, but not limited to, liability for fraud, death, or personal injury caused by negligence).</p>
+      </div>
+
+      <div id="t12" class="section">
+        <h2>12. Indemnification</h2>
+        <p>You agree to defend, indemnify, and hold harmless OMENORA and its officers, directors, employees, agents, and licensors from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, and fees (including reasonable attorneys' fees) arising out of or relating to:</p>
+        <ul>
+          <li>Your use of the Services in violation of these Terms</li>
+          <li>Your violation of any applicable law or regulation</li>
+          <li>Your infringement of any third-party intellectual property or other rights</li>
+          <li>Any content or information you submit to the Services</li>
         </ul>
       </div>
 
-      <div class="section">
-        <h2>4. Payments and Refunds</h2>
-        <h3>4.1 Pricing</h3>
-        <p>All prices are displayed in USD and may be subject to change. Current pricing is always available on our website before purchase.</p>
-
-        <h3>4.2 Payment Processing</h3>
-        <p>Payments are processed securely through Stripe. We do not store your full credit card information.</p>
-
-        <h3>4.3 Refund Policy</h3>
-        <p>Due to the digital nature of our products, all sales are final. However, if you experience technical issues preventing report delivery, contact us at support@omenora.com within 7 days of purchase.</p>
+      <div id="t13" class="section">
+        <h2>13. Termination</h2>
+        <p>We reserve the right to suspend or terminate your access to the Services immediately and without prior notice, at our sole discretion, if we reasonably believe you have violated these Terms or applicable law, or if continued access poses a risk to OMENORA or its users.</p>
+        <p>Upon termination: (i) your licence to use the Services and any purchased content ceases immediately; (ii) we may delete your account data in accordance with our <NuxtLink to="/privacy" class="inline-link">Privacy Policy</NuxtLink>; and (iii) any provisions of these Terms that by their nature should survive termination shall survive, including Sections 3, 9, 10, 11, 12, 14, and 15.</p>
+        <p>You may terminate your use of the Services at any time by ceasing to use them and, if you have a subscription, by cancelling it in accordance with Section 7.</p>
       </div>
 
-      <div class="section">
-        <h2>5. Intellectual Property</h2>
-        <p>All content, reports, designs, and software on OMENORA are owned by us or our licensors. You receive a personal, non-transferable license to use purchased reports for your own personal use. You may not:</p>
+      <div id="t14" class="section">
+        <h2>14. Binding Arbitration &amp; Class Action Waiver</h2>
+        <div class="highlight-box">
+          <p><strong>Please read this section carefully. It affects your legal rights, including your right to file a lawsuit in court.</strong></p>
+        </div>
+
+        <h3>14.1 Binding Arbitration</h3>
+        <p>Except for disputes that qualify for small claims court, any dispute, claim, or controversy arising out of or relating to these Terms or the breach, termination, enforcement, interpretation, or validity thereof, or the use of the Services, shall be determined by binding arbitration administered by the American Arbitration Association ("AAA") under its Consumer Arbitration Rules, rather than in court.</p>
+        <p>Arbitration shall be conducted in the English language. The arbitrator's decision shall be final, binding, and enforceable in any court of competent jurisdiction. The arbitrator shall have authority to award any remedy that would be available in court, except that the arbitrator may not award relief in excess of the limitations set forth in Section 11.</p>
+
+        <h3>14.2 Class Action Waiver</h3>
+        <p><strong>YOU AND OMENORA AGREE THAT EACH MAY BRING CLAIMS AGAINST THE OTHER ONLY IN YOUR OR ITS INDIVIDUAL CAPACITY AND NOT AS A PLAINTIFF OR CLASS MEMBER IN ANY PURPORTED CLASS, COLLECTIVE, OR REPRESENTATIVE PROCEEDING.</strong> No arbitration shall be joined with any other, and no class arbitration proceedings shall be permitted.</p>
+
+        <h3>14.3 Opt-Out Right</h3>
+        <p>You have the right to opt out of this arbitration agreement by sending written notice to <a href="mailto:legal@omenora.com" class="contact-link">legal@omenora.com</a> within <strong>30 days</strong> of first agreeing to these Terms. Your notice must include your name, email address, and a statement that you wish to opt out of arbitration. Opting out will not affect any other provision of these Terms.</p>
+
+        <h3>14.4 Exceptions</h3>
+        <p>Notwithstanding the foregoing, either party may seek injunctive or other equitable relief in any court of competent jurisdiction to prevent infringement of intellectual property rights or to prevent irreparable harm pending arbitration.</p>
+
+        <h3>14.5 Informal Resolution First</h3>
+        <p>Before initiating arbitration, both parties agree to attempt to resolve any dispute informally for at least 30 days. You may initiate informal dispute resolution by emailing <a href="mailto:legal@omenora.com" class="contact-link">legal@omenora.com</a> with a description of your claim and the relief sought.</p>
+      </div>
+
+      <div id="t15" class="section">
+        <h2>15. Governing Law</h2>
+        <p>These Terms and any dispute arising hereunder shall be governed by and construed in accordance with the laws of the <strong>State of Delaware, United States</strong>, without regard to its conflict of law principles. Subject to the arbitration agreement in Section 14, you agree to submit to the personal jurisdiction of the state and federal courts located in Delaware for any dispute not subject to arbitration.</p>
+        <p>If you are a consumer located in the European Union, you may also have rights to bring claims in the courts of your country of residence pursuant to mandatory consumer protection laws. Nothing in these Terms affects those mandatory rights.</p>
+      </div>
+
+      <div id="t16" class="section">
+        <h2>16. Force Majeure</h2>
+        <p>OMENORA shall not be liable for any failure or delay in performing its obligations under these Terms where such failure or delay results from any cause beyond OMENORA's reasonable control, including but not limited to: acts of God, natural disasters, epidemic or pandemic, war, terrorism, civil unrest, governmental action, internet or telecommunications failures, third-party service provider outages, power failures, or cyberattacks.</p>
+        <p>During any force majeure event, OMENORA will use commercially reasonable efforts to minimise disruption to the Services and will notify affected users where practicable. Subscription billing may be paused or credited at OMENORA's discretion during prolonged service outages caused by force majeure events.</p>
+      </div>
+
+      <div id="t17" class="section">
+        <h2>17. Modifications to Terms</h2>
+        <p>We reserve the right to modify these Terms at any time. We will provide notice of material changes by:</p>
         <ul>
-          <li>Resell or redistribute our content</li>
-          <li>Use our branding without permission</li>
-          <li>Create derivative works from our AI-generated content</li>
-          <li>Scrape or systematically collect our data</li>
+          <li>Updating the "Last Updated" date at the top of this page</li>
+          <li>Sending an email notification to users with an email address on file (for material changes)</li>
+          <li>Displaying a prominent notice on the website</li>
         </ul>
+        <p>Changes will become effective on the date specified in the notice, which will not be less than 14 days after notice is provided for material changes, except where immediate changes are required for legal or security reasons. Your continued use of the Services after the effective date constitutes your acceptance of the revised Terms.</p>
       </div>
 
-      <div class="section">
-        <h2>6. Disclaimer of Warranties</h2>
-        <p>OMENORA reports are provided "as is" for entertainment purposes only. We do not guarantee:</p>
-        <ul>
-          <li>Accuracy of astrological or numerological interpretations</li>
-          <li>Specific life outcomes based on reports</li>
-          <li>Uninterrupted or error-free service</li>
-          <li>Compatibility with all devices or browsers</li>
-        </ul>
-        <p>Our services should not replace professional advice from qualified counselors, financial advisors, or medical professionals.</p>
+      <div id="t18" class="section">
+        <h2>18. Severability &amp; Entire Agreement</h2>
+        <p>If any provision of these Terms is found by a court or arbitrator of competent jurisdiction to be invalid, illegal, or unenforceable, that provision shall be modified to the minimum extent necessary to make it enforceable, or if it cannot be so modified, shall be severed, and the remaining provisions shall continue in full force and effect.</p>
+        <p>These Terms, together with the <NuxtLink to="/privacy" class="inline-link">Privacy Policy</NuxtLink> and any other policies referenced herein, constitute the entire agreement between you and OMENORA with respect to the Services and supersede all prior and contemporaneous understandings, agreements, representations, and warranties, both written and oral, regarding the Services.</p>
+        <p>OMENORA's failure to enforce any right or provision of these Terms will not be considered a waiver of those rights. A waiver of any provision will not constitute a waiver of any other provision.</p>
       </div>
 
-      <div class="section">
-        <h2>7. Limitation of Liability</h2>
-        <p>To the maximum extent permitted by law, OMENORA shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our services.</p>
+      <div id="t19" class="section">
+        <h2>19. Contact Information</h2>
+        <p>For questions, concerns, or legal notices relating to these Terms, please contact us:</p>
+        <div class="contact-block">
+          <p><strong>Legal &amp; Terms:</strong> <a href="mailto:legal@omenora.com" class="contact-link">legal@omenora.com</a></p>
+          <p><strong>Customer Support:</strong> <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a></p>
+          <p><strong>Privacy Matters:</strong> <a href="mailto:privacy@omenora.com" class="contact-link">privacy@omenora.com</a></p>
+          <p><strong>Response Time:</strong> We aim to respond to all legal inquiries within 5 business days.</p>
+        </div>
       </div>
 
-      <div class="section">
-        <h2>8. Modifications to Terms</h2>
-        <p>We reserve the right to modify these terms at any time. Changes will be effective immediately upon posting. Your continued use of the service constitutes acceptance of the updated terms.</p>
-      </div>
-
-      <div class="section">
-        <h2>9. Governing Law</h2>
-        <p>These Terms shall be governed by and construed in accordance with the laws of the United States, without regard to its conflict of law provisions.</p>
-      </div>
-
-      <div class="section">
-        <h2>10. Contact Information</h2>
-        <p>For questions about these Terms, please contact us at:<br>
-        Email: legal@omenora.com</p>
-      </div>
-
-      <div class="back-link">
-        <NuxtLink to="/" class="link">← Return to Home</NuxtLink>
+      <div class="legal-footer">
+        <NuxtLink to="/privacy" class="footer-legal-link">Privacy Policy</NuxtLink>
+        <span class="footer-sep">·</span>
+        <NuxtLink to="/" class="footer-legal-link">← Return to Home</NuxtLink>
       </div>
     </div>
   </div>
@@ -103,15 +306,14 @@
 const SITE_URL = 'https://omenora.com'
 
 useSeoMeta({
-  title: 'Terms of Service | OMENORA - User Agreement & Conditions',
-  description: 'OMENORA Terms of Service - Read our user agreement, payment terms, refund policy, intellectual property rights, and service conditions. Legal information for using our AI astrology platform.',
+  title: 'Terms of Service | OMENORA — User Agreement, Refund & Subscription Policy',
+  description: 'OMENORA Terms of Service — Read our user agreement covering AI content disclaimer, subscription auto-renewal, refund policy, arbitration clause, IP rights, and governing law.',
   ogTitle: 'Terms of Service | OMENORA',
-  ogDescription: 'Read OMENORA\'s Terms of Service including payment terms, refund policy, and intellectual property rights.',
+  ogDescription: 'Legal agreement for using OMENORA’s AI astrology platform. Covers payments, subscriptions, refunds, arbitration, and intellectual property.',
   ogUrl: `${SITE_URL}/terms`,
   twitterTitle: 'Terms of Service | OMENORA',
-  twitterDescription: 'Read OMENORA\'s Terms of Service and user agreement.',
+  twitterDescription: 'OMENORA’s user agreement: AI content disclaimer, subscription auto-renewal, refund policy, and binding arbitration.',
   robots: 'index, follow, max-snippet:-1, max-image-preview:large',
-  keywords: 'terms of service, user agreement, terms and conditions, legal terms, service agreement, refund policy',
 })
 
 useHead({
@@ -130,8 +332,9 @@ useHead({
             isPartOf: { '@id': `${SITE_URL}/#website` },
             description: 'OMENORA Terms of Service - User agreement and legal conditions for using our AI astrology platform.',
             datePublished: '2026-04-10T00:00:00+00:00',
-            dateModified: '2026-04-10T00:00:00+00:00',
+            dateModified: '2026-04-20T00:00:00+00:00',
             inLanguage: 'en',
+            publisher: { '@id': `${SITE_URL}/#organization` },
           },
           {
             '@type': 'BreadcrumbList',
@@ -174,6 +377,7 @@ useHead({
   font-size: 18px;
   letter-spacing: 0.2em;
   color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
 }
 
 .content {
@@ -193,11 +397,63 @@ useHead({
 .last-updated {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 32px;
+}
+
+.notice-box {
+  background: rgba(201, 168, 76, 0.06);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 32px;
+}
+
+.notice-box p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(201, 168, 76, 0.85);
+}
+
+.toc {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  padding: 24px 28px;
   margin-bottom: 48px;
+}
+
+.toc-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.6);
+  margin: 0 0 12px;
+}
+
+.toc-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.toc-list li {
+  margin-bottom: 6px;
+}
+
+.toc-link {
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s ease;
+}
+
+.toc-link:hover {
+  color: rgba(201, 168, 76, 0.85);
 }
 
 .section {
   margin-bottom: 40px;
+  scroll-margin-top: 24px;
 }
 
 .section h2 {
@@ -210,21 +466,22 @@ useHead({
 
 .section h3 {
   font-family: 'Inter', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
-  margin: 24px 0 12px;
+  margin: 24px 0 10px;
 }
 
 .section p {
   font-size: 15px;
-  line-height: 1.7;
+  line-height: 1.75;
   color: rgba(255, 255, 255, 0.65);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
-.section ul {
-  margin: 16px 0;
+.section ul,
+.section ol {
+  margin: 12px 0 16px;
   padding-left: 24px;
 }
 
@@ -235,20 +492,116 @@ useHead({
   margin-bottom: 8px;
 }
 
-.back-link {
+.highlight-box {
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid rgba(201, 168, 76, 0.5);
+  border-radius: 0 4px 4px 0;
+  padding: 14px 18px;
+  margin: 16px 0;
+}
+
+.highlight-box p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 8px;
+  font-size: 13px;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: rgba(201, 168, 76, 0.06);
+  color: rgba(201, 168, 76, 0.8);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.data-table td {
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: top;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.external-link,
+.contact-link,
+.inline-link {
+  color: rgba(201, 168, 76, 0.8);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.external-link:hover,
+.contact-link:hover,
+.inline-link:hover {
+  color: rgba(201, 168, 76, 1);
+}
+
+.contact-block {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  padding: 20px 24px;
+  margin-top: 16px;
+}
+
+.contact-block p {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.contact-block p:last-child {
+  margin-bottom: 0;
+}
+
+.legal-footer {
   margin-top: 64px;
   padding-top: 32px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.link {
+.footer-legal-link {
   color: rgba(201, 168, 76, 0.8);
   text-decoration: none;
   font-size: 14px;
   transition: color 0.3s ease;
 }
 
-.link:hover {
+.footer-legal-link:hover {
   color: rgba(201, 168, 76, 1);
+}
+
+.footer-sep {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 32px;
+  }
+
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 </style>

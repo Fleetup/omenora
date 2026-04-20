@@ -1,0 +1,47 @@
+{
+  "name": "OMENORA — AI Astrology & Destiny Analysis",
+  "short_name": "OMENORA",
+  "description": "Get your free AI-powered destiny analysis. Personalized birth chart, life path number, love compatibility & 2026 astrology forecast.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050410",
+  "theme_color": "#050410",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "scope": "/",
+  "categories": ["lifestyle", "entertainment", "personalization"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "OMENORA AI Astrology — Free Destiny Analysis"
+    }
+  ]
+}

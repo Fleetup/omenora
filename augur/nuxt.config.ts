@@ -115,6 +115,7 @@ export default defineNuxtConfig({
             'Your personalized destiny report powered by AI. Free birth chart, life path number, love compatibility & 2026 forecast in 10 seconds.',
         },
         { property: 'og:image', content: 'https://omenora.com/og-image.png' },
+        { property: 'og:image:secure_url', content: 'https://omenora.com/og-image.png' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
         { property: 'og:image:alt', content: 'OMENORA — AI Astrology & Destiny Analysis' },
@@ -134,9 +135,16 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/site.webmanifest' },
         { rel: 'sitemap', type: 'application/xml', href: 'https://omenora.com/sitemap.xml' },
+        // Self-hosted Inter font preloads — WOFF2 for optimal compression and browser support
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/Inter-Regular.woff2', crossorigin: '' },
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/Inter-Medium.woff2', crossorigin: '' },
+        // Cormorant Garamond + Playfair Display — Google Fonts stylesheet (display fonts, non-blocking)
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap' },
         // Performance: Preconnect to critical third-party domains
         { rel: 'preconnect', href: 'https://js.stripe.com' },
         { rel: 'preconnect', href: 'https://api.stripe.com' },
@@ -149,20 +157,50 @@ export default defineNuxtConfig({
           type: 'application/ld+json',
           innerHTML: JSON.stringify({
             '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            '@id': 'https://omenora.com/#website',
-            url: 'https://omenora.com',
-            name: 'OMENORA',
-            description: 'AI-powered astrology and destiny analysis. Free birth chart, life path number, love compatibility & 2026 forecast.',
-            inLanguage: 'en',
-            potentialAction: {
-              '@type': 'SearchAction',
-              target: {
-                '@type': 'EntryPoint',
-                urlTemplate: 'https://omenora.com/analysis?q={search_term_string}',
+            '@graph': [
+              {
+                '@type': 'WebSite',
+                '@id': 'https://omenora.com/#website',
+                url: 'https://omenora.com',
+                name: 'OMENORA',
+                description: 'AI-powered astrology and destiny analysis. Free birth chart, life path number, love compatibility & 2026 forecast.',
+                inLanguage: 'en',
+                publisher: { '@id': 'https://omenora.com/#organization' },
+                potentialAction: {
+                  '@type': 'SearchAction',
+                  target: {
+                    '@type': 'EntryPoint',
+                    urlTemplate: 'https://omenora.com/analysis?q={search_term_string}',
+                  },
+                  'query-input': 'required name=search_term_string',
+                },
               },
-              'query-input': 'required name=search_term_string',
-            },
+              {
+                '@type': 'Organization',
+                '@id': 'https://omenora.com/#organization',
+                name: 'OMENORA',
+                url: 'https://omenora.com',
+                logo: {
+                  '@type': 'ImageObject',
+                  '@id': 'https://omenora.com/#logo',
+                  url: 'https://omenora.com/og-image.png',
+                  width: 1200,
+                  height: 630,
+                  caption: 'OMENORA',
+                },
+                image: { '@id': 'https://omenora.com/#logo' },
+                foundingDate: '2025',
+                contactPoint: {
+                  '@type': 'ContactPoint',
+                  contactType: 'customer support',
+                  email: 'support@omenora.com',
+                  availableLanguage: 'English',
+                },
+                sameAs: [
+                  'https://www.tiktok.com/@omenora',
+                ],
+              },
+            ],
           }),
         },
       ],
