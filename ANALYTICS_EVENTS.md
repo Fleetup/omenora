@@ -225,26 +225,28 @@ Each helper is provided by `pixels.client.ts` via `useNuxtApp()` injection.
 | `checkout_complete` / `Purchase` | `trackPurchase` | `report.vue` | YES | 1239 |
 | `upsell_viewed` (bundle) | `trackUpsellViewed` | `report.vue` | YES | 1250 |
 | `upsell_viewed` (compatibility) | `trackUpsellViewed` | `report.vue` | YES | 1359 |
-| `upsell_viewed` (calendar) | `trackUpsellViewed` | `report.vue` | **NO** | — |
-| `upsell_viewed` (birthChart) | `trackUpsellViewed` | `report.vue` | **NO** | — |
+| `upsell_viewed` (calendar) | `trackUpsellViewed` | `report.vue` | YES | 1398 |
+| `upsell_viewed` (birthChart) | `trackUpsellViewed` | `report.vue` | YES | 1467 |
 | `upsell_accepted` (bundle) | `trackUpsellAccepted` | `report.vue` | YES | 1271 |
-| `upsell_accepted` (compatibility) | `trackUpsellAccepted` | `report.vue` | **NO** | — |
-| `upsell_accepted` (calendar) | `trackUpsellAccepted` | `report.vue` | **NO** | — |
-| `upsell_accepted` (birthChart) | `trackUpsellAccepted` | `report.vue` | **NO** | — |
+| `upsell_accepted` (compatibility) | `trackUpsellAccepted` | `report.vue` | YES | 1385 |
+| `upsell_accepted` (calendar) | `trackUpsellAccepted` | `report.vue` | YES | 1415 |
+| `upsell_accepted` (birthChart) | `trackUpsellAccepted` | `report.vue` | YES | 1486 |
 | `report_viewed` | `trackReportViewed` | `report.vue` | YES | 1019, 1053, 1147, 1170 |
 | `share_card_opened` | `trackShareCardOpened` | `report.vue` | YES | 1312 |
 | `share_card_downloaded` | `trackShareCardDownloaded` | `report.vue` | YES | 1341 |
 | `email_capture_success` | `trackEmailCaptureSuccess` | `preview.vue` | YES | 531 |
 
-### Missing call sites — to be added in Batch 2-B
+### Missing call sites — resolved in Batch 2-B
 
-| # | Missing event | Missing where | Function to add | Insert location in report.vue |
-|---|---|---|---|---|
-| M-1 | `upsell_viewed` (calendar) | `report.vue` `buyCalendar()` | `$trackUpsellViewed({ type: 'calendar', ... })` | First line of `buyCalendar()`, before `isLoadingCalendar.value = true` |
-| M-2 | `upsell_viewed` (birthChart) | `report.vue` `buyBirthChart()` | `$trackUpsellViewed({ type: 'birthChart', ... })` | First line of `buyBirthChart()`, before `isLoadingBirthChart.value = true` |
-| M-3 | `upsell_accepted` (compatibility) | `report.vue` `buyCompatibility()` | `$trackUpsellAccepted({ type: 'compatibility', price: 0.99, ... })` | After `if (url) window.location.href = url` guard — call before redirect |
-| M-4 | `upsell_accepted` (calendar) | `report.vue` `buyCalendar()` | `$trackUpsellAccepted({ type: 'calendar', price: 2.99, ... })` | After `if (url) window.location.href = url` guard — call before redirect |
-| M-5 | `upsell_accepted` (birthChart) | `report.vue` `buyBirthChart()` | `$trackUpsellAccepted({ type: 'birthChart', price: 2.99, ... })` | After `if (url) window.location.href = url` guard — call before redirect |
+All 5 missing call sites were added in Batch 2-B (April 2026). No open gaps remain.
+
+| # | Event | Fixed at | Line |
+|---|---|---|---|
+| M-1 | `upsell_viewed` (calendar) | `buyCalendar()` entry | 1398 |
+| M-2 | `upsell_viewed` (birthChart) | `buyBirthChart()` entry (after already-purchased guard) | 1467 |
+| M-3 | `upsell_accepted` (compatibility) | inside `if (url)` before redirect | 1385 |
+| M-4 | `upsell_accepted` (calendar) | inside `if (url)` before redirect | 1415 |
+| M-5 | `upsell_accepted` (birthChart) | inside `if (url)` before redirect | 1486 |
 
 ---
 
