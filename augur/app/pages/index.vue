@@ -20,7 +20,8 @@
       <h1 class="brand-name">OMENORA</h1>
 
       <!-- Tagline -->
-      <p class="tagline">AI decoded your destiny. Science explains why.</p>
+      <p class="tagline">Your free AI destiny reading — ready in 60 seconds.</p>
+      <p class="tagline-sub">Tell us your birth date and we'll map your personality archetype, life path number, and 2026 forecast using AI.</p>
 
       <!-- Threshold separator -->
       <div class="threshold">
@@ -30,21 +31,68 @@
       </div>
 
       <!-- CTA Button -->
-      <button class="cta-button" @click="navigateTo('/analysis')">
-        <span class="cta-label">Begin Your Analysis</span>
-        <span class="cta-glyph" aria-hidden="true">✦</span>
+      <button class="cta-button" @click="() => { $trackAnalysisStart(); navigateTo('/analysis') }">
+        <span class="cta-label">Get My Free Reading →</span>
       </button>
 
       <!-- Sub-label -->
       <p class="sub-label">No login required · Results in 10 seconds</p>
 
-      <!-- Feature keyword pills -->
-      <div class="feature-pills" role="list" aria-label="What you get">
-        <span role="listitem" class="feature-pill">AI Birth Chart</span>
-        <span role="listitem" class="feature-pill">Life Path Number</span>
-        <span role="listitem" class="feature-pill">Love Compatibility</span>
-        <span role="listitem" class="feature-pill">2026 Forecast</span>
+    </div>
+
+    <!-- What You'll Discover section (LP-3) -->
+    <section class="discover-section" aria-label="What's inside your reading">
+      <p class="discover-label">WHAT'S INSIDE YOUR READING</p>
+      <div class="discover-grid">
+        <div class="discover-card">
+          <span class="discover-glyph">✦</span>
+          <p class="discover-name">Destiny Archetype</p>
+          <p class="discover-desc">Your behavioral blueprint — why you make decisions the way you do</p>
+        </div>
+        <div class="discover-card">
+          <span class="discover-glyph">◈</span>
+          <p class="discover-name">Life Path Number</p>
+          <p class="discover-desc">Your numerology core — the hidden pattern running through every major event in your life</p>
+        </div>
+        <div class="discover-card">
+          <span class="discover-glyph">⟡</span>
+          <p class="discover-name">2026 Destiny Forecast</p>
+          <p class="discover-desc">Month-by-month energy windows — when to move, when to wait, when to build</p>
+        </div>
+        <div class="discover-card">
+          <span class="discover-glyph">◯</span>
+          <p class="discover-name">Love & Relationship Patterns</p>
+          <p class="discover-desc">What your archetype seeks in connection — and what creates friction without you realizing it</p>
+        </div>
       </div>
+    </section>
+
+    <!-- How It Works 3-step strip (LP-4) -->
+    <section class="how-section" aria-label="How it works">
+      <div class="how-steps">
+        <div class="how-step">
+          <span class="how-num">01</span>
+          <p class="how-text">Enter your name, birth date, and city</p>
+        </div>
+        <div class="how-divider" aria-hidden="true" />
+        <div class="how-step">
+          <span class="how-num">02</span>
+          <p class="how-text">Answer 7 quick questions about yourself</p>
+        </div>
+        <div class="how-divider" aria-hidden="true" />
+        <div class="how-step">
+          <span class="how-num">03</span>
+          <p class="how-text">Your AI reading is generated in seconds</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom repeat CTA (LP-8) -->
+    <div class="bottom-cta-block">
+      <button class="cta-button bottom-cta" @click="() => { $trackAnalysisStart(); navigateTo('/analysis') }">
+        <span class="cta-label">Get My Free Reading →</span>
+      </button>
+      <p class="sub-label">Takes 60 seconds · No account required</p>
     </div>
 
     <!-- Site footer — internal linking for crawlability -->
@@ -62,6 +110,11 @@
 
 <script setup lang="ts">
 const { public: { siteUrl: SITE_URL } } = useRuntimeConfig()
+const { $trackLandingView, $trackAnalysisStart } = useNuxtApp() as any
+
+onMounted(() => {
+  $trackLandingView()
+})
 
 useSeoMeta({
   title: 'Free AI Astrology Reading & Destiny Report',
@@ -178,9 +231,11 @@ useHead({
   min-height: 100vh;
   background-color: #050410;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  justify-content: flex-start;
+  overflow-x: hidden;
+  padding-bottom: 120px;
 }
 
 /* ── Atmospheric layers ── */
@@ -250,7 +305,7 @@ useHead({
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0 20px;
+  padding: 80px 20px 0;
   max-width: 520px;
   width: 100%;
   box-sizing: border-box;
@@ -336,6 +391,16 @@ useHead({
   margin-bottom: 0;
 }
 
+.tagline-sub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.32);
+  line-height: 1.65;
+  margin-top: 8px;
+  margin-bottom: 0;
+  max-width: 360px;
+  text-align: center;
+}
+
 /* ── Threshold separator ── */
 .threshold {
   display: flex;
@@ -361,56 +426,32 @@ useHead({
   margin: 0;
 }
 
-/* ── CTA Button ── */
+/* ── CTA Button (LP-2 solid fill) ── */
 .cta-button {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   margin-top: 28px;
-  background: transparent;
-  border: 1px solid rgba(201,168,76,0.32);
-  border-radius: 3px;
-  color: rgba(255,255,255,0.78);
-  padding: 16px 44px;
+  background: rgba(140, 110, 255, 0.85);
+  border: 1px solid rgba(180, 150, 255, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 4px 32px rgba(140, 110, 255, 0.25);
+  color: rgba(255, 255, 255, 0.96);
+  padding: 17px 48px;
   font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
   cursor: pointer;
   position: relative;
-  transition: border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
-  overflow: hidden;
-}
-
-.cta-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, rgba(140,110,255,0.04) 100%);
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
-.cta-button:hover::before {
-  opacity: 1;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .cta-button:hover {
-  border-color: rgba(201,168,76,0.58);
-  color: rgba(255,255,255,0.95);
-  box-shadow: 0 0 28px rgba(201,168,76,0.1);
-}
-
-.cta-glyph {
-  font-size: 10px;
-  color: rgba(201,168,76,0.65);
-  transition: color 0.35s ease;
-}
-
-.cta-button:hover .cta-glyph {
-  color: rgba(201,168,76,0.95);
+  background: rgba(140, 110, 255, 1);
+  box-shadow: 0 6px 40px rgba(140, 110, 255, 0.38);
 }
 
 /* ── Sub-label ── */
@@ -422,27 +463,41 @@ useHead({
   letter-spacing: 0.02em;
 }
 
-/* ── Feature keyword pills ── */
-.feature-pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 24px;
-  max-width: 380px;
-}
+/* ── Discover section (LP-3) ── */
+.discover-section { width: 100%; max-width: 520px; margin: 56px auto 0; padding: 0 20px; box-sizing: border-box; position: relative; z-index: 1; }
+.discover-label { font-size: 9px; letter-spacing: 0.18em; color: rgba(201, 168, 76, 0.45); text-align: center; margin: 0 0 24px; text-transform: uppercase; }
+.discover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.discover-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 18px 16px; text-align: left; }
+.discover-glyph { font-size: 14px; color: rgba(201, 168, 76, 0.55); display: block; margin-bottom: 10px; }
+.discover-name { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.72); margin: 0 0 6px; letter-spacing: 0.02em; }
+.discover-desc { font-size: 11px; color: rgba(255, 255, 255, 0.28); line-height: 1.6; margin: 0; }
+@media (max-width: 420px) { .discover-grid { grid-template-columns: 1fr; } }
 
-.feature-pill {
-  font-size: 9.5px;
-  color: rgba(255, 255, 255, 0.16);
-  letter-spacing: 0.08em;
-  padding: 4px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
-  text-transform: uppercase;
-  cursor: default;
-  user-select: none;
+/* ── How It Works strip (LP-4) ── */
+.how-section { width: 100%; max-width: 520px; margin: 40px auto 0; padding: 0 20px; box-sizing: border-box; position: relative; z-index: 1; }
+.how-steps { display: flex; align-items: center; gap: 8px; }
+.how-step { flex: 1; text-align: center; }
+.how-num { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: rgba(201, 168, 76, 0.35); display: block; line-height: 1; margin-bottom: 8px; }
+.how-text { font-size: 11px; color: rgba(255, 255, 255, 0.32); line-height: 1.55; margin: 0; }
+.how-divider { width: 1px; height: 32px; background: rgba(255, 255, 255, 0.06); flex-shrink: 0; }
+@media (max-width: 420px) { .how-steps { flex-direction: column; gap: 16px; } .how-divider { width: 40px; height: 1px; } }
+
+/* ── Bottom CTA block (LP-8) ── */
+.bottom-cta-block { width: 100%; max-width: 520px; margin: 48px auto 80px; padding: 0 20px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; z-index: 1; }
+.bottom-cta { width: 100%; max-width: 360px; margin-top: 0; }
+
+/* ── Entry animations (LP-7) ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+.orbital-mark { animation: fadeUp 0.6s ease forwards; animation-delay: 0s; }
+.brand-name   { animation: fadeUp 0.6s ease forwards; animation-delay: 0.1s; opacity: 0; }
+.tagline      { animation: fadeUp 0.6s ease forwards; animation-delay: 0.2s; opacity: 0; }
+.tagline-sub  { animation: fadeUp 0.6s ease forwards; animation-delay: 0.3s; opacity: 0; }
+.threshold    { animation: fadeUp 0.6s ease forwards; animation-delay: 0.35s; opacity: 0; }
+.cta-button   { animation: fadeUp 0.6s ease forwards; animation-delay: 0.45s; opacity: 0; }
+.sub-label    { animation: fadeUp 0.6s ease forwards; animation-delay: 0.55s; opacity: 0; }
 
 /* ── Footer ── */
 .footer-crisis {
@@ -455,15 +510,13 @@ useHead({
 }
 
 .site-footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 16px 20px;
+  padding: 24px 20px;
   z-index: 1;
 }
 
@@ -508,9 +561,14 @@ useHead({
     font-size: 15px;
   }
 
+  .tagline-sub {
+    font-size: 13px;
+  }
+
   .cta-button {
-    padding: 14px 24px;
+    padding: 15px 32px;
     width: 100%;
+    font-size: 14px;
   }
 
   .nebula-glow {
