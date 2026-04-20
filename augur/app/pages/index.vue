@@ -32,7 +32,8 @@
 
       <!-- CTA Button -->
       <button class="cta-button" @click="() => { $trackAnalysisStart(); navigateTo('/analysis') }">
-        <span class="cta-label">Get My Free Reading →</span>
+        <span class="cta-label">Begin Your Analysis</span>
+        <span class="cta-glyph" aria-hidden="true">❆</span>
       </button>
 
       <!-- Sub-label -->
@@ -90,7 +91,8 @@
     <!-- Bottom repeat CTA (LP-8) -->
     <div class="bottom-cta-block">
       <button class="cta-button bottom-cta" @click="() => { $trackAnalysisStart(); navigateTo('/analysis') }">
-        <span class="cta-label">Get My Free Reading →</span>
+        <span class="cta-label">Begin Your Analysis</span>
+        <span class="cta-glyph" aria-hidden="true">❆</span>
       </button>
       <p class="sub-label">Takes 60 seconds · No account required</p>
     </div>
@@ -426,32 +428,63 @@ useHead({
   margin: 0;
 }
 
-/* ── CTA Button (LP-2 solid fill) ── */
+/* ── CTA Button ── */
 .cta-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-top: 28px;
-  background: rgba(140, 110, 255, 0.85);
-  border: 1px solid rgba(180, 150, 255, 0.5);
-  border-radius: 8px;
-  box-shadow: 0 4px 32px rgba(140, 110, 255, 0.25);
-  color: rgba(255, 255, 255, 0.96);
-  padding: 17px 48px;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: none;
+  background: transparent;
+  border: 1px solid rgba(201, 168, 76, 0.32);
+  border-radius: 3px;
+  padding: 16px 48px;
+  width: 100%;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.72);
   cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  margin-top: 28px;
   position: relative;
-  transition: background 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.cta-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(140,110,255,0.04));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cta-button:hover::before {
+  opacity: 1;
 }
 
 .cta-button:hover {
-  background: rgba(140, 110, 255, 1);
-  box-shadow: 0 6px 40px rgba(140, 110, 255, 0.38);
+  border-color: rgba(201, 168, 76, 0.58);
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
+}
+
+.cta-label {
+  position: relative;
+  z-index: 1;
+}
+
+.cta-glyph {
+  font-size: 10px;
+  color: rgba(201, 168, 76, 0.65);
+  transition: color 0.35s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.cta-button:hover .cta-glyph {
+  color: rgba(201, 168, 76, 0.95);
 }
 
 /* ── Sub-label ── */
