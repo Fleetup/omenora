@@ -399,7 +399,7 @@ useHead({
   line-height: 1.65;
   margin-top: 8px;
   margin-bottom: 0;
-  max-width: 360px;
+  max-width: 440px;
   text-align: center;
 }
 
@@ -512,7 +512,7 @@ useHead({
 .how-step { flex: 1; text-align: center; }
 .how-num { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: rgba(201, 168, 76, 0.35); display: block; line-height: 1; margin-bottom: 8px; }
 .how-text { font-size: 11px; color: rgba(255, 255, 255, 0.32); line-height: 1.55; margin: 0; }
-.how-divider { width: 1px; height: 32px; background: rgba(255, 255, 255, 0.06); flex-shrink: 0; }
+.how-divider { width: 1px; height: 32px; background: rgba(255, 255, 255, 0.12); flex-shrink: 0; }
 @media (max-width: 420px) { .how-steps { flex-direction: column; gap: 16px; } .how-divider { width: 40px; height: 1px; } }
 
 /* ── Bottom CTA block (LP-8) ── */
