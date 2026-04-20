@@ -11,7 +11,9 @@ import { withAiRetry } from '~~/server/utils/ai-retry'
  * POST /api/stripe/webhook
  *
  * Server-side fulfillment for all Stripe payments. Handles:
- *   checkout.session.completed → save report + send email
+ *   checkout.session.completed      → save report + send email
+ *   invoice.payment_failed          → deactivate subscriber on renewal failure
+ *   customer.subscription.deleted   → revoke access on cancellation / churn
  *
  * This is the production-critical safety net: if the customer's browser
  * crashes, closes, or loses network after payment, this webhook guarantees
@@ -19,7 +21,8 @@ import { withAiRetry } from '~~/server/utils/ai-retry'
  *
  * Setup in Stripe Dashboard → Webhooks:
  *   Endpoint URL:  https://omenora.com/api/stripe/webhook
- *   Events to send: checkout.session.completed
+ *   Events to send: checkout.session.completed, invoice.payment_failed,
+ *                   customer.subscription.deleted
  *   Signing secret: copy to NUXT_STRIPE_WEBHOOK_SECRET
  */
 
@@ -52,7 +55,43 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid webhook signature' })
   }
 
-  // ── Only process checkout.session.completed ────────────────────────────────
+  // ── Route by event type ───────────────────────────────────────────────────
+  if (stripeEvent.type === 'invoice.payment_failed') {
+    const invoice = stripeEvent.data.object as Stripe.Invoice
+    const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+    if (customerId) {
+      const supabaseInv = createSupabaseAdmin()
+      const { error: invErr } = await supabaseInv
+        .from('subscribers')
+        .update({ active: false, updated_at: new Date().toISOString() })
+        .eq('stripe_customer_id', customerId)
+      if (invErr) {
+        console.error('[stripe-webhook] invoice.payment_failed — failed to deactivate subscriber:', invErr.code, 'customer:', customerId)
+      } else {
+        console.info('[stripe-webhook] Subscriber deactivated on payment failure:', customerId)
+      }
+    }
+    return { received: true }
+  }
+
+  if (stripeEvent.type === 'customer.subscription.deleted') {
+    const subscription = stripeEvent.data.object as Stripe.Subscription
+    const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id
+    if (customerId) {
+      const supabaseSub = createSupabaseAdmin()
+      const { error: subErr } = await supabaseSub
+        .from('subscribers')
+        .update({ active: false, updated_at: new Date().toISOString() })
+        .eq('stripe_customer_id', customerId)
+      if (subErr) {
+        console.error('[stripe-webhook] customer.subscription.deleted — failed to deactivate subscriber:', subErr.code, 'customer:', customerId)
+      } else {
+        console.info('[stripe-webhook] Subscriber deactivated on subscription deletion:', customerId)
+      }
+    }
+    return { received: true }
+  }
+
   if (stripeEvent.type !== 'checkout.session.completed') {
     return { received: true }
   }
@@ -227,18 +266,19 @@ export default defineEventHandler(async (event) => {
   // Save report to DB
   const { error: saveErr } = await supabase.from('reports').upsert(
     {
-      session_id:      sessionId,
-      first_name:      firstName,
+      session_id:       sessionId,
+      first_name:       firstName,
       archetype,
       life_path_number: lifePathNumber,
-      report_data:     reportData,
-      answers:         {},
-      city:            sanitizeString(meta.city || '', 100),
-      date_of_birth:   dateOfBirth,
-      email:           isValidEmail(email) ? email : '',
+      report_data:      reportData,
+      answers:          {},
+      city:             sanitizeString(meta.city || '', 100),
+      date_of_birth:    dateOfBirth,
+      email:            isValidEmail(email) ? email : '',
       region,
-      email_sent:      false,
-      created_at:      new Date().toISOString(),
+      email_sent:       false,
+      oracle_purchased: isOraclePurchase,
+      created_at:       new Date().toISOString(),
     },
     { onConflict: 'session_id' },
   )

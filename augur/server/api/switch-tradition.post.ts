@@ -18,7 +18,18 @@ export default defineEventHandler(async (event) => {
     config.supabaseServiceKey as string,
   )
 
-  // ── 1. Verify payment (unless this is a free Oracle switch) ─────────────
+  // ── 1. Pull existing report from Supabase first (needed for both paths) ──
+  const { data: reportRow, error: fetchError } = await supabase
+    .from('reports')
+    .select('*')
+    .eq('session_id', reportId)
+    .single()
+
+  if (fetchError || !reportRow) {
+    throw createError({ statusCode: 404, message: 'Report not found' })
+  }
+
+  // ── 2. Verify payment or assert Oracle ownership server-side ─────────────
   if (!freeSwitch) {
     assertInput(isValidSessionId(sessionId), 'Invalid Stripe session ID')
 
@@ -46,19 +57,20 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: 'Tradition mismatch between session and request' })
     }
   } else {
-    // Free switch — only allowed for Oracle purchasers; validated by client flag
-    // We still verify the report belongs to a real session for safety
-  }
+    // Free switch — only valid for Oracle purchasers.
+    // Authorisation is enforced SERVER-SIDE by inspecting the report row:
+    // the webhook sets oracle_purchased = true on the reports table when an
+    // oracle-tier payment completes. We never trust the client flag alone.
+    const isOraclePurchaser =
+      reportRow.oracle_purchased === true ||
+      (Array.isArray(reportRow.traditions_unlocked) && reportRow.traditions_unlocked.length > 1)
 
-  // ── 2. Pull existing report from Supabase ────────────────────────────────
-  const { data: reportRow, error: fetchError } = await supabase
-    .from('reports')
-    .select('*')
-    .eq('session_id', reportId)
-    .single()
-
-  if (fetchError || !reportRow) {
-    throw createError({ statusCode: 404, message: 'Report not found' })
+    if (!isOraclePurchaser) {
+      throw createError({
+        statusCode: 403,
+        message: 'Free tradition switch is only available to Oracle bundle purchasers',
+      })
+    }
   }
 
   // ── 3. Check if this tradition was already generated and cached ──────────
