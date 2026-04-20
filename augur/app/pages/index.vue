@@ -46,23 +46,23 @@
       <p class="discover-label">WHAT'S INSIDE YOUR READING</p>
       <div class="discover-grid">
         <div class="discover-card">
-          <span class="discover-glyph">✦</span>
+          <img src="/symbols/Destiny Archetype.svg" class="discover-symbol" alt="" aria-hidden="true" />
           <p class="discover-name">Destiny Archetype</p>
           <p class="discover-desc">Your behavioral blueprint — why you make decisions the way you do</p>
         </div>
         <div class="discover-card">
-          <span class="discover-glyph">◈</span>
+          <img src="/symbols/Life Path Number copy.svg" class="discover-symbol" alt="" aria-hidden="true" />
           <p class="discover-name">Life Path Number</p>
           <p class="discover-desc">Your numerology core — the hidden pattern running through every major event in your life</p>
         </div>
         <div class="discover-card">
-          <span class="discover-glyph">⟡</span>
+          <img src="/symbols/Destiny Forecast copy.svg" class="discover-symbol" alt="" aria-hidden="true" />
           <p class="discover-name">2026 Destiny Forecast</p>
           <p class="discover-desc">Month-by-month energy windows — when to move, when to wait, when to build</p>
         </div>
         <div class="discover-card">
-          <span class="discover-glyph">◯</span>
-          <p class="discover-name">Love & Relationship Patterns</p>
+          <img src="/symbols/Love & Relationship Patterns copy.svg" class="discover-symbol" alt="" aria-hidden="true" />
+          <p class="discover-name">Love &amp; Relationship Patterns</p>
           <p class="discover-desc">What your archetype seeks in connection — and what creates friction without you realizing it</p>
         </div>
       </div>
@@ -500,8 +500,8 @@ useHead({
 .discover-section { width: 100%; max-width: 520px; margin: 56px auto 0; padding: 0 20px; box-sizing: border-box; position: relative; z-index: 1; }
 .discover-label { font-size: 9px; letter-spacing: 0.18em; color: rgba(201, 168, 76, 0.45); text-align: center; margin: 0 0 24px; text-transform: uppercase; }
 .discover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.discover-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 18px 16px; text-align: left; }
-.discover-glyph { font-size: 14px; color: rgba(201, 168, 76, 0.55); display: block; margin-bottom: 10px; }
+.discover-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 20px 16px 18px; text-align: left; }
+.discover-symbol { width: 48px; height: 48px; object-fit: contain; display: block; margin-bottom: 14px; opacity: 0.82; }
 .discover-name { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.72); margin: 0 0 6px; letter-spacing: 0.02em; }
 .discover-desc { font-size: 11px; color: rgba(255, 255, 255, 0.28); line-height: 1.6; margin: 0; }
 @media (max-width: 420px) { .discover-grid { grid-template-columns: 1fr; } }
