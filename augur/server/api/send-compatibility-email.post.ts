@@ -200,7 +200,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (error) {
-    console.error('Resend compatibility error:', error)
+    console.error('[send-compatibility-email] Resend error:', error?.message, error?.name)
     throw createError({
       statusCode: 500,
       message: 'Failed to send compatibility email'

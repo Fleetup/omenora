@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     })
 
   if (error) {
-    console.error('Calendar save error:', error.code)
+    console.error('[save-calendar] Upsert error:', error.code)
   }
 
   return { success: true }

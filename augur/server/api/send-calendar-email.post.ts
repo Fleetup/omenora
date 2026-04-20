@@ -214,7 +214,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (error) {
-    console.error('Calendar email error:', error)
+    console.error('[send-calendar-email] Resend error:', error?.message, error?.name)
     throw createError({
       statusCode: 500,
       message: 'Failed to send calendar email'

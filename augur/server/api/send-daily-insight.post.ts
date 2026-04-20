@@ -100,7 +100,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (error) {
-    console.error('Daily insight email error:', error)
+    console.error('[send-daily-insight] Resend error:', error?.message, error?.name)
     throw createError({ statusCode: 500, message: 'Failed to send daily insight' })
   }
 

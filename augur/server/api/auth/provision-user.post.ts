@@ -89,7 +89,7 @@ export default defineEventHandler(async (event) => {
     const msg = provisionErr.message?.toLowerCase() ?? ''
     // "already registered" is expected for returning users — ignore it
     if (!msg.includes('already') && !msg.includes('exists')) {
-      console.error('Auth provision error:', provisionErr.code)
+      console.error('[provision-user] Auth provision error:', provisionErr.code)
       throw createError({ statusCode: 500, message: 'Failed to provision account' })
     }
   }
@@ -101,7 +101,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (linkErr || !linkData?.properties?.hashed_token) {
-    console.error('Auth link generation error:', linkErr?.code)
+    console.error('[provision-user] Link generation error:', linkErr?.code)
     throw createError({ statusCode: 500, message: 'Failed to generate auth token' })
   }
 

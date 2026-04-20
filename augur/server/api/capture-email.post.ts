@@ -59,11 +59,11 @@ export default defineEventHandler(async (event) => {
         .eq('email', normalizedEmail)
         .eq('sequence_completed', false) // safety: never update if already unsubscribed
       if (updateError) {
-        console.error('Email capture update error:', updateError.code)
+        console.error('[capture-email] Update error:', updateError.code)
         return { success: false }
       }
     } else {
-      console.error('Email capture insert error:', insertError.code)
+      console.error('[capture-email] Insert error:', insertError.code)
       return { success: false }
     }
   }

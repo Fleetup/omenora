@@ -127,7 +127,7 @@ export default defineEventHandler(async (event) => {
       })
       sendOk = true
     } catch (err: any) {
-      console.error(`[process-jobs] Send failed for step ${step} / ${job.email}:`, err?.message)
+      console.error(`[process-jobs] Send failed for step ${step} / job:${job.id}:`, err?.message)
     }
 
     if (sendOk) {

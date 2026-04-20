@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Reports fetch error:', error.code)
+    console.error('[me/reports] Fetch error:', error.code)
     throw createError({ statusCode: 500, message: 'Failed to load reports' })
   }
 

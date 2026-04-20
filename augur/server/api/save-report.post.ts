@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
     )
 
   if (error) {
-    console.error('Supabase upsert error:', error.code)
+    console.error('[save-report] Upsert error:', error.code)
     throw createError({ statusCode: 500, message: 'Failed to save report' })
   }
 

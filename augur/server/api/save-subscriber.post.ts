@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
     })
 
   if (error) {
-    console.error('Subscriber save error:', error.code)
+    console.error('[save-subscriber] Upsert error:', error.code)
     throw createError({ statusCode: 500, message: 'Failed to save subscriber' })
   }
 
