@@ -314,3 +314,52 @@ The OMENORA application has been upgraded to enterprise-grade SEO standards. All
 ---
 
 *This SEO implementation follows Google's Search Essentials, Schema.org standards, and industry best practices for single-page applications (SPAs) using Nuxt.js 3.*
+
+---
+
+## GSC Indexing Audit — April 20, 2026
+
+### Known Issues from Google Search Console
+- Excluded by 'noindex' tag: 2 pages
+- Page with redirect: 1 page
+- Discovered – currently not indexed: 2 pages
+
+### Findings
+
+| # | Finding | Status | Verdict |
+|---|---------|--------|---------|
+| 1 | `/preview` has `noindex, nofollow` | Intentional | ✅ Correct — paywall funnel page |
+| 2 | `/report` has `noindex, nofollow` | Intentional | ✅ Correct — personalised paid report |
+| 3 | `/analysis` has `noindex, nofollow` | Intentional | ✅ Correct — data-entry form only |
+| 4 | `/subscription`, `/calendar`, `/compatibility` have `noindex` | Intentional | ✅ Correct — post-purchase flow pages |
+| 5 | Sitemap `<loc>` for home used `https://omenora.com/` (trailing slash) while canonical in `index.vue` uses `https://omenora.com` (no slash) | **Bug — Fixed** | Root cause of "Page with redirect" GSC issue |
+| 6 | Static `public/sitemap.xml` was inconsistent with `server/routes/sitemap.xml.ts` server route | **Bug — Fixed** | Both now consistent |
+| 7 | `public/robots.txt` duplicates `server/routes/robots.txt.ts` | Advisory | Nitro server route takes precedence; static file kept in sync |
+
+### Root Cause of GSC Issues
+
+**"Page with redirect: 1 page"**
+- Sitemap declared `<loc>https://omenora.com/</loc>` (trailing slash).
+- Canonical tag on the served page resolved to `https://omenora.com` (no slash via `siteUrl` runtime config).
+- Googlebot fetches the sitemap URL, may encounter a redirect (or sees canonical mismatch), and reports it as "page with redirect".
+
+**"Discovered – currently not indexed: 2 pages"**
+- Most likely `/privacy` and `/terms` — new domain, not yet crawled deeply enough.
+- No technical block found: both pages have `robots: index, follow`, are in the sitemap, and are `Allow`-ed in robots.txt.
+- After the canonical/sitemap fix, resubmit the sitemap in GSC to accelerate crawling.
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `server/routes/sitemap.xml.ts` | Home `<loc>` changed from `https://omenora.com/` to `https://omenora.com` |
+| `public/sitemap.xml` | Same fix applied to keep static file in sync |
+
+### Post-Deploy Validation Steps
+1. Deploy the updated build.
+2. In GSC → Sitemaps → resubmit `https://omenora.com/sitemap.xml`.
+3. In GSC → URL Inspection → inspect `https://omenora.com` → verify canonical = `https://omenora.com`.
+4. In GSC → URL Inspection → inspect `https://omenora.com/` → confirm it redirects or resolves to canonical.
+5. Monitor "Page with redirect" count in GSC Coverage report — should clear within 1–2 crawl cycles.
+6. Request indexing for `/privacy` and `/terms` via URL Inspection tool.
+7. Verify Rich Results Test passes for homepage structured data.
