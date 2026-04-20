@@ -2,11 +2,28 @@ node_modules
 .git
 .gitignore
 .env
-.env.local
-.env.production
+.env.*
 *.log
 .nuxt
 .output
 dist
 .DS_Store
+
+# Admin tooling — never deploy
+admin
+admin/*
+
+# Test files and config
+tests
+playwright.config.ts
+vitest.config.ts
+
+# Documentation
 README.md
+SEO_AUDIT.md
+*.md
+
+# IDE
+.fleet
+.idea
+.vscode

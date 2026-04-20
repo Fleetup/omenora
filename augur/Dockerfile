@@ -40,5 +40,10 @@ COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/public/fonts ./.output/public/fonts
 COPY --from=builder /app/public/og-image.png ./.output/public/og-image.png
 
+# Drop root privileges. node:20-alpine ships with a built-in 'node' user (uid 1000).
+# Chown the output directory so the node user can write runtime cache files if needed.
+RUN chown -R node:node /app/.output
+USER node
+
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]
