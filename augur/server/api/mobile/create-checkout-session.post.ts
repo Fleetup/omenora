@@ -54,40 +54,51 @@ export default defineEventHandler(async (event) => {
     apiVersion: '2026-03-25.dahlia' as any,
   })
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    line_items: [{
-      price_data: {
-        currency:     'usd',
-        product_data: { name: product.name, description: product.description },
-        unit_amount:  product.amount,
+  let session: Stripe.Checkout.Session
+  try {
+    session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency:     'usd',
+          product_data: { name: product.name, description: product.description },
+          unit_amount:  product.amount,
+        },
+        quantity: 1,
+      }],
+      mode:           'payment',
+      // Optimises Stripe Checkout UI for app-to-web purchase context
+      origin_context: 'mobile_app' as any,
+      customer_email: email,
+      // Deep-link back to the app after payment
+      success_url: `omenora://payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:  `omenora://payment/cancel`,
+      metadata: {
+        type,
+        firstName,
+        email,
+        archetype,
+        tempId,
+        region,
+        dateOfBirth,
+        lifePathNumber,
+        timeOfBirth,
+        partnerName,
+        bundle:      ['oracle', 'bundle'].includes(type) ? 'true' : '',
+        oracle:      type === 'oracle'      ? 'true' : '',
+        birth_chart: type === 'birth_chart' ? 'true' : '',
+        platform:    'mobile',
       },
-      quantity: 1,
-    }],
-    mode:           'payment',
-    // Optimises Stripe Checkout UI for app-to-web purchase context
-    origin_context: 'mobile_app' as any,
-    customer_email: email,
-    // Deep-link back to the app after payment
-    success_url: `omenora://payment/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url:  `omenora://payment/cancel`,
-    metadata: {
-      type,
-      firstName,
-      email,
-      archetype,
-      tempId,
-      region,
-      dateOfBirth,
-      lifePathNumber,
-      timeOfBirth,
-      partnerName,
-      bundle:      ['oracle', 'bundle'].includes(type) ? 'true' : '',
-      oracle:      type === 'oracle'      ? 'true' : '',
-      birth_chart: type === 'birth_chart' ? 'true' : '',
-      platform:    'mobile',
-    },
-  })
+    })
+  } catch (err: any) {
+    const code   = err?.code as string | undefined
+    const status = err?.statusCode ?? err?.status ?? 0
+    if (code === 'rate_limit') throw createError({ statusCode: 429, message: 'Payment service busy — please try again.' })
+    if (status === 401 || status === 403) throw createError({ statusCode: 503, message: 'Payment service temporarily unavailable.' })
+    if (status >= 500 || err?.type === 'StripeConnectionError' || err?.type === 'StripeAPIError') throw createError({ statusCode: 503, message: 'Payment service temporarily unavailable — please try again.' })
+    console.error('[mobile/create-checkout-session] Stripe error:', { code, status, message: err?.message })
+    throw createError({ statusCode: 500, message: 'Failed to create checkout session.' })
+  }
 
   return {
     url:       session.url,

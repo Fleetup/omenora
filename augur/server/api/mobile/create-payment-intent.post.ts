@@ -56,31 +56,42 @@ export default defineEventHandler(async (event) => {
     apiVersion: '2026-03-25.dahlia' as any,
   })
 
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount:   product.amount,
-    currency: 'usd',
-    // Automatic payment methods enable Apple Pay + Google Pay automatically
-    automatic_payment_methods: { enabled: true },
-    description: product.name,
-    receipt_email: isValidEmail(email) ? email : undefined,
-    metadata: {
-      type,
-      firstName,
-      email:          isValidEmail(email) ? email : '',
-      archetype,
-      tempId,
-      region,
-      dateOfBirth,
-      lifePathNumber,
-      timeOfBirth,
-      partnerName,
-      // Flags that match the web payment session metadata shape
-      bundle:      ['oracle', 'bundle'].includes(type) ? 'true' : '',
-      oracle:      type === 'oracle' ? 'true' : '',
-      birth_chart: type === 'birth_chart' ? 'true' : '',
-      platform:    'mobile',
-    },
-  })
+  let paymentIntent: Stripe.PaymentIntent
+  try {
+    paymentIntent = await stripe.paymentIntents.create({
+      amount:   product.amount,
+      currency: 'usd',
+      // Automatic payment methods enable Apple Pay + Google Pay automatically
+      automatic_payment_methods: { enabled: true },
+      description: product.name,
+      receipt_email: isValidEmail(email) ? email : undefined,
+      metadata: {
+        type,
+        firstName,
+        email:          isValidEmail(email) ? email : '',
+        archetype,
+        tempId,
+        region,
+        dateOfBirth,
+        lifePathNumber,
+        timeOfBirth,
+        partnerName,
+        // Flags that match the web payment session metadata shape
+        bundle:      ['oracle', 'bundle'].includes(type) ? 'true' : '',
+        oracle:      type === 'oracle' ? 'true' : '',
+        birth_chart: type === 'birth_chart' ? 'true' : '',
+        platform:    'mobile',
+      },
+    })
+  } catch (err: any) {
+    const code   = err?.code as string | undefined
+    const status = err?.statusCode ?? err?.status ?? 0
+    if (code === 'rate_limit') throw createError({ statusCode: 429, message: 'Payment service busy — please try again.' })
+    if (status === 401 || status === 403) throw createError({ statusCode: 503, message: 'Payment service temporarily unavailable.' })
+    if (status >= 500 || err?.type === 'StripeConnectionError' || err?.type === 'StripeAPIError') throw createError({ statusCode: 503, message: 'Payment service temporarily unavailable — please try again.' })
+    console.error('[mobile/create-payment-intent] Stripe error:', { code, status, message: err?.message })
+    throw createError({ statusCode: 500, message: 'Failed to create payment intent.' })
+  }
 
   return {
     clientSecret:    paymentIntent.client_secret,

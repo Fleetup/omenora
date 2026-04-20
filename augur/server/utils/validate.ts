@@ -60,13 +60,15 @@ export function isValidSessionId(val: unknown): val is string {
 
 /**
  * Validate a report save/lookup ID.
- * Accepts Stripe checkout session IDs (cs_live_…, cs_test_…)
- * and temporary pre-payment IDs (temp_{timestamp}_{name}).
+ * Accepts Stripe checkout session IDs (cs_live_…, cs_test_…),
+ * temporary pre-payment IDs (temp_{timestamp}_{name}),
+ * and promo-access report IDs (promo_{32 hex chars}).
  */
 export function isValidReportId(val: unknown): val is string {
   if (typeof val !== 'string') return false
   return /^cs_(?:live|test)_\w{10,200}$/.test(val) ||
-         /^temp_\d{10,15}[\w-]{1,60}$/.test(val)
+         /^temp_\d{10,15}[\w-]{1,60}$/.test(val)  ||
+         /^promo_[0-9a-f]{32}$/.test(val)
 }
 
 /** YYYY-MM-DD date, within valid birth year range and not in the future. */
