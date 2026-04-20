@@ -76,13 +76,17 @@ export default defineEventHandler(async (event) => {
   const lifePathNumber = body.lifePathNumber !== undefined ? Number(body.lifePathNumber) : 0
   const element       = sanitizeString(body.element, 20)
   const region        = isValidRegion(body.region) ? (body.region as string) : 'western'
-  const targetDate    = sanitizeString(body.targetDate ?? '', 30)
+  const targetDate    = sanitizeString(body.targetDate ?? '', 10)
   const language      = sanitizeString(body.language || 'en', 5)
   const email         = sanitizeString(body.email ?? '', 254)
 
   assertInput(!!firstName, 'firstName is required')
   assertInput(isValidArchetype(archetype), 'Invalid archetype')
   assertInput(!email || isValidEmail(email), 'Invalid email')
+  assertInput(
+    !targetDate || /^\d{4}-\d{2}-\d{2}$/.test(targetDate),
+    'Invalid targetDate format — expected YYYY-MM-DD',
+  )
 
   // ── Date context ──────────────────────────────────────────────────────
   const today = targetDate ? new Date(targetDate) : new Date()

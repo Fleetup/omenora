@@ -34,7 +34,6 @@ export default defineEventHandler(async (event) => {
         reading_tradition: readingTradition,
         language: language.toUpperCase(),
         session_id: sessionId,
-        purchased: false,
         abandoned_at: new Date().toISOString(),
         sequence_step: 0,
         sequence_completed: false,

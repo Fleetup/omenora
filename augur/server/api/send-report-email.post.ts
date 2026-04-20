@@ -2,11 +2,19 @@ import { sendReportEmail } from '~~/server/utils/report-email-builder'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+
+  // ── Auth guard — only internal server callers may send report emails ────
+  const incomingSecret = getHeader(event, 'x-job-secret') ?? ''
+  const expectedSecret = (config.emailJobSecret as string | undefined) ?? ''
+  if (!expectedSecret || incomingSecret !== expectedSecret) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
   const body = await readBody(event)
 
+  const email     = sanitizeString(body.email, 254)
+  const firstName = sanitizeString(body.firstName, 50)
   const {
-    email,
-    firstName,
     report,
     archetype,
     lifePathNumber,
@@ -21,12 +29,8 @@ export default defineEventHandler(async (event) => {
     language,
   } = body
 
-  if (!email || !report) {
-    throw createError({
-      statusCode: 400,
-      message: 'Email and report are required'
-    })
-  }
+  assertInput(isValidEmail(email), 'Valid email is required')
+  assertInput(!!report, 'report is required')
 
   // Supabase can return JSONB columns as a raw string in some configurations.
   // Defensively parse if the caller passed a stringified object.

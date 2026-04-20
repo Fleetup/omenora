@@ -55,7 +55,7 @@ export default defineEventHandler((event) => {
       }
       setResponseHeader(event, 'Access-Control-Allow-Origin', origin)
       setResponseHeader(event, 'Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-      setResponseHeader(event, 'Access-Control-Allow-Headers', 'Content-Type')
+      setResponseHeader(event, 'Access-Control-Allow-Headers', 'Content-Type, Authorization, x-job-secret')
       setResponseHeader(event, 'Vary', 'Origin')
     }
 

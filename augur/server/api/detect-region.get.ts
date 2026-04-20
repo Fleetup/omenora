@@ -97,12 +97,12 @@ export default defineEventHandler(async (event) => {
   const ip        = forwarded ? (forwarded.split(',')[0] ?? '').trim() : realIp || '0.0.0.0'
 
   if (ip === '0.0.0.0' || ip === '127.0.0.1' || ip.startsWith('::1') || ip.startsWith('::ffff:127')) {
-    return { region: 'western', country: 'US', ip, language: 'en' }
+    return { region: 'western', country: 'US', language: 'en' }
   }
 
   const country  = await lookupCountry(ip)
   const region   = REGION_MAP[country]   || 'western'
   const language = LANGUAGE_MAP[country] || 'en'
 
-  return { region, country, ip, language }
+  return { region, country, language }
 })

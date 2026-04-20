@@ -26,11 +26,24 @@ export default defineEventHandler(async (event) => {
     if (existingCustomers.data.length > 0) {
       customer = existingCustomers.data[0]!
     } else {
-      customer = await stripe.customers.create({
-        email,
-        name: firstName,
-        metadata: { archetype, lifePathNumber },
-      })
+      try {
+        customer = await stripe.customers.create({
+          email,
+          name: firstName,
+          metadata: { archetype, lifePathNumber },
+        })
+      } catch (err: any) {
+        // Under concurrent requests the customer may have been created between
+        // the list() and create() calls — re-fetch rather than failing.
+        const msg = (err?.message ?? '').toLowerCase()
+        if (msg.includes('already') || msg.includes('exists')) {
+          const retry = await stripe.customers.list({ email, limit: 1 })
+          if (!retry.data[0]) throw err
+          customer = retry.data[0]!
+        } else {
+          throw err
+        }
+      }
     }
 
     const session = await stripe.checkout.sessions.create({

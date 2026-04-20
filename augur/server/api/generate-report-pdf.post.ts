@@ -145,7 +145,16 @@ function drawPdfArchetypeSymbol(doc: any, symbol: string, cx: number, cy: number
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { firstName, report, lifePathNumber, region, vedicData, baziData, tarotData, calendarData, bundlePurchased, language } = body
+
+  const firstName      = sanitizeString(body.firstName, 50)
+  const language       = sanitizeString(body.language || 'en', 5)
+  const lifePathNumber = Number(body.lifePathNumber)
+  const region         = isValidRegion(body.region) ? body.region : 'western'
+  const report         = body.report && typeof body.report === 'object' ? body.report : null
+  const { vedicData, baziData, tarotData, calendarData, bundlePurchased } = body
+
+  assertInput(!!firstName, 'firstName is required')
+  assertInput(report !== null, 'report is required')
 
   const pdfLabels: Record<string, Record<string, string>> = {
     en: { vedic: 'VEDIC DESTINY READING', karmicMission: 'KARMIC MISSION', practice: '2026 Practice:', bazi: 'BAZI FOUR PILLARS READING', wealthLuck: '2026 WEALTH LUCK', luckyDirections: 'Lucky directions:', spiritual: 'SPIRITUAL DESTINY READING', loveDestiny: 'LOVE DESTINY', blessing: 'A BLESSING FOR YOU', protectiveCharm: 'Protective charm:', calendarLabel: 'YOUR 2026 DESTINY CALENDAR', luckyDays: 'Lucky days:' },

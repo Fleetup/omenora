@@ -35,18 +35,31 @@ export default defineEventHandler(async (event) => {
     apiVersion: '2026-03-25.dahlia' as any,
   })
 
-  // ── Find or create Stripe Customer ───────────────────────────────────────
+  // ── Find or create Stripe Customer (race-safe) ───────────────────────────────
   let customer: Stripe.Customer
   const existing = await stripe.customers.list({ email, limit: 1 })
 
   if (existing.data.length > 0) {
     customer = existing.data[0] as Stripe.Customer
   } else {
-    customer = await stripe.customers.create({
-      email,
-      name: firstName,
-      metadata: { archetype, lifePathNumber },
-    })
+    try {
+      customer = await stripe.customers.create({
+        email,
+        name: firstName,
+        metadata: { archetype, lifePathNumber },
+      })
+    } catch (err: any) {
+      // Under concurrent requests the customer may have been created between
+      // the list() and create() calls — re-fetch rather than failing.
+      const msg = (err?.message ?? '').toLowerCase()
+      if (msg.includes('already') || msg.includes('exists')) {
+        const retry = await stripe.customers.list({ email, limit: 1 })
+        if (!retry.data[0]) throw err
+        customer = retry.data[0] as Stripe.Customer
+      } else {
+        throw err
+      }
+    }
   }
 
   // ── Create an incomplete Subscription ────────────────────────────────────

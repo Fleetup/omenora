@@ -2,7 +2,13 @@ import PDFDocument from 'pdfkit'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { firstName, calendar, language } = body
+
+  const firstName = sanitizeString(body.firstName, 50)
+  const language  = sanitizeString(body.language || 'en', 5)
+  const calendar  = body.calendar && typeof body.calendar === 'object' ? body.calendar : null
+
+  assertInput(!!firstName, 'firstName is required')
+  assertInput(calendar !== null, 'calendar is required')
 
   const calPdfLabels: Record<string, Record<string, string>> = {
     en: { peak: 'PEAK', caution: 'CAUTION', luckyDays: 'Lucky days:' },

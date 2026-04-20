@@ -238,15 +238,19 @@ export default defineEventHandler(async (event) => {
   ensureFonts()
 
   const body = await readBody(event)
-  const {
-    archetypeName,
-    archetypeSymbol,
-    element,
-    lifePathNumber,
-    powerTraits,
-    affirmation,
-    firstName
-  } = body
+
+  const archetypeName   = sanitizeString(body.archetypeName, 30)
+  const archetypeSymbol = sanitizeString(body.archetypeSymbol, 5)
+  const element         = sanitizeString(body.element, 20)
+  const lifePathNumber  = Number(body.lifePathNumber)
+  const affirmation     = sanitizeString(body.affirmation, 200)
+  const firstName       = sanitizeString(body.firstName, 50)
+  const powerTraits     = Array.isArray(body.powerTraits)
+    ? (body.powerTraits as unknown[]).slice(0, 5).map((t) => sanitizeString(String(t ?? ''), 80))
+    : []
+
+  assertInput(!!firstName, 'firstName is required')
+  assertInput(!!archetypeName, 'archetypeName is required')
 
   const width = 1080
   const height = 1920

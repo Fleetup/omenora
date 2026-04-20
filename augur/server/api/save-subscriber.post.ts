@@ -13,8 +13,8 @@ export default defineEventHandler(async (event) => {
   const element              = sanitizeString(body.element, 20)
   const region               = isValidRegion(body.region) ? body.region : 'western'
 
-  assertInput(!!stripeCustomerId, 'stripeCustomerId is required')
-  assertInput(!!stripeSubscriptionId, 'stripeSubscriptionId is required')
+  assertInput(/^cus_\w{10,200}$/.test(stripeCustomerId), 'Invalid stripeCustomerId')
+  assertInput(/^sub_\w{10,200}$/.test(stripeSubscriptionId), 'Invalid stripeSubscriptionId')
   assertInput(isValidEmail(email), 'Valid email is required')
 
   const supabase = createClient(

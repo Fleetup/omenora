@@ -27,7 +27,12 @@ export default defineEventHandler(async (event) => {
   ensureCalendarFonts()
 
   const body = await readBody(event)
-  const { firstName, calendar } = body
+
+  const firstName = sanitizeString(body.firstName, 50)
+  const calendar  = body.calendar && typeof body.calendar === 'object' ? body.calendar : null
+
+  assertInput(!!firstName, 'firstName is required')
+  assertInput(calendar !== null, 'calendar is required')
 
   const width = 1080
   const height = 1920
