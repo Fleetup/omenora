@@ -10,9 +10,31 @@
         <div class="orbit-center" />
       </div>
       <p class="brand-text">OMENORA</p>
-      <p :key="currentMessageIndex" class="loading-message">
-        {{ loadingMessages[currentMessageIndex] }}
+
+      <!-- Stage 0: personalized opener -->
+      <p v-if="loadingStage === 0" key="ls0" class="loading-message">
+        Processing your behavioral profile, {{ store.firstName }}...
       </p>
+
+      <!-- Stage 1: testimonial slot (renders nothing if REAL_TESTIMONIALS is empty) -->
+      <template v-else-if="loadingStage === 1">
+        <div v-if="showTestimonialSlot" key="ls1" class="loading-testimonial">
+          <div class="loading-stars">★★★★★</div>
+          <p class="loading-quote">"{{ currentTestimonial.quote }}"</p>
+          <p class="loading-attribution">— {{ currentTestimonial.author }}</p>
+        </div>
+      </template>
+
+      <!-- Stage 2: archetype mapping -->
+      <p v-else-if="loadingStage === 2" key="ls2" class="loading-message">
+        Your {{ loadingArchetypeLabel }} archetype is being mapped...
+      </p>
+
+      <!-- Stage 3: ready -->
+      <p v-else key="ls3" class="loading-message">
+        Your reading is ready.
+      </p>
+
       <div class="progress-track">
         <div class="progress-fill" />
       </div>
@@ -32,7 +54,7 @@
     <!-- Top bar -->
     <div class="top-bar">
       <span class="brand-text">OMENORA</span>
-      <span class="report-badge">{{ t('behavioralReport') }}</span>
+      <span class="report-badge">Personalized AI Reading</span>
     </div>
 
     <!-- Archetype reveal block -->
@@ -56,6 +78,22 @@
     <div class="blurred-preview">
       <p>The window ahead carries a specific quality of momentum — not the loud kind of progress, but the kind that compounds quietly until it cannot be ignored. You have been building something in a register most people around you cannot yet read.</p>
     </div>
+
+    <!-- Unlock progress meter (C-4) -->
+    <div class="unlock-progress-block">
+      <p class="unlock-label">YOUR READING IS 18% UNLOCKED</p>
+      <div class="unlock-bar-track">
+        <div class="unlock-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- T-2: Reading receipt trust line (B4-4) -->
+    <p class="reading-receipt">
+      Built from: your birth date · your 7 answers ·
+      your {{ archetypeShortName }} archetype
+      (Life Path {{ store.lifePathNumber }}) ·
+      {{ traditionLabel }} tradition · AI generation
+    </p>
 
     <!-- Locked sections strip -->
     <div class="locked-sections-strip">
@@ -112,7 +150,7 @@
           <div class="tier-popular-inner">
             <div class="tier-info">
               <p class="tier-name tier-name-popular">{{ t('popularBundle') }}</p>
-              <p class="tier-features">❆ Full reading + 2026 lucky timing calendar + compatibility check with one person</p>
+              <p class="tier-features">❆ Full {{ archetypeShortName }} reading + your 2026 destiny windows + compatibility with one person</p>
             </div>
             <div class="tier-price-block">
               <p class="tier-price tier-price-popular">$4.99</p>
@@ -130,7 +168,7 @@
           <div class="tier-oracle-inner">
             <div class="tier-info">
               <p class="tier-name tier-name-oracle">{{ t('fullOracle') }}</p>
-              <p class="tier-features tier-features-oracle">✦ Complete map — full reading, calendar, compatibility, birth chart, and all traditions unlocked</p>
+              <p class="tier-features tier-features-oracle">✦ Complete {{ archetypeShortName }} map — all 7 sections, your Life Path {{ store.lifePathNumber }} calendar, birth chart &amp; all traditions</p>
             </div>
             <div class="tier-price-block">
               <p class="tier-price tier-price-oracle">$12.99</p>
@@ -299,14 +337,7 @@ const { $trackViewContent, $trackInitiateCheckout, $trackPreviewLoadingStart, $t
 
 const isLoading = ref(true)
 const hasError = ref(false)
-const currentMessageIndex = ref(0)
-
-const loadingMessages = computed(() => [
-  t('processingProfile'),
-  t('mappingPatterns'),
-  t('calculatingArchetype'),
-  t('generatingReport'),
-])
+const loadingStage = ref(0)
 
 const report = computed(() => store.report)
 
@@ -314,6 +345,10 @@ const archetypeName: ComputedRef<string> = computed(() => store.report?.archetyp
 
 const archetypeShortName: ComputedRef<string> = computed(() =>
   archetypeName.value?.replace(/^The\s+/i, '') ?? 'destiny'
+)
+
+const loadingArchetypeLabel = computed(() =>
+  store.archetype ? archetypeShortName.value : 'Your destiny archetype'
 )
 
 const traditionSectionLabel: ComputedRef<string> = computed(() => {
@@ -328,20 +363,30 @@ const traditionSectionLabel: ComputedRef<string> = computed(() => {
   return labels[store.region] ?? 'Your Tradition-Specific Reading'
 })
 
-let messageInterval: ReturnType<typeof setInterval> | null = null
+const traditionLabel: ComputedRef<string> = computed(() => {
+  const labels: Record<string, string> = {
+    western: 'Western',
+    india: 'Vedic',
+    china: 'BaZi',
+    latam: 'Tarot',
+    korea: 'Korean',
+    middleeast: 'Middle Eastern',
+  }
+  return labels[store.region] ?? 'Western'
+})
+
+let stageTimers: ReturnType<typeof setTimeout>[] = []
 
 function startMessageCycle() {
-  currentMessageIndex.value = 0
-  messageInterval = setInterval(() => {
-    currentMessageIndex.value = (currentMessageIndex.value + 1) % loadingMessages.value.length
-  }, 2000)
+  loadingStage.value = 0
+  stageTimers.push(setTimeout(() => { loadingStage.value = 1 }, 2000))
+  stageTimers.push(setTimeout(() => { loadingStage.value = 2 }, 4000))
+  stageTimers.push(setTimeout(() => { loadingStage.value = 3 }, 6000))
 }
 
 function stopMessageCycle() {
-  if (messageInterval) {
-    clearInterval(messageInterval)
-    messageInterval = null
-  }
+  stageTimers.forEach(t => clearTimeout(t))
+  stageTimers = []
 }
 
 async function triggerApiCall() {
@@ -726,6 +771,36 @@ async function handlePayment() {
   to { transform: rotate(360deg); }
 }
 
+/* ── Loading testimonial slot (stage 1) ── */
+.loading-testimonial {
+  text-align: center;
+  max-width: 280px;
+  animation: fadeInMsg 0.45s ease;
+}
+
+.loading-stars {
+  color: #c9a84c;
+  font-size: 12px;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.loading-quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.55;
+  margin: 0 0 6px;
+}
+
+.loading-attribution {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.22);
+  margin: 0;
+}
+
 /* ── Loading text ── */
 .brand-text {
   font-size: 11px;
@@ -851,6 +926,11 @@ async function handlePayment() {
 }
 
 /* ── Archetype block ── */
+@keyframes archetypeReveal {
+  from { opacity: 0; transform: scale(0.94) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .archetype-block {
   position: relative;
   border-left: 2px solid rgba(201, 168, 76, 0.38);
@@ -876,12 +956,17 @@ async function handlePayment() {
   color: rgba(201, 168, 76, 0.62);
   margin: 0 0 12px;
   text-transform: uppercase;
+  animation: archetypeReveal 0.9s ease-out forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
 }
 
 .archetype-symbol {
   display: block;
   margin-bottom: 8px;
-  opacity: 0.85;
+  animation: archetypeReveal 0.9s ease-out forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
 }
 
 .archetype-name {
@@ -892,6 +977,9 @@ async function handlePayment() {
   line-height: 1.1;
   margin: 0;
   letter-spacing: -0.01em;
+  animation: archetypeReveal 0.9s ease-out forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
 }
 
 .archetype-meta {
@@ -899,6 +987,9 @@ async function handlePayment() {
   color: rgba(140, 110, 255, 0.58);
   margin: 8px 0 0;
   letter-spacing: 0.04em;
+  animation: archetypeReveal 0.9s ease-out forwards;
+  animation-delay: 0.7s;
+  opacity: 0;
 }
 
 .traits-row {
@@ -906,6 +997,9 @@ async function handlePayment() {
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 16px;
+  animation: archetypeReveal 0.9s ease-out forwards;
+  animation-delay: 0.9s;
+  opacity: 0;
 }
 
 .trait-pill {
@@ -944,6 +1038,49 @@ async function handlePayment() {
 
 .blurred-preview p {
   margin: 0;
+}
+
+/* ── Reading receipt trust line (T-2) ── */
+.reading-receipt {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.2);
+  text-align: center;
+  line-height: 1.7;
+  margin: 12px auto 0;
+  max-width: 380px;
+  padding: 0 20px;
+}
+
+/* ── Unlock progress meter (C-4) ── */
+.unlock-progress-block {
+  width: 100%;
+  max-width: 420px;
+  margin: 24px auto 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.unlock-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(201, 168, 76, 0.55);
+  margin: 0 0 10px;
+}
+
+.unlock-bar-track {
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1px;
+}
+
+.unlock-bar-fill {
+  width: 18%;
+  height: 100%;
+  background: rgba(201, 168, 76, 0.55);
+  border-radius: 1px;
 }
 
 /* ── Locked sections strip ── */
@@ -1095,7 +1232,14 @@ async function handlePayment() {
   border: 1px solid rgba(140, 110, 255, 0.18);
   border-left: 2px solid rgba(201, 168, 76, 0.65);
   position: relative;
+  padding: 20px 18px;
   padding-top: 22px;
+  box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.65), 0 8px 32px rgba(140, 110, 255, 0.18);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.tier-popular:hover {
+  transform: scale(1.02);
 }
 
 .tier-badge {
@@ -1140,7 +1284,7 @@ async function handlePayment() {
 
 .tier-price-popular {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 300;
   color: rgba(200, 180, 255, 0.95);
   margin: 0;
