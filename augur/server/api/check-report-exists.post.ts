@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
   try {
     const { data, error } = await supabase
       .from('reports')
-      .select('id, email_sent, report_data, first_name, archetype, life_path_number, email, region, date_of_birth, time_of_birth')
+      .select('id, email_sent, report_data, first_name, archetype, life_path_number, region')
       .eq('session_id', sessionId)
       .single()
 
@@ -26,9 +26,16 @@ export default defineEventHandler(async (event) => {
     }
 
     return {
-      exists: true,
+      exists:    true,
       emailSent: data.email_sent || false,
-      report: data,
+      report: {
+        id:              data.id,
+        first_name:      data.first_name,
+        archetype:       data.archetype,
+        life_path_number: data.life_path_number,
+        report_data:     data.report_data,
+        region:          data.region,
+      },
     }
   } catch {
     return { exists: false, emailSent: false }

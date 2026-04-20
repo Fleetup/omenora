@@ -2,9 +2,23 @@ import { Resend } from 'resend'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+
+  // ── Auth guard — only internal worker (process-jobs) may call this ─────────
+  const incomingSecret = getHeader(event, 'x-job-secret') ?? ''
+  const expectedSecret = (config.emailJobSecret as string | undefined) ?? ''
+  if (!expectedSecret || incomingSecret !== expectedSecret) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
   const body = await readBody(event)
 
-  const { email, firstName: _firstName, insight, archetype } = body
+  const email     = sanitizeString(body.email ?? '', 254)
+  const _firstName = sanitizeString(body.firstName ?? '', 50)
+  const archetype = sanitizeString(body.archetype ?? '', 30)
+  const insight   = body.insight && typeof body.insight === 'object' ? body.insight : null
+
+  assertInput(isValidEmail(email), 'Valid email is required')
+  assertInput(insight !== null, 'insight object is required')
 
   const resend = new Resend(config.resendApiKey)
 

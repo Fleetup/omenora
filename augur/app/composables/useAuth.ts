@@ -79,12 +79,25 @@ export function useAuth() {
    * (mobile). Call this in onMounted of any page that should respect auth state.
    */
   async function restoreSession(): Promise<boolean> {
-    const { data } = await supabase.auth.getSession()
-    if (data.session) {
-      session.value = data.session
-      return true
+    // getSession() reads from localStorage without a network call — it cannot
+    // detect revoked tokens. We use it only to check if a local token exists,
+    // then call getUser() which validates the JWT against the Supabase server.
+    const { data: localData } = await supabase.auth.getSession()
+    if (!localData.session) return false
+
+    const { data: userData, error } = await supabase.auth.getUser(
+      localData.session.access_token,
+    )
+
+    if (error || !userData.user) {
+      // Token is invalid or revoked — clear local session
+      await supabase.auth.signOut()
+      session.value = null
+      return false
     }
-    return false
+
+    session.value = localData.session
+    return true
   }
 
   // ── Protected API calls ────────────────────────────────────────────────────

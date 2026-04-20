@@ -61,18 +61,28 @@ function buildSubjectLines(firstName: string, archetype: string, dateLabel: stri
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+
+  // ── Auth guard — only internal worker (process-jobs) may call this ─────────
+  const incomingSecret = getHeader(event, 'x-job-secret') ?? ''
+  const expectedSecret = (config.emailJobSecret as string | undefined) ?? ''
+  if (!expectedSecret || incomingSecret !== expectedSecret) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
   const body = await readBody(event)
 
-  const {
-    firstName,
-    archetype,
-    lifePathNumber,
-    element,
-    region,
-    targetDate,
-    language,
-    email,
-  } = body
+  const firstName     = sanitizeString(body.firstName, 50)
+  const archetype     = sanitizeString(body.archetype, 30)
+  const lifePathNumber = body.lifePathNumber !== undefined ? Number(body.lifePathNumber) : 0
+  const element       = sanitizeString(body.element, 20)
+  const region        = isValidRegion(body.region) ? (body.region as string) : 'western'
+  const targetDate    = sanitizeString(body.targetDate ?? '', 30)
+  const language      = sanitizeString(body.language || 'en', 5)
+  const email         = sanitizeString(body.email ?? '', 254)
+
+  assertInput(!!firstName, 'firstName is required')
+  assertInput(isValidArchetype(archetype), 'Invalid archetype')
+  assertInput(!email || isValidEmail(email), 'Invalid email')
 
   // ── Date context ──────────────────────────────────────────────────────
   const today = targetDate ? new Date(targetDate) : new Date()

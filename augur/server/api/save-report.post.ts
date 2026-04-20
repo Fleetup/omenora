@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { ReportSchema } from '~~/server/utils/ai-schemas'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -20,6 +21,13 @@ export default defineEventHandler(async (event) => {
     'Invalid report payload',
   )
 
+  const reportParseResult = ReportSchema.safeParse(body.report)
+  if (!reportParseResult.success) {
+    console.warn('[save-report] Schema validation failed:', reportParseResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', '))
+    throw createError({ statusCode: 422, message: 'Report payload does not match expected schema' })
+  }
+  const validatedReport = reportParseResult.data
+
   const supabase = createClient(
     config.supabaseUrl as string,
     config.supabaseServiceKey as string,
@@ -33,7 +41,7 @@ export default defineEventHandler(async (event) => {
         first_name:       firstName,
         archetype,
         life_path_number: lifePathNumber,
-        report_data:      body.report,
+        report_data:      validatedReport,
         answers:          body.answers ?? {},
         city,
         date_of_birth:    dateOfBirth,
