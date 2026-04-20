@@ -697,7 +697,7 @@ const store = useAnalysisStore()
 const route = useRoute()
 const { provisionUser } = useAuth()
 const { t } = useLanguage()
-const { $trackPurchase } = useNuxtApp() as any
+const { $trackPurchase, $trackReportViewed, $trackUpsellViewed, $trackUpsellAccepted, $trackShareCardOpened, $trackShareCardDownloaded } = useNuxtApp() as any
 
 useSeoMeta({
   title: () => store.firstName ? `${store.firstName}'s Destiny Report` : 'Your Destiny Report',
@@ -1016,6 +1016,7 @@ onMounted(async () => {
 
           isLoadingReport.value = false
           showAddon.value = false
+          nextTick(() => { $trackReportViewed({ archetype: store.archetype, lifePathNumber: store.lifePathNumber, language: store.language, region: store.region }) })
           if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
             await generateBirthChartAuto()
           }
@@ -1049,6 +1050,7 @@ onMounted(async () => {
 
           isLoadingReport.value = false
           showAddon.value = false
+          nextTick(() => { $trackReportViewed({ archetype: store.archetype, lifePathNumber: store.lifePathNumber, language: store.language, region: store.region }) })
           if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
             generateBirthChartAuto()
           }
@@ -1142,6 +1144,7 @@ onMounted(async () => {
 
       isLoadingReport.value = false
       showAddon.value = false
+      nextTick(() => { $trackReportViewed({ archetype: store.archetype, lifePathNumber: store.lifePathNumber, language: store.language, region: store.region }) })
       if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
         await generateBirthChartAuto()
       }
@@ -1164,6 +1167,7 @@ onMounted(async () => {
     // No sessionId — show report from existing store state (promo / direct nav)
     isLoadingReport.value = false
     showAddon.value = false
+    nextTick(() => { $trackReportViewed({ archetype: store.archetype, lifePathNumber: store.lifePathNumber, language: store.language, region: store.region }) })
     if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
       generateBirthChartAuto()
     }
@@ -1243,6 +1247,7 @@ const isLoadingBundle = ref(false)
 
 async function buyBundle() {
   if (isLoadingBundle.value) return
+  $trackUpsellViewed({ type: 'bundle', archetype: store.archetype, language: store.language })
   isLoadingBundle.value = true
   try {
     const { url } = await $fetch<{ sessionId: string; url: string | null }>(
@@ -1262,7 +1267,10 @@ async function buyBundle() {
         },
       }
     )
-    if (url) window.location.href = url
+    if (url) {
+      $trackUpsellAccepted({ type: 'bundle', price: 5.99, archetype: store.archetype, language: store.language })
+      window.location.href = url
+    }
   } catch {
     console.error('Bundle purchase failed')
     isLoadingBundle.value = false
@@ -1301,6 +1309,7 @@ const isDownloading = ref(false)
 
 async function downloadCard() {
   if (isDownloading.value) return
+  $trackShareCardOpened()
   isDownloading.value = true
 
   try {
@@ -1329,6 +1338,7 @@ async function downloadCard() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+    $trackShareCardDownloaded()
   } catch {
     console.error('Card download failed')
   } finally {
@@ -1346,6 +1356,7 @@ async function buyCompatibilityReading() {
   if (isProcessingCompatibility.value) return
   if (!partnerName.value || !partnerDob.value) return
 
+  $trackUpsellViewed({ type: 'compatibility', archetype: store.archetype, language: store.language })
   isProcessingCompatibility.value = true
 
   try {
@@ -1370,7 +1381,10 @@ async function buyCompatibilityReading() {
       city: partnerCity.value,
     })
 
-    if (url) window.location.href = url
+    if (url) {
+      $trackUpsellAccepted({ type: 'compatibility', price: 0.99, archetype: store.archetype, language: store.language })
+      window.location.href = url
+    }
   } catch {
     console.error('Compatibility purchase failed')
     isProcessingCompatibility.value = false
@@ -1381,6 +1395,7 @@ const isLoadingCalendar = ref(false)
 
 async function buyCalendar() {
   if (isLoadingCalendar.value) return
+  $trackUpsellViewed({ type: 'calendar', archetype: store.archetype, language: store.language })
   isLoadingCalendar.value = true
   try {
     const { url } = await $fetch<{ sessionId: string; url: string | null }>(
@@ -1396,7 +1411,10 @@ async function buyCalendar() {
         },
       }
     )
-    if (url) window.location.href = url
+    if (url) {
+      $trackUpsellAccepted({ type: 'calendar', price: 2.99, archetype: store.archetype, language: store.language })
+      window.location.href = url
+    }
   } catch {
     console.error('Calendar purchase failed')
     isLoadingCalendar.value = false
@@ -1446,6 +1464,7 @@ async function buyBirthChart() {
     await generateBirthChartAuto()
     return
   }
+  $trackUpsellViewed({ type: 'birthChart', archetype: store.archetype, language: store.language })
   isLoadingBirthChart.value = true
   try {
     const { url } = await $fetch<{ sessionId: string; url: string | null }>(
@@ -1463,7 +1482,10 @@ async function buyBirthChart() {
         },
       }
     )
-    if (url) window.location.href = url
+    if (url) {
+      $trackUpsellAccepted({ type: 'birthChart', price: 2.99, archetype: store.archetype, language: store.language })
+      window.location.href = url
+    }
   } catch {
     console.error('Birth chart purchase failed')
   } finally {
