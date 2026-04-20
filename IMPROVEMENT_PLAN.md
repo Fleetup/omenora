@@ -1296,7 +1296,7 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 
 ---
 
-**P0 CURRENT STATUS (April 2026):**
+**P0 CURRENT STATUS (April 2026 — updated Batch 6):**
 - [x] L-1 Rewrite Q4/Q7 questions — done
 - [x] L-2 Crisis signpost on 3 pages — done
 - [x] L-3 Data use notice step 2 — done
@@ -1305,7 +1305,8 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 - [~] L-6 Urgency copy — verify no unenforceable expiry claim in live copy
 - [x] T-3 Remove fake urgency/proof — done
 - [ ] T-1 Pseudo-scientific framing audit — NOT STARTED
-- [ ] B-1 QA rubric + 200-report review — NOT STARTED (highest priority remaining)
+- [x] B-1 QA rubric created (REPORT_QA_RUBRIC.md + REPORT_QA_LOG.csv) — done; 200-report review NOT STARTED (founder task, highest priority remaining)
+- [x] B-3 ANALYTICS_EVENTS.md created — done
 - [x] B-2 promptVersion tracking + red-flag logging — done (confirm DB column live)
 - [x] B-3 Event instrumentation (18 events in pixels.client.ts) — done; dashboard build + call-site audit still needed
 - [x] B-4 Webhook chargeback/refund logging — done (confirm events registered in Stripe)
@@ -1325,14 +1326,14 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 #### 1-A · Landing Page Clarity and Conversion
 *Ref: TRACK 6 — LANDING PAGE CLARITY AND CONVERSION*
 
-- [ ] **LP-1 · Rewrite landing page tagline**
+- [x] **LP-1 · Rewrite landing page tagline** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/index.vue` (line 23 — current: "AI decoded your destiny. Science explains why.")
   - Current state: Tagline unchanged; `.tagline-sub` does not yet exist.
   - Done when: New tagline and `.tagline-sub` live ("Your free AI destiny reading — ready in 60 seconds." + sub-copy); `.tagline-sub` CSS applied
   - Ref: TRACK 6 → LP-1
 
-- [ ] **LP-2 · Make CTA button visually primary**
+- [x] **LP-2 · Make CTA button visually primary** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/index.vue` — `.cta-button` CSS (line 370+), button label (line 34)
   - Current state: Button uses transparent background with `::before` pseudo-element hover fill. Label is "Begin Your Analysis". Both need updating.
@@ -1344,31 +1345,31 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
   - Verification: Already reads "Free · No account required · Results in 60 seconds" — value-based copy, no count. (Same as L-5.)
   - Ref: TRACK 6 → LP-6
 
-- [ ] **LP-5 · Remove feature pills from landing page**
+- [x] **LP-5 · Remove feature pills from landing page** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/index.vue`
   - Done when: Feature pill elements removed or replaced per LP-5 spec
   - Ref: TRACK 6 → LP-5
 
-- [ ] **LP-3 · Add "What You'll Discover" section**
+- [x] **LP-3 · Add "What You'll Discover" section** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/index.vue` — after `.content` block, before `<footer>`
   - Done when: 4-card discover grid live with correct copy, glyphs, and responsive CSS (single column below 420px)
   - Ref: TRACK 6 → LP-3 (full HTML + CSS)
 
-- [ ] **LP-4 · Add "How It Works" 3-step strip**
+- [x] **LP-4 · Add "How It Works" 3-step strip** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/index.vue` — after `.discover-section`
   - Done when: 3-step how-it-works strip live with correct copy and CSS
   - Ref: TRACK 6 → LP-4 (full HTML + CSS)
 
-- [ ] **LP-7 · Add entry animations to landing page**
+- [x] **LP-7 · Add entry animations to landing page** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/index.vue`
   - Done when: Entry animations applied per LP-7 spec; no layout shift on mobile
   - Ref: TRACK 6 → LP-7
 
-- [ ] **LP-8 · Add bottom repeat CTA**
+- [x] **LP-8 · Add bottom repeat CTA** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/index.vue` — above footer
   - Done when: Bottom CTA button live and functional per LP-8 spec
@@ -1377,10 +1378,11 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 #### 1-B · Offer and Monetization
 *Ref: TRACK 1.5 — OFFER AND MONETIZATION STRATEGY*
 
-- [ ] **M-1 · Set up 3-tier vs 2-tier paywall A/B test**
+- [~] **M-1 · Set up 3-tier vs 2-tier paywall A/B test** *(CANARY DEPLOYED — not yet live split, verified Batch 6)*
   - Owner: Product + Frontend dev
   - File: `augur/app/pages/preview.vue`
   - **Canary deployment required before 50/50 split:** Deploy new variant behind `?preview_variant=2tier` query param, test full payment flow end-to-end manually (including Stripe webhook delivery), then start at 10% split for 48 hours before expanding. Use an environment variable kill switch. See TRACK 1.5 → M-1 for full canary protocol.
+  - Canary URL: `https://omenora.com/preview?preview_variant=2tier`
   - Done when: Canary QA passed; 10% split live and monitored; expanded to 50/50 after 48hrs clean; B-3 events confirmed firing per variant; test runs until minimum 200 completions per variant
   - Ref: TRACK 1.5 → M-1
   - Dependency: B-3 instrumentation live
@@ -1400,39 +1402,39 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 #### 1-C · Conversion Fixes
 *Ref: TRACK 3 — CONVERSION FIXES*
 
-- [ ] **C-3 · Add archetype reveal animation**
+- [x] **C-3 · Add archetype reveal animation** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/preview.vue` — `.archetype-block` CSS
   - Done when: `@keyframes archetypeReveal` applied with correct staggered delays on all 5 elements; verified on mobile; no layout shift
   - Ref: TRACK 3 → C-3
 
-- [ ] **C-5 · Personalize paywall copy with archetype + life path data**
+- [x] **C-5 · Personalize paywall copy with archetype + life path data** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/preview.vue` — tier feature descriptions
   - Done when: `archetypeShortName` and `lifePathNumber` interpolated into Tier 2 and Tier 3 copy
   - Ref: TRACK 3 → C-5
 
-- [ ] **T-2 · Add "How Your Reading Was Built" trust layer**
+- [x] **T-2 · Add "How Your Reading Was Built" trust layer** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/preview.vue` — near C-4 progress meter
   - Done when: One-line receipt-style explanation visible above or below progress meter, interpolating `archetypeShortName`, `lifePathNumber`, and `tradition`
   - Ref: TRACK 2 → T-2
   - Dependency: C-4 placed first
 
-- [ ] **C-4 · Add unlock progress meter**
+- [x] **C-4 · Add unlock progress meter** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/preview.vue` — between `.blurred-preview` and locked sections
   - Done when: Gold progress bar showing "YOUR READING IS 18% UNLOCKED" visible between blurred section and pricing; Cormorant Garamond text
   - Ref: TRACK 3 → C-4
 
-- [ ] **C-6 · Improve tier card visual weight**
+- [x] **C-6 · Improve tier card visual weight** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/preview.vue` — `.tier-popular` CSS
   - Done when: Updated padding, box-shadow, font-size, and hover scale applied per spec
   - Ref: TRACK 3 → C-6
   - Dependency: M-1 variant decision (layout may change if Oracle moves off paywall)
 
-- [ ] **C-2 · Loading screen personalization + testimonial slot**
+- [x] **C-2 · Loading screen personalization + testimonial slot** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/preview.vue` — loading state
   - **Testimonial enforcement:** Use a typed `REAL_TESTIMONIALS` array with `v-if="REAL_TESTIMONIALS.length > 0"` guard — not a string placeholder. Empty array = nothing renders. No accidental fake quote can ship. See TRACK 3 → C-2 for exact implementation.
@@ -1440,7 +1442,7 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
   - Ref: TRACK 3 → C-2
   - Dependency: L-4 resolved first
 
-- [ ] **C-1 · Add mid-quiz personalization screens after Q1 and Q4**
+- [x] **C-1 · Add mid-quiz personalization screens after Q1 and Q4** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/analysis.vue` — step 2 template
   - **Edge cases must be handled:** Use a `shownInterstitials: Set<string>` to prevent re-trigger on answer change; cancel pending `setTimeout` in `onUnmounted`; use `el.scrollIntoView({ behavior: 'smooth', block: 'center' })` not `window.scrollTo`; never scroll past unanswered questions. See TRACK 3 → C-1 for full edge case list.
@@ -1475,7 +1477,7 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 #### 1-E · Testimonial Collection System
 *No post-purchase testimonial email exists anywhere in the codebase (verified April 2026). `REAL_TESTIMONIALS` array in `preview.vue` is empty and cannot populate itself.*
 
-- [ ] **TC-1 · Build Day-2 post-purchase testimonial collection email**
+- [x] **TC-1 · Build Day-2 post-purchase testimonial collection email** *(DONE — verified Batch 6)*
   - Owner: Backend dev + Product
   - Files to create/modify: `server/utils/email-templates.ts` (add testimonial request template), `server/api/stripe/webhook.post.ts` (schedule Day-2 job on `checkout.session.completed`), `server/utils/email-jobs.ts` (confirm `step` range can accommodate a post-purchase step or use a separate table/mechanism)
   - Current state: The `email_jobs` table schema supports steps 1–4 only (see `email-jobs.ts` line 15: `step smallint not null check (step between 1 and 4)`). A post-purchase Day-2 email needs either a schema extension or a separate delivery path. Abandonment sequence is already suppressed on purchase via `cancelEmailJobs`.
@@ -1500,7 +1502,8 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 #### 1-F · Entry Price A/B Test
 *Grounded in REVENUE MATH section: Tier 1 price matters less than bundle attachment rate. This test validates that assumption.*
 
-- [ ] **M-4 · Run $2.99 vs $3.99 Tier 1 entry price A/B test**
+- [~] **M-4 · Run $2.99 vs $3.99 Tier 1 entry price A/B test** *(CANARY DEPLOYED — not yet live split, verified Batch 6)*
+  - Canary URL: `https://omenora.com/preview?price_test=deprioritize1`
   - Owner: Product + Growth
   - Files: `server/api/create-payment.post.ts` (line 42: `unit_amount: 299`), `server/api/apply-promo-discount.post.ts` (line 4: `basic: { cents: 299 }`), `augur/app/pages/preview.vue` (displayed price)
   - Hypothesis: Raising Tier 1 from $2.99 to $3.99 will not significantly reduce checkout CVR but will increase AOV by ~$1 per Basic-tier buyer. If Tier 2 (Bundle at $4.99) is the default-selected tier, Tier 1 acts as a downgrade anchor — raising its price may have minimal CVR impact while improving the floor.
@@ -1555,19 +1558,19 @@ Checkbox legend: `[ ]` = not started · `[~]` = in progress · `[x]` = done
 #### 2-B · UI Polish
 *Ref: TRACK 4 — UI/UX POLISH*
 
-- [ ] **U-1 · Option tile selection animation**
+- [x] **U-1 · Option tile selection animation** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/analysis.vue` — `.option-tile.selected` CSS
   - Done when: `scale(1.02)` + `@keyframes tilePulse` applied; verified on mobile tap
   - Ref: TRACK 4 → U-1
 
-- [ ] **U-2 · Add tradition selector explanation copy**
+- [x] **U-2 · Add tradition selector explanation copy** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/analysis.vue` — `.region-section`
   - Done when: "This determines which ancient system interprets your destiny." visible above tradition cards, styled `.subheading`
   - Ref: TRACK 4 → U-2
 
-- [ ] **U-4 · Post-payment email confirmation banner**
+- [x] **U-4 · Post-payment email confirmation banner** *(DONE — verified Batch 6)*
   - Owner: Frontend dev
   - File: `augur/app/pages/report.vue`
   - Done when: Dismissible banner visible when `store.paymentComplete === true`; auto-dismisses after 5 seconds
