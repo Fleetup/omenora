@@ -295,7 +295,7 @@ useSeoMeta({ title: 'Your Destiny Preview', robots: 'noindex, nofollow' })
 
 const store = useAnalysisStore()
 const { t } = useLanguage()
-const { $trackViewContent, $trackInitiateCheckout } = useNuxtApp() as any
+const { $trackViewContent, $trackInitiateCheckout, $trackPreviewLoadingStart, $trackPreviewLoaded, $trackPaywallView, $trackTierSelected, $trackEmailCaptureSuccess } = useNuxtApp() as any
 
 const isLoading = ref(true)
 const hasError = ref(false)
@@ -348,9 +348,10 @@ async function triggerApiCall() {
   isLoading.value = true
   hasError.value = false
   startMessageCycle()
+  $trackPreviewLoadingStart()
 
   try {
-    const data = await $fetch<{ success: boolean; report: any }>('/api/generate-report', {
+    const data = await $fetch<{ success: boolean; report: any; promptVersion?: string }>('/api/generate-report', {
       method: 'POST',
       body: {
         firstName: store.firstName,
@@ -383,6 +384,7 @@ async function triggerApiCall() {
           dateOfBirth: store.dateOfBirth,
           region: store.region,
           email: store.email,
+          promptVersion: data.promptVersion ?? null,
         },
       })
     } catch {
@@ -396,6 +398,17 @@ async function triggerApiCall() {
         content_id: store.report?.archetypeName || 'preview',
         value: 4.99,
         currency: 'USD',
+      })
+      $trackPreviewLoaded({
+        archetype: store.archetype || '',
+        lifePathNumber: store.lifePathNumber,
+        tradition: store.region,
+        language: store.language,
+      })
+      $trackPaywallView({
+        archetype: store.archetype,
+        language: store.language,
+        region: store.region,
       })
     })
   } catch {
@@ -411,6 +424,32 @@ async function retryApiCall() {
 }
 
 onMounted(async () => {
+  // ── Deep-link restoration from abandonment email (?tempId=...) ──────────────
+  // If the store is empty (user arrived via email CTA, not via the quiz flow),
+  // attempt to restore report state from the saved temp record before applying
+  // the firstName guard. Uses POST /api/get-report which accepts { sessionId }.
+  const route = useRoute()
+  const tempIdParam = route.query.tempId as string | undefined
+  if (tempIdParam && !store.report) {
+    try {
+      const result = await $fetch<{ report: any }>('/api/get-report', {
+        method: 'POST',
+        body: { sessionId: tempIdParam },
+      })
+      if (result?.report) {
+        const r = result.report
+        store.setReport(r.report_data)
+        store.setTempId(r.session_id || tempIdParam)
+        if (r.first_name) store.setPersonalInfo(r.first_name, '', r.city || '')
+        if (r.archetype) store.setArchetype(r.archetype)
+        if (r.life_path_number) store.setLifePathNumber(r.life_path_number)
+        if (r.region) store.setRegion(r.region, store.country)
+      }
+    } catch {
+      // Report not found or fetch failed — fall through to normal guard below
+    }
+  }
+
   if (!store.firstName) {
     await navigateTo('/analysis')
     return
@@ -515,6 +554,7 @@ async function onEmailBlur() {
   if (!email.value || !email.value.includes('@') || captureSubmitted.value) return
   captureSubmitted.value = true
 
+  $trackEmailCaptureSuccess({ source: 'paywall', language: store.language })
   try {
     await $fetch('/api/capture-email', {
       method: 'POST',
@@ -543,6 +583,12 @@ async function handlePayment() {
   if (!email.value) return
 
   const tierValues: Record<number, number> = { 1: 2.99, 2: 4.99, 3: 12.99 }
+  $trackTierSelected({
+    tier: selectedTier.value,
+    price: tierValues[selectedTier.value] || 4.99,
+    archetype: store.archetype,
+    language: store.language,
+  })
   $trackInitiateCheckout({
     value: tierValues[selectedTier.value] || 4.99,
     currency: 'USD',

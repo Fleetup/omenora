@@ -490,6 +490,49 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
   return templates[lang]?.[step] ?? templates['EN'][step]!
 }
 
+export function buildTestimonialRequestEmail(personalization: {
+  firstName: string
+  archetypeName: string
+  language: string
+}): { subject: string; html: string } {
+  const lang = (personalization.language?.toUpperCase() || 'EN') as
+    | 'EN' | 'ES' | 'PT' | 'HI' | 'KO' | 'ZH'
+
+  const subjects: Record<typeof lang, string> = {
+    EN: `${personalization.firstName}, quick question about your reading`,
+    ES: `${personalization.firstName}, una pregunta rápida sobre tu lectura`,
+    PT: `${personalization.firstName}, uma pergunta rápida sobre sua leitura`,
+    HI: `${personalization.firstName}, आपकी रीडिंग के बारे में एक त्वरित प्रश्न`,
+    KO: `${personalization.firstName}, 리딩에 대한 빠른 질문`,
+    ZH: `${personalization.firstName}，关于您的解读的一个简短问题`,
+  }
+
+  const bodies: Record<typeof lang, string> = {
+    EN: `Your ${personalization.archetypeName} reading was delivered.\n\nOne question — what surprised you most about it?\n\nReply to this email. We read every response.`,
+    ES: `Tu lectura de ${personalization.archetypeName} fue entregada.\n\nUna pregunta — ¿qué fue lo que más te sorprendió?\n\nResponde a este correo. Leemos cada respuesta.`,
+    PT: `Sua leitura de ${personalization.archetypeName} foi entregue.\n\nUma pergunta — o que mais te surpreendeu?\n\nResponda a este e-mail. Lemos cada resposta.`,
+    HI: `आपकी ${personalization.archetypeName} रीडिंग डिलीवर हो गई।\n\nएक प्रश्न — इसमें आपको सबसे अधिक क्या आश्चर्यजनक लगा?\n\nइस ईमेल का जवाब दें। हम हर जवाब पढ़ते हैं।`,
+    KO: `${personalization.archetypeName} 리딩이 전달되었습니다.\n\n한 가지 질문 — 가장 놀라웠던 것은 무엇이었나요?\n\n이 이메일에 답장해 주세요. 모든 답변을 읽습니다.`,
+    ZH: `您的${personalization.archetypeName}解读已送达。\n\n一个问题——您最惊讶的是什么？\n\n回复这封邮件。我们阅读每一条回复。`,
+  }
+
+  const subject = subjects[lang] ?? subjects['EN']
+  const bodyText = bodies[lang] ?? bodies['EN']
+
+  // Plain-text styled as minimal HTML — no branded header, no buttons, no links
+  // Intentionally looks like a personal email to maximise reply rate
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:40px 20px;background:#ffffff;font-family:Georgia,serif;font-size:16px;color:#333;line-height:1.7;">
+${bodyText.split('\n\n').map(p => `<p style="margin:0 0 16px 0;">${p.replace(/\n/g, '<br>')}</p>`).join('\n')}
+<p style="margin:24px 0 0 0;font-size:12px;color:#aaa;">OMENORA</p>
+</body>
+</html>`
+
+  return { subject, html }
+}
+
 function buildHtmlEmail({
   emoji,
   title,

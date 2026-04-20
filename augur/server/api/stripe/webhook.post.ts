@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { cancelEmailJobs } from '~~/server/utils/email-jobs'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
+import { buildTestimonialRequestEmail } from '~~/server/utils/email-templates'
 import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
 
@@ -14,6 +15,8 @@ import { withAiRetry } from '~~/server/utils/ai-retry'
  *   checkout.session.completed      → save report + send email
  *   invoice.payment_failed          → deactivate subscriber on renewal failure
  *   customer.subscription.deleted   → revoke access on cancellation / churn
+ *   charge.dispute.created          → B-4 chargeback structured logging
+ *   charge.refunded                 → B-4 refund structured logging
  *
  * This is the production-critical safety net: if the customer's browser
  * crashes, closes, or loses network after payment, this webhook guarantees
@@ -22,7 +25,8 @@ import { withAiRetry } from '~~/server/utils/ai-retry'
  * Setup in Stripe Dashboard → Webhooks:
  *   Endpoint URL:  https://omenora.com/api/stripe/webhook
  *   Events to send: checkout.session.completed, invoice.payment_failed,
- *                   customer.subscription.deleted
+ *                   customer.subscription.deleted, charge.dispute.created,
+ *                   charge.refunded
  *   Signing secret: copy to NUXT_STRIPE_WEBHOOK_SECRET
  */
 
@@ -88,6 +92,101 @@ export default defineEventHandler(async (event) => {
       } else {
         console.info('[stripe-webhook] Subscriber deactivated on subscription deletion:', customerId)
       }
+    }
+    return { received: true }
+  }
+
+  // ── B-4: Chargeback logging ────────────────────────────────────────────────
+  if (stripeEvent.type === 'charge.dispute.created') {
+    try {
+      const dispute = stripeEvent.data.object as Stripe.Dispute
+      const chargeId = typeof dispute.charge === 'string' ? dispute.charge : dispute.charge?.id
+
+      // Look up the original charge to get payment_intent, then find our report metadata
+      let reportMeta: Record<string, string> = {}
+      if (chargeId) {
+        try {
+          const charge = await stripe.charges.retrieve(chargeId, { expand: ['payment_intent'] })
+          const pi = charge.payment_intent as Stripe.PaymentIntent | null
+          const checkoutSessions = pi?.id
+            ? await stripe.checkout.sessions.list({ payment_intent: pi.id, limit: 1 })
+            : null
+          reportMeta = checkoutSessions?.data?.[0]?.metadata ?? {}
+        } catch { /* best effort — log what we have */ }
+      }
+
+      // Fetch archetype / region / prompt_version from our DB for cohort analysis
+      let dbRow: { archetype?: string; region?: string; prompt_version?: string } | null = null
+      if (reportMeta.sessionId || reportMeta.tempId) {
+        const supabaseDisp = createSupabaseAdmin()
+        const { data } = await supabaseDisp
+          .from('reports')
+          .select('archetype, region, prompt_version')
+          .eq('session_id', reportMeta.sessionId || reportMeta.tempId)
+          .maybeSingle()
+        dbRow = data
+      }
+
+      console.warn('[B-4] chargeback', {
+        event: 'charge.dispute.created',
+        dispute_id: dispute.id,
+        charge_id: chargeId,
+        amount_cents: dispute.amount,
+        currency: dispute.currency,
+        reason: dispute.reason,
+        status: dispute.status,
+        archetype: dbRow?.archetype ?? reportMeta.archetype ?? 'unknown',
+        region: dbRow?.region ?? reportMeta.region ?? 'unknown',
+        language: reportMeta.language ?? 'unknown',
+        prompt_version: dbRow?.prompt_version ?? 'unknown',
+        timestamp: new Date().toISOString(),
+      })
+    } catch (err: any) {
+      console.error('[B-4] chargeback logging failed (non-blocking):', err?.message)
+    }
+    return { received: true }
+  }
+
+  // ── B-4: Refund logging ──────────────────────────────────────────────────────
+  if (stripeEvent.type === 'charge.refunded') {
+    try {
+      const charge = stripeEvent.data.object as Stripe.Charge
+      const pi = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id
+
+      let reportMeta: Record<string, string> = {}
+      if (pi) {
+        try {
+          const sessions = await stripe.checkout.sessions.list({ payment_intent: pi, limit: 1 })
+          reportMeta = sessions.data?.[0]?.metadata ?? {}
+        } catch { /* best effort */ }
+      }
+
+      let dbRow: { archetype?: string; region?: string; prompt_version?: string } | null = null
+      if (reportMeta.sessionId || reportMeta.tempId) {
+        const supabaseRef = createSupabaseAdmin()
+        const { data } = await supabaseRef
+          .from('reports')
+          .select('archetype, region, prompt_version')
+          .eq('session_id', reportMeta.sessionId || reportMeta.tempId)
+          .maybeSingle()
+        dbRow = data
+      }
+
+      const refundAmountCents = charge.amount_refunded
+      console.warn('[B-4] refund', {
+        event: 'charge.refunded',
+        charge_id: charge.id,
+        payment_intent: pi,
+        refund_amount_cents: refundAmountCents,
+        currency: charge.currency,
+        archetype: dbRow?.archetype ?? reportMeta.archetype ?? 'unknown',
+        region: dbRow?.region ?? reportMeta.region ?? 'unknown',
+        language: reportMeta.language ?? 'unknown',
+        prompt_version: dbRow?.prompt_version ?? 'unknown',
+        timestamp: new Date().toISOString(),
+      })
+    } catch (err: any) {
+      console.error('[B-4] refund logging failed (non-blocking):', err?.message)
     }
     return { received: true }
   }
@@ -305,6 +404,36 @@ export default defineEventHandler(async (event) => {
       dateOfBirth,
       answers: {},
     })
+  }
+
+  // ── TC-1: Schedule day-2 testimonial request email ────────────────────────
+  // Only fires on a confirmed paid checkout. Disputes/refunds happen after this
+  // point in the Stripe lifecycle and are handled by the charge.dispute.created /
+  // charge.refunded handlers — not suppressible at purchase time.
+  // Wrapped in try/catch — never blocks report delivery.
+  if (isValidEmail(email) && firstName && archetype) {
+    try {
+      const testimonial = buildTestimonialRequestEmail({
+        firstName,
+        archetypeName: archetype,
+        language,
+      })
+      const resendKey = config.resendApiKey as string | undefined
+      if (resendKey) {
+        const resendClient = new Resend(resendKey)
+        await resendClient.emails.send({
+          from: 'OMENORA <reading@omenora.com>',
+          replyTo: 'support@omenora.com',
+          to: email,
+          subject: testimonial.subject,
+          html: testimonial.html,
+          scheduledAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+        })
+        console.info('[TC-1] testimonial email scheduled: true', { sessionId, language })
+      }
+    } catch (err: any) {
+      console.error('[TC-1] testimonial schedule failed — non-blocking:', err?.message)
+    }
   }
 
   return { received: true }
