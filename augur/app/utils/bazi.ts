@@ -38,6 +38,28 @@ export const EARTHLY_BRANCHES = [
     quality: 'Generosity, sincerity, pure heart' },
 ]
 
+/**
+ * ACCURACY SCOPE — BaZi pillar calculation (accepted approximation, April 2026)
+ *
+ * Year Stem / Year Branch: Standard BaZi arithmetic. Formula `(year - 4) mod 10`
+ * is anchored to year 4 CE (the 甲子 Jiǎzǐ cycle start) and is widely accepted
+ * as correct for the solar-year Heavenly Stem.
+ *
+ * Day Stem / Day Branch: Standard BaZi arithmetic. Julian Day Number offset
+ * `(JDN - 11) mod 10` is the conventional formula and is correct.
+ *
+ * Month Stem / Month Branch: Linear approximation — NOT traditional.
+ * The formula `(year * 12 + month) % 10` is a mathematical convenience.
+ * Traditional BaZi Month Stems depend on the Year Stem and the solar term
+ * (节气 jiéqì) of the birth month, requiring a lookup table keyed on
+ * (yearStem % 5, solarMonth). This implementation will produce incorrect
+ * Month Stems for a significant portion of birth dates when compared against
+ * a traditional BaZi calculator.
+ *
+ * This approximation is intentional and accepted for the current product scope.
+ * BaZi tradition is restricted from paid ad creative until Phase 2.
+ * See TRADITION_CALC_AUDIT.md for the full decision record.
+ */
 export function getBaziPillars(dateOfBirth: string) {
   const date = new Date(dateOfBirth)
   const year = date.getFullYear()

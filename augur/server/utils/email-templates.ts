@@ -10,12 +10,16 @@ export interface EmailPersonalization {
   readingTradition: string
   language: string
   birthCity: string
+  sessionId?: string
 }
 
 type Lang = 'EN' | 'ES' | 'PT' | 'HI' | 'KO' | 'ZH'
 
 export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization, secret = '') {
   const lang = (data.language?.toUpperCase() as Lang) || 'EN'
+  const ctaUrl = data.sessionId
+    ? `https://omenora.com/preview?tempId=${encodeURIComponent(data.sessionId)}`
+    : 'https://omenora.com/preview'
   const templates: Record<Lang, Record<number, { subject: string; preview: string; html: string }>> = {
     EN: {
       1: {
@@ -24,6 +28,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `${data.firstName}, your reading is still here.`,
           body: `
             <p>You got close.</p>
@@ -43,6 +48,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `What's locked in your reading.`,
           body: `
             <p>${data.firstName},</p>
@@ -68,6 +74,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `Your reading expires in 23 hours.`,
           body: `
             <p>${data.firstName}.</p>
@@ -88,6 +95,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `This is the last email.`,
           body: `
             <p>${data.firstName},</p>
@@ -108,6 +116,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `${data.firstName}, tu lectura sigue aquí.`,
           body: `
             <p>Estuviste a punto.</p>
@@ -127,6 +136,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `Lo que hay en tu lectura bloqueada.`,
           body: `
             <p>${data.firstName},</p>
@@ -150,6 +160,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `Tu lectura expira en 23 horas.`,
           body: `
             <p>${data.firstName}.</p>
@@ -168,6 +179,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `Este es el último correo.`,
           body: `
             <p>${data.firstName},</p>
@@ -187,6 +199,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `${data.firstName}, sua leitura ainda está aqui.`,
           body: `
             <p>Você chegou perto.</p>
@@ -206,6 +219,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `O que está na sua leitura bloqueada.`,
           body: `
             <p>${data.firstName},</p>
@@ -227,6 +241,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `Sua leitura expira em 23 horas.`,
           body: `
             <p>${data.firstName}. Sua leitura de <strong>${data.archetypeName}</strong> expira em 23 horas. Depois, a análise é deletada.</p>
@@ -244,6 +259,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `Este é o último e-mail.`,
           body: `<p>${data.firstName}, sua leitura expira hoje à noite. A criamos uma vez. Não vamos recriar.</p>`,
           ctaText: `Desbloquear antes que desapareça — $4.99`,
@@ -260,6 +276,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `${data.firstName}님, 리딩이 아직 여기 있습니다.`,
           body: `
             <p>거의 다 오셨습니다.</p>
@@ -277,6 +294,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `잠긴 리딩에 있는 내용.`,
           body: `
             <p>${data.firstName}님,</p>
@@ -298,6 +316,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `리딩이 23시간 후에 만료됩니다.`,
           body: `<p>${data.firstName}님. <strong>${data.archetypeName}</strong> 리딩이 23시간 후에 만료됩니다. 이후 분석은 삭제됩니다. $4.99로 지금 바로 잠금을 해제하세요.</p>`,
           ctaText: `지금 잠금 해제 — $4.99 — 23시간 후 만료`,
@@ -312,6 +331,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `이것이 마지막 이메일입니다.`,
           body: `<p>${data.firstName}님, 리딩이 오늘 밤 만료됩니다. 한 번만 생성되었습니다. 다시 생성되지 않습니다.</p>`,
           ctaText: `사라지기 전에 잠금 해제 — $4.99`,
@@ -328,6 +348,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `${data.firstName}，您的解读仍在这里。`,
           body: `
             <p>您几乎就要完成了。</p>
@@ -345,6 +366,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `您锁定解读中的内容。`,
           body: `
             <p>${data.firstName}，</p>
@@ -366,6 +388,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `您的解读将在23小时后过期。`,
           body: `<p>${data.firstName}。您的<strong>${data.archetypeName}</strong>解读将在23小时后过期。之后，分析将被删除。$4.99，现在就解锁。</p>`,
           ctaText: `立即解锁 — $4.99 — 23小时后过期`,
@@ -380,6 +403,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `这是最后一封邮件。`,
           body: `<p>${data.firstName}，您的解读今晚过期。我们只生成了一次。不会再次生成。</p>`,
           ctaText: `在消失之前解锁 — $4.99`,
@@ -396,6 +420,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `${data.firstName}, आपकी रीडिंग अभी भी यहाँ है।`,
           body: `
             <p>आप लगभग पहुँच ही गए थे।</p>
@@ -413,6 +438,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `आपकी बंद रीडिंग में क्या है।`,
           body: `
             <p>${data.firstName},</p>
@@ -434,6 +460,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `आपकी रीडिंग 23 घंटों में समाप्त होती है।`,
           body: `<p>${data.firstName}। आपकी <strong>${data.archetypeName}</strong> रीडिंग 23 घंटों में समाप्त होती है। उसके बाद विश्लेषण हटा दिया जाएगा। $4.99 — अभी अनलॉक करें।</p>`,
           ctaText: `अभी अनलॉक करें — $4.99 — 23 घंटों में समाप्त`,
@@ -448,6 +475,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
+          ctaUrl,
           title: `यह अंतिम ईमेल है।`,
           body: `<p>${data.firstName}, आपकी रीडिंग आज रात समाप्त होती है। हमने इसे एक बार बनाया। फिर नहीं बनाएंगे।</p>`,
           ctaText: `गायब होने से पहले अनलॉक करें — $4.99`,
@@ -467,6 +495,7 @@ function buildHtmlEmail({
   title,
   body,
   ctaText,
+  ctaUrl,
   footerNote,
   urgent = false,
   email,
@@ -476,6 +505,7 @@ function buildHtmlEmail({
   title: string
   body: string
   ctaText: string
+  ctaUrl: string
   footerNote: string
   urgent?: boolean
   email: string
@@ -537,7 +567,7 @@ function buildHtmlEmail({
           <!-- CTA Button -->
           <tr>
             <td style="padding-bottom:32px;text-align:center;">
-              <a href="https://omenora.com/preview"
+              <a href="${ctaUrl}"
                  style="display:inline-block;background-color:${ctaColor};color:#f0ece4;font-family:Georgia,serif;font-size:15px;padding:16px 32px;text-decoration:none;border-radius:2px;letter-spacing:0.05em;">
                 ${ctaText}
               </a>

@@ -97,6 +97,7 @@ export default defineEventHandler(async (event) => {
       birthCity:        capture.birth_city         || '',
       readingTradition: capture.reading_tradition  || 'Western',
       language:         capture.language           || 'EN',
+      sessionId:        capture.session_id         || undefined,
     }, expectedSecret)
 
     const plainTextFallback = template.html

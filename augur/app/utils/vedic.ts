@@ -55,6 +55,22 @@ export const NAKSHATRAS = [
     deity: 'Pushan', quality: 'Completion, nourishment, safe passage to new cycles' },
 ]
 
+/**
+ * ACCURACY SCOPE — Nakshatra assignment (accepted approximation, April 2026)
+ *
+ * This function assigns a Nakshatra based on the day-of-year of the birth date,
+ * cycling through all 27 Nakshatras on a 13.5-day period (27 × 13.5 ≈ 365 days).
+ *
+ * Traditional Vedic astrology assigns the Nakshatra based on the Moon's sidereal
+ * longitude at birth, which cycles independently every ~27.32 days regardless of
+ * the calendar year. This implementation is a calendar-based approximation — two
+ * people born one year apart on the same date will receive the same Nakshatra,
+ * which is correct by this formula but diverges from traditional ephemeris results.
+ *
+ * This approximation is intentional and accepted for the current product scope.
+ * Vedic tradition is restricted from paid ad creative until Phase 2.
+ * See TRADITION_CALC_AUDIT.md for the full decision record.
+ */
 export function getNakshatra(dateOfBirth: string) {
   const date = new Date(dateOfBirth)
   const start = new Date(date.getFullYear(), 0, 0)
