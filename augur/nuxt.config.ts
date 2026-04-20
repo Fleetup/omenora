@@ -30,6 +30,7 @@ export default defineNuxtConfig({
       sentryDsn: '',
       tiktokPixelId: '',
       metaPixelId: '',
+      posthogKey: '',
     },
   },
 

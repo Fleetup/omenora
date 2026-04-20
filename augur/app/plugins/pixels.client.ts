@@ -1,7 +1,21 @@
+import posthog from 'posthog-js'
+
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
   const tiktokPixelId = config.public.tiktokPixelId as string
   const metaPixelId = config.public.metaPixelId as string
+  const posthogKey = config.public.posthogKey as string
+
+  // ── PostHog ─────────────────────────────────────────────────────────────
+  if (posthogKey) {
+    posthog.init(posthogKey, {
+      api_host: 'https://app.posthog.com',
+      capture_pageview: true,
+      capture_pageleave: true,
+      autocapture: false,
+      persistence: 'localStorage+cookie',
+    })
+  }
 
   // ─── TikTok Pixel ──────────────────────────────────────────────────────────
   if (tiktokPixelId) {
@@ -79,74 +93,294 @@ export default defineNuxtPlugin(() => {
     }
   })
 
+  // ─── B-3: safeTrack wrapper ─────────────────────────────────────────────────
+  // A broken pixel must NEVER throw into the call site or break the funnel.
+  function safeTrack(eventName: string, props?: Record<string, unknown>) {
+    try {
+      if (tiktokPixelId && (window as any).ttq) {
+        ;(window as any).ttq.track(eventName, props ?? {})
+      }
+    } catch (err) {
+      console.warn(`[B-3] TikTok tracking error — ${eventName}:`, err)
+    }
+    try {
+      if (metaPixelId && (window as any).fbq) {
+        ;(window as any).fbq('trackCustom', eventName, props ?? {})
+      }
+    } catch (err) {
+      console.warn(`[B-3] Meta tracking error — ${eventName}:`, err)
+    }
+    try {
+      if (posthogKey && posthog.__loaded) {
+        posthog.capture(eventName, props ?? {})
+      }
+    } catch (err) {
+      console.warn(`[B-3] PostHog tracking error — ${eventName}:`, err)
+    }
+  }
+
+  // ─── B-3: UTM + context helpers ─────────────────────────────────────────────
+  function getUtmParams(): Record<string, string> {
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      const result: Record<string, string> = {}
+      for (const key of ['utm_source', 'utm_campaign', 'utm_adset', 'utm_creative', 'utm_medium', 'utm_content']) {
+        const val = sp.get(key)
+        if (val) result[key] = val
+      }
+      return result
+    } catch {
+      return {}
+    }
+  }
+
+  function getDeviceType(): string {
+    try {
+      const ua = navigator.userAgent
+      if (/tablet|ipad|playbook|silk/i.test(ua)) return 'tablet'
+      if (/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(ua)) return 'mobile'
+      return 'desktop'
+    } catch {
+      return 'unknown'
+    }
+  }
+
   // ─── Expose tracking helpers ────────────────────────────────────────────────
   return {
     provide: {
+      // ── Existing pixel-standard events (preserved, now wrapped with safeTrack) ──
+
       trackViewContent: (params: {
         content_name: string
         content_id?: string
         value?: number
         currency?: string
+        archetype?: string
+        lifePathNumber?: number
+        region?: string
+        language?: string
       }) => {
-        if (tiktokPixelId && (window as any).ttq) {
-          ;(window as any).ttq.track('ViewContent', {
-            content_name: params.content_name,
-            content_category: 'Astrology',
-            content_id: params.content_id || params.content_name,
-            value: params.value,
-            currency: params.currency || 'USD',
-          })
-        }
-        if (metaPixelId && (window as any).fbq) {
-          ;(window as any).fbq('track', 'ViewContent', {
-            content_name: params.content_name,
-            content_ids: [params.content_id || params.content_name],
-            value: params.value,
-            currency: params.currency || 'USD',
-          })
-        }
+        try {
+          if (tiktokPixelId && (window as any).ttq) {
+            ;(window as any).ttq.track('ViewContent', {
+              content_name: params.content_name,
+              content_category: 'Astrology',
+              content_id: params.content_id || params.content_name,
+              value: params.value,
+              currency: params.currency || 'USD',
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackViewContent TikTok error:', err) }
+        try {
+          if (metaPixelId && (window as any).fbq) {
+            ;(window as any).fbq('track', 'ViewContent', {
+              content_name: params.content_name,
+              content_ids: [params.content_id || params.content_name],
+              value: params.value,
+              currency: params.currency || 'USD',
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackViewContent Meta error:', err) }
       },
 
       trackInitiateCheckout: (params: {
         value: number
         currency?: string
         content_name?: string
+        tier?: number
+        archetype?: string
+        language?: string
+        region?: string
       }) => {
-        if (tiktokPixelId && (window as any).ttq) {
-          ;(window as any).ttq.track('InitiateCheckout', {
-            value: params.value,
-            currency: params.currency || 'USD',
-            content_name: params.content_name || 'Destiny Reading',
-          })
-        }
-        if (metaPixelId && (window as any).fbq) {
-          ;(window as any).fbq('track', 'InitiateCheckout', {
-            value: params.value,
-            currency: params.currency || 'USD',
-            num_items: 1,
-          })
-        }
+        try {
+          if (tiktokPixelId && (window as any).ttq) {
+            ;(window as any).ttq.track('InitiateCheckout', {
+              value: params.value,
+              currency: params.currency || 'USD',
+              content_name: params.content_name || 'Destiny Reading',
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackInitiateCheckout TikTok error:', err) }
+        try {
+          if (metaPixelId && (window as any).fbq) {
+            ;(window as any).fbq('track', 'InitiateCheckout', {
+              value: params.value,
+              currency: params.currency || 'USD',
+              num_items: 1,
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackInitiateCheckout Meta error:', err) }
       },
 
       trackPurchase: (params: {
         value: number
         currency?: string
         content_name?: string
+        tier?: number
+        archetype?: string
+        language?: string
+        region?: string
       }) => {
-        if (tiktokPixelId && (window as any).ttq) {
-          ;(window as any).ttq.track('CompletePayment', {
-            value: params.value,
-            currency: params.currency || 'USD',
-            content_name: params.content_name || 'Destiny Reading',
-          })
-        }
-        if (metaPixelId && (window as any).fbq) {
-          ;(window as any).fbq('track', 'Purchase', {
-            value: params.value,
-            currency: params.currency || 'USD',
-            content_type: 'product',
-          })
-        }
+        try {
+          if (tiktokPixelId && (window as any).ttq) {
+            ;(window as any).ttq.track('CompletePayment', {
+              value: params.value,
+              currency: params.currency || 'USD',
+              content_name: params.content_name || 'Destiny Reading',
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackPurchase TikTok error:', err) }
+        try {
+          if (metaPixelId && (window as any).fbq) {
+            ;(window as any).fbq('track', 'Purchase', {
+              value: params.value,
+              currency: params.currency || 'USD',
+              content_type: 'product',
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackPurchase Meta error:', err) }
+        safeTrack('checkout_complete', {
+          value: params.value,
+          currency: params.currency || 'USD',
+          tier: params.tier,
+          archetype: params.archetype,
+          language: params.language,
+          region: params.region,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      // ── B-3: Full-funnel event helpers ──────────────────────────────────────
+
+      trackLandingView: () => {
+        safeTrack('landing_view', {
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackAnalysisStart: () => {
+        safeTrack('analysis_start', {
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackStep1Complete: (params: { language?: string }) => {
+        safeTrack('step1_complete', {
+          language: params.language,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackQuestionAnswered: (params: { questionId: string; answer: string; language?: string }) => {
+        safeTrack('question_answered', {
+          question_id: params.questionId,
+          answer: params.answer,
+          language: params.language,
+          device_type: getDeviceType(),
+        })
+      },
+
+      trackAnalysisSubmit: (params: { archetype: string; lifePathNumber?: number; language?: string; region?: string }) => {
+        safeTrack('analysis_submit', {
+          archetype: params.archetype,
+          life_path_number: params.lifePathNumber,
+          language: params.language,
+          region: params.region,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackPreviewLoadingStart: () => {
+        safeTrack('preview_loading_start', {
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackPreviewLoaded: (params: { archetype: string; lifePathNumber?: number; tradition?: string; language?: string }) => {
+        safeTrack('preview_loaded', {
+          archetype: params.archetype,
+          life_path_number: params.lifePathNumber,
+          tradition: params.tradition,
+          language: params.language,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackPaywallView: (params: { archetype?: string; language?: string; region?: string }) => {
+        safeTrack('paywall_view', {
+          archetype: params.archetype,
+          language: params.language,
+          region: params.region,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackTierSelected: (params: { tier: number; price: number; archetype?: string; language?: string }) => {
+        safeTrack('tier_selected', {
+          tier: params.tier,
+          price: params.price,
+          archetype: params.archetype,
+          language: params.language,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackUpsellViewed: (params: { type: 'compatibility' | 'calendar' | 'birthChart' | 'bundle'; archetype?: string; language?: string }) => {
+        safeTrack('upsell_viewed', {
+          upsell_type: params.type,
+          archetype: params.archetype,
+          language: params.language,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackUpsellAccepted: (params: { type: 'compatibility' | 'calendar' | 'birthChart' | 'bundle'; price: number; archetype?: string; language?: string }) => {
+        safeTrack('upsell_accepted', {
+          upsell_type: params.type,
+          price: params.price,
+          archetype: params.archetype,
+          language: params.language,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackReportViewed: (params: { archetype: string; lifePathNumber?: number; language?: string; region?: string }) => {
+        safeTrack('report_viewed', {
+          archetype: params.archetype,
+          life_path_number: params.lifePathNumber,
+          language: params.language,
+          region: params.region,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackShareCardOpened: () => {
+        safeTrack('share_card_opened', { device_type: getDeviceType() })
+      },
+
+      trackShareCardDownloaded: () => {
+        safeTrack('share_card_downloaded', { device_type: getDeviceType() })
+      },
+
+      trackEmailCaptureSuccess: (params: { source: 'paywall' | 'report' | 'opt-in'; language?: string }) => {
+        safeTrack('email_capture_success', {
+          source: params.source,
+          language: params.language,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
       },
     },
   }
