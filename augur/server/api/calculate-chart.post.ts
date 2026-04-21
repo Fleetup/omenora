@@ -3,17 +3,29 @@ import { calculateNatalChart, assignArchetypeFromChart } from '~~/app/utils/nata
 import { calculateLifePathNumber } from '~~/app/utils/lifePathNumber'
 
 export default defineEventHandler(async (event) => {
+  // ── sweph load probe (temporary debug — remove after Railway error identified) ─
+  try {
+    const sweph = await import('sweph')
+    console.log('[calculate-chart] sweph loaded OK, julday type:', typeof sweph.julday)
+  } catch (loadErr: any) {
+    console.error('[calculate-chart] sweph FAILED to load:', loadErr?.message)
+  }
+
   try {
     const body = await readBody(event)
 
     // ── Step 1: Validate inputs ──────────────────────────────────────────────
 
-    const firstName   = sanitizeString(body.firstName, 50)
-    const dateOfBirth = sanitizeString(body.dateOfBirth, 10)
-    const city        = sanitizeString(body.city, 100)
-    const timeOfBirth = body.timeOfBirth === null || body.timeOfBirth === undefined
+    const firstName         = sanitizeString(body.firstName, 50)
+    const dateOfBirth       = sanitizeString(body.dateOfBirth, 10)
+    const city              = sanitizeString(body.city, 100)
+    const timeOfBirth       = body.timeOfBirth === null || body.timeOfBirth === undefined
       ? null
       : sanitizeString(body.timeOfBirth, 20)
+    // UTC offset in minutes supplied by the client browser (e.g. -300 for EST).
+    // Clamped server-side in calculateNatalChart; default 0 (UTC) if absent.
+    const rawOffset         = Number(body.utcOffsetMinutes)
+    const utcOffsetMinutes  = Number.isFinite(rawOffset) ? Math.max(-840, Math.min(840, rawOffset)) : 0
 
     if (!firstName) {
       return sendError(event, createError({ statusCode: 400, message: 'Invalid input', data: { field: 'firstName' } }))
@@ -28,10 +40,11 @@ export default defineEventHandler(async (event) => {
     // ── Step 2: Geocode city ─────────────────────────────────────────────────
 
     const { lat, lon } = await geocodeCity(city)
+    const geocodeFailed = lat === 0 && lon === 0
 
     // ── Step 3: Calculate natal chart ────────────────────────────────────────
 
-    const chart = calculateNatalChart({ dateOfBirth, timeOfBirth, city, lat, lon })
+    const chart = calculateNatalChart({ dateOfBirth, timeOfBirth, utcOffsetMinutes, city, lat, lon })
 
     // ── Step 4: Assign archetype ─────────────────────────────────────────────
 
@@ -46,6 +59,7 @@ export default defineEventHandler(async (event) => {
     return {
       archetype,
       lifePathNumber,
+      geocodeFailed,
       chart: {
         sun:       chart.sun,
         moon:      chart.moon,
@@ -56,10 +70,17 @@ export default defineEventHandler(async (event) => {
         saturn:    chart.saturn,
         ascendant: chart.ascendant,
       },
-      geocoded: { lat, lon },
     }
-  } catch (err) {
-    console.error('[calculate-chart]', err)
-    return sendError(event, createError({ statusCode: 500, message: 'Chart calculation failed' }))
+  } catch (err: any) {
+    console.error('[calculate-chart] FULL ERROR:', JSON.stringify({
+      message: err?.message,
+      code:    err?.code,
+      stack:   err?.stack?.split('\n').slice(0, 5),
+    }))
+    return sendError(event, createError({
+      statusCode:    500,
+      statusMessage: 'Chart calculation failed',
+      data:          { detail: err?.message },
+    }))
   }
 })
