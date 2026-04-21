@@ -749,7 +749,7 @@ Their profile:
 Personalization instructions:
 - Focus area '${opts.answers?.p1 || 'growth'}': The 2-3 months that most directly touch this area (connection=spring/summer romantic windows, purpose=career-peak months, growth=introspective/turning-point months, creativity=generative/high-energy months) must be written with 2x the depth and specificity of other months.
 - Insight style '${opts.answers?.p2 || 'direct'}': direct=short declarative sentences, no hedging. gentle=softer language, acknowledge difficulty gently. detailed=explain the mechanism behind each forecast. intuitive=open sensory language, leave space for discovery.
-- Reading reason '${opts.answers?.p3 || 'self'}': navigating a specific situation → make every month entry feel actionable, what to do not just what will happen. understanding themselves → emphasize internal shifts over external events. curiosity → exploratory tone, possibility-focused. recommended → earn trust with specificity, no generic statements.
+- Reading reason '${opts.answers?.p3 || 'self'}': situation → make every month entry feel actionable, what to do not just what will happen. self → emphasize internal shifts over external events. curiosity → exploratory tone, possibility-focused. recommended → earn trust with specificity, no generic statements.
 
 Rules:
 - Be SPECIFIC to this person — reference their archetype, element, and life path in predictions

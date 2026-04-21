@@ -5,7 +5,7 @@ import { withAiRetry } from '~~/server/utils/ai-retry'
 
 // ── Prompt version — increment on every prompt change ─────────────────────────
 // Format: v<major>.<minor> — major for structural changes, minor for phrasing/copy
-export const PROMPT_VERSION = 'v1.1'
+export const PROMPT_VERSION = 'v1.2'
 
 // ── Inline Vedic utilities (mirrored from app/utils/vedic.ts) ──────────────
 
@@ -519,21 +519,38 @@ NATAL CHART:
 - Venus in ${venusSign} — approach to love and beauty
 - Mars in ${marsSign} — drive, ambition, and action style
 
+BEFORE WRITING — THINK THROUGH THESE THREE QUESTIONS FIRST (do not include this analysis in the output):
+1. Which single planet placement in ${firstName}'s natal chart creates the most specific psychological tension for them right now? Name it. This will anchor the Identity opening sentence.
+2. Given their focus area ('${focusArea}'), which one of the 7 sections is most directly about this? That section must go deeper than every other section.
+3. Given their reading reason ('${readingReason}'), what is the one thing ${firstName} most needs to leave with — a feeling, an action, an understanding, or a sense of being seen? Every section should contribute toward that outcome.
+Only after this analysis, write the 7 sections.
+
+---
+
 PERSONALIZATION DIRECTIVES — apply these throughout all 7 sections:
 
 DIRECTIVE 1 — FOCUS AREA (p1): ${firstName}'s primary focus is: ${focusArea}.
 This is not a label. It is a weighting instruction.
-- The section that most directly addresses this focus (Love for 'connection', Purpose for 'purpose and work', Science+Identity for 'inner growth', Gift for 'creative expression') must go ONE LEVEL DEEPER than the other sections. More specific. More personal. More named detail. The reader should feel that this section was written first.
-- In every other section, find one sentence where this focus area is naturally present and make it visible — a brief acknowledgment that this is what ${firstName} is actually navigating right now.
-- Do NOT mention the label '${focusArea}' explicitly in the report. Embody it through specificity.
+- Section-to-focus mapping: Love section for 'love and connection', Purpose section for 'purpose and meaningful work', Identity+Science sections for 'inner growth and self-understanding', Gift section for 'creative expression'.
+- The mapped section must go ONE LEVEL DEEPER than the other sections. More specific. More personal. More named detail. The reader should feel that this section was written first.
+- In every other section, find one sentence where this focus area is naturally present and make it briefly visible — acknowledge what ${firstName} is actually navigating right now.
+- Do NOT quote the phrase '${focusArea}' in the report text. Embody it through specificity.
 
 DIRECTIVE 2 — READING REASON (p3): ${firstName} is here because: ${readingReason}.
-This changes the stakes and framing:
-- 'understanding themselves better': Write with psychological depth. ${firstName} is reflective and ready for honesty. Do not soften observations.
-- 'navigating a specific situation': The forecast and purpose sections must feel immediately actionable. ${firstName} needs to leave with something they can use, not just something they can feel. Name what to watch for, what to do differently, what to stop waiting on.
-- 'curiosity about what lies ahead': Lean into discovery framing. ${firstName} is open but not urgent. The forecast can be exploratory — describe what is possible, not just what is coming.
-- 'a recommendation brought them here': ${firstName} may be skeptical. Earn trust through specificity and accuracy. Avoid claims that feel like astrology clichés. The first two sentences of Identity must be strong enough to convert a skeptic.
+This changes the stakes and framing for every section:
+- 'understanding themselves better': Write with psychological depth. ${firstName} is reflective and ready for honesty. Do not soften observations. Emphasize internal patterns over external events.
+- 'navigating a specific situation': Every section must feel immediately actionable. ${firstName} needs to leave with something they can use, not just something they can feel. Name what to watch for, what to do differently, what to stop waiting on. The forecast and purpose sections carry double weight here.
+- 'curiosity about what lies ahead': Lean into discovery framing. ${firstName} is open but not urgent. Describe what is possible, not just what is coming. The tone can be exploratory and possibility-focused.
+- 'a recommendation brought them here': ${firstName} may be skeptical. Earn trust through specificity and accuracy early. Avoid anything that sounds like a generic astrology claim. The first two sentences of Identity must be specific enough to convert a skeptic.
 Apply the matching instruction above. Do not reference the reason explicitly in the report text.
+
+DIRECTIVE 3 — INSIGHT STYLE (p2): ${firstName}'s preferred style is: ${insightStyle}.
+This is a hard voice directive that overrides any default register assumption. Apply it to every sentence in all 7 sections:
+- 'direct and honest': Short declarative sentences. Name truths without softening. Precision over warmth. Avoid hedge words like 'perhaps', 'might', 'often'.
+- 'gentle and encouraging': Warm, supportive language. Acknowledge difficulty before naming it. Use 'might', 'perhaps', 'often'. Never blunt. Soften hard truths without losing them.
+- 'detailed and precise': Analytical depth. Explain the mechanism behind every observation. Two or three supporting details per claim. Methodical structure over poetic flow.
+- 'intuitive and open': Sensory language. Leave space for the reader to complete the thought. Less linear. More evocative than explanatory.
+Do not override this directive for any section. See also Writing Rule 0 below for sentence-level application.
 
 Tradition framework (primary lens for all 7 sections):
 ${regionPrompt}
@@ -544,14 +561,10 @@ Use the natal chart data to ground every section in astrological fact. Reference
 
 WRITING RULES — follow every one without exception:
 
-0. INSIGHT STYLE — apply this before any other rule:
+0. INSIGHT STYLE — the most critical voice rule:
 The user's preferred insight style is: ${insightStyle}.
-This is a hard voice directive. Adjust your sentence construction, word choice, and emotional register throughout ALL 7 sections to match this style:
-- direct: Short declarative sentences. No softening language. Name truths without apology. Precision over warmth.
-- gentle: Warm and encouraging. Acknowledge difficulty before naming it. Use 'might', 'perhaps', 'often'. Never blunt.
-- detailed: Analytical depth. Explain the mechanism behind every observation. Two or three supporting details per claim. Methodical structure.
-- intuitive: Open and exploratory. Use sensory language. Leave space for the reader to complete the thought. Less linear.
-Do not override this directive for any section. If the style feels in tension with the content, find phrasing that honors both.
+Full definitions are in DIRECTIVE 3 above. Apply that directive at the sentence level throughout all 7 sections.
+If the style feels in tension with the content (e.g., a painful truth written in 'gentle' style), find phrasing that names the truth while honoring the register — do not sacrifice accuracy for softness, and do not sacrifice the style for bluntness.
 
 LANGUAGE LEVEL — MOST IMPORTANT RULE:
 
