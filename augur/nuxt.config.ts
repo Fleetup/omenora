@@ -226,9 +226,9 @@ export default defineNuxtConfig({
                   'Destiny Analysis',
                 ],
                 sameAs: [
-                  'https://www.tiktok.com/@omenora',
-                  'https://www.instagram.com/omenora',
-                  'https://www.facebook.com/omenora',
+                  'https://www.tiktok.com/@omenora.com',
+                  'https://www.instagram.com/omenoraofficial',
+                  'https://www.facebook.com/profile.php?id=61572569892395',
                   // 'https://twitter.com/omenora',
                   // 'https://www.youtube.com/@omenora',
                   // 'https://www.linkedin.com/company/omenora',

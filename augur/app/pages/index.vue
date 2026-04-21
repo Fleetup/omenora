@@ -280,7 +280,7 @@
       <!-- Social icons -->
       <div class="footer-socials" aria-label="Follow OMENORA on social media">
         <a
-          href="https://www.tiktok.com/@omenora"
+          href="https://www.tiktok.com/@omenora.com"
           class="social-icon"
           target="_blank"
           rel="noopener noreferrer"
@@ -291,7 +291,7 @@
           </svg>
         </a>
         <a
-          href="https://www.instagram.com/omenora"
+          href="https://www.instagram.com/omenoraofficial"
           class="social-icon"
           target="_blank"
           rel="noopener noreferrer"
@@ -302,7 +302,7 @@
           </svg>
         </a>
         <a
-          href="https://www.facebook.com/omenora"
+          href="https://www.facebook.com/profile.php?id=61572569892395"
           class="social-icon"
           target="_blank"
           rel="noopener noreferrer"
