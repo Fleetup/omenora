@@ -2,13 +2,7 @@
   <!-- STATE A: Loading -->
   <div v-if="isLoading" class="loading-page">
     <div class="loading-content">
-      <div class="orbital-mark">
-        <div class="orbit-outer">
-          <div class="orbit-planet" />
-        </div>
-        <div class="orbit-inner" />
-        <div class="orbit-center" />
-      </div>
+      <OrbitalMark />
       <p class="brand-text">OMENORA</p>
 
       <!-- Stage 0: personalized opener -->
@@ -738,56 +732,7 @@ async function handlePayment() {
 }
 
 /* ── Orbital mark ── */
-.orbital-mark {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.orbit-outer {
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: 1px solid rgba(201, 168, 76, 0.3);
-  animation: orbit-spin 18s linear infinite;
-}
-
-.orbit-planet {
-  position: absolute;
-  top: -3px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(201, 168, 76, 0.85);
-  box-shadow: 0 0 6px rgba(201, 168, 76, 0.5);
-}
-
-.orbit-inner {
-  position: absolute;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(140, 110, 255, 0.2);
-}
-
-.orbit-center {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(200, 180, 255, 0.9);
-  box-shadow: 0 0 8px rgba(180, 150, 255, 0.6);
-}
-
-@keyframes orbit-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+/* Rendered by OrbitalMark component */
 
 /* ── Loading testimonial slot (stage 1) ── */
 .loading-testimonial {

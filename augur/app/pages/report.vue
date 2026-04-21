@@ -2,11 +2,7 @@
   <!-- Loading report with impulse upsell -->
   <div v-if="isLoadingReport" class="report-loading-page">
     <div class="report-loading-content">
-      <div class="orbital-mark">
-        <div class="orbit-outer"><div class="orbit-planet" /></div>
-        <div class="orbit-inner" />
-        <div class="orbit-center" />
-      </div>
+      <OrbitalMark />
       <p class="rload-brand">OMENORA</p>
       <p class="rload-msg">{{ t('craftingReport') }}</p>
       <div class="rload-track">
@@ -50,11 +46,7 @@
   <!-- Error state -->
   <div v-else-if="hasError" class="center-page">
     <div class="center-content">
-      <div class="orbital-mark">
-        <div class="orbit-outer"><div class="orbit-planet" /></div>
-        <div class="orbit-inner" />
-        <div class="orbit-center" />
-      </div>
+      <OrbitalMark />
       <p class="rload-brand">OMENORA</p>
       <p class="status-text">{{ t('reportErrorMsg') }}</p>
       <p style="font-size:13px;color:rgba(255,255,255,0.4);margin:8px 0 20px;">{{ t('reportErrorEmail') }}</p>
@@ -73,11 +65,7 @@
   <!-- Report could not be recovered -->
   <div v-else-if="!store.report" class="center-page">
     <div class="center-content">
-      <div class="orbital-mark">
-        <div class="orbit-outer"><div class="orbit-planet" /></div>
-        <div class="orbit-inner" />
-        <div class="orbit-center" />
-      </div>
+      <OrbitalMark />
       <p class="rload-brand">OMENORA</p>
       <h2 class="fallback-title">{{ t('reportReady') }}</h2>
       <p class="fallback-text">{{ t('checkEmail') }}</p>
@@ -1788,57 +1776,7 @@ async function downloadReportPDF() {
   margin-bottom: 0;
 }
 
-/* Orbital mark (shared across pages) */
-.orbital-mark {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.orbit-outer {
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: 1px solid rgba(201, 168, 76, 0.3);
-  animation: orbit-spin 18s linear infinite;
-}
-
-@keyframes orbit-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.orbit-planet {
-  position: absolute;
-  top: -3px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(201, 168, 76, 0.85);
-  box-shadow: 0 0 6px rgba(201, 168, 76, 0.5);
-}
-
-.orbit-inner {
-  position: absolute;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(140, 110, 255, 0.2);
-}
-
-.orbit-center {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(200, 180, 255, 0.9);
-  box-shadow: 0 0 8px rgba(180, 150, 255, 0.6);
-}
+/* Orbital mark — rendered by OrbitalMark component */
 
 .rload-brand {
   font-size: 11px;

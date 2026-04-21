@@ -8,12 +8,8 @@
     <!-- Content -->
     <div class="content">
       <!-- Orbital brand mark -->
-      <div class="orbital-mark" aria-hidden="true">
-        <div class="orbit-outer">
-          <div class="orbit-planet" />
-        </div>
-        <div class="orbit-inner" />
-        <div class="orbit-center" />
+      <div class="orbital-mark-wrap" aria-hidden="true">
+        <OrbitalMark />
       </div>
 
       <!-- Brand name -->
@@ -314,56 +310,11 @@ useHead({
 }
 
 /* ── Orbital brand mark ── */
-.orbital-mark {
-  position: relative;
-  width: 64px;
-  height: 64px;
+.orbital-mark-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 4px;
-}
-
-.orbit-outer {
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: 1px solid rgba(201,168,76,0.3);
-  animation: orbit-spin 18s linear infinite;
-}
-
-.orbit-planet {
-  position: absolute;
-  top: -3px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(201,168,76,0.85);
-  box-shadow: 0 0 6px rgba(201,168,76,0.5);
-}
-
-.orbit-inner {
-  position: absolute;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(140,110,255,0.22);
-}
-
-.orbit-center {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(200,180,255,0.9);
-  box-shadow: 0 0 8px rgba(180,150,255,0.6);
-}
-
-@keyframes orbit-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* ── Brand name ── */
@@ -524,7 +475,7 @@ useHead({
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.orbital-mark { animation: fadeUp 0.6s ease forwards; animation-delay: 0s; }
+.orbital-mark-wrap { animation: fadeUp 0.6s ease forwards; animation-delay: 0s; }
 .brand-name   { animation: fadeUp 0.6s ease forwards; animation-delay: 0.1s; opacity: 0; }
 .tagline      { animation: fadeUp 0.6s ease forwards; animation-delay: 0.2s; opacity: 0; }
 .tagline-sub  { animation: fadeUp 0.6s ease forwards; animation-delay: 0.3s; opacity: 0; }
