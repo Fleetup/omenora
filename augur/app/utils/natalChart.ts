@@ -1,4 +1,20 @@
-import * as swisseph from 'swisseph'
+import {
+  julday,
+  calc_ut,
+  houses,
+  SE_GREG_CAL,
+  SEFLG_SPEED,
+  SE_SUN,
+  SE_MOON,
+  SE_MERCURY,
+  SE_VENUS,
+  SE_MARS,
+  SE_JUPITER,
+  SE_SATURN,
+  SE_URANUS,
+  SE_NEPTUNE,
+  SE_PLUTO,
+} from 'sweph'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -159,30 +175,30 @@ export function calculateNatalChart(params: NatalChartParams): NatalChart {
     const hourDecimal = hour24 + minute / 60
 
     // ── 2. Julian Day Number ────────────────────────────────────────────
-    const jd = swisseph.swe_julday(year, month, day, hourDecimal, swisseph.SE_GREG_CAL)
+    const jd = julday(year, month, day, hourDecimal, SE_GREG_CAL)
 
     // ── 3. Planetary positions ──────────────────────────────────────────
-    const flag = swisseph.SEFLG_SPEED
+    const flag = SEFLG_SPEED
 
     const planets: Array<{ key: keyof Omit<NatalChart, 'ascendant' | 'lifePathNumber'>; body: number }> = [
-      { key: 'sun',     body: swisseph.SE_SUN     },
-      { key: 'moon',    body: swisseph.SE_MOON    },
-      { key: 'mercury', body: swisseph.SE_MERCURY },
-      { key: 'venus',   body: swisseph.SE_VENUS   },
-      { key: 'mars',    body: swisseph.SE_MARS    },
-      { key: 'jupiter', body: swisseph.SE_JUPITER },
-      { key: 'saturn',  body: swisseph.SE_SATURN  },
-      { key: 'uranus',  body: swisseph.SE_URANUS  },
-      { key: 'neptune', body: swisseph.SE_NEPTUNE },
-      { key: 'pluto',   body: swisseph.SE_PLUTO   },
+      { key: 'sun',     body: SE_SUN     },
+      { key: 'moon',    body: SE_MOON    },
+      { key: 'mercury', body: SE_MERCURY },
+      { key: 'venus',   body: SE_VENUS   },
+      { key: 'mars',    body: SE_MARS    },
+      { key: 'jupiter', body: SE_JUPITER },
+      { key: 'saturn',  body: SE_SATURN  },
+      { key: 'uranus',  body: SE_URANUS  },
+      { key: 'neptune', body: SE_NEPTUNE },
+      { key: 'pluto',   body: SE_PLUTO   },
     ]
 
     const positions: Partial<Record<keyof Omit<NatalChart, 'ascendant' | 'lifePathNumber'>, PlanetPosition>> = {}
 
     for (const { key, body } of planets) {
-      const result = swisseph.swe_calc_ut(jd, body, flag)
-      if ('error' in result) throw new Error(`swe_calc_ut failed for ${key}: ${result.error}`)
-      if (!('longitude' in result)) throw new Error(`swe_calc_ut returned unexpected coordinate format for ${key}`)
+      const result = calc_ut(jd, body, flag)
+      if ('error' in result) throw new Error(`calc_ut failed for ${key}: ${result.error}`)
+      if (!('longitude' in result)) throw new Error(`calc_ut returned unexpected coordinate format for ${key}`)
       positions[key] = longitudeToPosition(result.longitude)
     }
 
@@ -190,7 +206,7 @@ export function calculateNatalChart(params: NatalChartParams): NatalChart {
     let ascendant: PlanetPosition | null = null
 
     if (lat !== 0 || lon !== 0) {
-      const housesResult = swisseph.swe_houses(jd, lat, lon, 'P')
+      const housesResult = houses(jd, lat, lon, 'P')
       if (!('error' in housesResult) && 'ascendant' in housesResult) {
         ascendant = longitudeToPosition(housesResult.ascendant)
       }
