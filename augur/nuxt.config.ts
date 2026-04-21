@@ -81,7 +81,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       titleTemplate: '%s | OMENORA',
-      title: 'Free AI Astrology Reading & Destiny Report',
+      title: 'OMENORA — AI Personality & Astrology Reading',
       htmlAttrs: { lang: 'en' },
       meta: [
         { charset: 'utf-8' },
@@ -89,7 +89,7 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'Get your free AI-powered destiny analysis in 10 seconds. Personalized birth chart, life path number, love compatibility & 2026 astrology forecast — no login required. 3.9M+ readings.',
+            'Discover your personality archetype through astrology, numerology, and ancient wisdom from six traditions. Free AI-generated reading in 60 seconds.',
         },
         { name: 'theme-color', content: '#050410' },
         { name: 'msapplication-TileColor', content: '#050410' },
@@ -108,31 +108,31 @@ export default defineNuxtConfig({
         { property: 'og:url', content: 'https://omenora.com' },
         {
           property: 'og:title',
-          content: 'Free AI Astrology Reading & Destiny Report | OMENORA',
+          content: 'OMENORA — AI Personality & Astrology Reading',
         },
         {
           property: 'og:description',
           content:
-            'Your personalized destiny report powered by AI. Free birth chart, life path number, love compatibility & 2026 forecast in 10 seconds.',
+            'Discover your personality archetype through astrology, numerology, and six ancient traditions. Free AI-generated reading in 60 seconds. No account required.',
         },
         { property: 'og:image', content: 'https://omenora.com/og-image.png' },
         { property: 'og:image:secure_url', content: 'https://omenora.com/og-image.png' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
-        { property: 'og:image:alt', content: 'OMENORA — AI Astrology & Destiny Analysis' },
+        { property: 'og:image:alt', content: 'OMENORA — AI Personality & Astrology Reading' },
         { property: 'og:image:type', content: 'image/png' },
         // Twitter / X
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:site', content: '@omenora' },
         { name: 'twitter:creator', content: '@omenora' },
-        { name: 'twitter:title', content: 'Free AI Astrology Reading — OMENORA' },
+        { name: 'twitter:title', content: 'OMENORA — AI Personality & Astrology Reading' },
         {
           name: 'twitter:description',
           content:
-            'Personalized destiny report in 10 seconds. AI birth chart, life path number & 2026 forecast. Free, instant, no login required.',
+            'Discover your personality archetype using astrology and numerology. Free AI reading in 60 seconds. No account required.',
         },
         { name: 'twitter:image', content: 'https://omenora.com/og-image.png' },
-        { name: 'twitter:image:alt', content: 'OMENORA — AI Astrology & Destiny Analysis' },
+        { name: 'twitter:image:alt', content: 'OMENORA — AI Personality & Astrology Reading' },
       ],
       link: [
         { rel: 'icon', href: '/favicon.ico', sizes: 'any', type: 'image/x-icon' },

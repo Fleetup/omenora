@@ -334,7 +334,7 @@ const REAL_TESTIMONIALS: Array<{ quote: string; author: string }> = [
 const showTestimonialSlot = computed(() => REAL_TESTIMONIALS.length > 0)
 const currentTestimonial = computed(() => REAL_TESTIMONIALS[0] ?? { quote: '', author: '' })
 
-useSeoMeta({ title: 'Your Destiny Preview', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Your Personality Archetype Reading', robots: 'noindex, nofollow' })
 
 const store = useAnalysisStore()
 const route = useRoute()

@@ -115,16 +115,16 @@ onMounted(() => {
 })
 
 useSeoMeta({
-  title: 'Free AI Astrology Reading & Destiny Report',
+  title: 'OMENORA — Free AI Personality & Astrology Reading',
   description:
-    "Discover your destiny in 60 seconds with OMENORA's AI astrology analysis. Free birth chart, life path number, love compatibility & 2026 forecast. No signup required.",
-  ogTitle: 'Free AI Astrology Reading — OMENORA',
+    'Your free personality reading in 60 seconds. AI maps your archetype using astrology, numerology, and six ancient traditions. No account required.',
+  ogTitle: 'OMENORA — Free AI Personality & Astrology Reading',
   ogDescription:
-    'Your personalized destiny report powered by AI. Free birth chart, life path number, love compatibility & 2026 forecast. No account needed, instant results.',
+    'Your free personality reading in 60 seconds. AI maps your archetype using astrology, numerology, and six ancient traditions. No account required.',
   ogUrl: SITE_URL,
-  twitterTitle: 'Free AI Astrology Reading — OMENORA',
+  twitterTitle: 'OMENORA — Free AI Personality & Astrology Reading',
   twitterDescription:
-    'AI-powered birth chart, life path number & 2026 cosmic forecast. Free, instant, no login required.',
+    'AI maps your personality archetype using astrology and numerology. Free reading in 60 seconds. No account required.',
   robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
 })
 
@@ -150,10 +150,10 @@ useHead({
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'USD',
-              description: 'Free AI destiny analysis and personalized astrology report',
+              description: 'Free AI personality and astrology reading',
             },
             description:
-              'OMENORA is an AI-powered astrology and destiny analysis platform. Get your free personalized birth chart, life path number, love compatibility reading and 2026 cosmic forecast in seconds.',
+              'OMENORA is an AI-powered astrology and personality reading platform. Get your free personalized birth chart, life path number, love compatibility reading and 2026 cosmic forecast in seconds.',
             featureList: [
               'Free AI birth chart with Rising, Sun & Moon signs',
               'Numerology life path number analysis',
@@ -170,7 +170,7 @@ useHead({
                 name: 'Is the OMENORA astrology reading really free?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Your core AI destiny analysis and astrology report is completely free with no account or login required. Optional upgrades include a full birth chart, love compatibility reading, and a 12-month cosmic calendar.',
+                  text: 'Yes. Your core AI personality and astrology reading is completely free with no account or login required. Optional upgrades include a full birth chart, love compatibility reading, and a 12-month cosmic calendar.',
                 },
               },
               {
@@ -178,7 +178,7 @@ useHead({
                 name: 'How does AI astrology work?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'OMENORA combines your birth date, birth time, and personal responses with advanced AI to generate a deeply personalized destiny report. The system draws on numerological life path calculations, astrological archetypes, and behavioral psychology to produce readings that users find highly accurate.',
+                  text: 'OMENORA combines your birth date, birth time, and birth city with advanced AI to generate a deeply personalized personality and astrology reading. The system draws on natal chart calculations, numerological life path numbers, and six ancient traditions to produce readings users find highly accurate.',
                 },
               },
               {
@@ -202,7 +202,7 @@ useHead({
                 name: 'How long does an AI astrology reading take?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Your AI destiny analysis is generated in approximately 10 seconds. No account creation, no lengthy questionnaires — just your name, date of birth, and city of birth.',
+                  text: 'Your AI personality and astrology reading is generated in approximately 60 seconds. No account creation required — just your name, date of birth, and city of birth.',
                 },
               },
               {
@@ -210,7 +210,7 @@ useHead({
                 name: 'What is included in the free astrology report?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'The free report includes your Destiny Archetype, Life Path Number analysis, identity reading, science-backed behavioral profile, 2026 forecast, love and relationship section, career and purpose insights, hidden gift reveal, and a personalized affirmation.',
+                  text: 'The free report includes your Personality Archetype, Life Path Number analysis, identity reading, astrology and numerology-based personality profile, 2026 forecast, love and relationship section, career and purpose insights, hidden gift reveal, and a personalized affirmation.'
                 },
               },
             ],

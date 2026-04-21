@@ -706,7 +706,7 @@ const { t } = useLanguage()
 const { $trackPurchase, $trackReportViewed, $trackUpsellViewed, $trackUpsellAccepted, $trackShareCardOpened, $trackShareCardDownloaded } = useNuxtApp() as any
 
 useSeoMeta({
-  title: () => store.firstName ? `${store.firstName}'s Destiny Report` : 'Your Destiny Report',
+  title: () => store.firstName ? `${store.firstName}'s Personality Reading — OMENORA` : 'Your Personality Reading — OMENORA',
   robots: 'noindex, nofollow',
 })
 
