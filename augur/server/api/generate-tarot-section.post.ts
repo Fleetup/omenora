@@ -74,6 +74,10 @@ Their profile:
 - Primary focus area: ${answers?.p1 || 'growth'}
 - Reason for this reading: ${answers?.p3 || 'self'}
 
+Personalization instructions:
+- Focus area '${answers?.p1 || 'growth'}': connection → weight the love and relationship destiny section most heavily, go deeper into what ${firstName} needs from a partner. purpose → weave meaning and calling into the soul card interpretation. growth → emphasize the spiritual message about inner transformation. creativity → frame the soul card around creative power and self-expression.
+- Reading reason '${answers?.p3 || 'self'}': navigating a specific situation → make the spiritual message and 2026 window feel immediately actionable, name what ${firstName} should do or stop doing. understanding themselves → psychological depth, name the internal pattern. curiosity → exploratory and possibility-focused. recommended → open with something specific enough to earn trust before going into the mystical register.
+
 Write a reading that:
 1. Reveals their soul card and what it means for them
 2. Speaks to their love and relationship destiny

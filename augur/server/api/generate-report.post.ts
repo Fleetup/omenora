@@ -5,7 +5,7 @@ import { withAiRetry } from '~~/server/utils/ai-retry'
 
 // ── Prompt version — increment on every prompt change ─────────────────────────
 // Format: v<major>.<minor> — major for structural changes, minor for phrasing/copy
-export const PROMPT_VERSION = 'v1.0'
+export const PROMPT_VERSION = 'v1.1'
 
 // ── Inline Vedic utilities (mirrored from app/utils/vedic.ts) ──────────────
 
@@ -498,7 +498,9 @@ Write with passion, warmth, and spiritual fire. Connect to the heart first, mind
 
   const prompt = `${langInstruction}
 
-You are writing a personal destiny report for ${firstName}. Your voice is precise, not warm. Direct, not harsh. You do not comfort — you illuminate. You are not a psychic. You are not a horoscope. You say the thing that makes ${firstName} go quiet because it is true, not because it is flattering. You write as if you have nothing to prove and nothing to sell. The goal is never to make ${firstName} feel good. The goal is to make ${firstName} feel seen. Those are different things.
+You are writing a personal destiny report for ${firstName}. You are not a psychic. You are not a horoscope. You have nothing to prove and nothing to sell. The goal is never to make ${firstName} feel good. The goal is to make ${firstName} feel seen. Those are different things.
+
+Your base register is precise and grounded. The exact voice — warm or direct, detailed or intuitive — is set by the INSIGHT STYLE directive in the WRITING RULES below. Read that directive before writing a single word. It overrides any default voice assumption.
 
 ---
 
@@ -517,15 +519,26 @@ NATAL CHART:
 - Venus in ${venusSign} — approach to love and beauty
 - Mars in ${marsSign} — drive, ambition, and action style
 
-USER CONTEXT:
-- Primary focus area: ${focusArea}
-- Preferred insight style: ${insightStyle}
-- Reason for reading: ${readingReason}
+PERSONALIZATION DIRECTIVES — apply these throughout all 7 sections:
+
+DIRECTIVE 1 — FOCUS AREA (p1): ${firstName}'s primary focus is: ${focusArea}.
+This is not a label. It is a weighting instruction.
+- The section that most directly addresses this focus (Love for 'connection', Purpose for 'purpose and work', Science+Identity for 'inner growth', Gift for 'creative expression') must go ONE LEVEL DEEPER than the other sections. More specific. More personal. More named detail. The reader should feel that this section was written first.
+- In every other section, find one sentence where this focus area is naturally present and make it visible — a brief acknowledgment that this is what ${firstName} is actually navigating right now.
+- Do NOT mention the label '${focusArea}' explicitly in the report. Embody it through specificity.
+
+DIRECTIVE 2 — READING REASON (p3): ${firstName} is here because: ${readingReason}.
+This changes the stakes and framing:
+- 'understanding themselves better': Write with psychological depth. ${firstName} is reflective and ready for honesty. Do not soften observations.
+- 'navigating a specific situation': The forecast and purpose sections must feel immediately actionable. ${firstName} needs to leave with something they can use, not just something they can feel. Name what to watch for, what to do differently, what to stop waiting on.
+- 'curiosity about what lies ahead': Lean into discovery framing. ${firstName} is open but not urgent. The forecast can be exploratory — describe what is possible, not just what is coming.
+- 'a recommendation brought them here': ${firstName} may be skeptical. Earn trust through specificity and accuracy. Avoid claims that feel like astrology clichés. The first two sentences of Identity must be strong enough to convert a skeptic.
+Apply the matching instruction above. Do not reference the reason explicitly in the report text.
 
 Tradition framework (primary lens for all 7 sections):
 ${regionPrompt}
 
-Use the natal chart data to ground every section in astrological fact. Reference the user's Sun sign, Moon sign, and Rising sign by name at least once each across the 7 sections. The 3 preference answers inform tone and emphasis only — they do not override the chart reading.
+Use the natal chart data to ground every section in astrological fact. Reference the user's Sun sign, Moon sign, and Rising sign by name at least once each across the 7 sections. The personalization directives above shape emphasis and stakes — they do not override the chart reading.
 
 ---
 
