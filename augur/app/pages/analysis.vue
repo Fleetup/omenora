@@ -1385,4 +1385,31 @@ function submitAnalysis() {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06) 30%, rgba(255, 255, 255, 0.06) 70%, transparent);
   margin: 24px 0;
 }
+
+/* ── Mobile responsive fixes ── */
+@media (max-width: 400px) {
+  .page {
+    padding: 20px 16px 52px;
+  }
+
+  .heading {
+    font-size: 32px;
+  }
+
+  .option-tile {
+    flex: 1 0 calc(50% - 4px);
+    padding: 11px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .page {
+    padding: 16px 12px 52px;
+  }
+
+  .heading {
+    font-size: 28px;
+  }
+}
 </style>

@@ -831,4 +831,57 @@ async function downloadCalendarPDF() {
   opacity: 0.35;
   cursor: default;
 }
+
+/* ── Mobile responsive fixes ── */
+@media (max-width: 400px) {
+  .cal-page {
+    padding: 20px 16px 80px;
+  }
+
+  .cal-hero-title {
+    font-size: 40px;
+  }
+
+  .cal-hero-theme {
+    font-size: 13px;
+  }
+
+  /* Summary row: allow label to wrap */
+  .cal-summary-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .summary-label {
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  /* Month card: tighter padding */
+  .month-card {
+    padding: 16px 16px 14px 20px;
+  }
+
+  /* Download row: stack vertically */
+  .download-row {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .download-row .download-btn {
+    flex: unset;
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .cal-page {
+    padding: 16px 12px 80px;
+  }
+
+  .cal-hero-title {
+    font-size: 34px;
+  }
+}
 </style>

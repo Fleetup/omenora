@@ -2569,6 +2569,10 @@ async function downloadReportPDF() {
 
 .compat-input--date {
   color-scheme: dark;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 52px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .compat-unlock-btn {
@@ -3313,5 +3317,175 @@ async function downloadReportPDF() {
   text-align: center;
   line-height: 1.5;
   max-width: 320px;
+}
+
+/* ── Mobile responsive fixes ── */
+@media (max-width: 400px) {
+  /* Report page padding */
+  .report-page {
+    padding: 20px 16px 60px;
+  }
+
+  /* Archetype name – prevent overflow */
+  .archetype-name {
+    font-size: 44px;
+  }
+
+  /* Tradition options: single column on small screens */
+  .tradition-options {
+    grid-template-columns: 1fr;
+  }
+
+  /* Tradition option button: ensure tag doesn't clip */
+  .tradition-opt-btn {
+    padding: 10px 12px;
+  }
+
+  .tradition-opt-name {
+    font-size: 12px;
+  }
+
+  /* Birth chart banner: stack vertically */
+  .birth-chart-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .birth-chart-info {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .birth-chart-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .birth-chart-locked-badge {
+    align-self: flex-start;
+  }
+
+  /* Birth chart signs row: allow wrapping */
+  .birth-chart-signs-row {
+    flex-wrap: wrap;
+  }
+
+  .birth-chart-sign-cell {
+    min-width: 50%;
+    flex: none;
+    border-right: none;
+    border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+  }
+
+  .birth-chart-sign-cell:nth-child(odd) {
+    border-right: 1px solid rgba(201, 168, 76, 0.1);
+  }
+
+  .birth-chart-sign-cell:last-child,
+  .birth-chart-sign-cell:nth-last-child(2):nth-child(odd) {
+    border-bottom: none;
+  }
+
+  /* Calendar peak/caution chips: smaller text */
+  .cal-peak-chip,
+  .cal-caution-chip {
+    font-size: 9px;
+    padding: 2px 8px;
+  }
+
+  /* Sub upsell banner: stack vertically */
+  .sub-upsell-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .sub-upsell-info {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .sub-upsell-btn {
+    width: 100%;
+    text-align: center;
+    white-space: normal;
+  }
+
+  /* Download row: stack vertically */
+  .download-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .download-row .download-btn {
+    flex: unset;
+    width: 100%;
+    margin: 0;
+  }
+
+  /* Share card: full width on tiny screens */
+  .share-card {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    min-height: 140px;
+    padding: 20px 16px;
+  }
+
+  /* Compat section inner padding */
+  .compat-section {
+    padding: 24px 16px;
+  }
+
+  /* Bundle upsell inner padding */
+  .bundle-upsell-box {
+    padding: 24px 16px;
+  }
+
+  /* Cal upsell inner padding */
+  .cal-upsell {
+    padding: 20px 16px;
+  }
+
+  /* Cal features: single column */
+  .cal-features {
+    grid-template-columns: 1fr;
+  }
+
+  /* Tradition switcher inner padding */
+  .tradition-switcher {
+    padding: 16px 16px 12px;
+  }
+
+  /* Report month card: ensure text wraps properly */
+  .rmc-header {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .rmc-name {
+    font-size: 16px;
+  }
+
+  /* Payment confirmation banner text */
+  .banner-text {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .report-page {
+    padding: 16px 12px 60px;
+  }
+
+  .archetype-name {
+    font-size: 38px;
+  }
+
+  .tradition-opt-tag {
+    font-size: 8px;
+    padding: 2px 4px;
+  }
 }
 </style>

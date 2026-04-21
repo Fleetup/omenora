@@ -1630,4 +1630,81 @@ async function handlePayment() {
   line-height: 1.5;
   max-width: 320px;
 }
+
+/* ── Mobile responsive fixes ── */
+@media (max-width: 400px) {
+  /* Preview page padding */
+  .preview-page {
+    padding: 20px 16px 60px;
+  }
+
+  /* Archetype block: reduce left padding on tiny screens */
+  .archetype-block {
+    padding: 20px 16px 20px 22px;
+  }
+
+  .archetype-name {
+    font-size: 40px;
+  }
+
+  /* Locked sections strip: tighter padding */
+  .locked-sections-strip {
+    padding: 16px 16px;
+  }
+
+  /* Tier cards: stack price below info on very small screens */
+  .tier-popular-inner,
+  .tier-oracle-inner {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tier-price-block {
+    text-align: left;
+    width: 100%;
+  }
+
+  .tier-price-popular {
+    font-size: 28px;
+  }
+
+  .tier-price-oracle {
+    font-size: 22px;
+  }
+
+  /* Tier basic: wrap price */
+  .tier-basic {
+    flex-wrap: wrap;
+  }
+
+  .tier-price {
+    font-size: 18px;
+    width: 100%;
+    text-align: left;
+  }
+
+  /* Paywall header */
+  .paywall-personal-line {
+    font-size: 19px;
+  }
+
+  .paywall-sub-line {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 360px) {
+  .preview-page {
+    padding: 16px 12px 60px;
+  }
+
+  .archetype-block {
+    padding: 16px 12px 16px 18px;
+  }
+
+  .archetype-name {
+    font-size: 34px;
+  }
+}
 </style>
