@@ -34,7 +34,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
             <p>You got close.</p>
             <p>Your <strong>${data.archetypeName}</strong> reading is still here — the full analysis, everything that was locked behind that blur. It was generated specifically for you and it exists only once.</p>
             <p>You saw the beginning. The part about how you move through the world in a way most people admire but rarely understand.</p>
-            <p>That's the surface. What's locked is the part that actually explains <em>why</em> — the shadow patterns, the relationship wiring, the reason certain things drain you in a way that's hard to articulate.</p>
+            <p>That's the surface. What's locked is the part that actually explains <em>why</em> — the behavioral patterns this archetype carries, the relationship tendencies, the reason certain situations feel disproportionately draining for someone wired this way.</p>
             <p>Your reading expires in 47 hours.</p>
           `,
           ctaText: `View your full ${data.archetypeName} reading — $4.99`,
@@ -57,7 +57,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
             <p>What's locked in your full reading:</p>
             <ul>
               <li><strong>Your shadow self.</strong> The version of you that shows up when you're protecting something. What you do that you're not fully conscious of.</li>
-              <li><strong>Your relationship pattern.</strong> Why the same dynamic keeps appearing with different people. What you're actually looking for versus what you keep choosing.</li>
+              <li><strong>Your relationship pattern.</strong> Why the same dynamic keeps appearing with different people. What this archetype pattern tends to seek versus what it tends to gravitate toward.</li>
               <li><strong>Your 2026 forecast.</strong> The specific windows this year where your ${data.archetypeElement} energy peaks — and the months where pushing harder will cost you more than it earns.</li>
             </ul>
             <p>None of this is generic. It was generated from your birth data, your answers to those seven questions, and the ${data.readingTradition} tradition you selected — interpreted through established astrological and numerological frameworks for self-reflection purposes.</p>
@@ -80,7 +80,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
             <p>${data.firstName}.</p>
             <p>Your <strong>${data.archetypeName}</strong> reading expires in 23 hours.</p>
             <p>After that, the reading we generated — using your birth data, your birth location, and your answers — gets deleted. We don’t store unredeemed readings.</p>
-            <p>The <strong>${data.archetypeName}</strong> is one of the rarest archetypes we generate. Most people who receive it don't fully understand what it means until they read the locked sections. The teaser you saw is the neutral version. What's inside is the honest version.</p>
+            <p>The <strong>${data.archetypeName}</strong> is one of the rarest archetypes we generate. Most people who receive it don't fully understand what it means until they read the locked sections. The teaser you saw is the preview. What's inside is the complete picture.</p>
             <p>If you've been wondering whether it's worth it — the answer is yes, and $4.99 is the reason you don't need to think about it.</p>
           `,
           ctaText: `Unlock now — $4.99 — expires in 23 hours`,
