@@ -370,28 +370,6 @@ onMounted(() => {
 
 <style scoped>
 
-/* ─────────────────────────────────────────────
-   DESIGN TOKENS
-───────────────────────────────────────────── */
-:root {
-  --bg:        #07070D;
-  --gold:      #C9A84C;
-  --purple:    #6B48E0;
-  --purple-hi: #7B5AF2;
-  --purple-lo: rgba(107,72,224,0.18);
-  --white-94:  rgba(255,255,255,0.94);
-  --white-70:  rgba(255,255,255,0.70);
-  --white-55:  rgba(255,255,255,0.55);
-  --white-38:  rgba(255,255,255,0.38);
-  --white-22:  rgba(255,255,255,0.22);
-  --white-09:  rgba(255,255,255,0.09);
-  --white-05:  rgba(255,255,255,0.05);
-  --serif:     'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  --sans:      -apple-system, BlinkMacSystemFont,
-               'SF Pro Text', 'Helvetica Neue',
-               sans-serif;
-}
-
 
 /* ─────────────────────────────────────────────
    ROOT & BACKGROUND
@@ -981,4 +959,28 @@ onMounted(() => {
   .card:hover        { transform: none; }
 }
 
+</style>
+
+<style>
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS — non-scoped so :root resolves
+───────────────────────────────────────────── */
+:root {
+  --bg:        #07070D;
+  --gold:      #C9A84C;
+  --purple:    #6B48E0;
+  --purple-hi: #7B5AF2;
+  --purple-lo: rgba(107,72,224,0.18);
+  --white-94:  rgba(255,255,255,0.94);
+  --white-70:  rgba(255,255,255,0.70);
+  --white-55:  rgba(255,255,255,0.55);
+  --white-38:  rgba(255,255,255,0.38);
+  --white-22:  rgba(255,255,255,0.22);
+  --white-09:  rgba(255,255,255,0.09);
+  --white-05:  rgba(255,255,255,0.05);
+  --serif:     'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  --sans:      -apple-system, BlinkMacSystemFont,
+               'SF Pro Text', 'Helvetica Neue',
+               sans-serif;
+}
 </style>
