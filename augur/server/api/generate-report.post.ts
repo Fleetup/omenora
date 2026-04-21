@@ -247,22 +247,19 @@ export default defineEventHandler(async (event) => {
   assertInput(VALID_LIFE_PATHS.has(lifePathNumber), 'Invalid lifePathNumber')
 
   // Validate and whitelist each answer enum value
-  const VALID_Q1 = new Set(['trust','wait','talk','push'])
-  const VALID_Q2 = new Set(['softer','sharper','ambitious','uncertain'])
-  const VALID_Q3 = new Set(['leaving','unseen','giving','burden'])
-  const VALID_Q4 = new Set(['capable','alone','matters','toomuch'])
-  const VALID_Q6 = new Set(['enjoy','wonder','share','next'])
-  const VALID_Q7 = new Set(['givesup','feelsnothing','needstoo','isolates'])
+  const VALID_P1 = new Set(['connection','purpose','growth','creativity'])
+  const VALID_P2 = new Set(['direct','gentle','detailed','intuitive'])
+  const VALID_P3 = new Set(['self','situation','curiosity','recommended'])
 
   const answers = {
-    q1: VALID_Q1.has(rawAnswers.q1) ? rawAnswers.q1 : 'push',
-    q2: VALID_Q2.has(rawAnswers.q2) ? rawAnswers.q2 : 'uncertain',
-    q3: VALID_Q3.has(rawAnswers.q3) ? rawAnswers.q3 : 'burden',
-    q4: VALID_Q4.has(rawAnswers.q4) ? rawAnswers.q4 : 'toomuch',
-    q5: sanitizeString(rawAnswers.q5 ?? '', 80),
-    q6: VALID_Q6.has(rawAnswers.q6) ? rawAnswers.q6 : 'next',
-    q7: VALID_Q7.has(rawAnswers.q7) ? rawAnswers.q7 : 'isolates',
+    p1: VALID_P1.has(rawAnswers.p1) ? rawAnswers.p1 : 'growth',
+    p2: VALID_P2.has(rawAnswers.p2) ? rawAnswers.p2 : 'direct',
+    p3: VALID_P3.has(rawAnswers.p3) ? rawAnswers.p3 : 'self',
   }
+
+  const rawChart = body.chart
+  assertInput(rawChart !== null && rawChart !== undefined, 'chart is required')
+  assertInput(typeof rawChart.sun?.sign === 'string' && rawChart.sun.sign.length > 0, 'chart.sun.sign is required')
 
   const anthropicApiKey = config.anthropicApiKey as string | undefined
   if (!anthropicApiKey) {
@@ -461,41 +458,33 @@ Write with passion, warmth, and spiritual fire. Connect to the heart first, mind
 
   const archetypeDesc = archetypeDescriptions[archetype] || archetype
 
-  const decisionPattern =
-    answers.q1 === 'trust' ? 'acts on gut instinct' :
-    answers.q1 === 'wait'  ? 'waits for evidence' :
-    answers.q1 === 'talk'  ? 'processes through others' :
-                             'suppresses instinct and pushes through'
+  const sunSign       = rawChart.sun.sign as string
+  const moonSign      = (rawChart.moon?.sign ?? 'unknown') as string
+  const ascendantSign = (rawChart.ascendant?.sign ?? 'unknown') as string
+  const mercurySign   = (rawChart.mercury?.sign ?? 'unknown') as string
+  const venusSign     = (rawChart.venus?.sign ?? 'unknown') as string
+  const marsSign      = (rawChart.mars?.sign ?? 'unknown') as string
 
-  const hiddenSelf =
-    answers.q2 === 'softer'    ? 'softer than perceived' :
-    answers.q2 === 'sharper'   ? 'sharper and more perceptive' :
-    answers.q2 === 'ambitious' ? 'more driven than shown' :
-                                 'carrying more uncertainty than visible'
+  const focusArea = ({
+    connection: 'love and connection',
+    purpose:    'purpose and meaningful work',
+    growth:     'inner growth and self-understanding',
+    creativity: 'creative expression',
+  } as Record<string, string>)[answers.p1] ?? 'self-understanding'
 
-  const relationshipWound =
-    answers.q3 === 'leaving' ? 'people leaving without explanation' :
-    answers.q3 === 'unseen'  ? 'being needed but not truly seen' :
-    answers.q3 === 'giving'  ? 'giving more than received' :
-                               'feeling like a burden to others'
+  const insightStyle = ({
+    direct:    'direct and honest',
+    gentle:    'gentle and encouraging',
+    detailed:  'detailed and precise',
+    intuitive: 'intuitive and open',
+  } as Record<string, string>)[answers.p2] ?? 'direct'
 
-  const coreThought =
-    answers.q4 === 'capable' ? 'fear of being exposed as less capable' :
-    answers.q4 === 'alone'   ? 'fear of ending up alone' :
-    answers.q4 === 'matters' ? 'fear that nothing truly matters' :
-                               'fear of being too much for others'
-
-  const successResponse =
-    answers.q6 === 'enjoy'  ? 'fully present with wins' :
-    answers.q6 === 'wonder' ? 'waits for good things to be taken away' :
-    answers.q6 === 'share'  ? 'joy through others' :
-                              'always looking toward the next horizon'
-
-  const shadowFear =
-    answers.q7 === 'givesup'      ? 'surrendering to inertia' :
-    answers.q7 === 'feelsnothing' ? 'achieving everything and feeling nothing' :
-    answers.q7 === 'needstoo'     ? 'becoming dependent on someone' :
-                                    'isolation as self-protection'
+  const readingReason = ({
+    self:        'understanding themselves better',
+    situation:   'navigating a specific situation',
+    curiosity:   'curiosity about what lies ahead',
+    recommended: 'a recommendation brought them here',
+  } as Record<string, string>)[answers.p3] ?? 'self-understanding'
 
   const birthYear = new Date(dateOfBirth).getFullYear()
   const birthMonth = new Date(dateOfBirth).toLocaleString('default', { month: 'long' })
@@ -517,16 +506,26 @@ PROFILE — everything you know about ${firstName}:
 - Born: ${birthMonth} ${birthYear} in ${city} (${birthSeason} birth)
 - Life Path Number: ${lifePathNumber}
 - Destiny Archetype: ${archetypeDesc}
-- Decision pattern: ${decisionPattern}
-- Hidden self: ${hiddenSelf}
-- Deepest relationship wound: ${relationshipWound}
-- The thought that follows them: ${coreThought}
-- How others label them (which they find complicated): ${answers.q5}
-- How they receive good things: ${successResponse}
-- Their deepest fear about themselves: ${shadowFear}
+
+NATAL CHART:
+- Sun in ${sunSign} — core identity and life force
+- Moon in ${moonSign} — emotional nature and instincts
+- ${ascendantSign !== 'unknown'
+  ? `Rising ${ascendantSign} — outer persona and approach to life`
+  : 'Rising sign: not calculated (birth time not provided)'}
+- Mercury in ${mercurySign} — communication and thinking style
+- Venus in ${venusSign} — approach to love and beauty
+- Mars in ${marsSign} — drive, ambition, and action style
+
+USER CONTEXT:
+- Primary focus area: ${focusArea}
+- Preferred insight style: ${insightStyle}
+- Reason for reading: ${readingReason}
 
 Tradition framework (primary lens for all 7 sections):
 ${regionPrompt}
+
+Use the natal chart data to ground every section in astrological fact. Reference the user's Sun sign, Moon sign, and Rising sign by name at least once each across the 7 sections. The 3 preference answers inform tone and emphasis only — they do not override the chart reading. Preferred style is ${insightStyle}: adjust your voice accordingly.
 
 ---
 
@@ -648,7 +647,7 @@ SECTION INSTRUCTIONS:
 IDENTITY (4-5 sentences minimum):
 THE VERY FIRST SENTENCE of this entire report — the opening line of the Identity section — is the most important sentence you will write. It must be the single most personally accurate observation in the report. It must make ${firstName} stop reading and re-read it. It must not be about their archetype in general. It must be about THEM specifically — derived from the most emotionally charged input in their profile.
 
-To write this sentence: look at their relationship wound (${relationshipWound}), their core thought (${coreThought}), and their hidden self (${hiddenSelf}). Pick the one that feels most privately true. Write the first sentence from THAT place. Do not open with the archetype name. Do not open with a compliment. Open with the thing they have never heard said out loud about themselves.
+To write this sentence: look at their Sun sign (${sunSign}), Moon sign (${moonSign}), and Rising sign (${ascendantSign}). Pick the placement that creates the most specific psychological tension. Write the first sentence from THAT place. Do not open with the archetype name. Do not open with a compliment. Open with the thing they have never heard said out loud about themselves.
 
 Example of WRONG opening:
 'You are The Alchemist — a soul who transforms everything they touch.' (This is a description, not a recognition.)
@@ -656,7 +655,7 @@ Example of WRONG opening:
 Example of RIGHT opening:
 'There is a version of you that has rebuilt itself so many times in private that the people closest to you have no idea how much has already been burned down and remade.' (This lands because it is specific to their wound profile.)
 
-After the opening sentence: Follow the tradition framework's identity instructions as PRIMARY. Pair the core identity with its tension. End with the one thing about ${firstName} that most people in their life have never understood.
+After the opening sentence: Follow the tradition framework's identity instructions as PRIMARY. Weave in the Sun in ${sunSign} and Moon in ${moonSign} as specific astrological grounding. Pair the core identity with its tension. End with the one thing about ${firstName} that most people in their life have never understood.
 
 When introducing the archetype name, make it DO something — not define something. The archetype name must appear in a sentence that is active and alive, not explanatory.
 WRONG: 'The Wildfire archetype is not about warmth or comfort — it is about transformation through intensity.' (This is a product description.)
@@ -666,23 +665,23 @@ SCIENCE (4 sentences minimum):
 Follow the tradition framework's science instructions as PRIMARY. Use the actual tradition's analytical system — not chronobiology if this is a Vedic or BaZi reading. Ground in specific calculated data from the profile. Reference life path ${lifePathNumber} only if it fits the tradition naturally; skip it for Vedic and BaZi.
 
 FORECAST (5 sentences minimum):
-Follow the tradition framework's forecast instructions as PRIMARY timing guide. Do NOT name specific calendar months as if they are guaranteed windows — this creates false predictions that damage trust when they do not materialize. Instead, name EXPERIENTIAL triggers: describe what ${firstName} will notice happening around them or within them that signals the window has arrived. Example of WRONG: 'April through June brings a major opening.' Example of RIGHT: 'When you notice the resistance you have been carrying suddenly feels lighter — and you will notice this, probably when you least expect it — that is your window. Do not wait for external confirmation before you move.' For Vedic and BaZi traditions where real timing data exists (Dasha period, Luck Pillar), you MAY reference the actual calculated period from the tradition framework inputs above. For Western and Tarot traditions, use experiential framing only. Reflect the success pattern '${successResponse}' — describe how ${firstName} will receive the wins coming their way. End with a single sentence that creates forward momentum without being generic.
+Follow the tradition framework's forecast instructions as PRIMARY timing guide. Do NOT name specific calendar months as if they are guaranteed windows — this creates false predictions that damage trust when they do not materialize. Instead, name EXPERIENTIAL triggers: describe what ${firstName} will notice happening around them or within them that signals the window has arrived. Example of WRONG: 'April through June brings a major opening.' Example of RIGHT: 'When you notice the resistance you have been carrying suddenly feels lighter — and you will notice this, probably when you least expect it — that is your window. Do not wait for external confirmation before you move.' For Vedic and BaZi traditions where real timing data exists (Dasha period, Luck Pillar), you MAY reference the actual calculated period from the tradition framework inputs above. For Western and Tarot traditions, use experiential framing only. Reference how ${firstName}'s Sun in ${sunSign} shapes their relationship to success and timing. End with a single sentence that creates forward momentum without being generic.
 
 LOVE (4 sentences minimum):
-Follow the tradition framework's love instructions as PRIMARY. Open by naming the relationship wound '${relationshipWound}' without using those exact words — describe the experience, not the label. Use contrast sentence structure. End with what ${firstName} is actually capable of when they feel safe.
+Follow the tradition framework's love instructions as PRIMARY. Open by naming the emotional pattern suggested by Moon in ${moonSign} and Venus in ${venusSign} without using astrological jargon — describe the lived experience. Use contrast sentence structure. End with what ${firstName} is actually capable of when they feel safe.
 
 PURPOSE (4 sentences minimum):
-Follow the tradition framework's purpose instructions as PRIMARY. Take the core thought '${coreThought}' and reframe it as the structural source of ${firstName}'s drive — the fear that became the fuel. End with the specific kind of work or contribution only this archetype can produce.
+Follow the tradition framework's purpose instructions as PRIMARY. Use Mars in ${marsSign} as the lens for how ${firstName} channels drive and ambition — frame the specific action style this placement produces. End with the specific kind of work or contribution only this archetype can produce.
 
 GIFT (3 sentences minimum):
-Follow the tradition framework's gift instructions as PRIMARY. Open with naming the hidden self '${hiddenSelf}' — say what it actually is, what it looks like from the outside, and why almost no one ever names it correctly. Close with a single sentence that makes ${firstName} feel rare — not in a flattering way, but in an accurate way.
+Follow the tradition framework's gift instructions as PRIMARY. Open with naming the quality expressed by Mercury in ${mercurySign} — say what it actually is, what it looks like from the outside, and why almost no one ever names it correctly. Close with a single sentence that makes ${firstName} feel rare — not in a flattering way, but in an accurate way.
 
 AFFIRMATION (1 sentence only):
 Follow the tradition framework's affirmation instructions as PRIMARY.
 
 The affirmation must be written in the voice of ${firstName} speaking TO THEMSELVES — not a narrator speaking about them. It must feel like their own internal voice made visible, not a blessing given from the outside.
 
-Must include ${firstName}'s name — placed mid-sentence or at the opening, never at the end. Must address the shadow fear '${shadowFear}' without ever naming it explicitly — speak to the fear's opposite truth. Must feel like a sentence ${firstName} would write on paper and keep somewhere private. No exclamation marks. No 'you are' openings. No 'you have always been' openings. Do not begin with 'I' — this is not a first-person affirmation. Begin with the person's name or an action verb directed at them.
+Must include ${firstName}'s name — placed mid-sentence or at the opening, never at the end. Must speak to the emotional truth of Moon in ${moonSign} without naming the placement explicitly. Must feel like a sentence ${firstName} would write on paper and keep somewhere private. No exclamation marks. No 'you are' openings. No 'you have always been' openings. Do not begin with 'I' — this is not a first-person affirmation. Begin with the person's name or an action verb directed at them.
 
 WRONG: 'You are stronger than you know, ${firstName}.' (narrator voice, generic, flattering not true)
 WRONG: 'I am enough and I trust myself.' (first person, sounds like a wellness poster)

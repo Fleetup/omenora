@@ -401,6 +401,13 @@ async function triggerApiCall() {
   startMessageCycle()
   $trackPreviewLoadingStart()
 
+  if (!store.natalChart) {
+    console.error('[preview] natalChart is null — cannot generate report')
+    isLoading.value = false
+    hasError.value = true
+    return
+  }
+
   try {
     const data = await $fetch<{ success: boolean; report: any; promptVersion?: string }>('/api/generate-report', {
       method: 'POST',
@@ -411,6 +418,7 @@ async function triggerApiCall() {
         answers: store.answers,
         archetype: store.archetype,
         lifePathNumber: store.lifePathNumber,
+        chart: store.natalChart,
         region: store.region,
         timeOfBirth: store.timeOfBirth,
         language: store.language,

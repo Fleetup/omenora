@@ -1,19 +1,33 @@
 import { defineStore } from 'pinia'
 
+export interface PlanetPosition {
+  sign: string
+  degree: number
+  signIndex: number
+}
+
+export interface NatalChart {
+  sun: PlanetPosition
+  moon: PlanetPosition
+  mercury: PlanetPosition
+  venus: PlanetPosition
+  mars: PlanetPosition
+  jupiter: PlanetPosition
+  saturn: PlanetPosition
+  ascendant: PlanetPosition | null
+}
+
 export const useAnalysisStore = defineStore('analysis', {
   state: () => ({
     firstName: '',
     dateOfBirth: '',
     city: '',
     answers: {
-      q1: '', // decision instinct
-      q2: '', // hidden self
-      q3: '', // relationship wound
-      q4: '', // core thought / shadow
-      q5: '', // how others label them
-      q6: '', // success response
-      q7: '', // shadow fear
+      p1: '', // focus area
+      p2: '', // insight style
+      p3: '', // reason for visit
     },
+    natalChart: null as NatalChart | null,
     archetype: '',
     lifePathNumber: 0,
     reportContent: '',
@@ -51,6 +65,9 @@ export const useAnalysisStore = defineStore('analysis', {
     },
     setAnswer(question: string, answer: string) {
       this.answers[question as keyof typeof this.answers] = answer
+    },
+    setNatalChart(chart: NatalChart) {
+      this.natalChart = chart
     },
     setArchetype(archetype: string) {
       this.archetype = archetype

@@ -251,7 +251,7 @@
             class="option-tile"
             :class="{
               selected:
-                store.answers[question.id as keyof typeof store.answers] ===
+                (store.answers as Record<string, string>)[question.id] ===
                 option.value,
             }"
             @click="handleAnswerSelect(question.id, option.value)"
@@ -259,23 +259,14 @@
             {{ option.label }}
           </button>
         </div>
-        <Transition name="fade">
-          <div
-            v-if="showPersonalization && (question.id === 'q1' || question.id === 'q4') && personalizationQuestionId === question.id"
-            ref="personalizationRef"
-            class="personalization-interstitial"
-          >
-            {{ personalizationMessage }}
-          </div>
-        </Transition>
         <div v-if="index < questions.length - 1" class="divider" />
       </div>
 
       <button
         class="cta-button submit-btn"
-        :class="{ disabled: !allAnswered }"
-        :disabled="!allAnswered"
-        @click="submitAnalysis"
+        :class="{ disabled: !allAnswered || isCalculating }"
+        :disabled="!allAnswered || isCalculating"
+        @click="handleSubmit"
       >
         {{ t('revealDestiny') }}
       </button>
@@ -286,8 +277,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
-import { calculateLifePathNumber } from '~/utils/lifePathNumber'
-import { assignArchetype } from '~/utils/archetypes'
 import { LANGUAGES } from '~/utils/translations'
 import { useLanguage } from '~/composables/useLanguage'
 
@@ -299,6 +288,7 @@ const store = useAnalysisStore()
 const { t } = useLanguage()
 const currentStep = ref(1)
 const focusedField = ref<string | null>(null)
+const isCalculating = ref(false)
 
 function selectLanguage(code: string) {
   store.setLanguageOverride(code)
@@ -354,14 +344,6 @@ const ampmWheelRef = ref<HTMLElement>()
 //     debounces snap so rapid scrolling feels continuous.
 
 const wheelListenerCleanups: Array<() => void> = []
-
-// ── B5-1: Personalization interstitial state ──────────────────────────
-const shownInterstitials = new Set<string>()
-const personalizationMessage = ref('')
-const personalizationQuestionId = ref('')
-const showPersonalization = ref(false)
-let personalizationTimer: ReturnType<typeof setTimeout> | null = null
-const personalizationRef = ref<HTMLElement | null>(null)
 
 
 function getOptionsLength(type: string): number {
@@ -613,10 +595,6 @@ function scrollWheelToIndex(el: HTMLElement | undefined, idx: number) {
 
 onUnmounted(() => {
   wheelListenerCleanups.forEach(fn => fn())
-  if (personalizationTimer !== null) {
-    clearTimeout(personalizationTimer)
-    personalizationTimer = null
-  }
 })
 
 // ── Initialise wheels to sensible defaults on mount ───────────────────────────
@@ -679,44 +657,9 @@ watch(timeOfBirth, (val) => {
   store.timeOfBirth = val
 })
 
-const interstitialMessages: Record<string, Record<string, string>> = {
-  q1: {
-    trust: 'Someone who moves on instinct. Your reading maps where that instinct comes from.',
-    wait:  'Someone who reads before they act. Your reading reveals what you\'re actually watching for.',
-    talk:  'Someone who processes through connection. Your reading explains how your network shapes you.',
-    push:  'Someone who moves through discomfort. Your reading shows what you\'re really pushing toward.',
-  },
-  q4: {
-    capable: 'The doubt behind competence is one of the most powerful patterns in your archetype.',
-    alone:   'Connection and independence are the core tension in your destiny path.',
-    matters: 'Purpose-seeking is a defining trait of your archetype family.',
-    toomuch: 'Depth of feeling is one of your primary gifts — your reading shows how to channel it.',
-  },
-}
 
 function handleAnswerSelect(questionId: string, answerValue: string) {
   store.setAnswer(questionId, answerValue)
-  if ((questionId === 'q1' || questionId === 'q4') && !shownInterstitials.has(questionId)) {
-    const msg = interstitialMessages[questionId]?.[answerValue]
-    if (!msg) return
-    shownInterstitials.add(questionId)
-    personalizationMessage.value = msg
-    personalizationQuestionId.value = questionId
-    showPersonalization.value = true
-    nextTick(() => {
-      if (personalizationRef.value) {
-        (Array.isArray(personalizationRef.value)
-          ? personalizationRef.value[0]
-          : personalizationRef.value
-        )?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
-    })
-    if (personalizationTimer !== null) clearTimeout(personalizationTimer)
-    personalizationTimer = setTimeout(() => {
-      showPersonalization.value = false
-      personalizationTimer = null
-    }, 2500)
-  }
 }
 
 const step1Valid = computed(
@@ -725,80 +668,40 @@ const step1Valid = computed(
 
 const questions = computed(() => [
   {
-    id: 'q1',
-    text: t('q1Text'),
+    id: 'p1',
+    text: t('p1Text'),
     options: [
-      { label: t('q1opt1'), value: 'trust' },
-      { label: t('q1opt2'), value: 'wait' },
-      { label: t('q1opt3'), value: 'talk' },
-      { label: t('q1opt4'), value: 'push' },
+      { label: t('p1opt1'), value: 'connection' },
+      { label: t('p1opt2'), value: 'purpose' },
+      { label: t('p1opt3'), value: 'growth' },
+      { label: t('p1opt4'), value: 'creativity' },
     ],
   },
   {
-    id: 'q2',
-    text: t('q2Text'),
+    id: 'p2',
+    text: t('p2Text'),
     options: [
-      { label: t('q2opt1'), value: 'softer' },
-      { label: t('q2opt2'), value: 'sharper' },
-      { label: t('q2opt3'), value: 'ambitious' },
-      { label: t('q2opt4'), value: 'lost' },
+      { label: t('p2opt1'), value: 'direct' },
+      { label: t('p2opt2'), value: 'gentle' },
+      { label: t('p2opt3'), value: 'detailed' },
+      { label: t('p2opt4'), value: 'intuitive' },
     ],
   },
   {
-    id: 'q3',
-    text: t('q3Text'),
+    id: 'p3',
+    text: t('p3Text'),
     options: [
-      { label: t('q3opt1'), value: 'leaving' },
-      { label: t('q3opt2'), value: 'unseen' },
-      { label: t('q3opt3'), value: 'giving' },
-      { label: t('q3opt4'), value: 'burden' },
-    ],
-  },
-  {
-    id: 'q4',
-    text: t('q4Text'),
-    options: [
-      { label: t('q4opt1'), value: 'capable' },
-      { label: t('q4opt2'), value: 'alone' },
-      { label: t('q4opt3'), value: 'matters' },
-      { label: t('q4opt4'), value: 'toomuch' },
-    ],
-  },
-  {
-    id: 'q5',
-    text: t('q5Text'),
-    options: [
-      { label: t('q5opt1'), value: 'strong' },
-      { label: t('q5opt2'), value: 'reliable' },
-      { label: t('q5opt3'), value: 'intense' },
-      { label: t('q5opt4'), value: 'independent' },
-    ],
-  },
-  {
-    id: 'q6',
-    text: t('q6Text'),
-    options: [
-      { label: t('q6opt1'), value: 'enjoy' },
-      { label: t('q6opt2'), value: 'wonder' },
-      { label: t('q6opt3'), value: 'share' },
-      { label: t('q6opt4'), value: 'next' },
-    ],
-  },
-  {
-    id: 'q7',
-    text: t('q7Text'),
-    options: [
-      { label: t('q7opt1'), value: 'givesup' },
-      { label: t('q7opt2'), value: 'feelsnothing' },
-      { label: t('q7opt3'), value: 'needstoo' },
-      { label: t('q7opt4'), value: 'pushesaway' },
+      { label: t('p3opt1'), value: 'self' },
+      { label: t('p3opt2'), value: 'situation' },
+      { label: t('p3opt3'), value: 'curiosity' },
+      { label: t('p3opt4'), value: 'recommended' },
     ],
   },
 ])
 
 const allAnswered = computed(() =>
   questions.value.every(
-    (q) => !!store.answers[q.id as keyof typeof store.answers],
+    (q) => !!(store.answers as Record<string, string>)[q.id],
   ),
 )
 
@@ -828,14 +731,27 @@ function selectRegion(value: string) {
   store.setRegionOverride(value)
 }
 
-function submitAnalysis() {
-  if (allAnswered.value) {
-    const lpn = calculateLifePathNumber(store.dateOfBirth)
-    const archetype = assignArchetype(store.answers)
-    store.setLifePathNumber(lpn)
-    store.setArchetype(archetype)
-    $trackAnalysisSubmit({ archetype, lifePathNumber: lpn, language: store.language, region: store.region })
-    navigateTo('/preview')
+async function handleSubmit() {
+  if (!allAnswered.value) return
+  isCalculating.value = true
+  try {
+    const result = await $fetch('/api/calculate-chart', {
+      method: 'POST',
+      body: {
+        firstName: store.firstName,
+        dateOfBirth: store.dateOfBirth,
+        timeOfBirth: store.timeOfBirth || null,
+        city: store.city,
+      },
+    })
+    store.archetype = (result as any).archetype
+    store.lifePathNumber = (result as any).lifePathNumber
+    store.natalChart = (result as any).chart
+    $trackAnalysisSubmit({ archetype: (result as any).archetype, lifePathNumber: (result as any).lifePathNumber, language: store.language, region: store.region })
+    await navigateTo('/preview')
+  } catch (err) {
+    console.error('[analysis] chart calculation failed:', err)
+    isCalculating.value = false
   }
 }
 </script>
