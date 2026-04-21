@@ -1,7 +1,6 @@
-import {
-  julday,
-  calc_ut,
-  houses,
+import { julday, calc_ut, houses_ex2, constants } from 'sweph'
+
+const {
   SE_GREG_CAL,
   SEFLG_SPEED,
   SE_SUN,
@@ -14,7 +13,8 @@ import {
   SE_URANUS,
   SE_NEPTUNE,
   SE_PLUTO,
-} from 'sweph'
+  ERR,
+} = constants
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -197,18 +197,17 @@ export function calculateNatalChart(params: NatalChartParams): NatalChart {
 
     for (const { key, body } of planets) {
       const result = calc_ut(jd, body, flag)
-      if ('error' in result) throw new Error(`calc_ut failed for ${key}: ${result.error}`)
-      if (!('longitude' in result)) throw new Error(`calc_ut returned unexpected coordinate format for ${key}`)
-      positions[key] = longitudeToPosition(result.longitude)
+      if (result.flag === ERR) throw new Error(`calc_ut failed for ${key}: ${result.error}`)
+      positions[key] = longitudeToPosition(result.data[0])
     }
 
     // ── 4. Ascendant via houses ─────────────────────────────────────────
     let ascendant: PlanetPosition | null = null
 
     if (lat !== 0 || lon !== 0) {
-      const housesResult = houses(jd, lat, lon, 'P')
-      if (!('error' in housesResult) && 'ascendant' in housesResult) {
-        ascendant = longitudeToPosition(housesResult.ascendant)
+      const housesResult = houses_ex2(jd, 0, lat, lon, 'P')
+      if (housesResult.flag !== ERR) {
+        ascendant = longitudeToPosition(housesResult.data.points[0])
       }
     }
 
