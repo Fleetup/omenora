@@ -525,11 +525,20 @@ USER CONTEXT:
 Tradition framework (primary lens for all 7 sections):
 ${regionPrompt}
 
-Use the natal chart data to ground every section in astrological fact. Reference the user's Sun sign, Moon sign, and Rising sign by name at least once each across the 7 sections. The 3 preference answers inform tone and emphasis only — they do not override the chart reading. Preferred style is ${insightStyle}: adjust your voice accordingly.
+Use the natal chart data to ground every section in astrological fact. Reference the user's Sun sign, Moon sign, and Rising sign by name at least once each across the 7 sections. The 3 preference answers inform tone and emphasis only — they do not override the chart reading.
 
 ---
 
 WRITING RULES — follow every one without exception:
+
+0. INSIGHT STYLE — apply this before any other rule:
+The user's preferred insight style is: ${insightStyle}.
+This is a hard voice directive. Adjust your sentence construction, word choice, and emotional register throughout ALL 7 sections to match this style:
+- direct: Short declarative sentences. No softening language. Name truths without apology. Precision over warmth.
+- gentle: Warm and encouraging. Acknowledge difficulty before naming it. Use 'might', 'perhaps', 'often'. Never blunt.
+- detailed: Analytical depth. Explain the mechanism behind every observation. Two or three supporting details per claim. Methodical structure.
+- intuitive: Open and exploratory. Use sensory language. Leave space for the reader to complete the thought. Less linear.
+Do not override this directive for any section. If the style feels in tension with the content, find phrasing that honors both.
 
 LANGUAGE LEVEL — MOST IMPORTANT RULE:
 

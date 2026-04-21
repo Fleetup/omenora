@@ -18,12 +18,12 @@ const MAX_BODY_BYTES_EMAIL = 2_000_000 // 2 MB — for report email (carries ful
 // Until that work is done, 'unsafe-inline' is an accepted risk documented here.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://analytics.tiktok.com https://connect.facebook.net",
-  "script-src-elem 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://analytics.tiktok.com https://connect.facebook.net",
+  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://analytics.tiktok.com https://connect.facebook.net https://us-assets.i.posthog.com",
+  "script-src-elem 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://analytics.tiktok.com https://connect.facebook.net https://us-assets.i.posthog.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://cloudflareinsights.com https://analytics.tiktok.com https://analytics-ipv6.tiktokw.us https://connect.facebook.net https://www.facebook.com https://scvjjbgejmkomyciabex.supabase.co",
+  "connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://cloudflareinsights.com https://analytics.tiktok.com https://analytics-ipv6.tiktokw.us https://connect.facebook.net https://www.facebook.com https://scvjjbgejmkomyciabex.supabase.co https://us.i.posthog.com https://us-assets.i.posthog.com",
   "frame-src https://js.stripe.com https://hooks.stripe.com",
   "object-src 'none'",
   "base-uri 'self'",

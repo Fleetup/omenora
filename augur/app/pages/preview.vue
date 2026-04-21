@@ -75,7 +75,7 @@
 
     <!-- Unlock progress meter (C-4) -->
     <div class="unlock-progress-block">
-      <p class="unlock-label">YOUR READING IS 18% UNLOCKED</p>
+      <p class="unlock-label">YOUR READING IS 14% UNLOCKED</p>
       <div class="unlock-bar-track">
         <div class="unlock-bar-fill"></div>
       </div>
@@ -1048,7 +1048,7 @@ async function handlePayment() {
 }
 
 .unlock-bar-fill {
-  width: 18%;
+  width: 14%;
   height: 100%;
   background: rgba(201, 168, 76, 0.55);
   border-radius: 1px;

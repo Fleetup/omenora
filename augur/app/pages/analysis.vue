@@ -232,7 +232,7 @@
       </button>
     </template>
 
-    <!-- Step 2: Seven Questions -->
+    <!-- Step 2: Three Questions -->
     <template v-else>
       <h1 class="heading">{{ t('fiveQuestions') }}</h1>
       <p class="subheading">{{ t('tapAnswer') }}</p>
@@ -262,13 +262,15 @@
         <div v-if="index < questions.length - 1" class="divider" />
       </div>
 
+      <p v-if="submitError" class="submit-error">{{ submitError }}</p>
+
       <button
         class="cta-button submit-btn"
         :class="{ disabled: !allAnswered || isCalculating }"
         :disabled="!allAnswered || isCalculating"
         @click="handleSubmit"
       >
-        {{ t('revealDestiny') }}
+        {{ isCalculating ? 'Calculating…' : t('revealDestiny') }}
       </button>
     </template>
   </div>
@@ -276,7 +278,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { useAnalysisStore } from '~/stores/analysisStore'
+import { useAnalysisStore, type NatalChart } from '~/stores/analysisStore'
 import { LANGUAGES } from '~/utils/translations'
 import { useLanguage } from '~/composables/useLanguage'
 
@@ -289,6 +291,7 @@ const { t } = useLanguage()
 const currentStep = ref(1)
 const focusedField = ref<string | null>(null)
 const isCalculating = ref(false)
+const submitError   = ref<string | null>(null)
 
 function selectLanguage(code: string) {
   store.setLanguageOverride(code)
@@ -734,23 +737,46 @@ function selectRegion(value: string) {
 async function handleSubmit() {
   if (!allAnswered.value) return
   isCalculating.value = true
+  submitError.value   = null
+  // Clear stale chart so a failed re-submission never carries over old data.
+  store.natalChart = null
+
+  // The browser knows its current UTC offset. We send it so the server can
+  // convert local birth time → UT accurately without a timezone API call.
+  // Note: getTimezoneOffset() returns offset as (UTC − local) minutes,
+  // so we negate it to get (local − UTC) minutes as expected by the server.
+  const utcOffsetMinutes = -(new Date().getTimezoneOffset())
+
   try {
     const result = await $fetch('/api/calculate-chart', {
       method: 'POST',
       body: {
-        firstName: store.firstName,
-        dateOfBirth: store.dateOfBirth,
-        timeOfBirth: store.timeOfBirth || null,
-        city: store.city,
+        firstName:        store.firstName,
+        dateOfBirth:      store.dateOfBirth,
+        timeOfBirth:      store.timeOfBirth || null,
+        city:             store.city,
+        utcOffsetMinutes,
       },
-    })
-    store.archetype = (result as any).archetype
-    store.lifePathNumber = (result as any).lifePathNumber
-    store.natalChart = (result as any).chart
-    $trackAnalysisSubmit({ archetype: (result as any).archetype, lifePathNumber: (result as any).lifePathNumber, language: store.language, region: store.region })
+    }) as {
+      archetype:      string
+      lifePathNumber: number
+      geocodeFailed:  boolean
+      chart:          NatalChart
+    }
+
+    store.archetype      = result.archetype
+    store.lifePathNumber = result.lifePathNumber
+    store.natalChart     = result.chart
+
+    if (result.geocodeFailed) {
+      console.warn('[analysis] geocoding failed for city — ascendant will be unavailable')
+    }
+
+    $trackAnalysisSubmit({ archetype: result.archetype, lifePathNumber: result.lifePathNumber, language: store.language, region: store.region })
     await navigateTo('/preview')
   } catch (err) {
     console.error('[analysis] chart calculation failed:', err)
+    submitError.value   = 'Something went wrong. Please check your connection and try again.'
     isCalculating.value = false
   }
 }
@@ -1174,6 +1200,19 @@ async function handleSubmit() {
 .cta-button.disabled {
   opacity: 0.22;
   cursor: default;
+}
+
+/* ── Submit error message ── */
+.submit-error {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(220, 80, 80, 0.35);
+  background: rgba(220, 80, 80, 0.08);
+  color: rgba(255, 160, 160, 0.9);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 /* ── Submit / reveal button (step 2) ── */

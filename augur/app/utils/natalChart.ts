@@ -1,4 +1,4 @@
-import { julday, calc_ut, houses_ex2, constants } from 'sweph'
+import { julday, calc_ut, houses_ex2, close, constants } from 'sweph'
 
 const {
   SE_GREG_CAL,
@@ -154,6 +154,7 @@ function parseTime(timeOfBirth: string | null): { hour24: number; minute: number
 export type NatalChartParams = {
   dateOfBirth: string        // 'YYYY-MM-DD'
   timeOfBirth: string | null // 'HH:MM AM/PM' or null
+  utcOffsetMinutes: number   // browser's UTC offset at birth location (e.g. -300 for EST)
   city: string               // label only
   lat: number
   lon: number
@@ -161,7 +162,7 @@ export type NatalChartParams = {
 
 export function calculateNatalChart(params: NatalChartParams): NatalChart {
   try {
-    const { dateOfBirth, timeOfBirth, lat, lon } = params
+    const { dateOfBirth, timeOfBirth, utcOffsetMinutes, lat, lon } = params
 
     // ── 1. Parse date ───────────────────────────────────────────────────
     const dateParts = dateOfBirth.split('-')
@@ -172,10 +173,19 @@ export function calculateNatalChart(params: NatalChartParams): NatalChart {
     const day   = parseInt(dateParts[2]!, 10)
 
     const { hour24, minute } = parseTime(timeOfBirth)
-    const hourDecimal = hour24 + minute / 60
 
+    // Convert local birth time → UT: julday() expects Universal Time.
+    // utcOffsetMinutes is the UTC offset of the birth location at the time of birth
+    // (e.g. EST = -300, IST = +330). Subtract it to get UT.
+    // We clamp to a sane range [-840, 840] to guard against tampered input.
+    const clampedOffsetMin  = Math.max(-840, Math.min(840, utcOffsetMinutes ?? 0))
+    const localDecimalHours = hour24 + minute / 60
+    const utDecimalHours    = localDecimalHours - clampedOffsetMin / 60
+
+    // julday handles hour values outside [0, 24) correctly — it propagates
+    // the overflow into the Julian Day number automatically.
     // ── 2. Julian Day Number ────────────────────────────────────────────
-    const jd = julday(year, month, day, hourDecimal, SE_GREG_CAL)
+    const jd = julday(year, month, day, utDecimalHours, SE_GREG_CAL)
 
     // ── 3. Planetary positions ──────────────────────────────────────────
     const flag = SEFLG_SPEED
@@ -211,6 +221,9 @@ export function calculateNatalChart(params: NatalChartParams): NatalChart {
       }
     }
 
+    // Release sweph resources after all calculations are complete.
+    close()
+
     return {
       sun:        positions.sun        ?? fallbackPosition(),
       moon:       positions.moon       ?? fallbackPosition(),
@@ -243,18 +256,19 @@ export function assignArchetypeFromChart(chart: NatalChart): ArchetypeId {
 
     if (chart.ascendant === null) return base
 
-    const ascEl        = getElement(chart.ascendant.signIndex)
-    const baseEl       = getElement(SUN_MOON_MAP[`${sunEl}+${sunEl}`] !== undefined ? chart.sun.signIndex : chart.sun.signIndex)
-    const candidates   = ASCENDANT_CANDIDATES[ascEl]
+    const ascEl      = getElement(chart.ascendant.signIndex)
+    const candidates = ASCENDANT_CANDIDATES[ascEl]
 
-    // If ascendant element matches the Sun element, keep base result
+    // If ascendant element matches the Sun element, keep the Sun+Moon result unchanged.
     if (ascEl === sunEl) return base
 
-    // Find candidate archetype closest by index to the base archetype
-    const baseIdx = candidates.indexOf(base)
-    if (baseIdx !== -1) return base  // base is already in the candidate list
+    // Ascendant element differs from Sun — check whether the base archetype
+    // already belongs to the ascendant's candidate pool. If yes, it is already
+    // naturally aligned and we keep it. If not, shift to the first candidate in
+    // that pool as the closest proxy.
+    const baseInCandidates = candidates.indexOf(base) !== -1
+    if (baseInCandidates) return base
 
-    // Pick the first candidate as the closest proxy
     return candidates[0] ?? base
   } catch (err) {
     console.error('[natal-chart] assignArchetypeFromChart error:', err)
