@@ -71,8 +71,8 @@ Their profile:
 - Life Path: ${lifePathNumber}
 - Element: ${element}
 - Born in: ${birthSeason} (${birthMonth})
-- In relationships they are: ${answers?.q3 || 'a giver'}
-- Their deepest fear: ${answers?.q4 || 'failure'}
+- Primary focus area: ${answers?.p1 || 'growth'}
+- Reason for this reading: ${answers?.p3 || 'self'}
 
 Write a reading that:
 1. Reveals their soul card and what it means for them

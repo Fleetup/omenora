@@ -53,9 +53,9 @@ Their profile:
 - Element: ${element}
 - Life Path: ${lifePathNumber}
 - Born in: ${birthSeason} (${birthMonth})
-- Decision style: ${answers?.q1 === 'gut' ? 'intuition' : 'logic'}
-- Core fear: ${answers?.q4}
-- Energy pattern: ${answers?.q2}
+- Primary focus for 2026: ${answers?.p1 || 'growth'}
+- Insight style: ${answers?.p2 || 'direct'}
+- Reason for seeking this reading: ${answers?.p3 || 'self'}
 
 Rules:
 - Be SPECIFIC to this person — reference their archetype, element, and life path in predictions

@@ -60,7 +60,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
               <li><strong>Your relationship pattern.</strong> Why the same dynamic keeps appearing with different people. What this archetype pattern tends to seek versus what it tends to gravitate toward.</li>
               <li><strong>Your 2026 forecast.</strong> The specific windows this year where your ${data.archetypeElement} energy peaks — and the months where pushing harder will cost you more than it earns.</li>
             </ul>
-            <p>None of this is generic. It was generated from your birth data, your answers to those seven questions, and the ${data.readingTradition} tradition you selected — interpreted through established astrological and numerological frameworks for self-reflection purposes.</p>
+            <p>None of this is generic. It was generated from your birth data, your answers to those three questions, and the ${data.readingTradition} tradition you selected — interpreted through established astrological and numerological frameworks for self-reflection purposes.</p>
             <p>$4.99. One time.</p>
           `,
           ctaText: `Read the full ${data.archetypeName} analysis`,

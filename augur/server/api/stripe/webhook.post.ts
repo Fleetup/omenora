@@ -742,9 +742,9 @@ Their profile:
 - Element: ${opts.element}
 - Life Path: ${opts.lifePathNumber}
 - Born in: ${birthSeason} (${birthMonth})
-- Decision style: ${opts.answers?.q1 === 'gut' ? 'intuition' : 'logic'}
-- Core fear: ${opts.answers?.q4 || 'unknown'}
-- Energy pattern: ${opts.answers?.q2 || 'unknown'}
+- Primary focus for 2026: ${opts.answers?.p1 || 'growth'}
+- Insight style: ${opts.answers?.p2 || 'direct'}
+- Reason for seeking this reading: ${opts.answers?.p3 || 'self'}
 
 Rules:
 - Be SPECIFIC to this person — reference their archetype, element, and life path in predictions
