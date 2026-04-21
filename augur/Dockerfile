@@ -40,9 +40,17 @@ COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/public/fonts ./.output/public/fonts
 COPY --from=builder /app/public/og-image.png ./.output/public/og-image.png
 
+# sweph is a native Node.js addon loaded via node-gyp-build at runtime.
+# Nitro cannot bundle native .node binaries into .output — the loader resolves
+# the prebuild relative to node_modules/sweph at require() time.
+# We must copy the full sweph package so the linux-x64 prebuild is available.
+COPY --from=builder /app/node_modules/sweph ./node_modules/sweph
+COPY --from=builder /app/node_modules/node-gyp-build ./node_modules/node-gyp-build
+COPY --from=builder /app/node_modules/node-addon-api ./node_modules/node-addon-api
+
 # Drop root privileges. node:20-alpine ships with a built-in 'node' user (uid 1000).
 # Chown the output directory so the node user can write runtime cache files if needed.
-RUN chown -R node:node /app/.output
+RUN chown -R node:node /app/.output /app/node_modules
 USER node
 
 EXPOSE 3000

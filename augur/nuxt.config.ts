@@ -40,6 +40,12 @@ export default defineNuxtConfig({
       wasm: true,
     },
     errorHandler: '~~/server/error-handler',
+    // sweph is a native Node.js addon (node-gyp-build). Bundling it breaks the
+    // __dirname-based prebuild resolution at runtime. Mark it external so Nitro
+    // emits a real require('sweph') that resolves from node_modules at runtime.
+    externals: {
+      external: ['sweph'],
+    },
   },
 
   routeRules: {
