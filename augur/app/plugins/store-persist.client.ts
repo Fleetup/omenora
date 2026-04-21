@@ -14,7 +14,7 @@
  * preferences (language, region) are preserved.
  */
 import { watch } from 'vue'
-import { useAnalysisStore } from '~/stores/analysisStore'
+import { useAnalysisStore, type NatalChart } from '~/stores/analysisStore'
 
 const STORAGE_KEY = 'omenora_store_v2'
 
@@ -41,6 +41,7 @@ interface PersistedState {
   language: string
   tempId: string
   reportSessionId: string
+  natalChart: NatalChart | null
   // Purchase flags are intentionally excluded: they are set exclusively
   // from the server-verified Stripe response and must never be persisted
   // or rehydrated from localStorage.
@@ -119,6 +120,9 @@ export default defineNuxtPlugin(() => {
   if (str(s.language, 5))     store.setLanguage(str(s.language, 5))
   if (str(s.tempId, 200))     store.setTempId(str(s.tempId, 200))
   if (str(s.reportSessionId, 200)) store.setReportSessionId(str(s.reportSessionId, 200))
+  if (s.natalChart !== null && s.natalChart !== undefined && typeof s.natalChart === 'object') {
+    store.setNatalChart(s.natalChart as NatalChart)
+  }
 
   // ── Purchase flags are intentionally NOT rehydrated from localStorage. ────
   // They must only be set from the server-verified Stripe payment response
@@ -144,6 +148,7 @@ export default defineNuxtPlugin(() => {
       language:        store.language,
       tempId:          store.tempId,
       reportSessionId: store.reportSessionId,
+      natalChart:      store.natalChart,
     }),
     (snapshot) => save(snapshot),
     { deep: true },
