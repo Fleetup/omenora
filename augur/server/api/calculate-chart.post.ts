@@ -1,6 +1,6 @@
 import { geocodeCity } from '~~/server/utils/geocode'
-import { calculateNatalChart, assignArchetypeFromChart } from '~/app/utils/natalChart'
-import { calculateLifePathNumber } from '~/app/utils/lifePathNumber'
+import { calculateNatalChart, assignArchetypeFromChart } from '~~/app/utils/natalChart'
+import { calculateLifePathNumber } from '~~/app/utils/lifePathNumber'
 
 export default defineEventHandler(async (event) => {
   try {
