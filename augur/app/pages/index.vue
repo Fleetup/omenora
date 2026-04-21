@@ -319,6 +319,36 @@ useSeoMeta({
     'forecast. Free. No account. 60 seconds.',
 })
 
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: 'OMENORA',
+        url: 'https://omenora.com',
+        description: 'Free AI-generated personality and astrology reading based on real natal chart calculations across 6 ancient traditions.',
+        applicationCategory: 'LifestyleApplication',
+        operatingSystem: 'Any',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+          description: 'Free personality archetype reading'
+        },
+        featureList: [
+          'Natal chart calculation via Swiss Ephemeris',
+          'Personality archetype from Sun, Moon and Rising',
+          'Numerology Life Path calculation',
+          '2026 astrology forecast',
+          'Western, Vedic, BaZi, Tarot, Korean and Middle Eastern traditions'
+        ]
+      })
+    }
+  ]
+})
+
 // ── Star canvas ───────────────────────────────
 const starCanvas = ref<HTMLCanvasElement | null>(null)
 
@@ -799,6 +829,15 @@ onMounted(() => {
 }
 
 
+/* Section dividers */
+.trad-section,
+.how-section,
+.bottom-section {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 72px;
+}
+
+
 /* ─────────────────────────────────────────────
    BOTTOM CTA
 ───────────────────────────────────────────── */
@@ -809,7 +848,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0 24px 96px;
+  padding: 80px 24px 96px;
   max-width: 520px;
   margin: 0 auto;
 }
