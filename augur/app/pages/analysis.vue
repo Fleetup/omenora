@@ -190,30 +190,14 @@
         </div>
       </div>
 
-      <div style="margin-top: 16px; text-align: center;">
-        <p style="font-size: 11px; color: rgba(255,255,255,0.2); margin-bottom: 10px; letter-spacing: 0.06em;">{{ t('language') }}</p>
-        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+      <div class="lang-section">
+        <p class="lang-label">{{ t('language') }}</p>
+        <div class="lang-row">
           <button
             v-for="lang in LANGUAGES"
             :key="lang.code"
-            :style="{
-              padding: '6px 12px',
-              borderRadius: '20px',
-              fontSize: '12px',
-              cursor: 'pointer',
-              border: store.language === lang.code
-                ? '1px solid rgba(140,110,255,0.5)'
-                : '1px solid rgba(255,255,255,0.08)',
-              background: store.language === lang.code
-                ? 'rgba(140,110,255,0.15)'
-                : 'transparent',
-              color: store.language === lang.code
-                ? 'rgba(200,180,255,0.9)'
-                : 'rgba(255,255,255,0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-            }"
+            class="lang-btn"
+            :class="{ 'lang-btn--active': store.language === lang.code }"
             @click="selectLanguage(lang.code)"
           >
             <span>{{ lang.flag }}</span>
@@ -783,11 +767,18 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-/* ── Page ── */
+
+/* ─────────────────────────────────────────────
+   PAGE SHELL — matches landing bg system
+───────────────────────────────────────────── */
 .page {
-  background: #050410;
+  position: relative;
   min-height: 100vh;
-  color: white;
+  background: #07070D;
+  color: rgba(255, 255, 255, 0.94);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+               'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: column;
   padding: 28px 24px calc(52px + env(safe-area-inset-bottom, 0px));
@@ -796,7 +787,37 @@ async function handleSubmit() {
   box-sizing: border-box;
 }
 
-/* ── Top bar ── */
+/* Fixed ambient gradient — same visual language as landing,
+   no canvas needed for a form page */
+.page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 80% 55% at 50% 0%,
+      rgba(75, 45, 155, 0.18) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 15% 55%,
+      rgba(50, 25, 110, 0.10) 0%,
+      transparent 60%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* All direct children sit above the bg pseudo-element */
+.page > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ─────────────────────────────────────────────
+   TOP BAR
+───────────────────────────────────────────── */
 .top-bar {
   display: flex;
   align-items: center;
@@ -810,31 +831,42 @@ async function handleSubmit() {
   color: rgba(255, 255, 255, 0.38);
   font-size: 18px;
   cursor: pointer;
-  padding: 0;
+  padding: 8px;
+  margin: -8px;
   line-height: 1;
-  transition: color 0.2s;
+  transition: color 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 .back-btn:hover {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .brand {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.22);
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  font-size: 13px;
+  letter-spacing: 0.20em;
+  color: rgba(255, 255, 255, 0.28);
 }
 
 .step-indicator {
   font-size: 11px;
+  letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.22);
 }
 
-/* ── Progress bar ── */
+
+/* ─────────────────────────────────────────────
+   PROGRESS BAR
+───────────────────────────────────────────── */
 .progress-bar {
   display: flex;
   gap: 6px;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
 }
 
 .progress-segment {
@@ -845,57 +877,63 @@ async function handleSubmit() {
 }
 
 .progress-segment.active {
-  background: rgba(201, 168, 76, 0.55);
+  background: rgba(201, 168, 76, 0.60);
 }
 
-/* ── Headings ── */
+
+/* ─────────────────────────────────────────────
+   HEADINGS
+───────────────────────────────────────────── */
 .heading {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 38px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.92);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.94);
   margin: 0 0 8px;
   line-height: 1.12;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
 }
 
 .subheading {
-  font-size: 13px;
+  font-size: 14px;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.3);
-  margin: 0 0 20px;
-  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.38);
+  margin: 0 0 24px;
+  line-height: 1.55;
 }
 
 .data-use-notice {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.18);
-  margin: 0 0 24px;
-  line-height: 1.5;
+  margin: 0 0 28px;
+  line-height: 1.6;
   letter-spacing: 0.02em;
 }
 
-/* ── Text input fields ── */
+
+/* ─────────────────────────────────────────────
+   TEXT INPUT FIELDS
+───────────────────────────────────────────── */
 .field-wrapper {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 12px;
-  transition: border-color 0.25s, background 0.25s;
+  transition: border-color 0.22s ease, background 0.22s ease;
 }
 
 .field-wrapper.focused {
-  border-color: rgba(201, 168, 76, 0.4);
-  background: rgba(201, 168, 76, 0.025);
+  border-color: rgba(201, 168, 76, 0.42);
+  background: rgba(201, 168, 76, 0.03);
 }
 
 .field-label {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.28);
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .field-input {
@@ -923,26 +961,21 @@ async function handleSubmit() {
   transition: background-color 9999s ease-in-out 0s;
 }
 
-/* ── Date group ── */
-.date-group {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+
+/* ─────────────────────────────────────────────
+   DATE GROUP & TIME GROUP
+───────────────────────────────────────────── */
+.date-group,
+.time-group {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
   padding: 16px 16px 14px;
   margin-bottom: 12px;
 }
 
 .date-group .field-label {
   margin-bottom: 14px;
-}
-
-/* ── Time group ── */
-.time-group {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 16px 16px 14px;
-  margin-bottom: 12px;
 }
 
 .field-header-row {
@@ -954,11 +987,15 @@ async function handleSubmit() {
 
 .field-optional-badge {
   font-size: 10px;
-  color: rgba(140, 110, 255, 0.52);
+  color: rgba(107, 72, 224, 0.65);
   letter-spacing: 0.02em;
 }
 
-/* ── Scroll-wheel drum picker ── */
+
+/* ─────────────────────────────────────────────
+   SCROLL-WHEEL DRUM PICKER
+   ITEM_H = 44px — JS contract, do not change
+───────────────────────────────────────────── */
 .wheel-row {
   display: flex;
   gap: 8px;
@@ -980,22 +1017,21 @@ async function handleSubmit() {
 .wheel-label {
   font-size: 9px;
   color: rgba(255, 255, 255, 0.22);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
 }
 
 .wheel-drum {
   width: 100%;
-  height: 132px; /* 3 visible items × 44px */
+  height: 132px; /* 3 × 44px — must match ITEM_H in script */
   overflow: hidden;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 10px;
   position: relative;
   touch-action: none;
   user-select: none;
   cursor: grab;
-  /* Fade mask top/bottom for depth illusion */
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
@@ -1020,6 +1056,20 @@ async function handleSubmit() {
   cursor: grabbing;
 }
 
+/* Hairline selection indicator — centered on the middle slot */
+.wheel-drum::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: calc(50% - 22px);
+  height: 44px;
+  border-top: 1px solid rgba(201, 168, 76, 0.18);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.18);
+  pointer-events: none;
+  border-radius: 2px;
+}
+
 .wheel-track {
   display: flex;
   flex-direction: column;
@@ -1028,7 +1078,7 @@ async function handleSubmit() {
 }
 
 .wheel-pad {
-  height: 44px; /* one item height — keeps first/last item centerable */
+  height: 44px;
   flex-shrink: 0;
 }
 
@@ -1037,10 +1087,10 @@ async function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 18px;
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.22);
   cursor: pointer;
   user-select: none;
   transition: color 0.18s ease, background 0.18s ease;
@@ -1049,47 +1099,61 @@ async function handleSubmit() {
   contain: layout style;
 }
 
-
 .wheel-item.selected {
   color: rgba(201, 168, 76, 0.95);
   background: rgba(201, 168, 76, 0.07);
 }
 
-/* ── Birth unlock indicator ── */
+
+/* ─────────────────────────────────────────────
+   BIRTH UNLOCK INDICATOR
+───────────────────────────────────────────── */
 .birth-unlock-row {
   display: flex;
   align-items: center;
   gap: 7px;
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .birth-unlock-icon {
   font-size: 10px;
-  color: rgba(140, 110, 255, 0.65);
+  color: rgba(107, 72, 224, 0.70);
 }
 
 .birth-unlock-text {
   font-size: 11px;
-  color: rgba(140, 110, 255, 0.65);
+  color: rgba(107, 72, 224, 0.70);
   letter-spacing: 0.02em;
 }
 
-/* ── Region selector ── */
+
+/* ─────────────────────────────────────────────
+   REGION / TRADITION SELECTOR
+───────────────────────────────────────────── */
 .region-section {
   margin-top: 28px;
-  text-align: center;
   padding-top: 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .region-label {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(201, 168, 76, 0.45);
   letter-spacing: 0.18em;
   text-transform: uppercase;
+  text-align: center;
   margin: 0 0 6px;
+}
+
+.tradition-explanation {
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.28);
+  text-align: center;
+  margin: 0 0 16px;
+  line-height: 1.5;
 }
 
 .region-cards {
@@ -1103,16 +1167,19 @@ async function handleSubmit() {
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.07);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.03);
   color: rgba(255, 255, 255, 0.45);
   font-family: inherit;
   cursor: pointer;
   text-align: left;
-  transition: all 0.2s;
+  transition:
+    border-color 0.18s ease,
+    background   0.18s ease;
   width: 100%;
   min-height: 64px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .region-card.active {
@@ -1121,8 +1188,8 @@ async function handleSubmit() {
 }
 
 .region-card:hover:not(.active) {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .region-card-icon {
@@ -1135,7 +1202,7 @@ async function handleSubmit() {
 .region-card-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .region-card-name {
@@ -1150,9 +1217,9 @@ async function handleSubmit() {
 }
 
 .region-card-sub {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.28);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   line-height: 1.5;
 }
 
@@ -1160,85 +1227,169 @@ async function handleSubmit() {
   color: rgba(201, 168, 76, 0.55);
 }
 
-/* ── CTA continue button ── */
-.cta-button {
-  background: transparent;
-  border: 1px solid rgba(201, 168, 76, 0.32);
-  border-radius: 3px;
-  padding: 0 16px;
-  min-height: 52px;
-  width: 100%;
-  font-size: 12px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.72);
-  cursor: pointer;
-  font-family: inherit;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transition: all 0.3s ease;
-  margin-top: 32px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.cta-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(140,110,255,0.04));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.cta-button:hover:not(.disabled)::before {
-  opacity: 1;
-}
-
-.cta-button:hover:not(.disabled) {
-  border-color: rgba(201, 168, 76, 0.58);
-  color: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
-}
-
-.cta-button.disabled {
-  opacity: 0.22;
-  cursor: default;
-}
-
-/* ── Submit error message ── */
-.submit-error {
-  margin: 16px 0 0;
-  padding: 10px 14px;
-  border-radius: 6px;
-  border: 1px solid rgba(220, 80, 80, 0.35);
-  background: rgba(220, 80, 80, 0.08);
-  color: rgba(255, 160, 160, 0.9);
-  font-size: 12px;
-  line-height: 1.5;
+/* ─────────────────────────────────────────────
+   LANGUAGE SELECTOR
+───────────────────────────────────────────── */
+.lang-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   text-align: center;
 }
 
-/* ── Submit / reveal button (step 2) ── */
+.lang-label {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.20);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+
+.lang-row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.25);
+  transition:
+    border-color 0.18s ease,
+    background   0.18s ease,
+    color        0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lang-btn:hover:not(.lang-btn--active) {
+  border-color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.lang-btn--active {
+  border-color: rgba(107, 72, 224, 0.50);
+  background: rgba(107, 72, 224, 0.14);
+  color: rgba(200, 180, 255, 0.90);
+}
+
+
+/* ─────────────────────────────────────────────
+   PRIMARY CTA — matches landing page solid purple
+   Apple HIG: 44pt minimum touch target
+───────────────────────────────────────────── */
+.cta-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #6B48E0;
+  border: none;
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  padding: 17px 24px;
+  min-height: 54px;
+  width: 100%;
+  cursor: pointer;
+  transition:
+    background  0.18s ease,
+    box-shadow  0.18s ease,
+    transform   0.12s ease;
+  box-shadow:
+    0 0 0 1px rgba(107, 72, 224, 0.55),
+    0 8px 32px rgba(107, 72, 224, 0.28),
+    0 2px 8px  rgba(0, 0, 0, 0.35);
+  margin-top: 32px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cta-button:hover:not(.disabled) {
+  background: #7B5AF2;
+  box-shadow:
+    0 0 0 1px rgba(123, 90, 242, 0.65),
+    0 12px 44px rgba(107, 72, 224, 0.44),
+    0 4px 12px rgba(0, 0, 0, 0.40);
+  transform: translateY(-1px);
+}
+
+.cta-button:active:not(.disabled) {
+  transform: translateY(0) scale(0.985);
+  background: #5B38D0;
+  box-shadow:
+    0 0 0 1px rgba(107, 72, 224, 0.45),
+    0 4px 16px rgba(107, 72, 224, 0.22);
+}
+
+.cta-button.disabled {
+  opacity: 0.30;
+  cursor: default;
+  transform: none;
+}
+
+
+/* ─────────────────────────────────────────────
+   SUBMIT / REVEAL BUTTON — step 2
+   Differentiated from step 1 CTA by gold tint
+   so users feel progression toward their reading
+───────────────────────────────────────────── */
 .submit-btn {
   margin-top: 44px;
-  background: rgba(201, 168, 76, 0.1);
+  background: rgba(201, 168, 76, 0.10);
   border: 1px solid rgba(201, 168, 76, 0.45);
+  border-radius: 14px;
+  box-shadow: none;
   color: rgba(201, 168, 76, 0.92);
-  letter-spacing: 0.12em;
-  font-size: 12px;
+  font-size: 14px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
 }
 
 .submit-btn:hover:not(.disabled) {
   background: rgba(201, 168, 76, 0.18);
-  border-color: rgba(201, 168, 76, 0.7);
+  border-color: rgba(201, 168, 76, 0.70);
   color: rgba(201, 168, 76, 1);
-  box-shadow: 0 0 24px rgba(201, 168, 76, 0.1);
+  box-shadow: 0 0 28px rgba(201, 168, 76, 0.12);
+  transform: translateY(-1px);
 }
 
-/* ── Question blocks ── */
+.submit-btn:active:not(.disabled) {
+  transform: translateY(0) scale(0.985);
+}
+
+
+/* ─────────────────────────────────────────────
+   SUBMIT ERROR
+───────────────────────────────────────────── */
+.submit-error {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(220, 80, 80, 0.35);
+  background: rgba(220, 80, 80, 0.07);
+  color: rgba(255, 160, 160, 0.9);
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+
+/* ─────────────────────────────────────────────
+   QUESTION BLOCKS (STEP 2)
+───────────────────────────────────────────── */
 .question-block {
   margin-bottom: 6px;
 }
@@ -1251,10 +1402,10 @@ async function handleSubmit() {
 }
 
 .question-number {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 22px;
   font-weight: 300;
-  color: rgba(201, 168, 76, 0.4);
+  color: rgba(201, 168, 76, 0.40);
   line-height: 1.2;
   flex-shrink: 0;
   margin-top: 0;
@@ -1264,9 +1415,9 @@ async function handleSubmit() {
 
 .question-text {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.75);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.55;
   font-weight: 300;
   padding-top: 2px;
 }
@@ -1277,10 +1428,13 @@ async function handleSubmit() {
   gap: 8px;
 }
 
-/* ── Oracle tiles (Step 2 options) ── */
+
+/* ─────────────────────────────────────────────
+   ANSWER TILES
+───────────────────────────────────────────── */
 @keyframes tilePulse {
-  0%   { opacity: 0.6; }
-  100% { opacity: 1; }
+  from { opacity: 0.65; }
+  to   { opacity: 1; }
 }
 
 .option-tile {
@@ -1288,35 +1442,73 @@ async function handleSubmit() {
   min-height: 54px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 14px 14px;
+  border-radius: 10px;
+  padding: 14px;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.45);
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  line-height: 1.4;
-  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  line-height: 1.45;
+  transition:
+    transform      0.15s ease,
+    border-color   0.15s ease,
+    background     0.15s ease,
+    color          0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .option-tile:hover {
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.16);
   color: rgba(255, 255, 255, 0.72);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .option-tile.selected {
-  background: rgba(201, 168, 76, 0.08);
-  border-color: rgba(201, 168, 76, 0.42);
-  color: rgba(201, 168, 76, 0.9);
+  background: rgba(107, 72, 224, 0.12);
+  border-color: rgba(107, 72, 224, 0.45);
+  color: rgba(200, 180, 255, 0.92);
   transform: scale(1.02);
   animation: tilePulse 0.15s ease forwards;
 }
 
-/* ── Personalization interstitial (C-1) ── */
+
+/* ─────────────────────────────────────────────
+   QUESTION DIVIDER
+───────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06) 30%,
+    rgba(255, 255, 255, 0.06) 70%,
+    transparent
+  );
+  margin: 28px 0;
+}
+
+
+/* ─────────────────────────────────────────────
+   FADE TRANSITION
+───────────────────────────────────────────── */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+
+/* ─────────────────────────────────────────────
+   PERSONALIZATION INTERSTITIAL
+───────────────────────────────────────────── */
 .personalization-interstitial {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.40);
   line-height: 1.65;
   text-align: center;
   padding: 14px 20px;
@@ -1324,32 +1516,11 @@ async function handleSubmit() {
   font-style: italic;
 }
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.4s ease;
-}
 
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
-
-/* ── Tradition explanation (U-2) ── */
-.tradition-explanation {
-  font-size: 12px;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.28);
-  text-align: center;
-  margin: 0 0 16px;
-  line-height: 1.5;
-}
-
-/* ── Question divider ── */
-.divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06) 30%, rgba(255, 255, 255, 0.06) 70%, transparent);
-  margin: 28px 0;
-}
-
-/* ── Mobile responsive fixes ── */
+/* ─────────────────────────────────────────────
+   RESPONSIVE
+   Apple HIG: 44pt minimum touch targets
+───────────────────────────────────────────── */
 @media (max-width: 400px) {
   .page {
     padding: 24px 20px calc(48px + env(safe-area-inset-bottom, 0px));
@@ -1361,14 +1532,14 @@ async function handleSubmit() {
 
   .option-tile {
     flex: 1 0 calc(50% - 4px);
-    padding: 12px 12px;
+    padding: 12px;
     font-size: 12px;
     min-height: 50px;
   }
 
   .region-card {
     padding: 12px 14px;
-    min-height: 60px;
+    min-height: 58px;
   }
 }
 
@@ -1396,4 +1567,17 @@ async function handleSubmit() {
     font-size: 28px;
   }
 }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .cta-button:hover:not(.disabled),
+  .submit-btn:hover:not(.disabled) {
+    transform: none;
+  }
+  .option-tile.selected {
+    transform: none;
+    animation: none;
+  }
+}
+
 </style>
