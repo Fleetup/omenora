@@ -5,5 +5,5 @@ If you are experiencing a mental health crisis, please contact a qualified profe
 `
 
 export const REPORT_DISCLAIMER = `
-OMENORA reports are AI-generated content provided for entertainment and self-reflection purposes only. Results are based on information provided by the user and do not constitute professional advice of any kind.
+OMENORA reports are AI-generated content provided for entertainment and self-reflection purposes only. Results are interpretive and pattern-based, not diagnostic or clinical. They are based on information provided by the user and do not constitute professional advice of any kind.
 `

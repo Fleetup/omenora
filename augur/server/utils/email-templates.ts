@@ -37,7 +37,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
             <p>That's the surface. What's locked is the part that actually explains <em>why</em> — the shadow patterns, the relationship wiring, the reason certain things drain you in a way that's hard to articulate.</p>
             <p>Your reading expires in 47 hours.</p>
           `,
-          ctaText: `Unlock your full ${data.archetypeName} reading — $4.99`,
+          ctaText: `View your full ${data.archetypeName} reading — $4.99`,
           footerNote: 'Secured by Stripe. Apple Pay and Google Pay accepted.',
           email: data.email,
         }),
@@ -60,7 +60,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
               <li><strong>Your relationship pattern.</strong> Why the same dynamic keeps appearing with different people. What you're actually looking for versus what you keep choosing.</li>
               <li><strong>Your 2026 forecast.</strong> The specific windows this year where your ${data.archetypeElement} energy peaks — and the months where pushing harder will cost you more than it earns.</li>
             </ul>
-            <p>None of this is generic. It was built from your birth data, your answers to those seven questions, and the ${data.readingTradition} tradition you selected.</p>
+            <p>None of this is generic. It was generated from your birth data, your answers to those seven questions, and the ${data.readingTradition} tradition you selected — interpreted through established astrological and numerological frameworks for self-reflection purposes.</p>
             <p>$4.99. One time.</p>
           `,
           ctaText: `Read the full ${data.archetypeName} analysis`,
@@ -79,7 +79,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
           body: `
             <p>${data.firstName}.</p>
             <p>Your <strong>${data.archetypeName}</strong> reading expires in 23 hours.</p>
-            <p>After that, the analysis we ran — the one that used your birth data, your birth location, and your answers to build something specifically for you — gets deleted. We don't store unredeemed readings.</p>
+            <p>After that, the reading we generated — using your birth data, your birth location, and your answers — gets deleted. We don’t store unredeemed readings.</p>
             <p>The <strong>${data.archetypeName}</strong> is one of the rarest archetypes we generate. Most people who receive it don't fully understand what it means until they read the locked sections. The teaser you saw is the neutral version. What's inside is the honest version.</p>
             <p>If you've been wondering whether it's worth it — the answer is yes, and $4.99 is the reason you don't need to think about it.</p>
           `,
@@ -624,6 +624,15 @@ function buildHtmlEmail({
               <p style="margin:0;font-size:12px;color:#555;font-family:Georgia,serif;">${footerNote}</p>
             </td>
           </tr>` : ''}
+
+          <!-- Disclaimer -->
+          <tr>
+            <td style="text-align:center;padding:16px 0 8px;">
+              <p style="margin:0;font-size:10px;color:#3a3a3a;font-family:sans-serif;line-height:1.5;">
+                For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.
+              </p>
+            </td>
+          </tr>
 
           <!-- Unsubscribe -->
           <tr>

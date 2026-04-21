@@ -132,7 +132,7 @@
           </thead>
           <tbody>
             <tr>
-              <td>Generating your destiny report using AI</td>
+              <td>Generating your personality archetype reading using AI</td>
               <td>Performance of a contract (fulfilment of the service you requested)</td>
               <td>Art. 6(1)(b)</td>
             </tr>
@@ -443,7 +443,7 @@
           <li><strong>Commercial information:</strong> Purchase history, transaction records</li>
           <li><strong>Internet or network activity:</strong> Browsing behaviour on our site, interactions with our content</li>
           <li><strong>Geolocation data:</strong> Approximate location derived from IP address</li>
-          <li><strong>Inferences:</strong> Personality archetypes and destiny profiles generated from birth data and questionnaire responses</li>
+          <li><strong>Inferences:</strong> Personality archetypes and personality profiles generated from birth data and questionnaire responses</li>
         </ul>
 
         <h3>11.2 Do We Sell or Share Personal Information?</h3>
