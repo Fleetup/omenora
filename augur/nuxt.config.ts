@@ -227,8 +227,8 @@ export default defineNuxtConfig({
                 ],
                 sameAs: [
                   'https://www.tiktok.com/@omenora',
-                  // 'https://www.instagram.com/omenora',
-                  // 'https://www.facebook.com/omenora',
+                  'https://www.instagram.com/omenora',
+                  'https://www.facebook.com/omenora',
                   // 'https://twitter.com/omenora',
                   // 'https://www.youtube.com/@omenora',
                   // 'https://www.linkedin.com/company/omenora',
