@@ -233,7 +233,7 @@ useHead({
   align-items: center;
   justify-content: flex-start;
   overflow-x: hidden;
-  padding-bottom: 120px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── Atmospheric layers ── */
@@ -303,7 +303,7 @@ useHead({
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 80px 20px 0;
+  padding: clamp(64px, 12vh, 96px) 24px 0;
   max-width: 520px;
   width: 100%;
   box-sizing: border-box;
@@ -325,8 +325,8 @@ useHead({
   color: rgba(255,255,255,0.93);
   letter-spacing: 0.14em;
   line-height: 1;
-  margin-top: 10px;
-  margin-bottom: 0;
+  margin-top: 12px;
+  margin-bottom: 4px;
   text-shadow: 0 0 80px rgba(140,110,255,0.12);
 }
 
@@ -334,23 +334,23 @@ useHead({
 .tagline {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 300;
   color: rgba(255,255,255,0.48);
   letter-spacing: 0.01em;
-  line-height: 1.55;
+  line-height: 1.5;
   text-align: center;
-  margin-top: 16px;
+  margin-top: 20px;
   margin-bottom: 0;
 }
 
 .tagline-sub {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.32);
-  line-height: 1.65;
-  margin-top: 8px;
+  line-height: 1.7;
+  margin-top: 10px;
   margin-bottom: 0;
-  max-width: 440px;
+  max-width: 400px;
   text-align: center;
 }
 
@@ -359,7 +359,7 @@ useHead({
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 28px;
+  margin-top: 32px;
   width: 100%;
   max-width: 340px;
 }
@@ -384,10 +384,12 @@ useHead({
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   background: transparent;
   border: 1px solid rgba(201, 168, 76, 0.32);
   border-radius: 3px;
-  padding: 16px 48px;
+  padding: 0 48px;
+  min-height: 52px;
   width: 100%;
   font-size: 12px;
   font-weight: 400;
@@ -397,7 +399,7 @@ useHead({
   letter-spacing: 0.1em;
   text-transform: uppercase;
   transition: all 0.3s ease;
-  margin-top: 28px;
+  margin-top: 32px;
   position: relative;
   overflow: hidden;
 }
@@ -442,33 +444,34 @@ useHead({
 .sub-label {
   font-size: 11px;
   color: rgba(255,255,255,0.18);
-  margin-top: 14px;
+  margin-top: 12px;
   margin-bottom: 0;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
 /* ── Discover section (LP-3) ── */
-.discover-section { width: 100%; max-width: 520px; margin: 56px auto 0; padding: 0 20px; box-sizing: border-box; position: relative; z-index: 1; }
-.discover-label { font-size: 9px; letter-spacing: 0.18em; color: rgba(201, 168, 76, 0.45); text-align: center; margin: 0 0 24px; text-transform: uppercase; }
-.discover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.discover-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 20px 16px 18px; text-align: left; }
-.discover-symbol { width: 48px; height: 48px; object-fit: contain; display: block; margin-bottom: 14px; opacity: 0.82; }
-.discover-name { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.72); margin: 0 0 6px; letter-spacing: 0.02em; }
-.discover-desc { font-size: 11px; color: rgba(255, 255, 255, 0.28); line-height: 1.6; margin: 0; }
-@media (max-width: 420px) { .discover-grid { grid-template-columns: 1fr; } }
+.discover-section { width: 100%; max-width: 520px; margin: 64px auto 0; padding: 0 24px; box-sizing: border-box; position: relative; z-index: 1; }
+.discover-label { font-size: 9px; letter-spacing: 0.2em; color: rgba(201, 168, 76, 0.42); text-align: center; margin: 0 0 28px; text-transform: uppercase; }
+.discover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.discover-card { background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 22px 18px 20px; text-align: left; transition: border-color 0.25s; }
+.discover-card:hover { border-color: rgba(255, 255, 255, 0.12); }
+.discover-symbol { width: 44px; height: 44px; object-fit: contain; display: block; margin-bottom: 16px; opacity: 0.78; }
+.discover-name { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.78); margin: 0 0 7px; letter-spacing: 0.03em; }
+.discover-desc { font-size: 11px; color: rgba(255, 255, 255, 0.3); line-height: 1.65; margin: 0; }
+@media (max-width: 440px) { .discover-grid { grid-template-columns: 1fr; gap: 10px; } }
 
 /* ── How It Works strip (LP-4) ── */
-.how-section { width: 100%; max-width: 520px; margin: 40px auto 0; padding: 0 20px; box-sizing: border-box; position: relative; z-index: 1; }
-.how-steps { display: flex; align-items: center; gap: 8px; }
-.how-step { flex: 1; text-align: center; }
-.how-num { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: rgba(201, 168, 76, 0.35); display: block; line-height: 1; margin-bottom: 8px; }
-.how-text { font-size: 11px; color: rgba(255, 255, 255, 0.32); line-height: 1.55; margin: 0; }
-.how-divider { width: 1px; height: 32px; background: rgba(255, 255, 255, 0.12); flex-shrink: 0; }
-@media (max-width: 420px) { .how-steps { flex-direction: column; gap: 16px; } .how-divider { width: 40px; height: 1px; } }
+.how-section { width: 100%; max-width: 520px; margin: 48px auto 0; padding: 0 24px; box-sizing: border-box; position: relative; z-index: 1; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 40px; }
+.how-steps { display: flex; align-items: flex-start; gap: 0; }
+.how-step { flex: 1; text-align: center; padding: 0 8px; }
+.how-num { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 300; color: rgba(201, 168, 76, 0.32); display: block; line-height: 1; margin-bottom: 10px; }
+.how-text { font-size: 12px; color: rgba(255, 255, 255, 0.35); line-height: 1.6; margin: 0; }
+.how-divider { width: 1px; height: 40px; background: rgba(255, 255, 255, 0.08); flex-shrink: 0; align-self: center; }
+@media (max-width: 440px) { .how-steps { flex-direction: column; gap: 20px; align-items: center; } .how-divider { width: 32px; height: 1px; } .how-step { padding: 0; max-width: 240px; } }
 
 /* ── Bottom CTA block (LP-8) ── */
-.bottom-cta-block { width: 100%; max-width: 520px; margin: 48px auto 80px; padding: 0 20px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; z-index: 1; }
-.bottom-cta { width: 100%; max-width: 360px; margin-top: 0; }
+.bottom-cta-block { width: 100%; max-width: 520px; margin: 56px auto 0; padding: 0 24px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; z-index: 1; }
+.bottom-cta { width: 100%; max-width: 380px; margin-top: 0; }
 
 /* ── Entry animations (LP-7) ── */
 @keyframes fadeUp {
@@ -491,6 +494,7 @@ useHead({
   letter-spacing: 0.02em;
   text-align: center;
   line-height: 1.5;
+  max-width: 320px;
 }
 
 .site-footer {
@@ -499,8 +503,8 @@ useHead({
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 24px 20px;
+  gap: 8px;
+  padding: 40px 24px 32px;
   z-index: 1;
 }
 
@@ -537,22 +541,17 @@ useHead({
 /* ── Responsive ── */
 @media (max-width: 640px) {
   .brand-name {
-    font-size: clamp(44px, 14vw, 72px);
+    font-size: clamp(44px, 14vw, 80px);
     letter-spacing: 0.1em;
   }
 
   .tagline {
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .tagline-sub {
     font-size: 13px;
-  }
-
-  .cta-button {
-    padding: 15px 32px;
-    width: 100%;
-    font-size: 14px;
+    max-width: 320px;
   }
 
   .nebula-glow {
@@ -562,17 +561,43 @@ useHead({
 }
 
 @media (max-width: 390px) {
+  .content {
+    padding: clamp(48px, 10vh, 72px) 20px 0;
+  }
+
   .brand-name {
     font-size: clamp(38px, 12vw, 56px);
     letter-spacing: 0.08em;
   }
 
   .tagline {
-    font-size: 14px;
+    font-size: 15px;
+    margin-top: 16px;
   }
 
-  .content {
-    padding: 0 16px;
+  .discover-section,
+  .how-section,
+  .bottom-cta-block {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .cta-button {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 320px) {
+  .brand-name {
+    font-size: 36px;
+    letter-spacing: 0.06em;
+  }
+
+  .discover-section,
+  .how-section,
+  .bottom-cta-block {
+    padding-left: 16px;
+    padding-right: 16px;
   }
 }
 </style>

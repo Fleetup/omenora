@@ -790,7 +790,7 @@ async function handleSubmit() {
   color: white;
   display: flex;
   flex-direction: column;
-  padding: 24px 20px 52px;
+  padding: 28px 24px calc(52px + env(safe-area-inset-bottom, 0px));
   max-width: 480px;
   margin: 0 auto;
   box-sizing: border-box;
@@ -834,7 +834,7 @@ async function handleSubmit() {
 .progress-bar {
   display: flex;
   gap: 6px;
-  margin-bottom: 36px;
+  margin-bottom: 32px;
 }
 
 .progress-segment {
@@ -854,8 +854,8 @@ async function handleSubmit() {
   font-size: 38px;
   font-weight: 300;
   color: rgba(255, 255, 255, 0.92);
-  margin: 0 0 6px;
-  line-height: 1.15;
+  margin: 0 0 8px;
+  line-height: 1.12;
   letter-spacing: -0.01em;
 }
 
@@ -863,7 +863,8 @@ async function handleSubmit() {
   font-size: 13px;
   font-style: italic;
   color: rgba(255, 255, 255, 0.3);
-  margin: 0 0 16px;
+  margin: 0 0 20px;
+  line-height: 1.5;
 }
 
 .data-use-notice {
@@ -878,7 +879,7 @@ async function handleSubmit() {
 .field-wrapper {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 14px 16px;
   margin-bottom: 12px;
   transition: border-color 0.25s, background 0.25s;
@@ -927,12 +928,12 @@ async function handleSubmit() {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 16px 16px 14px;
   margin-bottom: 12px;
 }
 
 .date-group .field-label {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 /* ── Time group ── */
@@ -940,7 +941,7 @@ async function handleSubmit() {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 16px 16px 14px;
   margin-bottom: 12px;
 }
 
@@ -1077,18 +1078,18 @@ async function handleSubmit() {
 
 /* ── Region selector ── */
 .region-section {
-  margin-top: 24px;
+  margin-top: 28px;
   text-align: center;
-  padding-top: 20px;
+  padding-top: 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .region-label {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.18);
-  letter-spacing: 0.1em;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  margin: 0 0 12px;
+  margin: 0 0 6px;
 }
 
 .region-cards {
@@ -1100,8 +1101,8 @@ async function handleSubmit() {
 .region-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 14px;
+  padding: 14px 16px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   background: transparent;
@@ -1111,6 +1112,7 @@ async function handleSubmit() {
   text-align: left;
   transition: all 0.2s;
   width: 100%;
+  min-height: 64px;
 }
 
 .region-card.active {
@@ -1163,7 +1165,8 @@ async function handleSubmit() {
   background: transparent;
   border: 1px solid rgba(201, 168, 76, 0.32);
   border-radius: 3px;
-  padding: 16px;
+  padding: 0 16px;
+  min-height: 52px;
   width: 100%;
   font-size: 12px;
   font-weight: 400;
@@ -1173,9 +1176,12 @@ async function handleSubmit() {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   transition: all 0.3s ease;
-  margin-top: 28px;
+  margin-top: 32px;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cta-button::before {
@@ -1217,7 +1223,7 @@ async function handleSubmit() {
 
 /* ── Submit / reveal button (step 2) ── */
 .submit-btn {
-  margin-top: 40px;
+  margin-top: 44px;
   background: rgba(201, 168, 76, 0.1);
   border: 1px solid rgba(201, 168, 76, 0.45);
   color: rgba(201, 168, 76, 0.92);
@@ -1234,7 +1240,7 @@ async function handleSubmit() {
 
 /* ── Question blocks ── */
 .question-block {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .question-header {
@@ -1279,17 +1285,17 @@ async function handleSubmit() {
 
 .option-tile {
   flex: 1 0 calc(50% - 4px);
-  min-height: 52px;
+  min-height: 54px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 13px 16px;
+  border-radius: 8px;
+  padding: 14px 14px;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.45);
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  line-height: 1.35;
+  line-height: 1.4;
   transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -1332,36 +1338,58 @@ async function handleSubmit() {
   font-style: italic;
   color: rgba(255, 255, 255, 0.28);
   text-align: center;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
+  line-height: 1.5;
 }
 
 /* ── Question divider ── */
 .divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06) 30%, rgba(255, 255, 255, 0.06) 70%, transparent);
-  margin: 24px 0;
+  margin: 28px 0;
 }
 
 /* ── Mobile responsive fixes ── */
 @media (max-width: 400px) {
   .page {
-    padding: 20px 16px 52px;
+    padding: 24px 20px calc(48px + env(safe-area-inset-bottom, 0px));
   }
 
   .heading {
-    font-size: 32px;
+    font-size: 34px;
   }
 
   .option-tile {
     flex: 1 0 calc(50% - 4px);
-    padding: 11px 12px;
+    padding: 12px 12px;
     font-size: 12px;
+    min-height: 50px;
+  }
+
+  .region-card {
+    padding: 12px 14px;
+    min-height: 60px;
   }
 }
 
 @media (max-width: 360px) {
   .page {
-    padding: 16px 12px 52px;
+    padding: 20px 16px calc(44px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .heading {
+    font-size: 30px;
+  }
+
+  .option-tile {
+    flex: 1 0 100%;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 320px) {
+  .page {
+    padding: 16px 14px calc(40px + env(safe-area-inset-bottom, 0px));
   }
 
   .heading {

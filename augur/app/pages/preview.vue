@@ -866,7 +866,7 @@ async function handlePayment() {
   color: white;
   max-width: 520px;
   margin: 0 auto;
-  padding: 24px 20px 60px;
+  padding: 28px 24px calc(72px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 }
 
@@ -875,7 +875,7 @@ async function handlePayment() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .top-bar .brand-text {
@@ -904,8 +904,8 @@ async function handlePayment() {
 .archetype-block {
   position: relative;
   border-left: 2px solid rgba(201, 168, 76, 0.38);
-  padding: 24px 24px 24px 28px;
-  margin-bottom: 24px;
+  padding: 24px 24px 28px 28px;
+  margin-bottom: 28px;
   overflow: hidden;
 }
 
@@ -1024,8 +1024,8 @@ async function handlePayment() {
 /* ── Unlock progress meter (C-4) ── */
 .unlock-progress-block {
   width: 100%;
-  max-width: 420px;
-  margin: 24px auto 0;
+  max-width: 100%;
+  margin: 28px 0 0;
   padding: 0;
   box-sizing: border-box;
   text-align: center;
@@ -1058,8 +1058,8 @@ async function handlePayment() {
   background: rgba(140, 110, 255, 0.06);
   border: 1px solid rgba(140, 110, 255, 0.15);
   border-radius: 12px;
-  padding: 20px 24px;
-  margin: 32px 0;
+  padding: 20px 22px;
+  margin: 28px 0;
 }
 
 .locked-header {
@@ -1088,8 +1088,9 @@ async function handlePayment() {
 
 .locked-section-list li {
   color: rgba(255, 255, 255, 0.65);
-  font-size: 15px;
-  line-height: 2.2;
+  font-size: 14px;
+  line-height: 2.0;
+  letter-spacing: 0.01em;
 }
 
 /* ── Social proof ── */
@@ -1139,20 +1140,22 @@ async function handlePayment() {
 .paywall-sub-line {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.45);
-  margin: 0 0 28px;
+  margin: 0 0 20px;
+  line-height: 1.55;
 }
 
 /* ── Tier list ── */
 .tier-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 /* ── Tier card base ── */
 .tier-card {
-  border-radius: 8px;
-  padding: 14px 16px;
+  border-radius: 10px;
+  padding: 16px 16px;
+  min-height: 64px;
   cursor: pointer;
   transition: box-shadow 0.2s, border-color 0.2s, opacity 0.2s;
 }
@@ -1371,8 +1374,9 @@ async function handlePayment() {
 .unlock-btn {
   background: rgba(140, 110, 255, 0.88);
   border: none;
-  border-radius: 6px;
-  padding: 17px 16px;
+  border-radius: 8px;
+  padding: 0 16px;
+  min-height: 54px;
   width: 100%;
   font-size: 14px;
   font-weight: 500;
@@ -1381,7 +1385,10 @@ async function handlePayment() {
   font-family: inherit;
   letter-spacing: 0.04em;
   transition: background 0.22s, box-shadow 0.22s;
-  margin-top: 12px;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .unlock-btn:hover:not(:disabled) {
@@ -1422,10 +1429,10 @@ async function handlePayment() {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.35);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.32);
   text-align: center;
-  margin: 16px 0 8px;
+  margin: 20px 0 10px;
 }
 
 .urgency-icon {

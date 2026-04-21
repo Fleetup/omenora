@@ -2200,9 +2200,9 @@ async function downloadReportPDF() {
   background: #050410;
   min-height: 100vh;
   color: white;
-  max-width: 560px;
+  max-width: 520px;
   margin: 0 auto;
-  padding: 24px 20px 60px;
+  padding: 28px 24px calc(72px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 }
 
@@ -2211,7 +2211,7 @@ async function downloadReportPDF() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .top-brand {
@@ -2229,10 +2229,10 @@ async function downloadReportPDF() {
 /* Hero block */
 .hero-block {
   position: relative;
-  padding: 32px 0 28px;
+  padding: 36px 0 32px;
   background: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  margin-bottom: 28px;
+  margin-bottom: 32px;
   overflow: hidden;
 }
 
@@ -2252,7 +2252,7 @@ async function downloadReportPDF() {
 
 .archetype-name {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 56px;
+  font-size: clamp(44px, 10vw, 56px);
   font-weight: 300;
   color: rgba(255, 255, 255, 0.94);
   line-height: 1.05;
@@ -2286,7 +2286,7 @@ async function downloadReportPDF() {
 
 /* Report sections */
 .section-wrapper {
-  padding: 32px 0;
+  padding: 36px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   background: none;
 }
@@ -2301,15 +2301,16 @@ async function downloadReportPDF() {
   color: rgba(201, 168, 76, 0.65);
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
 }
 
 .section-content {
   font-size: 15px;
   font-weight: 300;
   color: rgba(255, 255, 255, 0.68);
-  line-height: 1.95;
+  line-height: 1.9;
   margin: 0;
+  letter-spacing: 0.01em;
 }
 
 .affirmation-box {
@@ -2318,9 +2319,9 @@ async function downloadReportPDF() {
   border-top: 1px solid rgba(201, 168, 76, 0.12);
   border-bottom: 1px solid rgba(201, 168, 76, 0.12);
   border-radius: 0;
-  padding: 32px 0;
+  padding: 36px 8px;
   font-family: 'Cormorant Garamond', serif;
-  font-size: 24px;
+  font-size: clamp(20px, 5vw, 24px);
   font-weight: 300;
   font-style: italic;
   color: rgba(255, 255, 255, 0.88);
@@ -2347,8 +2348,8 @@ async function downloadReportPDF() {
 }
 
 .share-card {
-  width: 280px;
-  height: 160px;
+  width: min(280px, 100%);
+  min-height: 160px;
   background: linear-gradient(140deg, #0d0b1e, #12101f);
   border: 1px solid rgba(140, 110, 255, 0.25);
   border-radius: 16px;
@@ -2358,7 +2359,7 @@ async function downloadReportPDF() {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 16px;
+  padding: 20px 16px;
   box-sizing: border-box;
 }
 
@@ -3323,7 +3324,7 @@ async function downloadReportPDF() {
 @media (max-width: 400px) {
   /* Report page padding */
   .report-page {
-    padding: 20px 16px 60px;
+    padding: 24px 20px calc(60px + env(safe-area-inset-bottom, 0px));
   }
 
   /* Archetype name – prevent overflow */
@@ -3476,7 +3477,7 @@ async function downloadReportPDF() {
 
 @media (max-width: 360px) {
   .report-page {
-    padding: 16px 12px 60px;
+    padding: 20px 16px calc(56px + env(safe-area-inset-bottom, 0px));
   }
 
   .archetype-name {
