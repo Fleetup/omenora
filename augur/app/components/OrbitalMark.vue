@@ -138,21 +138,11 @@ onMounted(() => {
     ctx!.fillStyle = crescent
     ctx!.fillRect(cx - PLANET_R, cy - PLANET_R, PLANET_R * 2, PLANET_R * 2)
 
-    // ── Surface sigil — 4 spokes + inner ring, engraved on the dark face ──────
-    // Drawn inside the clip so it never bleeds outside the sphere edge.
-    const sigilAlpha = 0.11 + Math.sin(pulse * 0.5) * 0.04
+    // ── Surface sigil — faint inner ring only, engraved on the dark face ───────
+    // Spokes removed: they rendered as visible cross lines on the sphere.
+    // Only a hairline concentric ring remains at near-invisible alpha.
+    const sigilAlpha = 0.045 + Math.sin(pulse * 0.5) * 0.015
     ctx!.globalAlpha = sigilAlpha
-    // 4 spokes from center
-    for (let i = 0; i < 4; i++) {
-      const a = sigilAngle + i * (Math.PI * 2 / 4)
-      ctx!.beginPath()
-      ctx!.moveTo(cx, cy)
-      ctx!.lineTo(cx + Math.cos(a) * PLANET_R * 0.78, cy + Math.sin(a) * PLANET_R * 0.78)
-      ctx!.strokeStyle = 'rgba(212, 167, 58, 1)'
-      ctx!.lineWidth   = 0.45
-      ctx!.stroke()
-    }
-    // Inner sigil ring
     ctx!.beginPath()
     ctx!.arc(cx, cy, PLANET_R * 0.38, 0, Math.PI * 2)
     ctx!.strokeStyle = 'rgba(212, 167, 58, 1)'
@@ -192,15 +182,24 @@ onMounted(() => {
   }
 
   // ── Draw orbital body (main or micro) ────────────────────────────────────────
+  // depthAlpha uses a squared curve so both halves fade smoothly and
+  // symmetrically — linear (0.35 + depth*0.65) caused a harsh jump at
+  // the back→front crossover. Squaring keeps the back dim and the front bright
+  // without a visible pop.
   function drawDot(x: number, y: number, depth: number, main: boolean): void {
-    const scale      = main ? 1.0 : 0.6
+    const scale      = main ? 1.0 : 0.55
     const coreRadius = getDotRadius(depth) * scale
-    const haloRadius = coreRadius * 4
-    const depthAlpha = 0.35 + depth * 0.65
+    // Micro-satellite halo is tighter so it doesn't bloom when front
+    const haloMult   = main ? 4.0 : 2.8
+    const haloRadius = coreRadius * haloMult
+    // Smooth quadratic depth curve: 0→0.12, 0.5→0.45, 1→0.95
+    const depthAlpha = 0.12 + depth * depth * 0.83
+    // Halo peak alpha is lower for micro-satellite for visual hierarchy
+    const haloPeak   = main ? 0.82 : 0.52
 
     const halo = ctx!.createRadialGradient(x, y, 0, x, y, haloRadius)
-    halo.addColorStop(0,   `rgba(255, 220, 100, ${(0.85 * depthAlpha).toFixed(3)})`)
-    halo.addColorStop(0.4, `rgba(232, 184,  75, ${(0.45 * depthAlpha).toFixed(3)})`)
+    halo.addColorStop(0,   `rgba(255, 220, 100, ${(haloPeak * depthAlpha).toFixed(3)})`)
+    halo.addColorStop(0.4, `rgba(232, 184,  75, ${(haloPeak * 0.45 * depthAlpha).toFixed(3)})`)
     halo.addColorStop(1,   'rgba(180, 100, 20, 0)')
     ctx!.beginPath()
     ctx!.arc(x, y, haloRadius, 0, Math.PI * 2)
@@ -241,8 +240,9 @@ onMounted(() => {
     trail2.push({ x: x2, y: y2, depth: d2 })
     if (trail2.length > TRAIL_2) trail2.shift()
 
-    // Particle emission from main dot only
+    // Particle emission from both dots for consistent glow on both bodies
     emitParticle(x1, y1, d1)
+    emitParticle(x2, y2, d2)
 
     // ── Draw orbit path rings ────────────────────────────────────────────────
     ctx!.beginPath()
