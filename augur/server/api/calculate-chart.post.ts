@@ -3,14 +3,6 @@ import { calculateNatalChart, assignArchetypeFromChart } from '~~/app/utils/nata
 import { calculateLifePathNumber } from '~~/app/utils/lifePathNumber'
 
 export default defineEventHandler(async (event) => {
-  // ── sweph load probe (temporary debug — remove after Railway error identified) ─
-  try {
-    const sweph = await import('sweph')
-    console.log('[calculate-chart] sweph loaded OK, julday type:', typeof sweph.julday)
-  } catch (loadErr: any) {
-    console.error('[calculate-chart] sweph FAILED to load:', loadErr?.message)
-  }
-
   try {
     const body = await readBody(event)
 

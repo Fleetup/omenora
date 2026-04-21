@@ -50,14 +50,17 @@ COPY --from=builder /app/public/fonts ./.output/public/fonts
 COPY --from=builder /app/public/og-image.png ./.output/public/og-image.png
 
 # sweph is a native Node.js addon loaded via node-gyp-build at runtime.
-# node-gyp-build resolves the prebuild from __dirname of sweph/index.js, which
-# is /app/node_modules/sweph/prebuilds/linux-x64/sweph.node at runtime.
-# The full sweph package must exist in node_modules for this path to resolve.
-COPY --from=builder /app/node_modules/sweph ./node_modules/sweph
-COPY --from=builder /app/node_modules/node-gyp-build ./node_modules/node-gyp-build
+# Nitro copies sweph's JS files into .output/server/node_modules/sweph/ but
+# omits the prebuilds/ directory. node-gyp-build resolves the .node binary
+# using __dirname of sweph/index.mjs — which at runtime is:
+#   /app/.output/server/node_modules/sweph/
+# So we must overwrite that incomplete Nitro copy with the FULL sweph package
+# (including prebuilds/linux-x64/sweph.node) so the binary is found at runtime.
+COPY --from=builder /app/node_modules/sweph ./.output/server/node_modules/sweph
+COPY --from=builder /app/node_modules/node-gyp-build ./.output/server/node_modules/node-gyp-build
 
 # Drop root privileges. node:20-slim ships with a built-in 'node' user (uid 1000).
-RUN chown -R node:node /app/.output /app/node_modules
+RUN chown -R node:node /app/.output
 USER node
 
 EXPOSE 3000

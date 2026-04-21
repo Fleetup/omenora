@@ -44,7 +44,7 @@ export default defineNuxtConfig({
     // __dirname-based prebuild resolution at runtime. Mark it external so Nitro
     // emits a real require('sweph') that resolves from node_modules at runtime.
     externals: {
-      external: ['sweph'],
+      external: ['sweph', 'node-gyp-build'],
     },
   },
 
