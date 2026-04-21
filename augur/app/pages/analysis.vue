@@ -1206,9 +1206,10 @@ function submitAnalysis() {
 }
 
 .region-card-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.28);
   letter-spacing: 0.02em;
+  line-height: 1.5;
 }
 
 .region-card.active .region-card-sub {

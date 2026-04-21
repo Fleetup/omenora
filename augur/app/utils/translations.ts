@@ -208,13 +208,13 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     generateCompatFree: 'Generate Compatibility Reading →',
     chooseYourPath: 'Choose your path',
     traditionWesternName: 'Stars & Archetypes',
-    traditionWesternSub: 'Birth chart · Personality archetypes',
+    traditionWesternSub: 'Western astrology — maps your Sun, Moon & Rising signs to reveal your personality and destiny patterns',
     traditionVedicName: 'Karma & Nakshatra',
-    traditionVedicSub: 'Hindu astrology · Soul mission',
+    traditionVedicSub: 'Vedic astrology from India — uses your Nakshatra (lunar mansion) to reveal your soul mission and karmic path',
     traditionChineseName: 'Elements & Destiny',
-    traditionChineseSub: 'Chinese astrology · Four Pillars',
+    traditionChineseSub: 'Chinese BaZi astrology — reads your Four Pillars of birth to map your elemental nature and life cycles',
     traditionTarotName: 'Soul & Intuition',
-    traditionTarotSub: 'Tarot wisdom · Spiritual path',
+    traditionTarotSub: 'Tarot-based spiritual reading — draws symbolic arcana aligned to your birth energy to reveal your soul path',
   },
 
   es: {
@@ -417,13 +417,13 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     generateCompatFree: 'Generar Lectura de Compatibilidad →',
     chooseYourPath: 'Elige tu camino',
     traditionWesternName: 'Estrellas y Arquetipos',
-    traditionWesternSub: 'Carta natal · Arquetipos de personalidad',
+    traditionWesternSub: 'Astrología occidental — mapea tu Sol, Luna y Ascendente para revelar tus patrones de personalidad y destino',
     traditionVedicName: 'Karma y Nakshatra',
-    traditionVedicSub: 'Astrología hindú · Misión del alma',
+    traditionVedicSub: 'Astrología védica de India — usa tu Nakshatra (mansión lunar) para revelar tu misión del alma y camino kármico',
     traditionChineseName: 'Elementos y Destino',
-    traditionChineseSub: 'Astrología china · Cuatro Pilares',
+    traditionChineseSub: 'Astrología china BaZi — lee tus Cuatro Pilares de nacimiento para mapear tu naturaleza elemental y ciclos de vida',
     traditionTarotName: 'Alma e Intuición',
-    traditionTarotSub: 'Sabiduría del Tarot · Camino espiritual',
+    traditionTarotSub: 'Lectura espiritual del Tarot — conecta arcanos simbólicos con tu energía de nacimiento para revelar tu camino del alma',
   },
 
   pt: {
@@ -626,13 +626,13 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     generateCompatFree: 'Gerar Leitura de Compatibilidade →',
     chooseYourPath: 'Escolha seu caminho',
     traditionWesternName: 'Estrelas e Arquétipos',
-    traditionWesternSub: 'Mapa natal · Arquetipos de personalidade',
+    traditionWesternSub: 'Astrologia ocidental — mapeia seu Sol, Lua e Ascendente para revelar seus padrões de personalidade e destino',
     traditionVedicName: 'Karma e Nakshatra',
-    traditionVedicSub: 'Astrologia hindu · Missão da alma',
+    traditionVedicSub: 'Astrologia védica da Índia — usa seu Nakshatra (mansão lunar) para revelar sua missão da alma e caminho kármico',
     traditionChineseName: 'Elementos e Destino',
-    traditionChineseSub: 'Astrologia chinesa · Quatro Pilares',
+    traditionChineseSub: 'Astrologia chinesa BaZi — lê seus Quatro Pilares de nascimento para mapear sua natureza elemental e ciclos de vida',
     traditionTarotName: 'Alma e Intuição',
-    traditionTarotSub: 'Sabedoria do Tarô · Caminho espiritual',
+    traditionTarotSub: 'Leitura espiritual do Tarô — conecta arcanos simbólicos à sua energia de nascimento para revelar seu caminho da alma',
   },
 
   hi: {
@@ -836,13 +836,13 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     chooseYourPath: 'अपना मार्ग चुनें',
     traditionWesternName: 'सितारे और आर्केटाइप',
     // REVIEW: verify native speaker before shipping
-    traditionWesternSub: 'जन्म कुंडली · व्यक्तित्व पुरातत्व',
+    traditionWesternSub: 'पाश्चात्य ज्योतिष — आपके सूर्य, चंद्र और लग्न राशि से आपके व्यक्तित्व और नियति के पैटर्न प्रकट करता है',
     traditionVedicName: 'कर्म और नक्षत्र',
-    traditionVedicSub: 'हिंदू ज्योतिष · आत्मा मिशन',
+    traditionVedicSub: 'भारतीय वैदिक ज्योतिष — आपके नक्षत्र (चंद्र महल) से आत्मा का मिशन और कर्म पथ प्रकट करता है',
     traditionChineseName: 'तत्व और नियति',
-    traditionChineseSub: 'चीनी ज्योतिष · चार स्तंभ',
+    traditionChineseSub: 'चीनी BaZi ज्योतिष — जन्म के चार स्तंभों से आपके तात्विक स्वभाव और जीवन चक्रों को मापता है',
     traditionTarotName: 'आत्मा और अंतर्ज्ञान',
-    traditionTarotSub: 'टैरो ज्ञान · आध्यात्मिक पथ',
+    traditionTarotSub: 'टैरो आधारित आध्यात्मिक पाठन — आपकी जन्म ऊर्जा से जुड़े प्रतीकात्मक आर्काना से आत्मा का मार्ग प्रकट करता है',
   },
 
   ko: {
@@ -1046,13 +1046,13 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     chooseYourPath: '당신의 길을 선택하세요',
     traditionWesternName: '별자리와 원형',
     // REVIEW: verify native speaker before shipping
-    traditionWesternSub: '출생 차트 · 성격 원형',
+    traditionWesternSub: '서양 점성술 — 태양, 달, 상승 별자리로 당신의 성격 패턴과 운명을 분석합니다',
     traditionVedicName: '카르마와 나크샤트라',
-    traditionVedicSub: '힌두 점성술 · 영혼의 사명',
+    traditionVedicSub: '인도 베딕 점성술 — 나크샤트라(달의 별자리)로 영혼의 사명과 업보의 길을 밝힙니다',
     traditionChineseName: '오행과 운명',
-    traditionChineseSub: '중국 점성술 · 사주팔자',
+    traditionChineseSub: '중국 사주팔자 점성술 — 생년월일시 네 기둥으로 오행 성질과 인생 주기를 분석합니다',
     traditionTarotName: '영혼과 직관',
-    traditionTarotSub: '타로 지혜 · 영적 길',
+    traditionTarotSub: '타로 기반 영적 리딩 — 출생 에너지에 연결된 상징적 아르카나로 영혼의 길을 밝힙니다',
   },
 
   zh: {
@@ -1256,13 +1256,13 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     chooseYourPath: '选择你的道路',
     traditionWesternName: '星象与原型',
     // REVIEW: verify native speaker before shipping
-    traditionWesternSub: '星盘 · 性格原型',
+    traditionWesternSub: '西方占星术 — 通过太阳、月亮和上升星座揭示你的性格模式与命运走向',
     traditionVedicName: '业力与星宿',
-    traditionVedicSub: '印度占星 · 灵魂使命',
+    traditionVedicSub: '印度吠陀占星 — 通过你的纳沙特拉（月亮星宿）揭示灵魂使命与业力轨迹',
     traditionChineseName: '五行与命运',
-    traditionChineseSub: '中国占星 · 四柱八字',
+    traditionChineseSub: '中国八字命理 — 通过出生年月日时四柱分析你的五行属性与人生运势',
     traditionTarotName: '灵魂与直觉',
-    traditionTarotSub: '塔罗智慧 · 灵性道路',
+    traditionTarotSub: '塔罗灵性解读 — 以与你出生能量共鸣的象征牌阵揭示灵魂道路',
   },
 }
 
