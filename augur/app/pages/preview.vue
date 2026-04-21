@@ -128,7 +128,7 @@
         >
           <div
             v-if="isPriceTest"
-            style="font-size:10px; color:rgba(255,255,255,0.15); text-align:center; padding:2px 0;"
+            class="debug-variant-label"
           >variant: deprioritize-1</div>
           <div class="tier-info">
             <p class="tier-name">{{ t('basicReport') }}</p>
@@ -177,7 +177,7 @@
         </template>
         <div
           v-if="isTwoTierVariant"
-          style="font-size:10px; color:rgba(255,255,255,0.15); text-align:center; padding:4px 0;"
+          class="debug-variant-label"
         >variant: 2-tier</div>
 
       </div>
@@ -304,7 +304,7 @@
           <span v-if="isApplyingFreeAccess">Processing...</span>
           <span v-else>Get My Complete Reading →</span>
         </button>
-        <p v-if="promoErrorMessage" class="promo-msg promo-msg-error" style="margin-top:10px;text-align:center;">{{ promoErrorMessage }}</p>
+        <p v-if="promoErrorMessage" class="promo-msg promo-msg-error promo-msg-block">{{ promoErrorMessage }}</p>
       </div>
   </div>
 
@@ -722,9 +722,57 @@ async function handlePayment() {
 </script>
 
 <style scoped>
-/* ── Loading page ── */
+
+/* ─────────────────────────────────────────────
+   SHARED BG LAYER — same ambient gradient
+   language as landing and analysis pages
+───────────────────────────────────────────── */
+.loading-page,
+.error-page,
+.preview-page {
+  background: #07070D;
+  color: rgba(255, 255, 255, 0.94);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+               'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+/* Shared fixed ambient gradient for all three states */
+.loading-page::before,
+.error-page::before,
+.preview-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 80% 55% at 50% 0%,
+      rgba(75, 45, 155, 0.18) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 15% 55%,
+      rgba(50, 25, 110, 0.10) 0%,
+      transparent 60%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* All direct children sit above the gradient */
+.loading-page > *,
+.error-page > *,
+.preview-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ─────────────────────────────────────────────
+   LOADING STATE
+───────────────────────────────────────────── */
 .loading-page {
-  background: #050410;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -738,10 +786,6 @@ async function handlePayment() {
   gap: 20px;
 }
 
-/* ── Orbital mark ── */
-/* Rendered by OrbitalMark component */
-
-/* ── Loading testimonial slot (stage 1) ── */
 .loading-testimonial {
   text-align: center;
   max-width: 280px;
@@ -749,14 +793,14 @@ async function handlePayment() {
 }
 
 .loading-stars {
-  color: #c9a84c;
+  color: rgba(201, 168, 76, 0.85);
   font-size: 12px;
   letter-spacing: 2px;
   margin-bottom: 8px;
 }
 
 .loading-quote {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-style: italic;
   font-size: 15px;
   font-weight: 300;
@@ -771,21 +815,21 @@ async function handlePayment() {
   margin: 0;
 }
 
-/* ── Loading text ── */
 .brand-text {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.25);
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  font-size: 13px;
+  letter-spacing: 0.20em;
+  color: rgba(255, 255, 255, 0.28);
   margin: 0;
 }
 
 @keyframes fadeInMsg {
   from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .loading-message {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-style: italic;
   font-size: 16px;
   font-weight: 300;
@@ -803,22 +847,26 @@ async function handlePayment() {
   height: 1px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
+  border-radius: 1px;
 }
 
 @keyframes fillProgress {
   from { width: 0%; }
-  to { width: 95%; }
+  to   { width: 95%; }
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, rgba(140, 110, 255, 0.55), rgba(201, 168, 76, 0.55));
+  background: linear-gradient(90deg, rgba(107, 72, 224, 0.65), rgba(201, 168, 76, 0.55));
   animation: fillProgress 8s ease-out forwards;
+  border-radius: 1px;
 }
 
-/* ── Error page ── */
+
+/* ─────────────────────────────────────────────
+   ERROR STATE
+───────────────────────────────────────────── */
 .error-page {
-  background: #050410;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -836,41 +884,50 @@ async function handlePayment() {
 
 .error-text {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.40);
   margin: 0;
 }
 
 .retry-btn {
   background: transparent;
-  border: 1px solid rgba(201, 168, 76, 0.35);
-  border-radius: 3px;
-  padding: 12px 32px;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.78);
+  border: 1px solid rgba(107, 72, 224, 0.40);
+  border-radius: 12px;
+  padding: 14px 36px;
+  min-height: 50px;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: rgba(200, 180, 255, 0.78);
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.2s;
+  transition:
+    background   0.18s ease,
+    border-color 0.18s ease,
+    color        0.18s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .retry-btn:hover {
-  background: rgba(201, 168, 76, 0.08);
-  border-color: rgba(201, 168, 76, 0.6);
+  background: rgba(107, 72, 224, 0.10);
+  border-color: rgba(107, 72, 224, 0.65);
+  color: rgba(200, 180, 255, 0.95);
 }
 
-/* ── Preview page ── */
+
+/* ─────────────────────────────────────────────
+   PREVIEW PAGE SHELL
+───────────────────────────────────────────── */
 .preview-page {
-  background: #050410;
+  position: relative;
   min-height: 100vh;
-  color: white;
   max-width: 520px;
   margin: 0 auto;
   padding: 28px 24px calc(72px + env(safe-area-inset-bottom, 0px));
-  box-sizing: border-box;
 }
 
-/* ── Top bar ── */
+
+/* ─────────────────────────────────────────────
+   TOP BAR
+───────────────────────────────────────────── */
 .top-bar {
   display: flex;
   align-items: center;
@@ -879,23 +936,26 @@ async function handlePayment() {
 }
 
 .top-bar .brand-text {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.25);
+  font-size: 13px;
+  letter-spacing: 0.20em;
+  color: rgba(255, 255, 255, 0.28);
   margin: 0;
 }
 
 .report-badge {
   font-size: 9px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.6);
+  color: rgba(201, 168, 76, 0.60);
   border: 1px solid rgba(201, 168, 76, 0.22);
-  border-radius: 2px;
+  border-radius: 3px;
   padding: 3px 10px;
 }
 
-/* ── Archetype block ── */
+
+/* ─────────────────────────────────────────────
+   ARCHETYPE REVEAL BLOCK
+───────────────────────────────────────────── */
 @keyframes archetypeReveal {
   from { opacity: 0; transform: scale(0.94) translateY(6px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
@@ -916,7 +976,11 @@ async function handlePayment() {
   transform: translateY(-50%);
   width: 280px;
   height: 200px;
-  background: radial-gradient(ellipse at left center, rgba(201, 168, 76, 0.06) 0%, transparent 65%);
+  background: radial-gradient(
+    ellipse at left center,
+    rgba(201, 168, 76, 0.07) 0%,
+    transparent 65%
+  );
   pointer-events: none;
 }
 
@@ -940,7 +1004,7 @@ async function handlePayment() {
 }
 
 .archetype-name {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 48px;
   font-weight: 300;
   color: rgba(255, 255, 255, 0.95);
@@ -954,7 +1018,7 @@ async function handlePayment() {
 
 .archetype-meta {
   font-size: 12px;
-  color: rgba(140, 110, 255, 0.58);
+  color: rgba(107, 72, 224, 0.70);
   margin: 8px 0 0;
   letter-spacing: 0.04em;
   animation: archetypeReveal 0.9s ease-out forwards;
@@ -974,16 +1038,19 @@ async function handlePayment() {
 
 .trait-pill {
   font-size: 9px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
+  border-radius: 3px;
   padding: 4px 10px;
   background: transparent;
 }
 
-/* ── Free preview text ── */
+
+/* ─────────────────────────────────────────────
+   FREE PREVIEW TEXT
+───────────────────────────────────────────── */
 .preview-text {
   font-size: 15px;
   color: rgba(255, 255, 255, 0.58);
@@ -992,7 +1059,10 @@ async function handlePayment() {
   margin: 0 0 20px;
 }
 
-/* ── Blurred content hook ── */
+
+/* ─────────────────────────────────────────────
+   BLURRED CONTENT HOOK
+───────────────────────────────────────────── */
 .blurred-preview {
   filter: blur(5px);
   opacity: 0.5;
@@ -1010,10 +1080,13 @@ async function handlePayment() {
   margin: 0;
 }
 
-/* ── Reading receipt trust line (T-2) ── */
+
+/* ─────────────────────────────────────────────
+   READING RECEIPT TRUST LINE (T-2)
+───────────────────────────────────────────── */
 .reading-receipt {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.20);
   text-align: center;
   line-height: 1.7;
   margin: 12px auto 0;
@@ -1021,18 +1094,18 @@ async function handlePayment() {
   padding: 0 20px;
 }
 
-/* ── Unlock progress meter (C-4) ── */
+
+/* ─────────────────────────────────────────────
+   UNLOCK PROGRESS METER (C-4)
+───────────────────────────────────────────── */
 .unlock-progress-block {
   width: 100%;
-  max-width: 100%;
   margin: 28px 0 0;
-  padding: 0;
-  box-sizing: border-box;
   text-align: center;
 }
 
 .unlock-label {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 11px;
   letter-spacing: 0.14em;
   color: rgba(201, 168, 76, 0.55);
@@ -1053,11 +1126,14 @@ async function handlePayment() {
   border-radius: 1px;
 }
 
-/* ── Locked sections strip ── */
+
+/* ─────────────────────────────────────────────
+   LOCKED SECTIONS STRIP
+───────────────────────────────────────────── */
 .locked-sections-strip {
-  background: rgba(140, 110, 255, 0.06);
-  border: 1px solid rgba(140, 110, 255, 0.15);
-  border-radius: 12px;
+  background: rgba(107, 72, 224, 0.06);
+  border: 1px solid rgba(107, 72, 224, 0.15);
+  border-radius: 14px;
   padding: 20px 22px;
   margin: 28px 0;
 }
@@ -1076,7 +1152,7 @@ async function handlePayment() {
 .locked-strip-label {
   font-size: 11px;
   letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.40);
   text-transform: uppercase;
 }
 
@@ -1093,21 +1169,24 @@ async function handlePayment() {
   letter-spacing: 0.01em;
 }
 
-/* ── Social proof ── */
+
+/* ─────────────────────────────────────────────
+   SOCIAL PROOF
+───────────────────────────────────────────── */
 .social-proof-line {
   text-align: center;
   margin: 0 0 24px;
 }
 
 .stars {
-  color: #c9a84c;
+  color: rgba(201, 168, 76, 0.85);
   font-size: 14px;
   margin-bottom: 8px;
   letter-spacing: 2px;
 }
 
 .proof-quote {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.60);
   font-size: 14px;
   font-style: italic;
   line-height: 1.6;
@@ -1120,7 +1199,10 @@ async function handlePayment() {
   margin: 0;
 }
 
-/* ── Pricing section ── */
+
+/* ─────────────────────────────────────────────
+   PRICING SECTION
+───────────────────────────────────────────── */
 .pricing-section {
   margin-top: 0;
 }
@@ -1131,9 +1213,10 @@ async function handlePayment() {
 }
 
 .paywall-personal-line {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 22px;
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.92);
   margin: 0 0 8px;
 }
 
@@ -1144,23 +1227,30 @@ async function handlePayment() {
   line-height: 1.55;
 }
 
-/* ── Tier list ── */
+
+/* ─────────────────────────────────────────────
+   TIER LIST
+───────────────────────────────────────────── */
 .tier-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* ── Tier card base ── */
 .tier-card {
-  border-radius: 10px;
-  padding: 16px 16px;
+  border-radius: 12px;
+  padding: 16px;
   min-height: 64px;
   cursor: pointer;
-  transition: box-shadow 0.2s, border-color 0.2s, opacity 0.2s;
+  transition:
+    box-shadow    0.18s ease,
+    border-color  0.18s ease,
+    opacity       0.18s ease,
+    transform     0.18s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Tier 1: Basic */
+/* Tier 1: Basic (decoy) */
 .tier-basic {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -1180,7 +1270,7 @@ async function handlePayment() {
 
 .tier-name {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.60);
   font-weight: 500;
   margin: 0 0 2px;
 }
@@ -1189,36 +1279,42 @@ async function handlePayment() {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.22);
   margin: 0;
+  line-height: 1.5;
 }
 
 .tier-price {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 22px;
   font-weight: 300;
   color: rgba(255, 255, 255, 0.42);
   margin: 0;
+  flex-shrink: 0;
 }
 
-/* ── Tier 1 de-emphasis canary (B6-3) ── */
+/* Tier 1 de-emphasis canary (B6-3) */
 .tier-deprioritized {
   opacity: 0.55;
   transform: scale(0.97);
 }
 
-/* Tier 2: Popular */
+/* Tier 2: Most Popular (target) */
 .tier-popular {
-  background: rgba(140, 110, 255, 0.07);
-  border: 1px solid rgba(140, 110, 255, 0.18);
+  background: rgba(107, 72, 224, 0.08);
+  border: 1px solid rgba(107, 72, 224, 0.20);
   border-left: 2px solid rgba(201, 168, 76, 0.65);
   position: relative;
   padding: 20px 18px;
   padding-top: 22px;
-  box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.65), 0 8px 32px rgba(140, 110, 255, 0.18);
-  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+  box-shadow:
+    0 0 0 1px rgba(201, 168, 76, 0.55),
+    0 8px 32px rgba(107, 72, 224, 0.16);
 }
 
 .tier-popular:hover {
-  transform: scale(1.02);
+  transform: scale(1.015);
+  box-shadow:
+    0 0 0 1px rgba(201, 168, 76, 0.70),
+    0 12px 44px rgba(107, 72, 224, 0.24);
 }
 
 .tier-badge {
@@ -1227,11 +1323,11 @@ async function handlePayment() {
   left: 50%;
   transform: translateX(-50%);
   background: rgba(201, 168, 76, 0.92);
-  color: #050410;
+  color: #07070D;
   font-size: 9px;
   font-weight: 600;
   padding: 3px 14px;
-  border-radius: 2px;
+  border-radius: 3px;
   letter-spacing: 0.12em;
   white-space: nowrap;
 }
@@ -1251,7 +1347,7 @@ async function handlePayment() {
 
 .tier-features {
   font-size: 11px;
-  color: rgba(200, 180, 255, 0.6);
+  color: rgba(200, 180, 255, 0.60);
   line-height: 1.72;
   margin: 0;
 }
@@ -1262,7 +1358,7 @@ async function handlePayment() {
 }
 
 .tier-price-popular {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 34px;
   font-weight: 300;
   color: rgba(200, 180, 255, 0.95);
@@ -1271,15 +1367,15 @@ async function handlePayment() {
 
 .tier-price-note {
   font-size: 10px;
-  color: rgba(140, 110, 255, 0.42);
+  color: rgba(107, 72, 224, 0.50);
   margin: 2px 0 0;
 }
 
-/* Tier 3: Oracle */
+/* Tier 3: Full Oracle (anchor) */
 .tier-oracle {
   background: rgba(201, 168, 76, 0.04);
   border: 1px solid rgba(201, 168, 76, 0.18);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .tier-oracle-inner {
@@ -1303,7 +1399,7 @@ async function handlePayment() {
 }
 
 .tier-price-oracle {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 26px;
   font-weight: 300;
   color: rgba(201, 168, 76, 0.62);
@@ -1316,22 +1412,181 @@ async function handlePayment() {
   margin: 2px 0 0;
 }
 
-/* ── Selected states ── */
+/* Selected states */
 .tier-selected-basic {
   opacity: 1;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
 .tier-selected-popular {
-  box-shadow: 0 0 22px rgba(140, 110, 255, 0.22), 0 0 0 1px rgba(201, 168, 76, 0.45);
+  box-shadow:
+    0 0 28px rgba(107, 72, 224, 0.22),
+    0 0 0 1px rgba(201, 168, 76, 0.55);
   border-left-color: rgba(201, 168, 76, 0.95);
 }
 
 .tier-selected-oracle {
-  box-shadow: 0 0 18px rgba(201, 168, 76, 0.14), 0 0 0 1px rgba(201, 168, 76, 0.32);
+  box-shadow:
+    0 0 20px rgba(201, 168, 76, 0.14),
+    0 0 0 1px rgba(201, 168, 76, 0.35);
 }
 
-/* ── Email input ── */
+/* A/B test debug label — internal only, never shown in production UI */
+.debug-variant-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.15);
+  text-align: center;
+  padding: 2px 0 4px;
+}
+
+
+/* ─────────────────────────────────────────────
+   PROMO CODE
+───────────────────────────────────────────── */
+.promo-section {
+  margin-top: 14px;
+  margin-bottom: 2px;
+}
+
+.promo-toggle-link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  display: block;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 4px;
+  transition: color 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.promo-toggle-link:hover {
+  color: rgba(255, 255, 255, 0.50);
+}
+
+.promo-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.promo-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  flex: 1;
+  outline: none;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  transition: border-color 0.18s ease;
+}
+
+.promo-input:focus {
+  border-color: rgba(201, 168, 76, 0.38);
+}
+
+.promo-input::placeholder {
+  color: rgba(255, 255, 255, 0.18);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.promo-input:disabled {
+  opacity: 0.5;
+}
+
+.promo-apply-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.50);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 10px 16px;
+  transition:
+    background    0.18s ease,
+    border-color  0.18s ease,
+    color         0.18s ease;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.promo-apply-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.20);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.promo-apply-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.promo-msg {
+  font-size: 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  text-align: center;
+}
+
+.promo-msg-block {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.promo-msg-error {
+  color: rgba(255, 110, 110, 0.85);
+}
+
+.promo-msg-success {
+  color: rgba(100, 210, 130, 0.85);
+  letter-spacing: 0.02em;
+}
+
+.promo-full-access-block {
+  background: rgba(100, 210, 130, 0.05);
+  border: 1px solid rgba(100, 210, 130, 0.20);
+  border-radius: 10px;
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.promo-full-access-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(100, 210, 130, 0.90);
+  margin: 0 0 6px;
+  letter-spacing: 0.03em;
+}
+
+.promo-full-access-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+  line-height: 1.6;
+}
+
+
+/* ─────────────────────────────────────────────
+   EMAIL INPUT
+───────────────────────────────────────────── */
 .email-field-wrapper {
   margin-top: 16px;
   margin-bottom: 0;
@@ -1349,20 +1604,20 @@ async function handlePayment() {
 
 .email-input {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 14px 16px;
   color: rgba(255, 255, 255, 0.88);
   font-size: 14px;
   width: 100%;
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
-  transition: border-color 0.25s, background 0.25s;
+  transition: border-color 0.22s ease, background 0.22s ease;
 }
 
 .email-input:focus {
-  border-color: rgba(201, 168, 76, 0.4);
+  border-color: rgba(201, 168, 76, 0.42);
   background: rgba(201, 168, 76, 0.025);
 }
 
@@ -1370,60 +1625,102 @@ async function handlePayment() {
   color: rgba(255, 255, 255, 0.18);
 }
 
-/* ── Unlock CTA button ── */
+
+/* ─────────────────────────────────────────────
+   PRIMARY UNLOCK CTA — solid purple,
+   matching landing/analysis CTA system
+   Apple HIG: 44pt minimum touch target
+───────────────────────────────────────────── */
 .unlock-btn {
-  background: rgba(140, 110, 255, 0.88);
-  border: none;
-  border-radius: 8px;
-  padding: 0 16px;
-  min-height: 54px;
-  width: 100%;
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  cursor: pointer;
-  font-family: inherit;
-  letter-spacing: 0.04em;
-  transition: background 0.22s, box-shadow 0.22s;
-  margin-top: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #6B48E0;
+  border: none;
+  border-radius: 14px;
+  padding: 17px 24px;
+  min-height: 54px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  transition:
+    background  0.18s ease,
+    box-shadow  0.18s ease,
+    transform   0.12s ease;
+  box-shadow:
+    0 0 0 1px rgba(107, 72, 224, 0.55),
+    0 8px 32px rgba(107, 72, 224, 0.28),
+    0 2px 8px  rgba(0, 0, 0, 0.35);
+  margin-top: 14px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .unlock-btn:hover:not(:disabled) {
-  background: rgba(140, 110, 255, 1);
-  box-shadow: 0 4px 28px rgba(140, 110, 255, 0.28);
+  background: #7B5AF2;
+  box-shadow:
+    0 0 0 1px rgba(123, 90, 242, 0.65),
+    0 12px 44px rgba(107, 72, 224, 0.44),
+    0 4px 12px rgba(0, 0, 0, 0.40);
+  transform: translateY(-1px);
 }
 
+.unlock-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+  background: #5B38D0;
+  box-shadow:
+    0 0 0 1px rgba(107, 72, 224, 0.45),
+    0 4px 16px rgba(107, 72, 224, 0.22);
+}
+
+/* Tier variants override the base purple */
 .unlock-btn-basic {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.50);
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 .unlock-btn-basic:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.11);
   box-shadow: none;
+  transform: none;
 }
 
 .unlock-btn-oracle {
   background: transparent;
-  border: 1px solid rgba(201, 168, 76, 0.5);
+  border: 1px solid rgba(201, 168, 76, 0.50);
   color: rgba(201, 168, 76, 0.88);
+  box-shadow: none;
 }
 
 .unlock-btn-oracle:hover:not(:disabled) {
-  background: rgba(201, 168, 76, 0.1);
+  background: rgba(201, 168, 76, 0.10);
   border-color: rgba(201, 168, 76, 0.75);
-  box-shadow: 0 4px 20px rgba(201, 168, 76, 0.1);
+  box-shadow: 0 4px 20px rgba(201, 168, 76, 0.10);
+  transform: translateY(-1px);
 }
 
 .unlock-btn-processing {
   opacity: 0.62;
   cursor: default;
+  transform: none !important;
 }
 
-/* ── Urgency & guarantee ── */
+.unlock-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  transform: none;
+  pointer-events: none;
+}
+
+
+/* ─────────────────────────────────────────────
+   GUARANTEE & TRUST SIGNALS
+───────────────────────────────────────────── */
 .urgency-line {
   display: flex;
   align-items: center;
@@ -1445,21 +1742,20 @@ async function handlePayment() {
   justify-content: center;
   gap: 8px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.30);
   text-align: center;
-  margin: 0 0 24px;
+  margin: 16px 0 24px;
 }
 
 .guarantee-check {
-  color: rgba(140, 110, 255, 0.6);
+  color: rgba(107, 72, 224, 0.65);
   font-size: 10px;
 }
 
 .guarantee-text {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.30);
 }
 
-/* ── Trust signals ── */
 .trust-note {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.22);
@@ -1475,137 +1771,10 @@ async function handlePayment() {
   margin: 4px 0 0;
 }
 
-/* ── Promo code section ── */
-.promo-section {
-  margin-top: 14px;
-  margin-bottom: 2px;
-}
 
-.promo-toggle-link {
-  background: transparent;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.28);
-  cursor: pointer;
-  letter-spacing: 0.02em;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  display: block;
-  text-align: center;
-  width: 100%;
-  margin-bottom: 4px;
-  transition: color 0.2s;
-}
-
-.promo-toggle-link:hover {
-  color: rgba(255, 255, 255, 0.48);
-}
-
-.promo-input-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.promo-input {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 5px;
-  padding: 10px 12px;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 13px;
-  font-family: 'Courier New', Courier, monospace;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  flex: 1;
-  outline: none;
-  box-sizing: border-box;
-  text-transform: uppercase;
-  transition: border-color 0.2s;
-}
-
-.promo-input:focus {
-  border-color: rgba(201, 168, 76, 0.35);
-}
-
-.promo-input::placeholder {
-  color: rgba(255, 255, 255, 0.18);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  text-transform: none;
-}
-
-.promo-input:disabled {
-  opacity: 0.5;
-}
-
-.promo-apply-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-  color: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  padding: 10px 16px;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.promo-apply-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.promo-apply-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.promo-msg {
-  font-size: 12px;
-  margin: 8px 0 0;
-  padding: 0;
-  text-align: center;
-}
-
-.promo-msg-error {
-  color: rgba(255, 110, 110, 0.85);
-}
-
-.promo-msg-success {
-  color: rgba(100, 210, 130, 0.85);
-  letter-spacing: 0.02em;
-}
-
-.promo-full-access-block {
-  background: rgba(100, 210, 130, 0.05);
-  border: 1px solid rgba(100, 210, 130, 0.2);
-  border-radius: 8px;
-  padding: 16px 20px;
-  text-align: center;
-}
-
-.promo-full-access-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(100, 210, 130, 0.9);
-  margin: 0 0 6px;
-  letter-spacing: 0.03em;
-}
-
-.promo-full-access-sub {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 0;
-  line-height: 1.6;
-}
-
+/* ─────────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────────── */
 .preview-footer {
   width: 100%;
   display: flex;
@@ -1632,12 +1801,12 @@ async function handlePayment() {
 
 .preview-footer-sep {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.10);
 }
 
 .preview-footer-crisis {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.10);
   margin: 0;
   letter-spacing: 0.02em;
   text-align: center;
@@ -1645,14 +1814,15 @@ async function handlePayment() {
   max-width: 320px;
 }
 
-/* ── Mobile responsive fixes ── */
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────── */
 @media (max-width: 400px) {
-  /* Preview page padding */
   .preview-page {
     padding: 20px 16px 60px;
   }
 
-  /* Archetype block: reduce left padding on tiny screens */
   .archetype-block {
     padding: 20px 16px 20px 22px;
   }
@@ -1661,12 +1831,10 @@ async function handlePayment() {
     font-size: 40px;
   }
 
-  /* Locked sections strip: tighter padding */
   .locked-sections-strip {
-    padding: 16px 16px;
+    padding: 16px;
   }
 
-  /* Tier cards: stack price below info on very small screens */
   .tier-popular-inner,
   .tier-oracle-inner {
     flex-wrap: wrap;
@@ -1686,7 +1854,6 @@ async function handlePayment() {
     font-size: 22px;
   }
 
-  /* Tier basic: wrap price */
   .tier-basic {
     flex-wrap: wrap;
   }
@@ -1697,7 +1864,6 @@ async function handlePayment() {
     text-align: left;
   }
 
-  /* Paywall header */
   .paywall-personal-line {
     font-size: 19px;
   }
@@ -1721,4 +1887,39 @@ async function handlePayment() {
     font-size: 34px;
   }
 }
+
+
+/* ─────────────────────────────────────────────
+   REDUCED MOTION
+───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .archetype-label,
+  .archetype-symbol,
+  .archetype-name,
+  .archetype-meta,
+  .traits-row {
+    animation: none;
+    opacity: 1;
+  }
+
+  .loading-message,
+  .loading-testimonial {
+    animation: none;
+  }
+
+  .progress-fill {
+    animation: none;
+    width: 60%;
+  }
+
+  .unlock-btn:hover:not(:disabled),
+  .unlock-btn-oracle:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .tier-popular:hover {
+    transform: none;
+  }
+}
+
 </style>
