@@ -172,7 +172,7 @@
 
       <div class="region-section">
         <p class="region-label">{{ t('chooseYourPath') }}</p>
-        <p class="tradition-explanation">This determines which ancient system interprets your destiny.</p>
+        <p class="tradition-explanation">This determines which ancient system interprets your birth chart.</p>
         <div class="region-cards">
           <button
             v-for="opt in regionOptions"

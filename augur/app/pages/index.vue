@@ -16,8 +16,8 @@
       <h1 class="brand-name">OMENORA</h1>
 
       <!-- Tagline -->
-      <p class="tagline">Your free AI destiny reading — ready in 60 seconds.</p>
-      <p class="tagline-sub">Enter your birth date and answer 7 questions — we map your archetype, numerology life path, astrological reading, and 2026 destiny forecast using AI.</p>
+      <p class="tagline">Your free AI astrology reading — ready in 60 seconds.</p>
+      <p class="tagline-sub">Enter your birth date and city — we calculate your natal chart, map your personality archetype, numerology life path, and 2026 forecast using AI.</p>
 
       <!-- Threshold separator -->
       <div class="threshold">
@@ -43,23 +43,23 @@
       <div class="discover-grid">
         <div class="discover-card">
           <img src="/symbols/Destiny Archetype.svg" class="discover-symbol" alt="" aria-hidden="true" />
-          <p class="discover-name">Destiny Archetype</p>
-          <p class="discover-desc">1 of 12 personality archetypes mapped from your answers — identity, hidden gifts, relationships, career &amp; purpose in 7 sections</p>
+          <p class="discover-name">Personality Archetype</p>
+          <p class="discover-desc">Your Sun, Moon &amp; Rising signs combined into 1 of 12 archetypes — reveals your core identity, hidden strengths, relationship patterns, and career path</p>
         </div>
         <div class="discover-card">
           <img src="/symbols/Life Path Number copy.svg" class="discover-symbol" alt="" aria-hidden="true" />
-          <p class="discover-name">Numerology Report</p>
-          <p class="discover-desc">Your Life Path Number calculated from your birth date — the numerological pattern shaping your decisions, cycles, and destiny</p>
+          <p class="discover-name">Numerology Life Path</p>
+          <p class="discover-desc">Your Life Path Number calculated from your birth date — the single most important number in numerology, revealing your purpose and natural strengths</p>
         </div>
         <div class="discover-card">
           <img src="/symbols/Destiny Forecast copy.svg" class="discover-symbol" alt="" aria-hidden="true" />
-          <p class="discover-name">Astrological Reading</p>
-          <p class="discover-desc">Western, Vedic, Chinese, or Tarot tradition — your chart interpreted through the ancient system that fits you most</p>
+          <p class="discover-name">Birth Tradition Reading</p>
+          <p class="discover-desc">Choose Western astrology, Vedic, Chinese BaZi, or Tarot — your natal chart interpreted through the ancient system that resonates most with you</p>
         </div>
         <div class="discover-card">
           <img src="/symbols/Love & Relationship Patterns copy.svg" class="discover-symbol" alt="" aria-hidden="true" />
-          <p class="discover-name">2026 Destiny Forecast</p>
-          <p class="discover-desc">Month-by-month energy windows for the year ahead — when to act, when to wait, and where your biggest opportunities open</p>
+          <p class="discover-name">2026 Astrology Forecast</p>
+          <p class="discover-desc">Month-by-month energy windows mapped to your chart — when to move fast, when to wait, and where your biggest openings appear this year</p>
         </div>
       </div>
     </section>
@@ -74,7 +74,7 @@
         <div class="how-divider" aria-hidden="true" />
         <div class="how-step">
           <span class="how-num">02</span>
-          <p class="how-text">Answer 7 quick questions about yourself</p>
+          <p class="how-text">Answer 3 quick questions to personalize your reading</p>
         </div>
         <div class="how-divider" aria-hidden="true" />
         <div class="how-step">

@@ -7,7 +7,7 @@
 
       <!-- Stage 0: personalized opener -->
       <p v-if="loadingStage === 0" key="ls0" class="loading-message">
-        Processing your behavioral profile, {{ store.firstName }}...
+        Mapping your natal chart, {{ store.firstName }}...
       </p>
 
       <!-- Stage 1: testimonial slot (renders nothing if REAL_TESTIMONIALS is empty) -->
@@ -48,7 +48,6 @@
     <!-- Top bar -->
     <div class="top-bar">
       <span class="brand-text">OMENORA</span>
-      <span class="report-badge">Personalized AI Reading</span>
     </div>
 
     <!-- Archetype reveal block -->
@@ -83,7 +82,7 @@
 
     <!-- T-2: Reading receipt trust line (B4-4) -->
     <p class="reading-receipt">
-      Built from: your birth date · your 7 answers ·
+      Built from: your birth date · your natal chart ·
       your {{ archetypeShortName }} archetype
       (Life Path {{ store.lifePathNumber }}) ·
       {{ traditionLabel }} tradition · AI generation
@@ -1027,7 +1026,7 @@ async function handlePayment() {
   width: 100%;
   max-width: 420px;
   margin: 24px auto 0;
-  padding: 0 20px;
+  padding: 0;
   box-sizing: border-box;
   text-align: center;
 }
