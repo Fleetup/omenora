@@ -86,7 +86,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      titleTemplate: '%s | OMENORA',
+      titleTemplate: '%s',
       title: 'OMENORA — AI Personality & Astrology Reading',
       htmlAttrs: { lang: 'en' },
       meta: [
@@ -95,10 +95,10 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'Discover your personality archetype through astrology, numerology, and ancient wisdom from six traditions. Free AI-generated reading in 60 seconds.',
+            'Discover your personality archetype through astrology, numerology, and six ancient traditions. AI-generated reading in 60 seconds. No account required.',
         },
-        { name: 'theme-color', content: '#050410' },
-        { name: 'msapplication-TileColor', content: '#050410' },
+        { name: 'theme-color', content: '#07070D' },
+        { name: 'msapplication-TileColor', content: '#07070D' },
         { name: 'robots', content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' },
         { name: 'author', content: 'OMENORA' },
         { name: 'copyright', content: '© 2026 OMENORA. All rights reserved.' },
@@ -119,7 +119,7 @@ export default defineNuxtConfig({
         {
           property: 'og:description',
           content:
-            'Discover your personality archetype through astrology, numerology, and six ancient traditions. Free AI-generated reading in 60 seconds. No account required.',
+            'Discover your personality archetype through astrology, numerology, and six ancient traditions. AI-generated reading in 60 seconds. No account required.',
         },
         { property: 'og:image', content: 'https://omenora.com/og-image.png' },
         { property: 'og:image:secure_url', content: 'https://omenora.com/og-image.png' },
@@ -172,7 +172,7 @@ export default defineNuxtConfig({
                 '@id': 'https://omenora.com/#website',
                 url: 'https://omenora.com',
                 name: 'OMENORA',
-                description: 'AI-powered astrology and destiny analysis. Free birth chart, life path number, love compatibility & 2026 forecast.',
+                description: 'AI-powered personality and astrology readings. Natal chart calculations across 6 ancient traditions — Western, Vedic, BaZi, Tarot, Korean and Middle Eastern. Reading ready in 60 seconds.',
                 inLanguage: 'en',
                 publisher: { '@id': 'https://omenora.com/#organization' },
                 potentialAction: {
@@ -191,7 +191,7 @@ export default defineNuxtConfig({
                 legalName: 'United Northwest Carriers Inc.',
                 alternateName: 'UNC Development',
                 url: 'https://omenora.com',
-                description: 'AI-powered destiny analysis and astrology platform. Personalized birth charts, life path numbers, love compatibility, and 2026 cosmic forecasts generated in seconds.',
+                description: 'AI-powered personality and astrology readings. Discover your archetype, life path number, and 2026 forecast through real natal chart calculations across 6 ancient wisdom traditions.',
                 slogan: 'AI decoded your destiny. Science explains why.',
                 logo: {
                   '@type': 'ImageObject',

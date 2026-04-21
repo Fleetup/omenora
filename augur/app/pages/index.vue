@@ -300,46 +300,73 @@
 import { ref, onMounted } from 'vue'
 
 useSeoMeta({
-  title: 'OMENORA — Free AI Personality & Astrology Reading',
+  title: 'OMENORA — AI Personality & Astrology Reading',
   description:
-    'Your free personality reading in 60 seconds. ' +
-    'AI maps your archetype using real natal chart ' +
-    'calculations across 6 ancient traditions. ' +
-    'No account required.',
-  ogTitle: 'OMENORA — Free AI Personality & Astrology Reading',
+    'Discover your personality archetype through real natal chart calculations across ' +
+    '6 ancient traditions — Western, Vedic, BaZi, Tarot, Korean & Middle Eastern. ' +
+    'AI-generated reading in 60 seconds. No account required.',
+  ogTitle: 'OMENORA — AI Personality & Astrology Reading',
   ogDescription:
-    'Free AI-generated natal chart reading across ' +
-    'Western, Vedic, BaZi, Tarot, Korean and ' +
-    'Middle Eastern traditions. Ready in 60 seconds.',
-  ogImage: '/og-image.png',
+    'AI-generated personality and astrology readings using real natal chart calculations. ' +
+    'Western, Vedic, BaZi, Tarot, Korean and Middle Eastern traditions. Ready in 60 seconds.',
+  ogImage: 'https://omenora.com/og-image.png',
+  ogUrl: 'https://omenora.com',
   twitterCard: 'summary_large_image',
-  twitterTitle: 'OMENORA — Free AI Astrology Reading',
+  twitterTitle: 'OMENORA — AI Personality & Astrology Reading',
   twitterDescription:
-    'Personality archetype + natal chart + 2026 ' +
-    'forecast. Free. No account. 60 seconds.',
+    'Personality archetype + natal chart + 2026 forecast. ' +
+    'Real Swiss Ephemeris calculations. No account. 60 seconds.',
 })
 
 useHead({
+  link: [
+    { rel: 'canonical', href: 'https://omenora.com' },
+  ],
   script: [
     {
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
+        '@id': 'https://omenora.com/#webapp',
         name: 'OMENORA',
         url: 'https://omenora.com',
-        description: 'Free AI-generated personality and astrology reading based on real natal chart calculations across 6 ancient traditions.',
+        description: 'AI-generated personality and astrology reading based on real natal chart calculations across 6 ancient traditions.',
         applicationCategory: 'LifestyleApplication',
         operatingSystem: 'Any',
-        offers: {
-          '@type': 'Offer',
-          price: '0',
-          priceCurrency: 'USD',
-          description: 'Free personality archetype reading'
-        },
+        offers: [
+          {
+            '@type': 'Offer',
+            name: 'Free Personality Preview',
+            price: '0',
+            priceCurrency: 'USD',
+            description: 'Free personality archetype preview — identity section unlocked immediately'
+          },
+          {
+            '@type': 'Offer',
+            name: 'Basic Reading',
+            price: '2.99',
+            priceCurrency: 'USD',
+            description: 'Full 7-section personality reading'
+          },
+          {
+            '@type': 'Offer',
+            name: 'Popular Bundle',
+            price: '4.99',
+            priceCurrency: 'USD',
+            description: 'Full reading + 2026 destiny forecast + compatibility'
+          },
+          {
+            '@type': 'Offer',
+            name: 'Full Oracle',
+            price: '12.99',
+            priceCurrency: 'USD',
+            description: 'Complete reading — all 7 sections, life path calendar, birth chart & all traditions'
+          },
+        ],
         featureList: [
           'Natal chart calculation via Swiss Ephemeris',
-          'Personality archetype from Sun, Moon and Rising',
+          'Personality archetype from Sun, Moon and Rising signs',
           'Numerology Life Path calculation',
           '2026 astrology forecast',
           'Western, Vedic, BaZi, Tarot, Korean and Middle Eastern traditions'
