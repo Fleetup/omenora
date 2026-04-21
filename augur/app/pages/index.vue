@@ -17,7 +17,7 @@
 
       <!-- Tagline -->
       <p class="tagline">Your free AI destiny reading — ready in 60 seconds.</p>
-      <p class="tagline-sub">Tell us your birth date and we'll map your personality archetype, life path number, and 2026 forecast using AI.</p>
+      <p class="tagline-sub">Enter your birth date and answer 7 questions — we map your archetype, numerology life path, astrological reading, and 2026 destiny forecast using AI.</p>
 
       <!-- Threshold separator -->
       <div class="threshold">
@@ -44,22 +44,22 @@
         <div class="discover-card">
           <img src="/symbols/Destiny Archetype.svg" class="discover-symbol" alt="" aria-hidden="true" />
           <p class="discover-name">Destiny Archetype</p>
-          <p class="discover-desc">Your behavioral blueprint — why you make decisions the way you do</p>
+          <p class="discover-desc">1 of 12 personality archetypes mapped from your answers — identity, hidden gifts, relationships, career &amp; purpose in 7 sections</p>
         </div>
         <div class="discover-card">
           <img src="/symbols/Life Path Number copy.svg" class="discover-symbol" alt="" aria-hidden="true" />
-          <p class="discover-name">Life Path Number</p>
-          <p class="discover-desc">Your numerology core — the hidden pattern running through every major event in your life</p>
+          <p class="discover-name">Numerology Report</p>
+          <p class="discover-desc">Your Life Path Number calculated from your birth date — the numerological pattern shaping your decisions, cycles, and destiny</p>
         </div>
         <div class="discover-card">
           <img src="/symbols/Destiny Forecast copy.svg" class="discover-symbol" alt="" aria-hidden="true" />
-          <p class="discover-name">2026 Destiny Forecast</p>
-          <p class="discover-desc">Month-by-month energy windows — when to move, when to wait, when to build</p>
+          <p class="discover-name">Astrological Reading</p>
+          <p class="discover-desc">Western, Vedic, Chinese, or Tarot tradition — your chart interpreted through the ancient system that fits you most</p>
         </div>
         <div class="discover-card">
           <img src="/symbols/Love & Relationship Patterns copy.svg" class="discover-symbol" alt="" aria-hidden="true" />
-          <p class="discover-name">Love &amp; Relationship Patterns</p>
-          <p class="discover-desc">What your archetype seeks in connection — and what creates friction without you realizing it</p>
+          <p class="discover-name">2026 Destiny Forecast</p>
+          <p class="discover-desc">Month-by-month energy windows for the year ahead — when to act, when to wait, and where your biggest opportunities open</p>
         </div>
       </div>
     </section>
