@@ -1,15 +1,21 @@
-FROM node:20-alpine AS base
+# ── Base: node:20-slim (Debian Bookworm, glibc) ───────────────────────────────
+# IMPORTANT: Do NOT use node:20-alpine here. The sweph native addon (.node file)
+# is pre-compiled against glibc (requires GLIBC_2.14+). Alpine uses musl libc
+# which is binary-incompatible — the addon will fail to load with a 500 error.
+# node:20-slim uses Debian which ships glibc, solving this permanently.
+FROM node:20-slim AS base
 WORKDIR /app
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     make \
     g++ \
-    cairo-dev \
-    pango-dev \
-    jpeg-dev \
-    giflib-dev \
-    librsvg-dev \
-    pixman-dev
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+    libpixman-1-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 FROM base AS deps
 COPY augur/package*.json ./
@@ -21,15 +27,18 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY augur/ .
 RUN npm run build
 
-FROM node:20-alpine AS runner
+# ── Runner: node:20-slim (glibc — required for sweph native addon) ────────────
+FROM node:20-slim AS runner
 WORKDIR /app
-RUN apk add --no-cache \
-    cairo \
-    pango \
-    jpeg \
-    giflib \
-    librsvg \
-    pixman
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libjpeg62-turbo \
+    libgif7 \
+    librsvg2-2 \
+    libpixman-1-0 \
+  && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
@@ -41,15 +50,13 @@ COPY --from=builder /app/public/fonts ./.output/public/fonts
 COPY --from=builder /app/public/og-image.png ./.output/public/og-image.png
 
 # sweph is a native Node.js addon loaded via node-gyp-build at runtime.
-# Nitro cannot bundle native .node binaries into .output — the loader resolves
-# the prebuild relative to node_modules/sweph at require() time.
-# We must copy the full sweph package so the linux-x64 prebuild is available.
+# node-gyp-build resolves the prebuild from __dirname of sweph/index.js, which
+# is /app/node_modules/sweph/prebuilds/linux-x64/sweph.node at runtime.
+# The full sweph package must exist in node_modules for this path to resolve.
 COPY --from=builder /app/node_modules/sweph ./node_modules/sweph
 COPY --from=builder /app/node_modules/node-gyp-build ./node_modules/node-gyp-build
-COPY --from=builder /app/node_modules/node-addon-api ./node_modules/node-addon-api
 
-# Drop root privileges. node:20-alpine ships with a built-in 'node' user (uid 1000).
-# Chown the output directory so the node user can write runtime cache files if needed.
+# Drop root privileges. node:20-slim ships with a built-in 'node' user (uid 1000).
 RUN chown -R node:node /app/.output /app/node_modules
 USER node
 
