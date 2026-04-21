@@ -9,7 +9,8 @@ RUN apk add --no-cache \
     jpeg-dev \
     giflib-dev \
     librsvg-dev \
-    pixman-dev
+    pixman-dev \
+    && ln -sf python3 /usr/bin/python
 
 FROM base AS deps
 COPY augur/package*.json ./
