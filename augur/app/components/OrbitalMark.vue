@@ -88,53 +88,84 @@ onMounted(() => {
     return 1.0 + depth * 1.5
   }
 
-  // ── Center glyph ─────────────────────────────────────────────────────────────
-  // All gold — no purple. Breathing rings + slow-rotating sigil spokes.
-  function drawCenterGlyph(): void {
-    // 4 sigil spokes — extremely faint, rotate once every ~350s
+  // ── Dark Planet (Option B) ───────────────────────────────────────────────────
+  // Near-black sphere with a gold crescent light catching the right edge,
+  // a faint surface sigil, and a soft ambient glow that breathes.
+  function drawDarkPlanet(): void {
+    const PLANET_R = 7.5
+
+    // ── Ambient outer glow — breathes slowly ──────────────────────────────────
+    const glowPulse = 0.08 + Math.sin(pulse * 0.6) * 0.04
+    const ambientGlow = ctx!.createRadialGradient(cx, cy, PLANET_R, cx, cy, PLANET_R * 2.4)
+    ambientGlow.addColorStop(0,   `rgba(180, 140, 40, ${glowPulse.toFixed(3)})`)
+    ambientGlow.addColorStop(0.5, `rgba(130,  90, 20, ${(glowPulse * 0.4).toFixed(3)})`)
+    ambientGlow.addColorStop(1,   'rgba(100,  60, 10, 0)')
+    ctx!.beginPath()
+    ctx!.arc(cx, cy, PLANET_R * 2.4, 0, Math.PI * 2)
+    ctx!.fillStyle = ambientGlow
+    ctx!.fill()
+
+    // ── Sphere base — deep near-black with slight warm tint ───────────────────
+    const sphere = ctx!.createRadialGradient(
+      cx + PLANET_R * 0.25, cy + PLANET_R * 0.2, PLANET_R * 0.05,
+      cx, cy, PLANET_R
+    )
+    sphere.addColorStop(0,   '#1c1608')
+    sphere.addColorStop(0.45, '#0d0b04')
+    sphere.addColorStop(1,   '#050401')
+    ctx!.beginPath()
+    ctx!.arc(cx, cy, PLANET_R, 0, Math.PI * 2)
+    ctx!.fillStyle = sphere
+    ctx!.fill()
+
+    // ── Crescent — gold light catching the right limb ─────────────────────────
+    // Clip to planet circle, then paint a horizontal gradient that only
+    // brightens the right 25% of the sphere, fading toward the terminator.
+    ctx!.save()
+    ctx!.beginPath()
+    ctx!.arc(cx, cy, PLANET_R, 0, Math.PI * 2)
+    ctx!.clip()
+
+    const crescentPulse = 0.25 + Math.sin(pulse * 0.7) * 0.06
+    const crescent = ctx!.createLinearGradient(cx - PLANET_R, cy, cx + PLANET_R, cy)
+    crescent.addColorStop(0,    'rgba(212, 167,  58, 0)')
+    crescent.addColorStop(0.52, 'rgba(212, 167,  58, 0)')
+    crescent.addColorStop(0.72, `rgba(195, 148,  42, ${(crescentPulse * 0.55).toFixed(3)})`)
+    crescent.addColorStop(0.88, `rgba(220, 175,  60, ${crescentPulse.toFixed(3)})`)
+    crescent.addColorStop(1,    `rgba(245, 205,  80, ${(crescentPulse * 0.65).toFixed(3)})`)
+    ctx!.fillStyle = crescent
+    ctx!.fillRect(cx - PLANET_R, cy - PLANET_R, PLANET_R * 2, PLANET_R * 2)
+
+    // ── Surface sigil — 4 spokes + inner ring, engraved on the dark face ──────
+    // Drawn inside the clip so it never bleeds outside the sphere edge.
+    const sigilAlpha = 0.11 + Math.sin(pulse * 0.5) * 0.04
+    ctx!.globalAlpha = sigilAlpha
+    // 4 spokes from center
     for (let i = 0; i < 4; i++) {
       const a = sigilAngle + i * (Math.PI * 2 / 4)
       ctx!.beginPath()
       ctx!.moveTo(cx, cy)
-      ctx!.lineTo(
-        cx + Math.cos(a) * RX * 0.75,
-        cy + Math.sin(a) * RX * 0.75 * 0.38
-      )
-      ctx!.strokeStyle = 'rgba(180, 130, 30, 0.05)'
-      ctx!.lineWidth   = 0.5
+      ctx!.lineTo(cx + Math.cos(a) * PLANET_R * 0.78, cy + Math.sin(a) * PLANET_R * 0.78)
+      ctx!.strokeStyle = 'rgba(212, 167, 58, 1)'
+      ctx!.lineWidth   = 0.45
       ctx!.stroke()
     }
-
-    // Outer breathing ring
+    // Inner sigil ring
     ctx!.beginPath()
-    ctx!.arc(cx, cy, 8, 0, Math.PI * 2)
-    ctx!.strokeStyle = `rgba(180, 140, 40, ${(0.06 + Math.sin(pulse) * 0.08).toFixed(3)})`
+    ctx!.arc(cx, cy, PLANET_R * 0.38, 0, Math.PI * 2)
+    ctx!.strokeStyle = 'rgba(212, 167, 58, 1)'
+    ctx!.lineWidth   = 0.45
+    ctx!.stroke()
+    ctx!.globalAlpha = 1
+
+    ctx!.restore()
+
+    // ── Limb — hairline gold ring traces the sphere edge ─────────────────────
+    ctx!.beginPath()
+    ctx!.arc(cx, cy, PLANET_R, 0, Math.PI * 2)
+    ctx!.strokeStyle = `rgba(180, 130, 30, ${(0.22 + Math.sin(pulse * 0.6) * 0.08).toFixed(3)})`
     ctx!.lineWidth   = 0.5
     ctx!.stroke()
-
-    // Inner breathing ring (offset phase so they breathe independently)
-    ctx!.beginPath()
-    ctx!.arc(cx, cy, 5, 0, Math.PI * 2)
-    ctx!.strokeStyle = `rgba(212, 180, 60, ${(0.10 + Math.sin(pulse + 1.0) * 0.10).toFixed(3)})`
-    ctx!.lineWidth   = 0.5
-    ctx!.stroke()
-
-    // Pulsing core glow
-    const glow = ctx!.createRadialGradient(cx, cy, 0, cx, cy, 4)
-    const glowAlpha = (0.5 + Math.sin(pulse + 2.0) * 0.2).toFixed(3)
-    glow.addColorStop(0,   `rgba(255, 230, 130, ${glowAlpha})`)
-    glow.addColorStop(0.5, 'rgba(212, 167,  58, 0.30)')
-    glow.addColorStop(1,   'rgba(180, 100,  20, 0)')
-    ctx!.beginPath()
-    ctx!.arc(cx, cy, 4, 0, Math.PI * 2)
-    ctx!.fillStyle = glow
-    ctx!.fill()
-
-    // Bright center point
-    ctx!.beginPath()
-    ctx!.arc(cx, cy, 1.5, 0, Math.PI * 2)
-    ctx!.fillStyle = `rgba(255, 240, 180, ${(0.6 + Math.sin(pulse) * 0.3).toFixed(3)})`
-    ctx!.fill()
   }
 
   // ── Draw comet trail ─────────────────────────────────────────────────────────
@@ -251,9 +282,9 @@ onMounted(() => {
       drawDot(x1, y1, d1, true)
       drawTrail(trail2, TRAIL_2)
       drawDot(x2, y2, d2, false)
-      drawCenterGlyph()
+      drawDarkPlanet()
     } else if (front1 && front2) {
-      drawCenterGlyph()
+      drawDarkPlanet()
       drawTrail(trail2, TRAIL_2)
       drawDot(x2, y2, d2, false)
       drawTrail(trail1, TRAIL_1)
@@ -261,13 +292,13 @@ onMounted(() => {
     } else if (!front1 && front2) {
       drawTrail(trail1, TRAIL_1)
       drawDot(x1, y1, d1, true)
-      drawCenterGlyph()
+      drawDarkPlanet()
       drawTrail(trail2, TRAIL_2)
       drawDot(x2, y2, d2, false)
     } else {
       drawTrail(trail2, TRAIL_2)
       drawDot(x2, y2, d2, false)
-      drawCenterGlyph()
+      drawDarkPlanet()
       drawTrail(trail1, TRAIL_1)
       drawDot(x1, y1, d1, true)
     }
