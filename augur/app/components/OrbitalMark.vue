@@ -20,24 +20,26 @@ onMounted(() => {
   if (!ctx) return
 
   // ── Dimensions ──────────────────────────────────────────────────────────────
-  // 96px canvas gives 16px padding for glow/particle overflow on each side.
-  const SIZE = 96
+  // S = scale factor relative to original 96px design.
+  // 160px canvas gives ~26px padding for glow/particle overflow on each side.
+  const S    = 1.67
+  const SIZE = Math.round(96 * S)   // 160
   const DPR  = window.devicePixelRatio || 1
 
   canvas.width  = SIZE * DPR
   canvas.height = SIZE * DPR
   ctx.scale(DPR, DPR)
 
-  const cx = SIZE / 2   // 48
-  const cy = SIZE / 2   // 48
+  const cx = SIZE / 2
+  const cy = SIZE / 2
 
   // ── Orbit parameters ────────────────────────────────────────────────────────
   // Main orbit
-  const RX  = 32          // horizontal radius
-  const RY  = RX * 0.32   // ~10.24px vertical radius → 70° tilt perspective
+  const RX  = Math.round(32 * S)          // ~53px horizontal radius
+  const RY  = RX * 0.32                   // vertical radius → 70° tilt perspective
 
   // Micro-satellite inner orbit
-  const RX2 = 18
+  const RX2 = Math.round(18 * S)          // ~30px
   const RY2 = RX2 * 0.32
 
   // ── Kepler-style variable speed ──────────────────────────────────────────────
@@ -85,14 +87,14 @@ onMounted(() => {
   }
 
   function getDotRadius(depth: number): number {
-    return 1.0 + depth * 1.5
+    return (1.0 + depth * 1.5) * S
   }
 
   // ── Dark Planet (Option B) ───────────────────────────────────────────────────
   // Near-black sphere with a gold crescent light catching the right edge,
   // a faint surface sigil, and a soft ambient glow that breathes.
   function drawDarkPlanet(): void {
-    const PLANET_R = 7.5
+    const PLANET_R = 7.5 * S
 
     // ── Ambient outer glow — breathes slowly ──────────────────────────────────
     const glowPulse = 0.08 + Math.sin(pulse * 0.6) * 0.04
@@ -323,11 +325,11 @@ onUnmounted(() => {
 
 <style scoped>
 .orbital-canvas {
-  width: 96px;
-  height: 96px;
+  width: 160px;
+  height: 160px;
   display: block;
   pointer-events: none;
-  /* 16px canvas padding built in — compensate so it aligns with the title */
-  margin: -16px;
+  /* ~26px canvas padding built in — compensate so it aligns with the title */
+  margin: -26px;
 }
 </style>
