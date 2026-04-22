@@ -428,6 +428,9 @@ export default defineEventHandler(async (event) => {
           subject: testimonial.subject,
           html: testimonial.html,
           scheduledAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+          headers: {
+            'Idempotency-Key': `testimonial-${sessionId}`,
+          },
         })
         console.info('[TC-1] testimonial email scheduled: true', { sessionId, language })
       }
