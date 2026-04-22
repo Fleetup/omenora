@@ -680,6 +680,7 @@ ABSOLUTE FORBIDDEN PHRASES — never use any of these, they instantly break imme
 SECTION INSTRUCTIONS:
 
 IDENTITY (4-5 sentences minimum):
+The opening sentence must be at least 15 words. It must name something specific about this person, not a general statement.
 THE VERY FIRST SENTENCE of this entire report — the opening line of the Identity section — is the most important sentence you will write. It must be the single most personally accurate observation in the report. It must make ${firstName} stop reading and re-read it. It must not be about their archetype in general. It must be about THEM specifically — derived from the most emotionally charged input in their profile.
 
 To write this sentence: look at their Sun sign (${sunSign}), Moon sign (${moonSign}), and Rising sign (${ascendantSign}). Pick the placement that creates the most specific psychological tension. Write the first sentence from THAT place. Do not open with the archetype name. Do not open with a compliment. Open with the thing they have never heard said out loud about themselves.
@@ -881,9 +882,9 @@ Return ONLY valid JSON. No preamble, no explanation, no markdown.
 
     const flags: string[] = []
 
-    // Flag 1: Identity opening is too short (under 15 words)
+    // Flag 1: Identity opening is too short (under 12 words)
     const identityFirstSentence = identityContent.split(/[.!?]/)[0] ?? ''
-    if (identityFirstSentence.trim().split(/\s+/).length < 15) {
+    if (identityFirstSentence.trim().split(/\s+/).length < 12) {
       flags.push('identity_opening_too_short')
     }
 
