@@ -134,7 +134,7 @@ RESPOND WITH VALID JSON ONLY. No preamble. No markdown. No explanation.`
           const message = await withAiRetry(`generate-daily-horoscope:${zodiacSign}`, () =>
             client.messages.parse({
               model:      'claude-sonnet-4-6',
-              max_tokens: 600,
+              max_tokens: 1500,
               system:     'You are a professional astrologer writing daily horoscopes. Write in a warm, insightful, and grounded tone. Be specific to today\'s planetary positions. Never be vague or generic. Each horoscope must feel written specifically for today, not any other day.',
               messages:   [{ role: 'user', content: userPrompt }],
               output_config: { format: jsonSchemaOutputFormat(horoscopeJsonSchema) },

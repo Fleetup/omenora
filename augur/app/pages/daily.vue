@@ -94,18 +94,22 @@
           <section class="others-section" aria-label="Other sign horoscopes">
             <p class="sect-label">ALL SIGNS</p>
             <div class="grid-3col">
-              <article
+              <template
                 v-for="sign in otherSigns"
                 :key="sign"
-                class="mini-card"
-                :aria-label="signDisplayName(sign) + ' horoscope'"
               >
-                <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
-                  <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
-                  <p v-if="zodiacData[sign]" class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
-                  <p v-if="zodiacData[sign]" class="mini-insight">{{ firstSentence(zodiacData[sign]?.horoscope ?? '') }}</p>
-                </NuxtLink>
-              </article>
+                <article
+                  v-if="zodiacData?.[sign]"
+                  class="mini-card"
+                  :aria-label="signDisplayName(sign) + ' horoscope'"
+                >
+                  <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
+                    <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
+                    <p class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
+                    <p class="mini-insight">{{ firstSentence(zodiacData[sign]?.horoscope ?? '') }}</p>
+                  </NuxtLink>
+                </article>
+              </template>
             </div>
           </section>
         </template>
@@ -115,18 +119,22 @@
           <section aria-label="All sign horoscopes">
             <p class="sect-label">ALL SIGNS</p>
             <div class="grid-3col">
-              <article
+              <template
                 v-for="sign in ALL_SIGNS"
                 :key="sign"
-                class="mini-card"
-                :aria-label="signDisplayName(sign) + ' horoscope'"
               >
-                <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
-                  <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
-                  <p v-if="zodiacData[sign]" class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
-                  <p v-if="zodiacData[sign]" class="mini-insight">{{ firstSentence(zodiacData[sign]?.horoscope ?? '') }}</p>
-                </NuxtLink>
-              </article>
+                <article
+                  v-if="zodiacData?.[sign]"
+                  class="mini-card"
+                  :aria-label="signDisplayName(sign) + ' horoscope'"
+                >
+                  <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
+                    <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
+                    <p class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
+                    <p class="mini-insight">{{ firstSentence(zodiacData[sign]?.horoscope ?? '') }}</p>
+                  </NuxtLink>
+                </article>
+              </template>
             </div>
           </section>
         </template>
