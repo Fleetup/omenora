@@ -382,7 +382,7 @@ export default defineEventHandler(async (event) => {
     { onConflict: 'session_id' },
   )
 
-  if (saveErr) {
+  if (saveErr && saveErr.code !== 'PGRST204') {
     console.error('[stripe-webhook] Failed to save report:', saveErr.code)
   }
 
