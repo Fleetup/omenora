@@ -96,13 +96,11 @@ Structure in this exact sequence — no headers, continuous prose:
 ---
 
 STEP 3 — WRITE THE 2026 FORECAST
-
-Write 3 sentences tied to actual 2026 planetary transits relevant to this chart:
-- Saturn's house transit for this Rising Sign
-- Neptune's position and how it affects this chart
-- Uranus ingress or major transit and its impact
-
-Make the forecast specific to the placements above — not generic 2026 predictions.
+Write exactly 3 sentences. Plain language — no astrology terms without explanation.
+Sentence 1: What Saturn's position means for ${firstName} this year in practical terms — what area of life is being tested or restructured.
+Sentence 2: What Neptune's influence means — where things may feel unclear or where intuition is heightened.
+Sentence 3: What Uranus is disrupting or awakening — one specific area where unexpected change is coming.
+Make every sentence feel personal to this chart, not a generic 2026 prediction.
 
 ---
 
