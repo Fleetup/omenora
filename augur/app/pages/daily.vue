@@ -49,6 +49,7 @@
 
         <!-- Featured card -->
         <section class="featured-section" aria-label="Your archetype reading">
+          <NuxtLink to="/daily" class="back-link">← All archetypes</NuxtLink>
           <p class="sect-label">YOUR ARCHETYPE</p>
           <article class="featured-card" :aria-label="featuredDisplayName + ' reading'">
             <p class="featured-archetype-name">{{ featuredDisplayName }}</p>
@@ -606,6 +607,18 @@ onMounted(async () => {
   margin: 0;
   line-height: 1.6;
   font-style: italic;
+}
+
+
+/* ─────────────────────────────────────────────
+   BACK LINK
+───────────────────────────────────────────── */
+.back-link {
+  font-size: 13px;
+  color: var(--white-55);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 24px;
 }
 
 
