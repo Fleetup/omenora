@@ -128,7 +128,8 @@ Return ONLY valid JSON, no markdown:
   const message = await withAiRetry('generate-compatibility', () =>
     client.messages.parse({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
+      max_tokens: 2500,
+      system: `You are writing a personal relationship compatibility reading between two specific people. Your analysis is grounded, honest, and precise. You name real dynamics — not flattering generalities. Every sentence must be specific to these two people's actual combination. Write at B2 English level. Short sentences. No cultural idioms. Make the reader feel their relationship has just been seen clearly for the first time.`,
       messages: [{ role: 'user', content: prompt }],
       output_config: { format: jsonSchemaOutputFormat(compatibilityJsonSchema) },
     })

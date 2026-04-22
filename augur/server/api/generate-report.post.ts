@@ -696,8 +696,12 @@ When introducing the archetype name, make it DO something — not define somethi
 WRONG: 'The Wildfire archetype is not about warmth or comfort — it is about transformation through intensity.' (This is a product description.)
 RIGHT: 'The Wildfire does not spread by being contained — it moves by consuming whatever cannot survive its heat, and that includes every version of yourself that no longer fits.' (This makes the archetype name a living force, not a label.)
 
+End this section in a way that makes the reader feel the most important question about themselves has just been named — but not yet answered.
+
 SCIENCE (4 sentences minimum):
 Follow the tradition framework's science instructions as PRIMARY. Use the actual tradition's analytical system — not chronobiology if this is a Vedic or BaZi reading. Ground in specific calculated data from the profile. Reference life path ${lifePathNumber} only if it fits the tradition naturally; skip it for Vedic and BaZi.
+
+End this section by naming a pattern the reader will instantly recognise in their own life — but do not explain why it exists. That explanation is in the locked sections.
 
 FORECAST (5 sentences minimum):
 Follow the tradition framework's forecast instructions as PRIMARY timing guide. Do NOT name specific calendar months as if they are guaranteed windows — this creates false predictions that damage trust when they do not materialize. Instead, name EXPERIENTIAL triggers: describe what ${firstName} will notice happening around them or within them that signals the window has arrived. Example of WRONG: 'April through June brings a major opening.' Example of RIGHT: 'When you notice the resistance you have been carrying suddenly feels lighter — and you will notice this, probably when you least expect it — that is your window. Do not wait for external confirmation before you move.' For Vedic and BaZi traditions where real timing data exists (Dasha period, Luck Pillar), you MAY reference the actual calculated period from the tradition framework inputs above. For Western and Tarot traditions, use experiential framing only. Reference how ${firstName}'s Sun in ${sunSign} shapes their relationship to success and timing. End with a single sentence that creates forward momentum without being generic.
@@ -711,16 +715,13 @@ Follow the tradition framework's purpose instructions as PRIMARY. Use Mars in ${
 GIFT (3 sentences minimum):
 Follow the tradition framework's gift instructions as PRIMARY. Open with naming the quality expressed by Mercury in ${mercurySign} — say what it actually is, what it looks like from the outside, and why almost no one ever names it correctly. Close with a single sentence that makes ${firstName} feel rare — not in a flattering way, but in an accurate way.
 
-AFFIRMATION (1 sentence only):
-Follow the tradition framework's affirmation instructions as PRIMARY.
-
-The affirmation must be written in the voice of ${firstName} speaking TO THEMSELVES — not a narrator speaking about them. It must feel like their own internal voice made visible, not a blessing given from the outside.
-
-Must include ${firstName}'s name — placed mid-sentence or at the opening, never at the end. Must speak to the emotional truth of Moon in ${moonSign} without naming the placement explicitly. Must feel like a sentence ${firstName} would write on paper and keep somewhere private. No exclamation marks. No 'you are' openings. No 'you have always been' openings. Do not begin with 'I' — this is not a first-person affirmation. Begin with the person's name or an action verb directed at them.
-
-WRONG: 'You are stronger than you know, ${firstName}.' (narrator voice, generic, flattering not true)
-WRONG: 'I am enough and I trust myself.' (first person, sounds like a wellness poster)
-RIGHT: '${firstName} — what you built in silence while everyone else was celebrating is already the answer.' (specific to their shadow, their voice, their truth)
+AFFIRMATION (1 sentence only. Maximum 20 words. Hard limit.):
+Write exactly one sentence. No more.
+Begin with ${firstName}'s name directly — example: "${firstName}, every silence you kept was already the answer."
+The sentence must name one specific truth about this person's archetype or life path.
+No exclamation marks. No "you are" openings. No metaphors about fire, ash, or flame.
+If the sentence exceeds 20 words, cut it until it does not.
+Return only the sentence. Nothing else.
 
 ---
 
@@ -783,7 +784,8 @@ Return ONLY valid JSON. No preamble, no explanation, no markdown.
     message = await withAiRetry('generate-report', () =>
       client.messages.parse({
         model: 'claude-sonnet-4-6',
-        max_tokens: 4096,
+        max_tokens: 6000,
+        system: `You are a master of psychological pattern recognition writing personal destiny reports. Your writing is precise, grounded, and specific to this exact person. You never write anything that could apply to anyone else. Every sentence must earn its place — if it does not reveal something true and specific about this person, cut it. You write for a global audience — simple words, short sentences, no cultural idioms. You make people feel understood in a way they have never felt before.`,
         messages: [{ role: 'user', content: prompt }],
         output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
       })
@@ -885,10 +887,13 @@ Return ONLY valid JSON. No preamble, no explanation, no markdown.
       flags.push('identity_opening_too_short')
     }
 
-    // Flag 2: Affirmation is longer than 30 words (must be exactly 1 sentence)
+    // Flag 2: Affirmation is longer than 20 words (must be exactly 1 sentence)
     const affirmationContent = reportData.sections?.affirmation?.content ?? ''
-    if (affirmationContent.trim().split(/\s+/).length > 30) {
+    if (affirmationContent.trim().split(/\s+/).length > 20) {
       flags.push('affirmation_too_long')
+    }
+    if (affirmationContent.trim().split(/\n/).length > 1) {
+      flags.push('affirmation_multiple_sentences')
     }
 
     // Flag 3: Detect repeated exact phrases across sections (≥ 8 word run duplicated)

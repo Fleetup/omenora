@@ -255,7 +255,8 @@ Exactly this structure:
   const message = await withAiRetry('generate-daily-insight', () =>
     client.messages.parse({
       model: 'claude-sonnet-4-6',
-      max_tokens: 700,
+      max_tokens: 1000,
+      system: `You are writing a single daily insight for one specific person. It must feel like it was written only for them — their archetype, their life path, the current moon phase. It must be grounded and specific, never generic. Write at B2 English level. Short sentences. The insight must leave the reader with one clear thing to sit with for the day — not a list, not advice, not a prediction. One true observation.`,
       messages: [{ role: 'user', content: insightPrompt }],
       output_config: { format: jsonSchemaOutputFormat(dailyInsightJsonSchema) },
     })

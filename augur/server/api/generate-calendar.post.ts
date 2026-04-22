@@ -129,6 +129,7 @@ Normal months 55-75. Make it feel like a real forecast.`
     client.messages.parse({
       model: 'claude-sonnet-4-6',
       max_tokens: 3000,
+      system: `You are writing a 12-month personal destiny calendar. Each month must feel specific to this exact person — their archetype, element, and life path. You are not writing horoscopes. You are mapping real astrological energy windows to this person's specific patterns. Write at B2 English level. Short sentences. Every month entry must give the reader one clear thing to understand about that period of their year.`,
       messages: [{ role: 'user', content: prompt }],
       output_config: { format: jsonSchemaOutputFormat(calendarJsonSchema) },
     })
