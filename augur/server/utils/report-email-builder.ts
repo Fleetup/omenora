@@ -49,6 +49,9 @@ export interface ReportEmailPayload {
   tarotData?: any
   calendarData?: any
   birthChartData?: any
+  compatibilityData?: any
+  partnerName?: string | null
+  reportSessionId?: string
   language?: string
 }
 
@@ -74,6 +77,9 @@ export async function sendReportEmail(
     tarotData,
     calendarData,
     birthChartData,
+    compatibilityData,
+    partnerName,
+    reportSessionId,
     language = 'en',
   } = payload
 
@@ -402,7 +408,7 @@ export async function sendReportEmail(
       border-radius: 12px;">
       <p style="font-size: 10px; font-weight: 500;
         color: #c9a84c; text-transform: uppercase;
-        letter-spacing: 0.12em; margin: 0 0 6px;">📅 Your 2026 Destiny Calendar</p>
+        letter-spacing: 0.12em; margin: 0 0 6px;">&#x1F4C5; Your 2026 Destiny Calendar</p>
       <p style="font-size: 14px; color: rgba(255,255,255,0.7);
         margin: 0 0 20px; line-height: 1.6;">${calendarData.overallTheme || ''}</p>
       ${(calendarData.months || []).map((m: any) => `
@@ -410,13 +416,36 @@ export async function sendReportEmail(
           background: rgba(255,255,255,0.02);
           border-left: 3px solid ${m.color || '#8c6eff'};
           border-radius: 0 6px 6px 0;">
-          <p style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.7); margin: 0 0 4px;">${m.month} — ${m.theme}</p>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 2px;">♥ ${m.love}</p>
+          <p style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.7); margin: 0 0 4px;">${m.month} &#x2014; ${m.theme}</p>
+          <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 2px;">&#x2665; ${m.love}</p>
           <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 2px;">$ ${m.money}</p>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0;">⚡ ${m.career}</p>
-          ${m.warning ? `<p style="font-size: 11px; color: rgba(255,120,80,0.5); margin: 4px 0 0;">⚠ ${m.warning}</p>` : ''}
+          <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0;">&#x26A1; ${m.career}</p>
+          ${m.warning ? `<p style="font-size: 11px; color: rgba(255,120,80,0.5); margin: 4px 0 0;">&#x26A0; ${m.warning}</p>` : ''}
         </div>
       `).join('')}
+    </div>` : ''}
+    ${compatibilityData && compatibilityData.compatibilityScore !== undefined ? `
+    <div style="margin: 40px 0; padding: 24px;
+      background: rgba(140,110,255,0.04);
+      border: 1px solid rgba(140,110,255,0.12);
+      border-radius: 12px;">
+      <p style="font-size: 10px; font-weight: 500;
+        color: #8c6eff; text-transform: uppercase;
+        letter-spacing: 0.12em; margin: 0 0 6px;">&#x1F49E; Compatibility Reading</p>
+      ${partnerName ? `<p style="font-size: 13px; color: rgba(255,255,255,0.5); margin: 0 0 12px;">${he(sanitizedFirstName)} &amp; ${he(partnerName)}</p>` : ''}
+      <p style="font-size: 40px; font-weight: 600; color: #8c6eff; margin: 0 0 4px; line-height: 1;">${compatibilityData.compatibilityScore}%</p>
+      ${compatibilityData.compatibilityTitle ? `<p style="font-size: 13px; color: rgba(200,180,255,0.7); font-style: italic; margin: 0 0 20px;">${he(compatibilityData.compatibilityTitle)}</p>` : ''}
+      ${['bond','strength','challenge','forecast','advice'].map((key: string) => {
+        const sec = (compatibilityData.sections || {})[key]
+        if (!sec) return ''
+        return `
+          <div style="margin-bottom: 16px; padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <p style="font-size: 10px; color: #8c6eff; text-transform: uppercase;
+              letter-spacing: 0.08em; margin: 0 0 6px;">${he(sec.title || key)}</p>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.7; margin: 0;">${he(sec.content || '')}</p>
+          </div>`
+      }).join('')}
     </div>` : ''}
     <div style="text-align: center; margin-top: 48px;
       padding: 32px 24px;
@@ -428,13 +457,13 @@ export async function sendReportEmail(
         margin: 0 0 20px; line-height: 1.5;">
         Download your destiny card to share on TikTok or Instagram Stories
       </p>
-      <a href="https://omenora.com"
+      <a href="${reportSessionId ? `https://omenora.com/report?session_id=${encodeURIComponent(reportSessionId)}` : 'https://omenora.com'}"
         style="display: inline-block;
           background: rgba(140,110,255,0.85);
           color: white; text-decoration: none;
           font-size: 14px; font-weight: 500;
           padding: 14px 32px; border-radius: 10px;">
-        Return to OMENORA
+        View Your Full Report
       </a>
     </div>
     <div style="text-align: center; margin-top: 40px;

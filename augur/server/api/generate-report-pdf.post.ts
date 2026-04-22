@@ -151,18 +151,18 @@ export default defineEventHandler(async (event) => {
   const lifePathNumber = Number(body.lifePathNumber)
   const region         = isValidRegion(body.region) ? body.region : 'western'
   const report         = body.report && typeof body.report === 'object' ? body.report : null
-  const { vedicData, baziData, tarotData, calendarData, bundlePurchased } = body
+  const { vedicData, baziData, tarotData, calendarData, compatibilityData, partnerName, bundlePurchased } = body
 
   assertInput(!!firstName, 'firstName is required')
   assertInput(report !== null, 'report is required')
 
   const pdfLabels: Record<string, Record<string, string>> = {
-    en: { vedic: 'VEDIC DESTINY READING', karmicMission: 'KARMIC MISSION', practice: '2026 Practice:', bazi: 'BAZI FOUR PILLARS READING', wealthLuck: '2026 WEALTH LUCK', luckyDirections: 'Lucky directions:', spiritual: 'SPIRITUAL DESTINY READING', loveDestiny: 'LOVE DESTINY', blessing: 'A BLESSING FOR YOU', protectiveCharm: 'Protective charm:', calendarLabel: 'YOUR 2026 DESTINY CALENDAR', luckyDays: 'Lucky days:' },
-    es: { vedic: 'LECTURA VÉDICA DE DESTINO', karmicMission: 'MISIÓN KÁRMICA', practice: 'Práctica 2026:', bazi: 'LECTURA BAZI DE CUATRO PILARES', wealthLuck: 'SUERTE FINANCIERA 2026', luckyDirections: 'Direcciones favorables:', spiritual: 'LECTURA ESPIRITUAL DE DESTINO', loveDestiny: 'DESTINO AMOROSO', blessing: 'UNA BENDICIÓN PARA TI', protectiveCharm: 'Amuleto protector:', calendarLabel: 'TU CALENDARIO DE DESTINO 2026', luckyDays: 'Días de suerte:' },
-    pt: { vedic: 'LEITURA VÉDICA DE DESTINO', karmicMission: 'MISSÃO KÁRMICA', practice: 'Prática 2026:', bazi: 'LEITURA BAZI DOS QUATRO PILARES', wealthLuck: 'SORTE FINANCEIRA 2026', luckyDirections: 'Direções favoráveis:', spiritual: 'LEITURA ESPIRITUAL DE DESTINO', loveDestiny: 'DESTINO AMOROSO', blessing: 'UMA BÊNÇÃO PARA VOCÊ', protectiveCharm: 'Amuleto protetor:', calendarLabel: 'SEU CALENDÁRIO DE DESTINO 2026', luckyDays: 'Dias de sorte:' },
-    hi: { vedic: 'वैदिक नियति रीडिंग', karmicMission: 'कार्मिक मिशन', practice: '2026 अभ्यास:', bazi: 'बाड़ी चार स्तंभ रीडिंग', wealthLuck: '2026 धन भाग्य', luckyDirections: 'भाग्यशाली दिशाएं:', spiritual: 'आध्यात्मिक नियति रीडिंग', loveDestiny: 'प्रेम नियति', blessing: 'आपके लिए आशीर्वाद', protectiveCharm: 'रक्षात्मक तायऺत:', calendarLabel: 'आपका 2026 नियति कैलेंडर', luckyDays: 'भाग्यशाली दिन:' },
-    ko: { vedic: '베다 운명 리딩', karmicMission: '카르마 사명', practice: '2026 수련:', bazi: '리 BaZi 사주 리딩', wealthLuck: '2026 재물 운', luckyDirections: '행운의 방향:', spiritual: '영적 운명 리딩', loveDestiny: '사랑의 운명', blessing: '당신을 위한 축복', protectiveCharm: '보호 부적:', calendarLabel: '당신의 2026 운명 캘린더', luckyDays: '행운의 날:' },
-    zh: { vedic: '厄波奇命运解读', karmicMission: '因果使命', practice: '2026年练习:', bazi: '八字四柱解读', wealthLuck: '2026财运', luckyDirections: '吉利方位:', spiritual: '灵性命运解读', loveDestiny: '爱情命运', blessing: '给你的祝福', protectiveCharm: '护身符:', calendarLabel: '你的2026年命运日历', luckyDays: '吉日:' },
+    en: { vedic: 'VEDIC DESTINY READING', karmicMission: 'KARMIC MISSION', practice: '2026 Practice:', bazi: 'BAZI FOUR PILLARS READING', wealthLuck: '2026 WEALTH LUCK', luckyDirections: 'Lucky directions:', spiritual: 'SPIRITUAL DESTINY READING', loveDestiny: 'LOVE DESTINY', blessing: 'A BLESSING FOR YOU', protectiveCharm: 'Protective charm:', calendarLabel: 'YOUR 2026 DESTINY CALENDAR', luckyDays: 'Lucky days:', compatLabel: 'COMPATIBILITY READING', compatScore: 'Compatibility Score', compatWith: 'with' },
+    es: { vedic: 'LECTURA VÉDICA DE DESTINO', karmicMission: 'MISIÓN KÁRMICA', practice: 'Práctica 2026:', bazi: 'LECTURA BAZI DE CUATRO PILARES', wealthLuck: 'SUERTE FINANCIERA 2026', luckyDirections: 'Direcciones favorables:', spiritual: 'LECTURA ESPIRITUAL DE DESTINO', loveDestiny: 'DESTINO AMOROSO', blessing: 'UNA BENDICIÓN PARA TI', protectiveCharm: 'Amuleto protector:', calendarLabel: 'TU CALENDARIO DE DESTINO 2026', luckyDays: 'Días de suerte:', compatLabel: 'LECTURA DE COMPATIBILIDAD', compatScore: 'Puntuación de Compatibilidad', compatWith: 'con' },
+    pt: { vedic: 'LEITURA VÉDICA DE DESTINO', karmicMission: 'MISSÃO KÁRMICA', practice: 'Prática 2026:', bazi: 'LEITURA BAZI DOS QUATRO PILARES', wealthLuck: 'SORTE FINANCEIRA 2026', luckyDirections: 'Direções favoráveis:', spiritual: 'LEITURA ESPIRITUAL DE DESTINO', loveDestiny: 'DESTINO AMOROSO', blessing: 'UMA BÊNÇÃO PARA VOCÊ', protectiveCharm: 'Amuleto protetor:', calendarLabel: 'SEU CALENDÁRIO DE DESTINO 2026', luckyDays: 'Dias de sorte:', compatLabel: 'LEITURA DE COMPATIBILIDADE', compatScore: 'Pontuação de Compatibilidade', compatWith: 'com' },
+    hi: { vedic: 'वैदिक नियति रीडिंग', karmicMission: 'कार्मिक मिशन', practice: '2026 अभ्यास:', bazi: 'बाड़ी चार स्तंभ रीडिंग', wealthLuck: '2026 धन भाग्य', luckyDirections: 'भाग्यशाली दिशाएं:', spiritual: 'आध्यात्मिक नियति रीडिंग', loveDestiny: 'प्रेम नियति', blessing: 'आपके लिए आशीर्वाद', protectiveCharm: 'रक्षात्मक तायऺत:', calendarLabel: 'आपका 2026 नियति कैलेंडर', luckyDays: 'भाग्यशाली दिन:', compatLabel: 'अनुकूलता रीडिंग', compatScore: 'अनुकूलता स्कोर', compatWith: 'के साथ' },
+    ko: { vedic: '베다 운명 리딩', karmicMission: '카르마 사명', practice: '2026 수련:', bazi: '리 BaZi 사주 리딩', wealthLuck: '2026 재물 운', luckyDirections: '행운의 방향:', spiritual: '영적 운명 리딩', loveDestiny: '사랑의 운명', blessing: '당신을 위한 축복', protectiveCharm: '보호 부적:', calendarLabel: '당신의 2026 운명 캘린더', luckyDays: '행운의 날:', compatLabel: '궁합 리딩', compatScore: '궁합 점수', compatWith: '와' },
+    zh: { vedic: '厄波奇命运解读', karmicMission: '因果使命', practice: '2026年练习:', bazi: '八字四柱解读', wealthLuck: '2026财运', luckyDirections: '吉利方位:', spiritual: '灵性命运解读', loveDestiny: '爱情命运', blessing: '给你的祝福', protectiveCharm: '护身符:', calendarLabel: '你的2026年命运日历', luckyDays: '吉日:', compatLabel: '合盘分析', compatScore: '契合度', compatWith: '与' },
   }
   const L = pdfLabels[language as string] ?? pdfLabels['en']!
 
@@ -435,6 +435,55 @@ export default defineEventHandler(async (event) => {
       cy += 14
       doc.moveTo(ML, cy).lineTo(ML + CW, cy).strokeColor('#151520').lineWidth(0.3).stroke()
       cy += 12
+    }
+  }
+
+  if (compatibilityData && compatibilityData.compatibilityScore !== undefined) {
+    doc.addPage({ size: 'A4', margin: 0 })
+    doc.rect(0, 0, W, H).fill('#070510')
+    let ky = 60
+
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#8c6eff')
+       .text(L['compatLabel'] || 'COMPATIBILITY READING', ML, ky, { width: CW, align: 'center' })
+    ky += 16
+
+    const compatNames = partnerName
+      ? `${firstName} ${L['compatWith'] || 'with'} ${partnerName}`
+      : firstName
+    doc.font('Helvetica').fontSize(13).fillColor('#c8b4ff')
+       .text(compatNames, ML, ky, { width: CW, align: 'center' })
+    ky += 20
+
+    doc.font('Helvetica-Bold').fontSize(36).fillColor('#8c6eff')
+       .text(`${compatibilityData.compatibilityScore}%`, ML, ky, { width: CW, align: 'center' })
+    ky += 44
+
+    if (compatibilityData.compatibilityTitle) {
+      doc.font('Helvetica-Oblique').fontSize(11).fillColor('#9070c0')
+         .text(compatibilityData.compatibilityTitle, ML, ky, { width: CW, align: 'center' })
+      ky += doc.heightOfString(compatibilityData.compatibilityTitle, { width: CW }) + 20
+    }
+
+    doc.moveTo(ML, ky).lineTo(ML + CW, ky).strokeColor('#1a1a2e').lineWidth(0.5).stroke()
+    ky += 16
+
+    const compatSectionOrder = ['bond', 'strength', 'challenge', 'forecast', 'advice']
+    const compatSections = compatibilityData.sections || {}
+    for (const key of compatSectionOrder) {
+      const sec = compatSections[key]
+      if (!sec) continue
+      if (ky > H - 120) {
+        doc.addPage({ size: 'A4', margin: 0 })
+        doc.rect(0, 0, W, H).fill('#070510')
+        ky = 60
+      }
+      doc.font('Helvetica-Bold').fontSize(9).fillColor('#8c6eff')
+         .text((sec.title || key).toUpperCase(), ML, ky)
+      ky += 14
+      doc.font('Helvetica').fontSize(11).fillColor('#8888a0')
+         .text(sec.content || '', ML, ky, { width: CW, lineGap: 3 })
+      ky += doc.heightOfString(sec.content || '', { width: CW }) + 16
+      doc.moveTo(ML, ky - 8).lineTo(ML + CW, ky - 8).strokeColor('#151520').lineWidth(0.3).stroke()
     }
   }
 

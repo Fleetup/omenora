@@ -375,7 +375,7 @@
       </div>
       <div class="report-cal-months">
         <div
-          v-for="month in store.calendarData.months"
+          v-for="month in visibleCalendarMonths"
           :key="month.month"
           class="report-month-card"
           :style="{ borderLeftColor: month.color || 'rgba(201,168,76,0.4)' }"
@@ -663,6 +663,7 @@
           {{ isDownloadingPDF ? 'Generating...' : t('downloadPDF') }}
         </button>
       </div>
+      <p v-if="cardDownloadError" style="font-size: 12px; color: rgba(255,100,100,0.7); text-align: center; margin: 8px 0 0;">{{ cardDownloadError }}</p>
       <div v-if="store.email" class="download-row" style="margin-top: 10px;">
         <button
           class="download-btn download-btn--email"
@@ -925,6 +926,7 @@ async function generateCompatibilityFree() {
       },
     })
     bundleCompatibilityResult.value = result.compatibility
+    store.setCompatibilityData(result.compatibility)
   } catch {
     console.error('Compatibility generation failed')
   } finally {
@@ -954,6 +956,14 @@ onMounted(async () => {
       showAddon.value = true
     }
   }, 1500)
+
+  if (sessionId && _isTraditionSwitch) {
+    // Tradition-switch return: the dedicated onMounted below handles everything.
+    // Skip normal session-based report loading to avoid clobbering store state.
+    isLoadingReport.value = false
+    showAddon.value = false
+    return
+  }
 
   if (sessionId) {
     try {
@@ -1216,6 +1226,9 @@ async function sendReportEmailManual() {
         tarotData: tarotData.value || null,
         calendarData: store.calendarData || null,
         birthChartData: store.birthChartData || null,
+        compatibilityData: store.compatibilityData || null,
+        partnerName: store.partnerName || null,
+        reportSessionId: store.reportSessionId || store.tempId || '',
         bundlePurchased: store.bundlePurchased || store.oraclePurchased,
         language: store.language,
       },
@@ -1320,9 +1333,11 @@ async function handleAddonPurchase() {
 }
 
 const isDownloading = ref(false)
+const cardDownloadError = ref('')
 
 async function downloadCard() {
   if (isDownloading.value) return
+  cardDownloadError.value = ''
   $trackShareCardOpened()
   isDownloading.value = true
 
@@ -1353,8 +1368,9 @@ async function downloadCard() {
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
     $trackShareCardDownloaded()
-  } catch {
-    console.error('Card download failed')
+  } catch (err) {
+    console.error('Card download failed', err)
+    cardDownloadError.value = 'Unable to generate image — please try again.'
   } finally {
     isDownloading.value = false
   }
@@ -1630,9 +1646,49 @@ if (_isTraditionSwitch && _traditionSwitchSessionId) {
         method: 'POST',
         body: { sessionId: _traditionSwitchSessionId },
       })
-      if (!paymentData.paid) return
+
+      if (!paymentData.paid) {
+        navigateTo('/preview')
+        return
+      }
+
       const meta = paymentData.metadata ?? {}
-      if (meta.type !== 'tradition_switch' || !meta.newTradition) return
+      if (meta.type !== 'tradition_switch' || !meta.newTradition || !meta.reportId) {
+        navigateTo('/')
+        return
+      }
+
+      // Restore store state from Stripe metadata (lost on page reload after redirect)
+      if (!store.firstName && meta.firstName)      store.firstName = meta.firstName
+      if (!store.archetype && meta.archetype)      store.setArchetype(meta.archetype)
+      if (!store.language && meta.language)        store.setLanguage(meta.language)
+      if (meta.lifePathNumber && !store.lifePathNumber) store.lifePathNumber = Number.parseInt(meta.lifePathNumber)
+
+      // Pre-load existing report from DB so the page has content while the switch runs
+      if (!store.report) {
+        try {
+          const existsData = await $fetch<{
+            exists: boolean
+            report?: { report_data: any; first_name: string; archetype: string; life_path_number: number; region?: string }
+          }>('/api/check-report-exists', {
+            method: 'POST',
+            body: { sessionId: meta.reportId },
+          })
+          if (existsData.exists && existsData.report) {
+            store.setReport(existsData.report.report_data)
+            if (!store.firstName)      store.firstName      = existsData.report.first_name
+            if (!store.archetype)      store.setArchetype(existsData.report.archetype)
+            if (!store.lifePathNumber) store.lifePathNumber = existsData.report.life_path_number
+            if (!store.region && existsData.report.region) store.setRegion(existsData.report.region, store.country)
+          }
+        } catch {
+          // Non-fatal: switch-tradition will still work without the pre-loaded report
+        }
+      }
+
+      store.setReportSessionId(meta.reportId)
+      isLoadingReport.value = false
+      showAddon.value = false
 
       const newTradition = meta.newTradition
       isSwitchingTradition.value = true
@@ -1645,7 +1701,7 @@ if (_isTraditionSwitch && _traditionSwitchSessionId) {
           method: 'POST',
           body: {
             sessionId:    _traditionSwitchSessionId,
-            reportId:     meta.reportId || store.tempId || store.reportSessionId,
+            reportId:     meta.reportId,
             newTradition,
             freeSwitch:   false,
           },
@@ -1660,11 +1716,20 @@ if (_isTraditionSwitch && _traditionSwitchSessionId) {
       setTimeout(() => { isSwitchComplete.value = false }, 4000)
     } catch {
       console.error('Tradition switch post-payment failed')
+      isLoadingReport.value = false
+      showAddon.value = false
     } finally {
       isSwitchingTradition.value = false
     }
   })
 }
+
+const _currentMonthNumber = new Date().getMonth() + 1
+const visibleCalendarMonths = computed(() => {
+  const months: any[] = store.calendarData?.months ?? []
+  const future = months.filter((m: any) => typeof m.number === 'number' ? m.number >= _currentMonthNumber : true)
+  return future.length > 0 ? future : months
+})
 
 const isDownloadingPDF = ref(false)
 
@@ -1684,6 +1749,8 @@ async function downloadReportPDF() {
         baziData: store.baziData || null,
         tarotData: store.tarotData || null,
         calendarData: store.calendarData || null,
+        compatibilityData: store.compatibilityData || null,
+        partnerName: store.partnerName || null,
         bundlePurchased: store.bundlePurchased || store.oraclePurchased,
         language: store.language,
       }),

@@ -18,6 +18,9 @@ export default defineEventHandler(async (event) => {
     tarotData,
     calendarData,
     birthChartData,
+    compatibilityData,
+    partnerName,
+    reportSessionId,
     bundlePurchased: _bundlePurchased,
     language,
   } = body
@@ -68,6 +71,9 @@ export default defineEventHandler(async (event) => {
       tarotData,
       calendarData,
       birthChartData,
+      compatibilityData: compatibilityData ?? null,
+      partnerName: partnerName ?? null,
+      reportSessionId: reportSessionId ?? '',
       language,
     })
     return { success: true, emailId }

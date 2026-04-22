@@ -59,7 +59,7 @@
 
     <!-- Month cards -->
     <div
-      v-for="month in calendarData.months"
+      v-for="month in visibleMonths"
       :key="month.month"
       class="month-card"
     >
@@ -169,6 +169,14 @@ function energyColor(level: number): string {
   if (level >= 55) return 'rgba(200, 180, 100, 0.8)'
   return 'rgba(180, 100, 100, 0.7)'
 }
+
+const currentMonthNumber = new Date().getMonth() + 1
+
+const visibleMonths = computed(() => {
+  const months: any[] = calendarData.value?.months ?? []
+  const future = months.filter((m: any) => typeof m.number === 'number' ? m.number >= currentMonthNumber : true)
+  return future.length > 0 ? future : months
+})
 
 onMounted(async () => {
   messageInterval = setInterval(() => {

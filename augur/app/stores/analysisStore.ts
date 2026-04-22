@@ -54,6 +54,7 @@ export const useAnalysisStore = defineStore('analysis', {
     timeOfBirth: '' as string,
     birthChartData: null as any,
     birthChartPurchased: false as boolean,
+    compatibilityData: null as any,
     language: 'en' as string,
     languageManualOverride: false as boolean,
   }),
@@ -135,6 +136,9 @@ export const useAnalysisStore = defineStore('analysis', {
     },
     setBirthChartPurchased(val: boolean) {
       this.birthChartPurchased = val
+    },
+    setCompatibilityData(data: any) {
+      this.compatibilityData = data
     },
     setLanguage(lang: string) {
       this.language = lang
