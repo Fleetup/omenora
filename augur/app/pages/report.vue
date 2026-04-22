@@ -1756,6 +1756,7 @@ async function downloadReportPDF() {
         compatibilityData: store.compatibilityData || null,
         partnerName: store.partnerName || null,
         bundlePurchased: store.bundlePurchased || store.oraclePurchased,
+        birthChartData: store.birthChartData || null,
         language: store.language,
       }),
     })
