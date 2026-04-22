@@ -318,6 +318,7 @@ export default defineEventHandler(async (event) => {
         reportData: null, // will load from tempId below
         supabase,
         dateOfBirth,
+        timeOfBirth,
         answers: {},
       })
     }
@@ -402,6 +403,7 @@ export default defineEventHandler(async (event) => {
       reportData,
       supabase,
       dateOfBirth,
+      timeOfBirth,
       answers: {},
     })
   }
@@ -620,9 +622,10 @@ async function sendReportEmailViaWebhook(opts: {
   reportData: any
   supabase: any
   dateOfBirth?: string
+  timeOfBirth?: string
   answers?: Record<string, string>
 }): Promise<void> {
-  const { email, firstName, sessionId, supabase } = opts
+  const { email, firstName, sessionId, supabase, timeOfBirth } = opts
 
   // Double-check email_sent flag to guard against duplicate sends
   const { data: check } = await supabase
