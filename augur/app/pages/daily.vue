@@ -325,6 +325,7 @@ onMounted(async () => {
   try {
     const res = await $fetch<{ success: boolean; date: string; data: Record<string, ArchetypeReading> | null }>('/api/get-daily-cache', { method: 'POST' })
     cacheData.value = res.data && Object.keys(res.data).length > 0 ? res.data : null
+    console.log('[daily] cacheData keys:', cacheData.value ? Object.keys(cacheData.value) : 'null')
   } catch {
     cacheData.value = null
   } finally {
