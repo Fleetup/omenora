@@ -57,6 +57,7 @@ export default defineEventHandler(async (event) => {
         bundle: 'true',
         oracle: 'true',
         language,
+        city: sanitizeString(body.city || '', 100),
         type: 'oracle',
       },
     })

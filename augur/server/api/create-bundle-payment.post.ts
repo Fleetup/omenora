@@ -56,6 +56,7 @@ export default defineEventHandler(async (event) => {
         timeOfBirth,
         bundle: 'true',
         language,
+        city: sanitizeString(body.city || '', 100),
         type: 'bundle',
       },
     })
