@@ -319,6 +319,7 @@ export default defineEventHandler(async (event) => {
         supabase,
         dateOfBirth,
         timeOfBirth,
+        city: sanitizeString(meta.city || '', 100),
         answers: {},
       })
     }
@@ -404,6 +405,7 @@ export default defineEventHandler(async (event) => {
       supabase,
       dateOfBirth,
       timeOfBirth,
+      city: sanitizeString(meta.city || '', 100),
       answers: {},
     })
   }
@@ -623,9 +625,10 @@ async function sendReportEmailViaWebhook(opts: {
   supabase: any
   dateOfBirth?: string
   timeOfBirth?: string
+  city?: string
   answers?: Record<string, string>
 }): Promise<void> {
-  const { email, firstName, sessionId, supabase, timeOfBirth } = opts
+  const { email, firstName, sessionId, supabase, timeOfBirth, city } = opts
 
   // Double-check email_sent flag to guard against duplicate sends
   const { data: check } = await supabase
@@ -703,7 +706,7 @@ async function sendReportEmailViaWebhook(opts: {
             firstName: opts.firstName,
             dateOfBirth: opts.dateOfBirth,
             timeOfBirth: timeOfBirth || '',
-            city: '',
+            city: opts.city || '',
             archetype: opts.archetype,
             lifePathNumber: opts.lifePathNumber,
             language: opts.language,
