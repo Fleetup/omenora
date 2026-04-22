@@ -659,14 +659,14 @@ onMounted(async () => {
   font-weight: 600;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--white-38);
+  color: var(--white-70);
   margin: 0 0 10px;
 }
 
 .mini-insight {
   font-size: 13px;
   line-height: 1.6;
-  color: var(--white-55);
+  color: var(--white-70);
   margin: 0;
 }
 
