@@ -31,6 +31,8 @@ export default defineEventHandler(async (event) => {
     .eq('cache_date', cacheDate)
     .eq('language', language)
 
+  console.log('[get-daily-cache] query:', { cacheDate, language, rowCount: data?.length, error: error?.message })
+
   if (error) {
     console.error('[get-daily-cache] Query failed:', error.code)
     throw createError({ statusCode: 500, message: 'Failed to load daily cache' })
