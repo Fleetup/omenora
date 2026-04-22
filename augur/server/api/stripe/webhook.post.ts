@@ -686,6 +686,39 @@ async function sendReportEmailViaWebhook(opts: {
     }
   }
 
+  let birthChartData: any = null
+  if (opts.isOraclePurchase && opts.firstName && opts.dateOfBirth) {
+    try {
+      const { data: existingReport } = await supabase
+        .from('reports')
+        .select('report_data')
+        .eq('session_id', sessionId)
+        .maybeSingle()
+      if (existingReport?.report_data?.birthChart) {
+        birthChartData = existingReport.report_data.birthChart
+      } else {
+        const birthChartResponse = await $fetch('/api/generate-birth-chart', {
+          method: 'POST',
+          body: {
+            firstName: opts.firstName,
+            dateOfBirth: opts.dateOfBirth,
+            timeOfBirth: timeOfBirth || '',
+            city: '',
+            archetype: opts.archetype,
+            lifePathNumber: opts.lifePathNumber,
+            language: opts.language,
+            region: opts.region,
+          },
+        })
+        if ((birthChartResponse as any)?.birthChart) {
+          birthChartData = (birthChartResponse as any).birthChart
+        }
+      }
+    } catch (bcErr: any) {
+      console.error('[stripe-webhook] Birth chart generation failed (non-blocking):', bcErr?.message)
+    }
+  }
+
   try {
     await sendReportEmail(resendKey, {
       email,
@@ -699,7 +732,7 @@ async function sendReportEmailViaWebhook(opts: {
       baziData: null,
       tarotData: null,
       calendarData,
-      birthChartData: null,
+      birthChartData,
       language: opts.language,
     })
 
