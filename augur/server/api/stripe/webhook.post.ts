@@ -664,12 +664,15 @@ async function sendReportEmailViaWebhook(opts: {
           language: opts.language,
         })
         if (calendarData) {
-          await supabase.from('calendars').upsert({
+          const { error: calSaveErr } = await supabase.from('calendars').upsert({
             session_id: sessionId,
             first_name: opts.firstName,
             calendar_data: calendarData,
             created_at: new Date().toISOString(),
           }, { onConflict: 'session_id' })
+          if (calSaveErr && calSaveErr.code !== '23505' && calSaveErr.code !== 'PGRST204') {
+            console.error('[stripe-webhook] Calendar save error:', calSaveErr.code)
+          }
         }
       }
     } catch (calErr: any) {
