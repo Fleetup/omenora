@@ -15,6 +15,9 @@
     ═══════════════════════════════════════════ -->
     <section class="hero" aria-label="OMENORA hero">
 
+      <!-- Daily Horoscope nav link -->
+      <NuxtLink to="/daily" class="daily-nav-link">Daily Horoscope</NuxtLink>
+
       <!-- Orbital mark -->
       <div class="orbital-wrap a1">
         <OrbitalMark />
@@ -589,6 +592,22 @@ onMounted(() => {
 /* Orbital mark */
 .orbital-wrap {
   margin-bottom: 28px;
+}
+
+/* Daily Horoscope nav link */
+.daily-nav-link {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 13px;
+  color: var(--white-55);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: color 0.2s ease;
+}
+
+.daily-nav-link:hover {
+  color: var(--white-94);
 }
 
 /* Brand name */
