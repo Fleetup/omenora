@@ -3,40 +3,7 @@ import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { createClient } from '@supabase/supabase-js'
 import { DailyInsightSchema, type DailyInsightType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
-
-// ── 30-theme rotation ─────────────────────────────────────────────────────
-const INSIGHT_THEMES = [
-  'self-trust and inner knowing',
-  'relationships and connection',
-  'career clarity and purpose',
-  'emotional processing and release',
-  'hidden strengths surfacing',
-  'timing and patience',
-  'communication and expression',
-  'fear vs intuition',
-  'energy and boundaries',
-  'creativity and play',
-  'vulnerability and courage',
-  'decision making from values',
-  'patterns from the past',
-  'identity and authenticity',
-  'rest and integration',
-  'receiving and openness',
-  'leadership and responsibility',
-  'joy and lightness',
-  'protection and discernment',
-  'transformation and change',
-  'giving and generosity',
-  'healing and self-compassion',
-  'connection to body and grounding',
-  'spiritual alignment',
-  'legacy and meaning',
-  'abundance and worthiness',
-  'solitude and reflection',
-  'trust in the process',
-  'courage and forward movement',
-  'gratitude and presence',
-]
+import { getPlanetaryTransits } from '~~/server/utils/planetaryTransits'
 
 // ── Subject line rotation ─────────────────────────────────────────────────
 function buildSubjectLines(firstName: string, archetype: string, dateLabel: string): string[] {
@@ -102,24 +69,12 @@ export default defineEventHandler(async (event) => {
     day: 'numeric',
   })
 
-  // ── Moon phase (kept from original) ───────────────────────────────────
-  const moonPhase = (() => {
-    const cycle = 29.53
-    const known = new Date('2000-01-06')
-    const diff = (today.getTime() - known.getTime()) / (1000 * 60 * 60 * 24)
-    const phase = ((diff % cycle) + cycle) % cycle
-    if (phase < 3.7) return 'New Moon'
-    if (phase < 7.4) return 'Waxing Crescent'
-    if (phase < 11.1) return 'First Quarter'
-    if (phase < 14.8) return 'Waxing Gibbous'
-    if (phase < 18.5) return 'Full Moon'
-    if (phase < 22.2) return 'Waning Gibbous'
-    if (phase < 25.9) return 'Last Quarter'
-    return 'Waning Crescent'
-  })()
+  // ── Planetary transits (real ephemeris data) ────────────────────────
+  const transits = getPlanetaryTransits(targetDate || today.toISOString().split('T')[0]!)
+  const moonPhaseName = transits.moonPhaseName
 
-  // ── Today's theme ─────────────────────────────────────────────────────
-  const todayTheme = INSIGHT_THEMES[dayOfYear % INSIGHT_THEMES.length]!
+  // ── Today's theme (derived from real planetary positions) ─────────────
+  const todayTheme = `${transits.sun.sign} season, Moon in ${transits.moon.sign}`
 
   // ── Today's subject line ──────────────────────────────────────────────
   const subjectLines = buildSubjectLines(firstName, archetype, dateString)
@@ -172,8 +127,13 @@ You are generating a daily destiny insight for ${firstName}, whose archetype is 
 
 TODAY: ${dateString} (day ${dayOfYear} of the year)
 TODAY'S THEME: ${todayTheme}
-Moon Phase: ${moonPhase}
+Moon Phase: ${moonPhaseName}
 Regional style: ${regionalStyle}
+
+TODAY'S PLANETARY POSITIONS:
+- Sun in ${transits.sun.sign} at ${transits.sun.degree}°
+- Moon in ${transits.moon.sign} at ${transits.moon.degree}° (${transits.moonPhaseName})
+- Mercury in ${transits.mercury.sign}, Venus in ${transits.venus.sign}, Mars in ${transits.mars.sign}
 
 RECENT THEMES SENT TO THIS USER — DO NOT REPEAT:
 ${recentThemes}
@@ -182,7 +142,7 @@ ${recentThemes}
 
 CONTENT REQUIREMENTS:
 
-1. This insight must feel written specifically for today, ${dateString}. Reference the specific energy of this point in the year — the season, where we are in 2026, what this time of year tends to bring for the ${archetype} archetype. Do not generate generic evergreen content that could apply to any day.
+1. Write for TODAY specifically — ${targetDate || today.toISOString().split('T')[0]}. Reference the actual day, not the month or season. This must feel different from yesterday's reading. Use the real planetary positions above to ground the insight in what is astronomically true right now.
 
 2. Address today's theme (${todayTheme}) through the specific lens of the ${archetype} archetype. How does THIS archetype experience this theme differently from others?
 
@@ -315,7 +275,7 @@ Exactly this structure:
     success: true,
     insight: {
       ...generatedInsight,
-      moonPhase,
+      moonPhase: moonPhaseName,
       dayTheme: todayTheme,
       greeting: `Good morning, ${firstName}.`,
       subject: todaySubject,

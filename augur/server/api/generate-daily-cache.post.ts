@@ -161,6 +161,17 @@ export default defineEventHandler(async (event) => {
         console.log('[daily-cache] Completed archetype:', archetype, '— generated:', generated, 'skipped:', skipped, 'failed:', failed)
       }
 
+      try {
+        await $fetch('/api/generate-daily-horoscope', {
+          method:  'POST',
+          headers: { 'x-job-secret': expectedSecret },
+          body:    { targetDate, language },
+        })
+        console.log('[daily-cache] Zodiac horoscope generation triggered')
+      } catch (zodiacErr: any) {
+        console.error('[daily-cache] Failed to trigger zodiac horoscope generation:', zodiacErr?.message)
+      }
+
       console.log(
         `[generate-daily-cache] Completed: generated=${generated} skipped=${skipped} failed=${failed} date=${targetDate} language=${language}`,
       )

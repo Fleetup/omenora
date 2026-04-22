@@ -5,6 +5,7 @@
     <div class="bg-deep"   aria-hidden="true" />
     <div class="bg-nebula" aria-hidden="true" />
 
+
     <!-- ═══════════════════════════════════════
          HEADER
     ═══════════════════════════════════════════ -->
@@ -19,13 +20,38 @@
 
 
     <!-- ═══════════════════════════════════════
-         HERO LABEL
+         HERO
     ═══════════════════════════════════════════ -->
-    <section class="hero" aria-label="Daily archetype readings">
+    <section class="hero" aria-label="Daily readings">
       <p class="hero-eyebrow">DAILY READINGS</p>
-      <h1 class="hero-title">Today's Archetype Readings</h1>
+      <h1 class="hero-title">Your Daily Horoscope &amp; Archetype Reading</h1>
       <p class="hero-date">{{ formattedDate }}<span v-if="moonPhase" class="hero-moon"> · {{ moonPhase }}</span></p>
     </section>
+
+
+    <!-- ═══════════════════════════════════════
+         TAB SWITCHER
+    ═══════════════════════════════════════════ -->
+    <div class="tab-bar" role="tablist" aria-label="Reading type">
+      <button
+        class="tab-btn"
+        :class="{ 'tab-btn--active': activeTab === 'horoscope' }"
+        role="tab"
+        :aria-selected="activeTab === 'horoscope'"
+        @click="activeTab = 'horoscope'"
+      >
+        Daily Horoscope
+      </button>
+      <button
+        class="tab-btn"
+        :class="{ 'tab-btn--active': activeTab === 'archetype' }"
+        role="tab"
+        :aria-selected="activeTab === 'archetype'"
+        @click="activeTab = 'archetype'"
+      >
+        Archetype Reading
+      </button>
+    </div>
 
 
     <!-- ═══════════════════════════════════════
@@ -39,70 +65,139 @@
         <p class="state-text">Loading today's readings…</p>
       </div>
 
-      <!-- No cache state -->
-      <div v-else-if="!loading && !cacheData" class="state-message">
-        <p class="state-text">Today's readings are being prepared. Check back shortly.</p>
-      </div>
+      <!-- ── HOROSCOPE TAB ─────────────────── -->
+      <template v-else-if="activeTab === 'horoscope'">
 
-      <!-- Content: single archetype featured -->
-      <template v-else-if="featuredArchetype && featuredReading">
+        <!-- No zodiac data -->
+        <div v-if="!zodiacData" class="state-message">
+          <p class="state-text">Today's horoscopes are being prepared. Check back shortly.</p>
+        </div>
 
-        <!-- Featured card -->
-        <section class="featured-section" aria-label="Your archetype reading">
-          <NuxtLink to="/daily" class="back-link">← All archetypes</NuxtLink>
-          <p class="sect-label">YOUR ARCHETYPE</p>
-          <article class="featured-card" :aria-label="featuredDisplayName + ' reading'">
-            <p class="featured-archetype-name">{{ featuredDisplayName }}</p>
-            <p class="featured-theme">{{ featuredReading.theme }}</p>
-            <div class="featured-divider" aria-hidden="true" />
-            <p class="featured-insight">{{ featuredReading.insight }}</p>
-            <div v-if="featuredReading.reflection" class="featured-reflection">
-              <p class="reflection-label">REFLECTION</p>
-              <p class="reflection-text">{{ featuredReading.reflection }}</p>
-            </div>
-          </article>
-        </section>
-
-        <!-- Other archetypes -->
-        <section class="others-section" aria-label="Other archetype readings">
-          <p class="sect-label">ALL ARCHETYPES</p>
-          <div class="grid-3col">
-            <article
-              v-for="slug in otherArchetypes"
-              :key="slug"
-              class="mini-card"
-              :aria-label="archetypeDisplayName(slug) + ' reading'"
-            >
-              <NuxtLink :to="`/daily?archetype=${slug}`" class="mini-card-link">
-                <p class="mini-archetype-name">{{ archetypeDisplayName(slug) }}</p>
-                <p v-if="cacheData?.[slug]" class="mini-theme">{{ cacheData?.[slug]?.theme }}</p>
-                <p v-if="cacheData?.[slug]" class="mini-insight">{{ firstSentence(cacheData?.[slug]?.insight ?? '') }}</p>
-              </NuxtLink>
+        <!-- Featured sign view -->
+        <template v-else-if="featuredSign && featuredSignReading">
+          <section class="featured-section" aria-label="Your horoscope">
+            <NuxtLink to="/daily" class="back-link">← All signs</NuxtLink>
+            <p class="sect-label">YOUR HOROSCOPE</p>
+            <article class="featured-card" :aria-label="signDisplayName(featuredSign) + ' horoscope'">
+              <p class="featured-archetype-name">{{ signDisplayName(featuredSign) }}</p>
+              <p class="featured-theme">{{ featuredSignReading.theme }}</p>
+              <p class="featured-moon-line">☽ Moon in {{ featuredSignReading.moon_sign }} · {{ featuredSignReading.moon_phase }}</p>
+              <div class="featured-divider" aria-hidden="true" />
+              <p class="featured-insight">{{ featuredSignReading.horoscope }}</p>
+              <div v-if="featuredSignReading.planetary_weather" class="featured-weather">
+                <div class="weather-divider" aria-hidden="true" />
+                <p class="weather-text">{{ featuredSignReading.planetary_weather }}</p>
+              </div>
             </article>
-          </div>
-        </section>
+          </section>
+
+          <section class="others-section" aria-label="Other sign horoscopes">
+            <p class="sect-label">ALL SIGNS</p>
+            <div class="grid-3col">
+              <article
+                v-for="sign in otherSigns"
+                :key="sign"
+                class="mini-card"
+                :aria-label="signDisplayName(sign) + ' horoscope'"
+              >
+                <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
+                  <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
+                  <p v-if="zodiacData[sign]" class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
+                  <p v-if="zodiacData[sign]" class="mini-insight">{{ firstSentence(zodiacData[sign]?.horoscope ?? '') }}</p>
+                </NuxtLink>
+              </article>
+            </div>
+          </section>
+        </template>
+
+        <!-- All 12 signs grid -->
+        <template v-else>
+          <section aria-label="All sign horoscopes">
+            <p class="sect-label">ALL SIGNS</p>
+            <div class="grid-3col">
+              <article
+                v-for="sign in ALL_SIGNS"
+                :key="sign"
+                class="mini-card"
+                :aria-label="signDisplayName(sign) + ' horoscope'"
+              >
+                <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
+                  <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
+                  <p v-if="zodiacData[sign]" class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
+                  <p v-if="zodiacData[sign]" class="mini-insight">{{ firstSentence(zodiacData[sign]?.horoscope ?? '') }}</p>
+                </NuxtLink>
+              </article>
+            </div>
+          </section>
+        </template>
 
       </template>
 
-      <!-- Content: all 12 archetypes grid -->
-      <template v-else-if="!featuredArchetype && cacheData">
-        <section aria-label="All archetype readings">
-          <p class="sect-label">ALL ARCHETYPES</p>
-          <div class="grid-3col">
-            <article
-              v-for="slug in ALL_ARCHETYPES"
-              :key="slug"
-              class="mini-card"
-              :aria-label="archetypeDisplayName(slug) + ' reading'"
-            >
-              <NuxtLink :to="`/daily?archetype=${slug}`" class="mini-card-link">
-                <p class="mini-archetype-name">{{ archetypeDisplayName(slug) }}</p>
-                <p v-if="cacheData?.[slug]" class="mini-theme">{{ cacheData?.[slug]?.theme }}</p>
-                <p v-if="cacheData?.[slug]" class="mini-insight">{{ firstSentence(cacheData?.[slug]?.insight ?? '') }}</p>
-              </NuxtLink>
+      <!-- ── ARCHETYPE TAB ─────────────────── -->
+      <template v-else-if="activeTab === 'archetype'">
+
+        <!-- No archetype data -->
+        <div v-if="!archetypeData" class="state-message">
+          <p class="state-text">Today's archetype readings are being prepared. Check back shortly.</p>
+        </div>
+
+        <!-- Featured archetype view -->
+        <template v-else-if="featuredArchetype && featuredReading">
+          <section class="featured-section" aria-label="Your archetype reading">
+            <NuxtLink to="/daily?tab=archetype" class="back-link">← All archetypes</NuxtLink>
+            <p class="sect-label">YOUR ARCHETYPE</p>
+            <article class="featured-card" :aria-label="featuredDisplayName + ' reading'">
+              <p class="featured-archetype-name">{{ featuredDisplayName }}</p>
+              <p class="featured-theme">{{ featuredReading.theme }}</p>
+              <div class="featured-divider" aria-hidden="true" />
+              <p class="featured-insight">{{ featuredReading.insight }}</p>
+              <div v-if="featuredReading.reflection" class="featured-reflection">
+                <p class="reflection-label">REFLECTION</p>
+                <p class="reflection-text">{{ featuredReading.reflection }}</p>
+              </div>
             </article>
-          </div>
-        </section>
+          </section>
+
+          <section class="others-section" aria-label="Other archetype readings">
+            <p class="sect-label">ALL ARCHETYPES</p>
+            <div class="grid-3col">
+              <article
+                v-for="slug in otherArchetypes"
+                :key="slug"
+                class="mini-card"
+                :aria-label="archetypeDisplayName(slug) + ' reading'"
+              >
+                <NuxtLink :to="`/daily?archetype=${slug}`" class="mini-card-link">
+                  <p class="mini-archetype-name">{{ archetypeDisplayName(slug) }}</p>
+                  <p v-if="archetypeData[slug]" class="mini-theme">{{ archetypeData[slug]?.theme }}</p>
+                  <p v-if="archetypeData[slug]" class="mini-insight">{{ firstSentence(archetypeData[slug]?.insight ?? '') }}</p>
+                </NuxtLink>
+              </article>
+            </div>
+          </section>
+        </template>
+
+        <!-- All 12 archetypes grid -->
+        <template v-else>
+          <section aria-label="All archetype readings">
+            <p class="sect-label">ALL ARCHETYPES</p>
+            <div class="grid-3col">
+              <article
+                v-for="slug in ALL_ARCHETYPES"
+                :key="slug"
+                class="mini-card"
+                :aria-label="archetypeDisplayName(slug) + ' reading'"
+              >
+                <NuxtLink :to="`/daily?archetype=${slug}`" class="mini-card-link">
+                  <p class="mini-archetype-name">{{ archetypeDisplayName(slug) }}</p>
+                  <p v-if="archetypeData[slug]" class="mini-theme">{{ archetypeData[slug]?.theme }}</p>
+                  <p v-if="archetypeData[slug]" class="mini-insight">{{ firstSentence(archetypeData[slug]?.insight ?? '') }}</p>
+                </NuxtLink>
+              </article>
+            </div>
+          </section>
+        </template>
+
       </template>
 
     </main>
@@ -113,7 +208,7 @@
     ═══════════════════════════════════════════ -->
     <section class="email-section" aria-label="Daily reading email signup">
       <p class="sect-label">STAY CONNECTED</p>
-      <h2 class="email-headline">Get your archetype's daily reading in your inbox</h2>
+      <h2 class="email-headline">Get your daily horoscope in your inbox every morning</h2>
 
       <form
         v-if="!emailSuccess"
@@ -158,7 +253,7 @@
     <section class="cta-section" aria-label="Personal report call to action">
       <p class="cta-eyebrow">WANT MORE THAN THE GENERAL READING?</p>
       <p class="cta-copy">
-        This is the general reading for your archetype. Get your personal report — built from your exact birth data.
+        Your horoscope is the general reading. Get a full personal report built from your exact birth date, time, and city.
       </p>
       <button class="cta-primary" @click="navigateTo('/')">
         Get My Personal Reading
@@ -190,16 +285,36 @@ import { useRoute } from 'vue-router'
 
 // ── SEO ───────────────────────────────────────
 useSeoMeta({
-  title: 'Daily Archetype Readings — OMENORA',
-  description:
-    'Daily cosmic insight for all 12 personality archetypes. ' +
-    'Discover today\'s theme, reflection, and guidance based on your OMENORA archetype.',
-  ogTitle: 'Daily Archetype Readings — OMENORA',
-  ogDescription: 'Daily insight for all 12 personality archetypes — themes, reflections, and guidance.',
+  title: 'Daily Horoscope & Archetype Readings — OMENORA',
+  description: 'Get your free daily horoscope and archetype reading. Real planetary positions. Updated every morning.',
+  ogTitle: 'Daily Horoscope & Archetype Readings — OMENORA',
+  ogDescription: 'Free daily horoscope for all 12 signs and archetype readings — real planetary data, updated every morning.',
   ogUrl: 'https://omenora.com/daily',
   twitterCard: 'summary_large_image',
   robots: 'index, follow',
 })
+
+// ── Zodiac sign map ────────────────────────────
+const SIGN_NAMES: Record<string, string> = {
+  aries:       'Aries',
+  taurus:      'Taurus',
+  gemini:      'Gemini',
+  cancer:      'Cancer',
+  leo:         'Leo',
+  virgo:       'Virgo',
+  libra:       'Libra',
+  scorpio:     'Scorpio',
+  sagittarius: 'Sagittarius',
+  capricorn:   'Capricorn',
+  aquarius:    'Aquarius',
+  pisces:      'Pisces',
+}
+
+const ALL_SIGNS = Object.keys(SIGN_NAMES)
+
+function signDisplayName(slug: string): string {
+  return SIGN_NAMES[slug] ?? slug
+}
 
 // ── Archetype map ──────────────────────────────
 const ARCHETYPE_NAMES: Record<string, string> = {
@@ -226,6 +341,21 @@ function archetypeDisplayName(slug: string): string {
 // ── Route & params ─────────────────────────────
 const route = useRoute()
 
+// ── Tab state ──────────────────────────────────
+const activeTab = ref<'horoscope' | 'archetype'>('horoscope')
+
+// ── Featured sign (horoscope tab) ─────────────
+const featuredSign = computed<string | null>(() => {
+  const param = route.query.sign
+  if (typeof param === 'string' && param in SIGN_NAMES) return param
+  return null
+})
+
+const otherSigns = computed(() =>
+  ALL_SIGNS.filter(s => s !== featuredSign.value)
+)
+
+// ── Featured archetype (archetype tab) ────────
 const featuredArchetype = computed<string | null>(() => {
   const param = route.query.archetype
   if (typeof param === 'string' && param in ARCHETYPE_NAMES) return param
@@ -271,14 +401,30 @@ interface ArchetypeReading {
   theme:      string
   insight:    string
   reflection: string
+  moon_phase: string
 }
 
-const loading  = ref(true)
-const cacheData = ref<Record<string, ArchetypeReading> | null>(null)
+interface ZodiacReading {
+  horoscope:         string
+  theme:             string
+  moon_phase:        string
+  sun_sign:          string
+  moon_sign:         string
+  planetary_weather: string
+}
+
+const loading      = ref(true)
+const archetypeData = ref<Record<string, ArchetypeReading> | null>(null)
+const zodiacData    = ref<Record<string, ZodiacReading> | null>(null)
 
 const featuredReading = computed<ArchetypeReading | null>(() => {
-  if (!featuredArchetype.value || !cacheData.value) return null
-  return cacheData.value[featuredArchetype.value] ?? null
+  if (!featuredArchetype.value || !archetypeData.value) return null
+  return archetypeData.value[featuredArchetype.value] ?? null
+})
+
+const featuredSignReading = computed<ZodiacReading | null>(() => {
+  if (!featuredSign.value || !zodiacData.value) return null
+  return zodiacData.value[featuredSign.value] ?? null
 })
 
 function firstSentence(text: string): string {
@@ -287,10 +433,10 @@ function firstSentence(text: string): string {
 }
 
 // ── Email capture ──────────────────────────────
-const emailInput     = ref('')
-const emailError     = ref('')
+const emailInput      = ref('')
+const emailError      = ref('')
 const emailSubmitting = ref(false)
-const emailSuccess   = ref(false)
+const emailSuccess    = ref(false)
 
 function validateEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -323,12 +469,27 @@ async function submitEmail() {
 // ── Fetch on mount ─────────────────────────────
 onMounted(async () => {
   moonPhase.value = computeMoonPhase(today)
+
+  const tabParam = route.query.tab
+  if (tabParam === 'archetype' || (route.query.archetype && typeof route.query.archetype === 'string')) {
+    activeTab.value = 'archetype'
+  } else if (route.query.sign && typeof route.query.sign === 'string') {
+    activeTab.value = 'horoscope'
+  }
+
   try {
-    const res = await $fetch<{ success: boolean; date: string; data: Record<string, ArchetypeReading> | null }>('/api/get-daily-cache', { method: 'POST' })
-    cacheData.value = res.data && Object.keys(res.data).length > 0 ? res.data : null
-    console.log('[daily] cacheData keys:', cacheData.value ? Object.keys(cacheData.value) : 'null')
+    const res = await $fetch<{
+      success:    boolean
+      date:       string
+      archetypes: Record<string, ArchetypeReading> | null
+      zodiac:     Record<string, ZodiacReading>    | null
+    }>('/api/get-daily-cache', { method: 'POST' })
+
+    archetypeData.value = res.archetypes && Object.keys(res.archetypes).length > 0 ? res.archetypes : null
+    zodiacData.value    = res.zodiac    && Object.keys(res.zodiac).length    > 0 ? res.zodiac    : null
   } catch {
-    cacheData.value = null
+    archetypeData.value = null
+    zodiacData.value    = null
   } finally {
     loading.value = false
   }
@@ -423,7 +584,7 @@ onMounted(async () => {
 
 
 /* ─────────────────────────────────────────────
-   HERO LABEL
+   HERO
 ───────────────────────────────────────────── */
 .hero {
   position: relative;
@@ -432,7 +593,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 64px 24px 40px;
+  padding: 64px 24px 32px;
 }
 
 .hero-eyebrow {
@@ -463,6 +624,48 @@ onMounted(async () => {
 
 .hero-moon {
   color: var(--white-38);
+}
+
+
+/* ─────────────────────────────────────────────
+   TAB BAR
+───────────────────────────────────────────── */
+.tab-bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  border-bottom: 1px solid var(--white-09);
+  margin-bottom: 40px;
+  padding: 0 24px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--sans);
+  letter-spacing: 0.04em;
+  color: var(--white-38);
+  cursor: pointer;
+  transition:
+    color        0.15s ease,
+    border-color 0.15s ease;
+  margin-bottom: -1px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-btn--active {
+  color: var(--white-94);
+  border-bottom-color: var(--gold);
+}
+
+.tab-btn:not(.tab-btn--active):hover {
+  color: var(--white-70);
 }
 
 
@@ -541,7 +744,7 @@ onMounted(async () => {
   padding: 40px 36px;
   text-align: left;
   transition:
-    background  0.18s ease,
+    background   0.18s ease,
     border-color 0.18s ease;
 }
 
@@ -565,7 +768,14 @@ onMounted(async () => {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--white-55);
+  margin: 0 0 12px;
+}
+
+.featured-moon-line {
+  font-size: 13px;
+  color: var(--white-38);
   margin: 0 0 24px;
+  letter-spacing: 0.02em;
 }
 
 .featured-divider {
@@ -609,6 +819,25 @@ onMounted(async () => {
   font-style: italic;
 }
 
+.featured-weather {
+  margin-top: 4px;
+}
+
+.weather-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(201,168,76,0.25), transparent);
+  margin-bottom: 16px;
+}
+
+.weather-text {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--white-55);
+  margin: 0;
+  font-style: italic;
+}
+
 
 /* ─────────────────────────────────────────────
    BACK LINK
@@ -619,11 +848,16 @@ onMounted(async () => {
   text-decoration: none;
   display: inline-block;
   margin-bottom: 24px;
+  transition: color 0.15s ease;
+}
+
+.back-link:hover {
+  color: var(--white-94);
 }
 
 
 /* ─────────────────────────────────────────────
-   OTHERS / ALL ARCHETYPES GRID
+   OTHERS / ALL GRID
 ───────────────────────────────────────────── */
 .others-section {
   text-align: center;
@@ -641,9 +875,9 @@ onMounted(async () => {
   border-radius: 18px;
   overflow: hidden;
   transition:
-    background  0.18s ease,
+    background   0.18s ease,
     border-color 0.18s ease,
-    transform   0.18s ease;
+    transform    0.18s ease;
 }
 
 .mini-card:hover {
@@ -672,7 +906,7 @@ onMounted(async () => {
   font-weight: 600;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--white-70);
+  color: var(--white-55);
   margin: 0 0 10px;
 }
 
@@ -766,8 +1000,8 @@ onMounted(async () => {
   cursor: pointer;
   white-space: nowrap;
   transition:
-    background  0.18s ease,
-    transform   0.12s ease;
+    background 0.18s ease,
+    transform  0.12s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -962,6 +1196,11 @@ onMounted(async () => {
 @media (max-width: 720px) {
   .hero-title {
     font-size: 28px;
+  }
+
+  .tab-btn {
+    font-size: 13px;
+    padding: 12px 16px;
   }
 
   .featured-card {

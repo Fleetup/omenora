@@ -58,5 +58,34 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  return { success: true, date: cacheDate, data: keyed }
+  const { data: zodiacData, error: zodiacError } = await supabase
+    .from('daily_zodiac_cache')
+    .select('zodiac_sign, horoscope, theme, moon_phase, sun_sign, moon_sign, planetary_weather')
+    .eq('cache_date', cacheDate)
+    .eq('language', language)
+
+  console.log('[get-daily-cache] zodiac query:', { rowCount: zodiacData?.length, error: zodiacError?.message })
+
+  const zodiacKeyed: Record<string, {
+    horoscope:         string
+    theme:             string
+    moon_phase:        string
+    sun_sign:          string
+    moon_sign:         string
+    planetary_weather: string
+  }> | null = zodiacData && zodiacData.length > 0
+    ? zodiacData.reduce((acc, row) => {
+        acc[row.zodiac_sign.toLowerCase()] = {
+          horoscope:         row.horoscope,
+          theme:             row.theme,
+          moon_phase:        row.moon_phase,
+          sun_sign:          row.sun_sign,
+          moon_sign:         row.moon_sign,
+          planetary_weather: row.planetary_weather,
+        }
+        return acc
+      }, {} as Record<string, { horoscope: string; theme: string; moon_phase: string; sun_sign: string; moon_sign: string; planetary_weather: string }>)
+    : null
+
+  return { success: true, date: cacheDate, archetypes: keyed, zodiac: zodiacKeyed }
 })
