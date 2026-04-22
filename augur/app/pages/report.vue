@@ -1584,7 +1584,7 @@ async function handleTraditionSwitch(newTradition: string) {
           method: 'POST',
           body: {
             sessionId:    '',
-            reportId:     store.tempId || store.reportSessionId,
+            reportId:     store.reportSessionId || store.tempId,
             newTradition,
             freeSwitch:   true,
           },
