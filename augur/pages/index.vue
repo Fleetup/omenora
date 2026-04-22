@@ -16,7 +16,7 @@
       <h1 class="brand-name">OMENORA</h1>
 
       <!-- Tagline -->
-      <p class="tagline">AI decoded your destiny. Science explains why.</p>
+      <p class="tagline">Most people spend their whole life wondering why they keep repeating the same patterns. Your birth chart explains it.</p>
 
       <!-- Social proof -->
       <p class="social-proof">3.9M analyses complete</p>
@@ -30,7 +30,7 @@
       </button>
 
       <!-- Sub-label -->
-      <p class="sub-label">No login required · Results in 10 seconds</p>
+      <p class="sub-label">No subscription · No account required · One payment, yours forever</p>
     </div>
   </div>
 </template>

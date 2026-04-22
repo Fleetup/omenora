@@ -9,8 +9,8 @@ export const LANGUAGES = [
 
 export const UI_STRINGS: Record<string, Record<string, string>> = {
   en: {
-    tellUs: 'Tell us about yourself',
-    takesSeconds: 'Takes about 60 seconds',
+    tellUs: 'Your reading starts here',
+    takesSeconds: 'Takes about 30 seconds',
     firstName: 'First Name',
     firstNamePlaceholder: 'Your first name',
     dateOfBirth: 'Date of Birth',
@@ -186,7 +186,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     freeLabel: 'Free',
     lifePathLabel: 'Life Path',
     generateCompatFree: 'Generate Compatibility Reading →',
-    chooseYourPath: 'Choose your path',
+    chooseYourPath: 'Choose your tradition',
     traditionWesternName: 'Stars & Archetypes',
     traditionWesternSub: 'Western astrology — maps your Sun, Moon & Rising signs to reveal your personality and destiny patterns',
     traditionVedicName: 'Karma & Nakshatra',

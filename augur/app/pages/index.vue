@@ -33,9 +33,8 @@
       <!-- Sub-headline -->
       <p class="hero-sub a4">
         Real Swiss Ephemeris calculations across
-        6&nbsp;ancient traditions —
-        Western, Vedic, BaZi, Tarot, Korean
-        &amp;&nbsp;Middle&nbsp;Eastern.
+        4&nbsp;ancient traditions —
+        Western, Vedic, BaZi &amp; Tarot.
       </p>
 
       <!-- Trust strip -->
@@ -75,6 +74,24 @@
       <p class="sect-label">WHAT'S INSIDE YOUR READING</p>
 
       <div class="cards-grid">
+
+        <article class="card"
+                 aria-label="Love and Relationship Patterns">
+          <div class="card-icon-bg">
+            <img
+              src="/symbols/Love & Relationship Patterns copy.svg"
+              alt=""
+              aria-hidden="true"
+              class="card-icon"
+            />
+          </div>
+          <p class="card-title">Love &amp; Relationships</p>
+          <p class="card-body">
+            Why you attract who you attract — and the recurring
+            patterns in your connections that your Venus
+            placement and archetype reveal.
+          </p>
+        </article>
 
         <article class="card" aria-label="Personality Archetype">
           <div class="card-icon-bg">
@@ -129,25 +146,41 @@
           </p>
         </article>
 
-        <article class="card"
-                 aria-label="Love and Relationship Patterns">
-          <div class="card-icon-bg">
-            <img
-              src="/symbols/Love & Relationship Patterns copy.svg"
-              alt=""
-              aria-hidden="true"
-              class="card-icon"
-            />
-          </div>
-          <p class="card-title">Love &amp; Relationships</p>
-          <p class="card-body">
-            What your Venus placement and archetype seek
-            in connection — and the recurring patterns that
-            create friction without you realising it.
-          </p>
-        </article>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         WHY OMENORA
+    ═══════════════════════════════════════════ -->
+    <section class="why-section"
+             aria-label="Why Omenora">
+
+      <p class="sect-label">WHY OMENORA</p>
+
+      <div class="why-row" role="list">
+
+        <div class="why-item" role="listitem">
+          <p class="why-item-title">No subscription traps</p>
+          <p class="why-item-desc">One payment. Full report. Yours to keep.</p>
+        </div>
+
+        <div class="why-sep" aria-hidden="true" />
+
+        <div class="why-item" role="listitem">
+          <p class="why-item-title">4 ancient traditions</p>
+          <p class="why-item-desc">One reading that covers all of them.</p>
+        </div>
+
+        <div class="why-sep" aria-hidden="true" />
+
+        <div class="why-item" role="listitem">
+          <p class="why-item-title">Built for every culture</p>
+          <p class="why-item-desc">Not just Western astrology.</p>
+        </div>
 
       </div>
+
     </section>
 
 
@@ -157,7 +190,7 @@
     <section class="trad-section"
              aria-label="Six ancient astrology traditions">
 
-      <p class="sect-label">6 ANCIENT TRADITIONS</p>
+      <p class="sect-label">THE TRADITION THAT SPEAKS YOUR LANGUAGE</p>
 
       <div class="trad-row" role="list">
         <div class="trad-item" role="listitem">
@@ -179,20 +212,10 @@
           <span class="trad-glyph" aria-hidden="true">☽</span>
           <span class="trad-name">Tarot</span>
         </div>
-        <div class="trad-sep" aria-hidden="true" />
-        <div class="trad-item" role="listitem">
-          <span class="trad-glyph" aria-hidden="true">한</span>
-          <span class="trad-name">Korean</span>
-        </div>
-        <div class="trad-sep" aria-hidden="true" />
-        <div class="trad-item" role="listitem">
-          <span class="trad-glyph" aria-hidden="true">هـ</span>
-          <span class="trad-name">Middle Eastern</span>
-        </div>
       </div>
 
       <p class="trad-footnote">
-        Real Swiss Ephemeris calculations — not approximations.
+        We detect your region and start with the system most trusted in your culture. Switch between any of the 4 traditions at any time.
       </p>
 
     </section>
@@ -224,7 +247,7 @@
           <p class="how-title">Choose your tradition</p>
           <p class="how-desc">
             We geo-detect a default. Change it to
-            any of the 6 traditions at any time.
+            any of the 4 traditions at any time.
           </p>
         </div>
 
@@ -234,8 +257,9 @@
           <span class="how-num" aria-hidden="true">03</span>
           <p class="how-title">Receive your reading</p>
           <p class="how-desc">
-            AI generates your full personality and
-            astrology report in about 60&nbsp;seconds.
+            Your full personality and astrology report,
+            calculated across your chosen tradition and
+            delivered in about 60&nbsp;seconds.
           </p>
         </div>
 
@@ -251,10 +275,9 @@
              aria-label="Call to action">
 
       <p class="bottom-headline">
-        Most people spend their whole life wondering
-        why they keep repeating the same patterns.
+        The answer to why your life keeps following the same path is already written.
       </p>
-      <p class="bottom-sub">Your natal chart explains it.</p>
+      <p class="bottom-sub">Your birth chart has been waiting.</p>
 
       <button
         class="cta-primary"
@@ -266,7 +289,7 @@
       </button>
 
       <p class="dim-label">
-        Free · No account · 60 seconds
+        No subscription · No account · One payment
       </p>
 
     </section>
@@ -341,12 +364,12 @@ useSeoMeta({
   title: 'OMENORA — AI Personality & Astrology Reading',
   description:
     'Discover your personality archetype through real natal chart calculations across ' +
-    '6 ancient traditions — Western, Vedic, BaZi, Tarot, Korean & Middle Eastern. ' +
+    '4 ancient traditions — Western, Vedic, BaZi & Tarot. ' +
     'AI-generated reading in 60 seconds. No account required.',
   ogTitle: 'OMENORA — AI Personality & Astrology Reading',
   ogDescription:
     'AI-generated personality and astrology readings using real natal chart calculations. ' +
-    'Western, Vedic, BaZi, Tarot, Korean and Middle Eastern traditions. Ready in 60 seconds.',
+    '4 ancient traditions — Western, Vedic, BaZi & Tarot. Ready in 60 seconds.',
   ogImage: 'https://omenora.com/og-image.png',
   ogUrl: 'https://omenora.com',
   twitterCard: 'summary_large_image',
@@ -369,7 +392,7 @@ useHead({
         '@id': 'https://omenora.com/#webapp',
         name: 'OMENORA',
         url: 'https://omenora.com',
-        description: 'AI-generated personality and astrology reading based on real natal chart calculations across 6 ancient traditions.',
+        description: 'AI-generated personality and astrology reading based on real natal chart calculations across 4 ancient traditions.',
         applicationCategory: 'LifestyleApplication',
         operatingSystem: 'Any',
         offers: [
@@ -407,7 +430,7 @@ useHead({
           'Personality archetype from Sun, Moon and Rising signs',
           'Numerology Life Path calculation',
           '2026 astrology forecast',
-          'Western, Vedic, BaZi, Tarot, Korean and Middle Eastern traditions'
+          'Western, Vedic, BaZi and Tarot traditions'
         ]
       })
     }
@@ -772,6 +795,59 @@ onMounted(() => {
 
 
 /* ─────────────────────────────────────────────
+   WHY OMENORA — STATS
+───────────────────────────────────────────── */
+.why-section {
+  position: relative;
+  z-index: 1;
+  padding: 0 20px 80px;
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.why-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.why-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 28px;
+  flex: 1;
+  max-width: 200px;
+}
+
+.why-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white-94);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.why-item-desc {
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--white-38);
+  margin: 0;
+}
+
+.why-sep {
+  width: 1px;
+  height: 32px;
+  background: var(--white-09);
+  flex-shrink: 0;
+}
+
+
+/* ─────────────────────────────────────────────
    6 TRADITIONS
 ───────────────────────────────────────────── */
 .trad-section {
@@ -895,6 +971,7 @@ onMounted(() => {
 
 
 /* Section dividers */
+.why-section,
 .trad-section,
 .how-section,
 .bottom-section {
