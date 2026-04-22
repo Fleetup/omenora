@@ -84,20 +84,14 @@ Chart Title: 4–6 word poetic title that names their essential nature as reveal
 ---
 
 STEP 2 — WRITE THE READING
-
 Write a full natal chart reading of 220–260 words directed at ${firstName} using "you".
-
-Structure it in this exact sequence — no headers, continuous prose:
-
-1. RISING MASK (2–3 sentences): Open with their Rising Sign. Describe the specific mask it shows the world and why it's both genuine and misleading.
-
-2. CORE TENSION (4–5 sentences): Name how Sun and Moon interact. Are they in friction or flow? What inner argument does ${firstName} carry every day? Be specific to these three signs together — not generic.
-
-3. DOMINANT PLANET & POWER HOUSE (3–4 sentences): Name the dominant planet and what it amplifies in this specific chart. Then activate the Power House — describe what blazes there, what ${firstName} pours everything into.
-
-4. LIFE PATH INTEGRATION (2–3 sentences): Weave in Life Path ${lifePathNumber}. Where does it align with the chart's momentum? Where does it create paradox?
-
-5. THE CRUCIBLE (2–3 sentences): Close with the central challenge this chart is designed to forge. Name what ${firstName} is learning. End with one direct imperative sentence.
+Write at B2 English level. Short sentences. No astrology jargon without explanation. Every placement must be translated into plain human behaviour — not star sign stereotypes.
+Structure in this exact sequence — no headers, continuous prose:
+1. RISING MASK (2–3 sentences): Open with their Rising Sign. Describe how ${firstName} comes across to people who first meet them — and why that first impression is both real and incomplete.
+2. CORE TENSION (4–5 sentences): Name how Sun and Moon interact. What is the daily inner conflict — what ${firstName} wants versus what ${firstName} needs. Make this feel like something they already know but have never heard named.
+3. DOMINANT PLANET & POWER HOUSE (3–4 sentences): Name the dominant planet in plain terms — what it makes ${firstName} drawn to, good at, and sometimes obsessed by. Then name the Power House as the life area where ${firstName} pours everything.
+4. LIFE PATH INTEGRATION (2–3 sentences): Weave in Life Path ${lifePathNumber} in plain terms — what pattern it creates in ${firstName}'s life choices.
+5. THE CRUCIBLE (2–3 sentences): Name the central challenge this chart is built around. End with one direct sentence telling ${firstName} exactly what they are here to do.
 
 ---
 
