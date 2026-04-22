@@ -709,6 +709,7 @@ async function handlePayment() {
         tempId: store.tempId,
         region: store.region,
         language: store.language,
+        city: store.city,
         origin: window.location.origin,
       },
     })
