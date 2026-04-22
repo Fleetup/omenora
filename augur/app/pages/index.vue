@@ -27,7 +27,7 @@
       <p class="hero-headline a3">
         Your natal chart.<br>
         Your personality archetype.<br>
-        Decoded by AI in 60&nbsp;seconds.
+        Decoded across 4 ancient traditions.
       </p>
 
       <!-- Sub-headline -->
@@ -361,19 +361,18 @@
 import { ref, onMounted } from 'vue'
 
 useSeoMeta({
-  title: 'OMENORA — AI Personality & Astrology Reading',
+  title: 'OMENORA — Personality & Astrology Reading',
   description:
     'Discover your personality archetype through real natal chart calculations across ' +
     '4 ancient traditions — Western, Vedic, BaZi & Tarot. ' +
-    'AI-generated reading in 60 seconds. No account required.',
-  ogTitle: 'OMENORA — AI Personality & Astrology Reading',
+    'Personalized astrology and numerology reading. No account required.',
+  ogTitle: 'OMENORA — Personality & Astrology Reading',
   ogDescription:
-    'AI-generated personality and astrology readings using real natal chart calculations. ' +
-    '4 ancient traditions — Western, Vedic, BaZi & Tarot. Ready in 60 seconds.',
+    'Personalized astrology readings using real natal chart calculations across 4 ancient traditions.',
   ogImage: 'https://omenora.com/og-image.png',
   ogUrl: 'https://omenora.com',
   twitterCard: 'summary_large_image',
-  twitterTitle: 'OMENORA — AI Personality & Astrology Reading',
+  twitterTitle: 'OMENORA — Personality & Astrology Reading',
   twitterDescription:
     'Personality archetype + natal chart + 2026 forecast. ' +
     'Real Swiss Ephemeris calculations. No account. 60 seconds.',
@@ -392,7 +391,7 @@ useHead({
         '@id': 'https://omenora.com/#webapp',
         name: 'OMENORA',
         url: 'https://omenora.com',
-        description: 'AI-generated personality and astrology reading based on real natal chart calculations across 4 ancient traditions.',
+        description: 'Personalized astrology and numerology reading based on real natal chart calculations across 4 ancient traditions.',
         applicationCategory: 'LifestyleApplication',
         operatingSystem: 'Any',
         offers: [

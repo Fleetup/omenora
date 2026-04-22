@@ -74,7 +74,7 @@
 
     <!-- Unlock progress meter (C-4) -->
     <div class="unlock-progress-block">
-      <p class="unlock-label">YOUR READING IS 14% UNLOCKED</p>
+      <p class="unlock-label">YOUR READING IS 14% REVEALED</p>
       <div class="unlock-bar-track">
         <div class="unlock-bar-fill"></div>
       </div>
@@ -85,7 +85,7 @@
       Built from: your birth date · your natal chart ·
       your {{ archetypeShortName }} archetype
       (Life Path {{ store.lifePathNumber }}) ·
-      {{ traditionLabel }} tradition · AI generation
+      {{ traditionLabel }} tradition
     </p>
 
     <!-- Locked sections strip -->
@@ -115,7 +115,7 @@
     <div v-if="!appliedPromo || appliedPromo.codeType !== 'full_access'" class="pricing-section">
       <div class="paywall-header">
         <p class="paywall-personal-line">{{ store.firstName }}, your {{ archetypeShortName }} reading is 85% complete.</p>
-        <p class="paywall-sub-line">The sections below reveal what the identity section could only begin to show.</p>
+        <p class="paywall-sub-line">What you just read is the surface. The sections below go into the patterns that actually run your life.</p>
       </div>
 
       <div class="tier-list">
@@ -151,7 +151,7 @@
             </div>
             <div class="tier-price-block">
               <p class="tier-price tier-price-popular">$4.99</p>
-              <p class="tier-price-note">one-time</p>
+              <p class="tier-price-note">one-time payment, no subscription</p>
             </div>
           </div>
         </div>
@@ -242,7 +242,7 @@
 
       <!-- Email input -->
       <div class="email-field-wrapper">
-        <label class="email-label" for="email-address">WHERE SHOULD WE SEND YOUR READING?</label>
+        <label class="email-label" for="email-address">Where should we send your full reading?</label>
         <input
           id="email-address"
           v-model="email"
@@ -283,7 +283,7 @@
       <!-- Full access promo: shown when full_access code applied (replaces pricing section) -->
       <div v-if="appliedPromo?.codeType === 'full_access'" class="pricing-section">
         <div class="email-field-wrapper">
-          <label class="email-label" for="email-address-promo">WHERE SHOULD WE SEND YOUR READING?</label>
+          <label class="email-label" for="email-address-promo">Where should we send your full reading?</label>
           <input
             id="email-address-promo"
             v-model="email"

@@ -148,6 +148,19 @@ export default defineEventHandler(async (event) => {
         })
         .eq('email', job.email)
 
+      // Delete unredeemed report data after final sequence step
+      if (step === 4 && capture.session_id) {
+        const { error: deleteErr } = await supabase
+          .from('reports')
+          .delete()
+          .eq('session_id', capture.session_id)
+        if (deleteErr) {
+          console.error('[process-jobs] Failed to delete report for session:', capture.session_id, deleteErr.code)
+        } else {
+          console.log('[process-jobs] Report data deleted for session', capture.session_id)
+        }
+      }
+
       // Schedule next step if applicable
       if (step < 4) {
         const nextStep  = (step + 1) as 2 | 3 | 4

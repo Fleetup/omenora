@@ -171,7 +171,7 @@ export default defineEventHandler(async (event) => {
     margin: 0,
     info: {
       Title: `OMENORA Destiny Report — ${firstName}`,
-      Author: 'OMENORA AI',
+      Author: 'OMENORA',
     },
   })
 
@@ -197,7 +197,7 @@ export default defineEventHandler(async (event) => {
   doc.font('Helvetica')
     .fontSize(9)
     .fillColor('#333355')
-    .text('OMENORA — AI DESTINY ANALYSIS', 60, y, { width: 475, align: 'center' })
+    .text('OMENORA — DESTINY READING', 60, y, { width: 475, align: 'center' })
   y += 22
 
   const archetypeName = report.archetypeName || ''
@@ -490,7 +490,7 @@ export default defineEventHandler(async (event) => {
   doc.font('Helvetica')
      .fontSize(8)
      .fillColor('#222233')
-     .text('omenora.com — AI Destiny Analysis', ML, H - 30, { width: CW, align: 'center' })
+     .text('omenora.com — Your destiny, decoded', ML, H - 30, { width: CW, align: 'center' })
 
   doc.end()
 

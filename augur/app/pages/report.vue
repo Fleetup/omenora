@@ -564,6 +564,17 @@
       <p class="cal-upsell-note">One-time purchase · Instant access</p>
     </div>
 
+    <!-- Daily insights subscription upsell -->
+    <div v-if="store.report && !store.subscriptionActive && !store.oraclePurchased" class="sub-upsell-banner">
+      <div class="sub-upsell-info">
+        <p class="sub-upsell-title">{{ t('dailyInsights') }}</p>
+        <p class="sub-upsell-desc">{{ t('personalizedArchetype') }}</p>
+      </div>
+      <button class="sub-upsell-btn" :disabled="isStartingSub" @click="startSubscription">
+        {{ isStartingSub ? 'Loading...' : t('subscribeCta') }}
+      </button>
+    </div>
+
     <!-- Compatibility upsell -->
     <div v-if="!store.bundlePurchased && !store.oraclePurchased" class="compat-section">
 
@@ -626,17 +637,6 @@
           {{ t('cancelLabel') }}
         </button>
       </div>
-    </div>
-
-    <!-- Daily insights subscription upsell -->
-    <div v-if="store.report && !store.subscriptionActive && !store.oraclePurchased" class="sub-upsell-banner">
-      <div class="sub-upsell-info">
-        <p class="sub-upsell-title">{{ t('dailyInsights') }}</p>
-        <p class="sub-upsell-desc">{{ t('personalizedArchetype') }}</p>
-      </div>
-      <button class="sub-upsell-btn" :disabled="isStartingSub" @click="startSubscription">
-        {{ isStartingSub ? 'Loading...' : t('subscribeCta') }}
-      </button>
     </div>
 
     <!-- Share card section -->

@@ -268,7 +268,7 @@ import { useLanguage } from '~/composables/useLanguage'
 
 const { $trackStep1Complete, $trackQuestionAnswered, $trackAnalysisSubmit } = useNuxtApp() as any
 
-useSeoMeta({ title: 'Your Free AI Personality & Astrology Reading', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Your Free Personality & Astrology Reading', robots: 'noindex, nofollow' })
 
 const store = useAnalysisStore()
 const { t } = useLanguage()

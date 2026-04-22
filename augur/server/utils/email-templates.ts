@@ -70,7 +70,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       },
       3: {
         subject: `${data.firstName} — your reading expires tomorrow`,
-        preview: `After that, your analysis is deleted.`,
+        preview: `After that, your reading will no longer be accessible.`,
         html: buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
@@ -79,8 +79,8 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
           body: `
             <p>${data.firstName}.</p>
             <p>Your <strong>${data.archetypeName}</strong> reading expires in 23 hours.</p>
-            <p>After that, the reading we generated — using your birth data, your birth location, and your answers — gets deleted. We don’t store unredeemed readings.</p>
-            <p>The <strong>${data.archetypeName}</strong> is one of the rarest archetypes we generate. Most people who receive it don't fully understand what it means until they read the locked sections. The teaser you saw is the preview. What's inside is the complete picture.</p>
+            <p>After that, your reading will no longer be accessible.</p>
+            <p>Most people who see the <strong>${data.archetypeName}</strong> teaser think they understand what it means. The locked sections are where the real picture forms — the behavioral patterns, the relationship wiring, the 2026 windows specific to your chart.</p>
             <p>If you've been wondering whether it's worth it — the answer is yes, and $4.99 is the reason you don't need to think about it.</p>
           `,
           ctaText: `Unlock now — $4.99 — expires in 23 hours`,
