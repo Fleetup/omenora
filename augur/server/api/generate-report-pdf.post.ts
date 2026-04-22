@@ -390,7 +390,20 @@ export default defineEventHandler(async (event) => {
     y += 24
   }
 
+  const currentMonthNumber = new Date().getMonth() + 1
+
   if (calendarData && bundlePurchased) {
+    const allMonths: any[] = calendarData.months || []
+    const months: any[] = (() => {
+      const future = allMonths.filter((m: any) =>
+        typeof m.number === 'number' ? m.number >= currentMonthNumber : true
+      )
+      return future.length > 0 ? future : allMonths
+    })()
+
+    if (months.length === 0) {
+      // Nothing to render — skip adding a calendar page entirely
+    } else {
     doc.addPage({ size: 'A4', margin: 0 })
     doc.rect(0, 0, W, H).fill('#070510')
     let cy = 60
@@ -408,7 +421,6 @@ export default defineEventHandler(async (event) => {
     doc.moveTo(ML, cy).lineTo(ML + CW, cy).strokeColor('#1a1a2e').lineWidth(0.5).stroke()
     cy += 16
 
-    const months: any[] = calendarData.months || []
     for (const m of months) {
       if (cy > H - 120) {
         doc.addPage({ size: 'A4', margin: 0 })
@@ -436,6 +448,7 @@ export default defineEventHandler(async (event) => {
       doc.moveTo(ML, cy).lineTo(ML + CW, cy).strokeColor('#151520').lineWidth(0.3).stroke()
       cy += 12
     }
+    } // end months.length > 0
   }
 
   if (compatibilityData && compatibilityData.compatibilityScore !== undefined) {
@@ -487,10 +500,11 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  const footerY = Math.min((doc as any).y + 20, H - 20)
   doc.font('Helvetica')
      .fontSize(8)
      .fillColor('#222233')
-     .text('omenora.com — Your destiny, decoded', ML, H - 30, { width: CW, align: 'center' })
+     .text('omenora.com — Your destiny, decoded', ML, footerY, { width: CW, align: 'center' })
 
   doc.end()
 

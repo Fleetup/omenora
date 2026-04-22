@@ -366,34 +366,42 @@ export default defineEventHandler(async (event) => {
   ctx.stroke()
 
   // --- POWER TRAITS ---
-  const traits: string[] = powerTraits || ['Analytical', 'Driven', 'Strategic']
-  const traitY = 870
+  const rawTraits: string[] = powerTraits || ['Analytical', 'Driven', 'Strategic']
 
-  ctx.font = '400 28px Inter'
-  const traitPadding = 32
-  const traitGap = 24
-  const traitWidths = traits.map((t: string) => ctx.measureText(t).width + traitPadding * 2)
-  const totalTraitWidth = traitWidths.reduce((a: number, b: number) => a + b, 0)
-    + traitGap * (traits.length - 1)
+  const TRAIT_FONT_SIZE = 26
+  const TRAIT_PADDING = 28
+  const TRAIT_GAP = 18
+  const TRAIT_H = 52
+  const TRAIT_R = 26
+  const MAX_PILL_WIDTH = 460
+  const CANVAS_INNER = width - 120
 
-  let traitX = (width - totalTraitWidth) / 2
+  ctx.font = `400 ${TRAIT_FONT_SIZE}px Inter`
 
-  traits.forEach((trait: string, i: number) => {
-    const tw = traitWidths[i] ?? 0
-    const th = 56
-    const ty = traitY - th / 2
-    const r = 28
+  const MAX_TRAIT_CHARS = 42
+  const displayTraits = rawTraits.map((t: string) =>
+    t.length > MAX_TRAIT_CHARS ? t.slice(0, MAX_TRAIT_CHARS - 1).trimEnd() + '…' : t
+  )
 
+  const pillWidths = displayTraits.map((t: string) =>
+    Math.min(ctx.measureText(t).width + TRAIT_PADDING * 2, MAX_PILL_WIDTH)
+  )
+
+  const totalSingleRow = pillWidths.reduce((a: number, b: number) => a + b, 0)
+    + TRAIT_GAP * (displayTraits.length - 1)
+
+  function drawTraitPill(label: string, pillW: number, px: number, py: number) {
+    const ty = py - TRAIT_H / 2
     ctx.beginPath()
-    ctx.moveTo(traitX + r, ty)
-    ctx.lineTo(traitX + tw - r, ty)
-    ctx.quadraticCurveTo(traitX + tw, ty, traitX + tw, ty + r)
-    ctx.lineTo(traitX + tw, ty + th - r)
-    ctx.quadraticCurveTo(traitX + tw, ty + th, traitX + tw - r, ty + th)
-    ctx.lineTo(traitX + r, ty + th)
-    ctx.quadraticCurveTo(traitX, ty + th, traitX, ty + th - r)
-    ctx.lineTo(traitX, ty + r)
-    ctx.quadraticCurveTo(traitX, ty, traitX + r, ty)
+    ctx.moveTo(px + TRAIT_R, ty)
+    ctx.lineTo(px + pillW - TRAIT_R, ty)
+    ctx.quadraticCurveTo(px + pillW, ty, px + pillW, ty + TRAIT_R)
+    ctx.lineTo(px + pillW, ty + TRAIT_H - TRAIT_R)
+    ctx.quadraticCurveTo(px + pillW, ty + TRAIT_H, px + pillW - TRAIT_R, ty + TRAIT_H)
+    ctx.lineTo(px + TRAIT_R, ty + TRAIT_H)
+    ctx.quadraticCurveTo(px, ty + TRAIT_H, px, ty + TRAIT_H - TRAIT_R)
+    ctx.lineTo(px, ty + TRAIT_R)
+    ctx.quadraticCurveTo(px, ty, px + TRAIT_R, ty)
     ctx.closePath()
     ctx.fillStyle = 'rgba(140, 110, 255, 0.08)'
     ctx.fill()
@@ -401,13 +409,39 @@ export default defineEventHandler(async (event) => {
     ctx.lineWidth = 1
     ctx.stroke()
 
-    ctx.font = '400 28px Inter'
+    ctx.font = `400 ${TRAIT_FONT_SIZE}px Inter`
     ctx.fillStyle = 'rgba(200, 180, 255, 0.75)'
-    ctx.textAlign = 'left'
-    ctx.fillText(trait, traitX + traitPadding, traitY + 10)
+    ctx.textAlign = 'center'
+    ctx.fillText(label, px + pillW / 2, py + 9)
+  }
 
-    traitX += tw + traitGap
-  })
+  if (totalSingleRow <= CANVAS_INNER) {
+    // Single row — fits fine
+    const traitY = 870
+    let traitX = (width - totalSingleRow) / 2
+    displayTraits.forEach((trait: string, i: number) => {
+      const tw = pillWidths[i] ?? 0
+      drawTraitPill(trait, tw, traitX, traitY)
+      traitX += tw + TRAIT_GAP
+    })
+  } else {
+    // Two-row layout: first trait on row 1, remaining on row 2
+    const ROW1_Y = 840
+    const ROW2_Y = 910
+    const firstW = pillWidths[0] ?? 0
+    drawTraitPill(displayTraits[0] ?? '', firstW, (width - firstW) / 2, ROW1_Y)
+
+    const row2Traits = displayTraits.slice(1)
+    const row2Widths = pillWidths.slice(1)
+    const totalRow2 = row2Widths.reduce((a: number, b: number) => a + b, 0)
+      + TRAIT_GAP * (row2Traits.length - 1)
+    let rx = Math.max(60, (width - Math.min(totalRow2, CANVAS_INNER)) / 2)
+    row2Traits.forEach((trait: string, i: number) => {
+      const tw = row2Widths[i] ?? 0
+      drawTraitPill(trait, tw, rx, ROW2_Y)
+      rx += tw + TRAIT_GAP
+    })
+  }
 
   // --- AFFIRMATION SECTION ---
   const affirmY = 1050

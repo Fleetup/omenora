@@ -362,6 +362,33 @@ export async function sendReportEmail(
     </div>
   ` : ''
 
+  const calendarHtml: string = (() => {
+    if (!calendarData) return ''
+    const _currentMonth = new Date().getMonth() + 1
+    const _allMonths: any[] = calendarData.months || []
+    const _futureMonths = _allMonths.filter((m: any) =>
+      typeof m.number === 'number' ? m.number >= _currentMonth : true
+    )
+    const _emailMonths = _futureMonths.length > 0 ? _futureMonths : _allMonths
+    const monthsHtml = _emailMonths.map((m: any) => {
+      const warningHtml = m.warning
+        ? `<p style="font-size: 11px; color: rgba(255,120,80,0.5); margin: 4px 0 0;">&#x26A0; ${he(m.warning)}</p>`
+        : ''
+      return `<div style="margin-bottom: 14px; padding: 12px 14px; background: rgba(255,255,255,0.02); border-left: 3px solid ${he(m.color || '#8c6eff')}; border-radius: 0 6px 6px 0;">` +
+        `<p style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.7); margin: 0 0 4px;">${he(m.month)} &#x2014; ${he(m.theme)}</p>` +
+        `<p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 2px;">&#x2665; ${he(m.love)}</p>` +
+        `<p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 2px;">$ ${he(m.money)}</p>` +
+        `<p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0;">&#x26A1; ${he(m.career)}</p>` +
+        warningHtml +
+        `</div>`
+    }).join('')
+    return `<div style="margin: 40px 0; padding: 24px; background: rgba(201,168,76,0.04); border: 1px solid rgba(201,168,76,0.12); border-radius: 12px;">` +
+      `<p style="font-size: 10px; font-weight: 500; color: #c9a84c; text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 6px;">&#x1F4C5; Your 2026 Destiny Calendar</p>` +
+      `<p style="font-size: 14px; color: rgba(255,255,255,0.7); margin: 0 0 20px; line-height: 1.6;">${he(calendarData.overallTheme || '')}</p>` +
+      monthsHtml +
+      `</div>`
+  })()
+
   const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -401,29 +428,7 @@ export async function sendReportEmail(
     ${sectionsHtml}
     ${regionalHtml}
     ${birthChartHtml}
-    ${calendarData ? `
-    <div style="margin: 40px 0; padding: 24px;
-      background: rgba(201,168,76,0.04);
-      border: 1px solid rgba(201,168,76,0.12);
-      border-radius: 12px;">
-      <p style="font-size: 10px; font-weight: 500;
-        color: #c9a84c; text-transform: uppercase;
-        letter-spacing: 0.12em; margin: 0 0 6px;">&#x1F4C5; Your 2026 Destiny Calendar</p>
-      <p style="font-size: 14px; color: rgba(255,255,255,0.7);
-        margin: 0 0 20px; line-height: 1.6;">${calendarData.overallTheme || ''}</p>
-      ${(calendarData.months || []).map((m: any) => `
-        <div style="margin-bottom: 14px; padding: 12px 14px;
-          background: rgba(255,255,255,0.02);
-          border-left: 3px solid ${m.color || '#8c6eff'};
-          border-radius: 0 6px 6px 0;">
-          <p style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.7); margin: 0 0 4px;">${m.month} &#x2014; ${m.theme}</p>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 2px;">&#x2665; ${m.love}</p>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 2px;">$ ${m.money}</p>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 0;">&#x26A1; ${m.career}</p>
-          ${m.warning ? `<p style="font-size: 11px; color: rgba(255,120,80,0.5); margin: 4px 0 0;">&#x26A0; ${m.warning}</p>` : ''}
-        </div>
-      `).join('')}
-    </div>` : ''}
+    ${calendarHtml}
     ${compatibilityData && compatibilityData.compatibilityScore !== undefined ? `
     <div style="margin: 40px 0; padding: 24px;
       background: rgba(140,110,255,0.04);
