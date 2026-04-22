@@ -29,11 +29,13 @@ type ZodiacSign = typeof ZODIAC_SIGNS[number]
 const horoscopeJsonSchema = {
   type: 'object' as const,
   properties: {
-    horoscope:         { type: 'string' as const },
-    theme:             { type: 'string' as const },
-    planetary_weather: { type: 'string' as const },
+    love:              { type: 'string' as const, description: '2 sentences max about love and relationships' },
+    job:               { type: 'string' as const, description: '2 sentences max about work and career' },
+    health:            { type: 'string' as const, description: '2 sentences max about health and energy' },
+    theme:             { type: 'string' as const, description: '3-5 simple words describing today for this sign' },
+    planetary_weather: { type: 'string' as const, description: 'One simple sentence about today\'s cosmic energy' },
   },
-  required: ['horoscope', 'theme', 'planetary_weather'],
+  required: ['love', 'job', 'health', 'theme', 'planetary_weather'],
 }
 
 export default defineEventHandler(async (event) => {
@@ -108,34 +110,29 @@ export default defineEventHandler(async (event) => {
         }
 
         // ── Build Claude prompt ───────────────────────────────────────────────
-        const userPrompt = `Today is ${dateLabel}.
+        const userPrompt = `Write a daily horoscope for ${zodiacSign} for today ${targetDate}.
+Use these real planetary positions: Sun in ${transits.sun.sign} at ${transits.sun.degree} degrees, Moon in ${transits.moon.sign} (${transits.moonPhaseName}), Mercury in ${transits.mercury.sign}, Venus in ${transits.venus.sign}, Mars in ${transits.mars.sign}, Jupiter in ${transits.jupiter.sign}, Saturn in ${transits.saturn.sign}.
 
-Write a daily horoscope for ${zodiacSign}.
+Write exactly 3 sections. Each section is 2 short sentences maximum. Use simple, clear words.
 
-Today's planetary positions:
-- Sun is in ${transits.sun.sign} at ${transits.sun.degree} degrees
-- Moon is in ${transits.moon.sign} at ${transits.moon.degree} degrees (${transits.moonPhaseName})
-- Mercury is in ${transits.mercury.sign}, Venus is in ${transits.venus.sign}, Mars is in ${transits.mars.sign}
-- Jupiter is in ${transits.jupiter.sign}, Saturn is in ${transits.saturn.sign}
+LOVE: How do the planets affect relationships and feelings today?
+JOB: What does today mean for work, focus, and decisions?
+HEALTH: What should this person pay attention to for their body and energy today?
 
-Write a 3-4 sentence daily horoscope for ${zodiacSign} for today, ${dateLabel}. Focus on what today's planetary positions mean specifically for this sign. Include one practical guidance or reflection. End with one sentence about the moon's influence today.
-
-Also provide:
-- theme: 3-5 words capturing today's energy for ${zodiacSign}
-- planetary_weather: one sentence describing the overall cosmic weather today (same for all signs)
+Keep each section short and practical. Do not use complicated astrology words.
 
 RESPOND WITH VALID JSON ONLY. No preamble. No markdown. No explanation.`
 
         // ── Call Claude ───────────────────────────────────────────────────────
-        type HoroscopeOutput = { horoscope: string; theme: string; planetary_weather: string }
+        type HoroscopeOutput = { love: string; job: string; health: string; theme: string; planetary_weather: string }
         let parsed: HoroscopeOutput | null = null
 
         try {
           const message = await withAiRetry(`generate-daily-horoscope:${zodiacSign}`, () =>
             client.messages.parse({
               model:      'claude-sonnet-4-6',
-              max_tokens: 1500,
-              system:     'You are a professional astrologer writing daily horoscopes. Write in a warm, insightful, and grounded tone. Be specific to today\'s planetary positions. Never be vague or generic. Each horoscope must feel written specifically for today, not any other day.',
+              max_tokens: 800,
+              system:     'You are an astrologer writing short, clear daily horoscopes. Write in simple English that anyone can understand, including people who are not native English speakers. Use short sentences. Avoid complicated words. Be warm, direct, and practical.',
               messages:   [{ role: 'user', content: userPrompt }],
               output_config: { format: jsonSchemaOutputFormat(horoscopeJsonSchema) },
             })
@@ -172,7 +169,10 @@ RESPOND WITH VALID JSON ONLY. No preamble. No markdown. No explanation.`
               zodiac_sign:       zodiacSign,
               cache_date:        targetDate,
               language,
-              horoscope:         parsed.horoscope,
+              horoscope:         '',
+              love:              parsed.love,
+              job:               parsed.job,
+              health:            parsed.health,
               theme:             parsed.theme,
               moon_phase:        transits.moonPhaseName,
               sun_sign:          transits.sun.sign,
