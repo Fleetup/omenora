@@ -719,6 +719,24 @@ async function sendReportEmailViaWebhook(opts: {
     }
   }
 
+  let vedicData: any = null
+  let baziData: any = null
+  let tarotData: any = null
+  if (opts.isOraclePurchase && opts.firstName && opts.dateOfBirth) {
+    try {
+      const { data: existingReport } = await supabase
+        .from('reports')
+        .select('report_data_vedic, report_data_bazi, report_data_latam')
+        .eq('session_id', sessionId)
+        .maybeSingle()
+      if (existingReport?.report_data_vedic) vedicData = existingReport.report_data_vedic
+      if (existingReport?.report_data_bazi) baziData = existingReport.report_data_bazi
+      if (existingReport?.report_data_latam) tarotData = existingReport.report_data_latam
+    } catch (tradErr: any) {
+      console.error('[stripe-webhook] Tradition data fetch failed (non-blocking):', tradErr?.message)
+    }
+  }
+
   try {
     await sendReportEmail(resendKey, {
       email,
@@ -728,9 +746,9 @@ async function sendReportEmailViaWebhook(opts: {
       lifePathNumber: opts.lifePathNumber,
       element: reportToSend.element,
       region: opts.region,
-      vedicData: null,
-      baziData: null,
-      tarotData: null,
+      vedicData,
+      baziData,
+      tarotData,
       calendarData,
       birthChartData,
       language: opts.language,
