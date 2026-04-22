@@ -135,6 +135,11 @@ export default defineEventHandler(async (event) => {
   // Never rate-limit the Stripe webhook (Stripe retries have their own logic)
   if (path === '/api/stripe/webhook') return
 
+  // Never rate-limit internal worker calls authenticated by x-job-secret
+  const jobSecret      = getHeader(event, 'x-job-secret') ?? ''
+  const expectedJobSecret = (useRuntimeConfig().emailJobSecret as string | undefined) ?? ''
+  if (jobSecret && expectedJobSecret && jobSecret === expectedJobSecret) return
+
   const ip       = extractIp(event)
   const rule     = matchRule(path)
   const category = path.split('/').slice(0, 3).join('/')
