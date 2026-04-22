@@ -323,7 +323,7 @@ async function submitEmail() {
 onMounted(async () => {
   moonPhase.value = computeMoonPhase(today)
   try {
-    const data = await $fetch<Record<string, ArchetypeReading>>('/api/get-daily-cache')
+    const data = await $fetch<Record<string, ArchetypeReading>>('/api/get-daily-cache', { method: 'POST' })
     cacheData.value = data && Object.keys(data).length > 0 ? data : null
   } catch {
     cacheData.value = null
