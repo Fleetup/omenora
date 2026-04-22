@@ -145,6 +145,10 @@
           <p class="birth-chart-sign-label">{{ t('planetLabel') }}</p>
           <p class="birth-chart-sign-value">{{ store.birthChartData.dominantPlanet }}</p>
         </div>
+        <div class="birth-chart-sign-cell">
+          <p class="birth-chart-sign-label">POWER HOUSE — your strongest life area</p>
+          <p class="birth-chart-sign-value">{{ store.birthChartData.powerHouse }}</p>
+        </div>
       </div>
       <p class="birth-chart-reading">{{ store.birthChartData.reading }}</p>
       <div class="birth-chart-forecast-box">
