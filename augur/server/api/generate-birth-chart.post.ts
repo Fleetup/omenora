@@ -141,7 +141,7 @@ Return ONLY valid JSON with no markdown fences:
 
   const message = await withAiRetry('generate-birth-chart', () =>
     client.messages.parse({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1800,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],

@@ -557,7 +557,7 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
 
   const message = await withAiRetry('stripe-webhook:generateReport', () =>
     client.messages.parse({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }],
       output_config: { format: jsonSchemaOutputFormat(reportJsonSchema) },
@@ -816,7 +816,7 @@ Normal months 55-75. Make it feel like a real forecast.`
 
   const message = await withAiRetry('stripe-webhook:generateCalendar', () =>
     client.messages.parse({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-6',
       max_tokens: 3000,
       messages: [{ role: 'user', content: prompt }],
       output_config: { format: jsonSchemaOutputFormat(calendarJsonSchema) },

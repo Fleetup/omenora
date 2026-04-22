@@ -254,7 +254,7 @@ Exactly this structure:
 
   const message = await withAiRetry('generate-daily-insight', () =>
     client.messages.parse({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-6',
       max_tokens: 700,
       messages: [{ role: 'user', content: insightPrompt }],
       output_config: { format: jsonSchemaOutputFormat(dailyInsightJsonSchema) },

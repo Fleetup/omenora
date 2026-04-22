@@ -127,7 +127,7 @@ Return ONLY valid JSON, no markdown:
 
   const message = await withAiRetry('generate-compatibility', () =>
     client.messages.parse({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1000,
       messages: [{ role: 'user', content: prompt }],
       output_config: { format: jsonSchemaOutputFormat(compatibilityJsonSchema) },

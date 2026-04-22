@@ -88,7 +88,7 @@ Return ONLY valid JSON:
 
   const message = await withAiRetry('generate-vedic-section', () =>
     client.messages.parse({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-6',
       max_tokens: 800,
       messages: [{ role: 'user', content: prompt }],
       output_config: { format: jsonSchemaOutputFormat(vedicJsonSchema) },
