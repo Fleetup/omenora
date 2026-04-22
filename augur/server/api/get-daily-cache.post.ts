@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: zodiacData, error: zodiacError } = await supabase
     .from('daily_zodiac_cache')
-    .select('zodiac_sign, horoscope, theme, moon_phase, sun_sign, moon_sign, planetary_weather')
+    .select('zodiac_sign, horoscope, love, job, health, theme, moon_phase, sun_sign, moon_sign, planetary_weather')
     .eq('cache_date', cacheDate)
     .eq('language', language)
 
@@ -68,6 +68,9 @@ export default defineEventHandler(async (event) => {
 
   const zodiacKeyed: Record<string, {
     horoscope:         string
+    love:              string
+    job:               string
+    health:            string
     theme:             string
     moon_phase:        string
     sun_sign:          string
@@ -77,6 +80,9 @@ export default defineEventHandler(async (event) => {
     ? zodiacData.reduce((acc, row) => {
         acc[row.zodiac_sign.toLowerCase()] = {
           horoscope:         row.horoscope,
+          love:              row.love,
+          job:               row.job,
+          health:            row.health,
           theme:             row.theme,
           moon_phase:        row.moon_phase,
           sun_sign:          row.sun_sign,
@@ -84,7 +90,7 @@ export default defineEventHandler(async (event) => {
           planetary_weather: row.planetary_weather,
         }
         return acc
-      }, {} as Record<string, { horoscope: string; theme: string; moon_phase: string; sun_sign: string; moon_sign: string; planetary_weather: string }>)
+      }, {} as Record<string, { horoscope: string; love: string; job: string; health: string; theme: string; moon_phase: string; sun_sign: string; moon_sign: string; planetary_weather: string }>)
     : null
 
   return { success: true, date: cacheDate, archetypes: keyed, zodiac: zodiacKeyed }

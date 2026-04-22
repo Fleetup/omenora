@@ -80,10 +80,27 @@
             <p class="sect-label">YOUR HOROSCOPE</p>
             <article class="featured-card" :aria-label="signDisplayName(featuredSign) + ' horoscope'">
               <p class="featured-archetype-name">{{ signDisplayName(featuredSign) }}</p>
+              <p class="card-date">{{ cardDate }}</p>
               <p class="featured-theme">{{ featuredSignReading.theme }}</p>
               <p class="featured-moon-line">☽ Moon in {{ featuredSignReading.moon_sign }} · {{ featuredSignReading.moon_phase }}</p>
               <div class="featured-divider" aria-hidden="true" />
-              <p class="featured-insight">{{ featuredSignReading.horoscope }}</p>
+              <div class="sign-sections">
+                <div class="sign-section-row">
+                  <span class="section-icon" aria-hidden="true">♥</span>
+                  <span class="section-label">LOVE</span>
+                  <span class="section-text">{{ featuredSignReading.love }}</span>
+                </div>
+                <div class="sign-section-row">
+                  <span class="section-icon" aria-hidden="true">✦</span>
+                  <span class="section-label">WORK</span>
+                  <span class="section-text">{{ featuredSignReading.job }}</span>
+                </div>
+                <div class="sign-section-row">
+                  <span class="section-icon" aria-hidden="true">✿</span>
+                  <span class="section-label">HEALTH</span>
+                  <span class="section-text">{{ featuredSignReading.health }}</span>
+                </div>
+              </div>
               <div v-if="featuredSignReading.planetary_weather" class="featured-weather">
                 <div class="weather-divider" aria-hidden="true" />
                 <p class="weather-text">{{ featuredSignReading.planetary_weather }}</p>
@@ -105,8 +122,25 @@
                 >
                   <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
                     <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
+                    <p class="card-date">{{ cardDate }}</p>
                     <p class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
-                    <p class="mini-insight">{{ firstSentence(zodiacData[sign]?.horoscope ?? '') }}</p>
+                    <div class="sign-sections sign-sections--mini">
+                      <div class="sign-section-row">
+                        <span class="section-icon" aria-hidden="true">♥</span>
+                        <span class="section-label">LOVE</span>
+                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.love ?? '') }}</span>
+                      </div>
+                      <div class="sign-section-row">
+                        <span class="section-icon" aria-hidden="true">✦</span>
+                        <span class="section-label">WORK</span>
+                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.job ?? '') }}</span>
+                      </div>
+                      <div class="sign-section-row">
+                        <span class="section-icon" aria-hidden="true">✿</span>
+                        <span class="section-label">HEALTH</span>
+                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.health ?? '') }}</span>
+                      </div>
+                    </div>
                   </NuxtLink>
                 </article>
               </template>
@@ -130,8 +164,25 @@
                 >
                   <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
                     <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
+                    <p class="card-date">{{ cardDate }}</p>
                     <p class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
-                    <p class="mini-insight">{{ firstSentence(zodiacData[sign]?.horoscope ?? '') }}</p>
+                    <div class="sign-sections sign-sections--mini">
+                      <div class="sign-section-row">
+                        <span class="section-icon" aria-hidden="true">♥</span>
+                        <span class="section-label">LOVE</span>
+                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.love ?? '') }}</span>
+                      </div>
+                      <div class="sign-section-row">
+                        <span class="section-icon" aria-hidden="true">✦</span>
+                        <span class="section-label">WORK</span>
+                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.job ?? '') }}</span>
+                      </div>
+                      <div class="sign-section-row">
+                        <span class="section-icon" aria-hidden="true">✿</span>
+                        <span class="section-label">HEALTH</span>
+                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.health ?? '') }}</span>
+                      </div>
+                    </div>
                   </NuxtLink>
                 </article>
               </template>
@@ -385,6 +436,8 @@ const formattedDate = computed(() =>
   today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 )
 
+const cardDate = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+
 const moonPhase = ref<string | null>(null)
 
 function computeMoonPhase(date: Date): string {
@@ -414,6 +467,9 @@ interface ArchetypeReading {
 
 interface ZodiacReading {
   horoscope:         string
+  love:              string
+  job:               string
+  health:            string
   theme:             string
   moon_phase:        string
   sun_sign:          string
@@ -923,6 +979,71 @@ onMounted(async () => {
   line-height: 1.6;
   color: var(--white-70);
   margin: 0;
+}
+
+
+/* ─────────────────────────────────────────────
+   CARD DATE
+───────────────────────────────────────────── */
+.card-date {
+  font-size: 11px;
+  color: var(--white-38);
+  margin: 0 0 8px;
+  letter-spacing: 0.02em;
+}
+
+
+/* ─────────────────────────────────────────────
+   SIGN SECTIONS (love / work / health)
+───────────────────────────────────────────── */
+.sign-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 4px;
+}
+
+.sign-sections--mini {
+  margin-top: 10px;
+}
+
+.sign-section-row {
+  display: grid;
+  grid-template-columns: 14px 44px 1fr;
+  align-items: baseline;
+  gap: 6px;
+  padding: 10px 0;
+  border-top: 1px solid var(--white-09);
+}
+
+.sign-section-row:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.sign-sections--mini .sign-section-row {
+  padding: 8px 0;
+}
+
+.section-icon {
+  font-size: 11px;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--white-38);
+  line-height: 1.4;
+}
+
+.section-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--white-70);
 }
 
 
