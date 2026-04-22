@@ -151,7 +151,7 @@ export default defineEventHandler(async (event) => {
   const lifePathNumber = Number(body.lifePathNumber)
   const region         = isValidRegion(body.region) ? body.region : 'western'
   const report         = body.report && typeof body.report === 'object' ? body.report : null
-  const { vedicData, baziData, tarotData, calendarData, compatibilityData, partnerName, bundlePurchased } = body
+  const { vedicData, baziData, tarotData, calendarData, compatibilityData, partnerName, bundlePurchased, birthChartData } = body
 
   assertInput(!!firstName, 'firstName is required')
   assertInput(report !== null, 'report is required')
@@ -388,6 +388,40 @@ export default defineEventHandler(async (event) => {
     doc.font('Helvetica').fontSize(10).fillColor('#604060')
        .text(`${L['protectiveCharm'] || 'Protective charm:'} ${tarotData.luckyCharm || ''}`, ML, y)
     y += 24
+  }
+
+  if (birthChartData) {
+    if (y > H - 250) {
+      doc.addPage({ size: 'A4', margin: 0 })
+      doc.rect(0, 0, W, H).fill('#070510')
+      y = 60
+    }
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#c9a84c')
+       .text('YOUR NATAL CHART', ML, y, { width: CW, align: 'center' })
+    y += 14
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#ffffff')
+       .text(birthChartData.chartTitle || 'Your Birth Chart', ML, y, { width: CW, align: 'center' })
+    y += 20
+    const placements = [
+      `Rising: ${birthChartData.risingSign || ''}`,
+      `Sun: ${birthChartData.sunSign || ''}`,
+      `Moon: ${birthChartData.moonSign || ''}`,
+      `Dominant Planet: ${birthChartData.dominantPlanet || ''}`,
+      `Power House: ${birthChartData.powerHouse || ''}`,
+    ].join('   ·   ')
+    doc.font('Helvetica').fontSize(9).fillColor('#c9a84c')
+       .text(placements, ML, y, { width: CW, align: 'center' })
+    y += 18
+    doc.font('Helvetica').fontSize(11).fillColor('#8888a0')
+    const bcReadingH = doc.heightOfString(birthChartData.reading || '', { width: CW })
+    doc.text(birthChartData.reading || '', ML, y, { width: CW, lineGap: 3 })
+    y += bcReadingH + 12
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#c9a84c')
+       .text('2026 PLANETARY FORECAST', ML, y, { width: CW })
+    y += 12
+    doc.font('Helvetica-Oblique').fontSize(11).fillColor('#8888a0')
+       .text(birthChartData.forecast2026 || '', ML, y, { width: CW, lineGap: 3 })
+    y += doc.heightOfString(birthChartData.forecast2026 || '', { width: CW }) + 24
   }
 
   const currentMonthNumber = new Date().getMonth() + 1
