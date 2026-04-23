@@ -263,7 +263,7 @@
          EMAIL CAPTURE
     ═══════════════════════════════════════════ -->
     <section class="email-section" aria-label="Daily reading email signup">
-      <p class="sect-label">STAY CONNECTED</p>
+      <p class="sect-label">FREE DAILY HOROSCOPE</p>
       <h2 class="email-headline">Get your daily horoscope in your inbox every morning</h2>
 
       <form
@@ -295,6 +295,7 @@
         </div>
         <p v-if="emailError" class="email-error" role="alert">{{ emailError }}</p>
         <p class="email-privacy">No spam. Unsubscribe anytime.</p>
+        <p class="email-free-note">Free forever · No credit card</p>
       </form>
 
       <div v-else class="email-success" role="status" aria-live="polite">
@@ -316,6 +317,25 @@
         <span class="cta-arr" aria-hidden="true">→</span>
       </button>
     </section>
+
+
+    <!-- ═══════════════════════════════════════
+         PERSONAL SUBSCRIPTION CTA
+    ═══════════════════════════════════════════ -->
+    <div class="daily-sub-wrap">
+      <div class="daily-sub-card">
+        <div class="daily-sub-top">
+          <span class="daily-sub-badge">PERSONAL</span>
+          <span class="daily-sub-price">$4.99<span class="daily-sub-price-period">/mo</span></span>
+        </div>
+        <h2 class="daily-sub-headline">Get YOUR personal horoscope every morning</h2>
+        <p class="daily-sub-copy">Based on your exact birth chart — not just your sun sign. Love, Work &amp; Health, personalized to you.</p>
+        <NuxtLink to="/" class="daily-sub-btn">
+          Start Personal Horoscope →
+        </NuxtLink>
+        <p class="daily-sub-note">Complete your free reading first, then subscribe</p>
+      </div>
+    </div>
 
 
     <!-- ═══════════════════════════════════════
@@ -1253,6 +1273,114 @@ onMounted(async () => {
 
 
 /* ─────────────────────────────────────────────
+   EMAIL FREE NOTE
+───────────────────────────────────────────── */
+.email-free-note {
+  font-size: 11px;
+  color: rgba(201, 168, 76, 0.5);
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+
+/* ─────────────────────────────────────────────
+   PERSONAL SUBSCRIPTION CARD
+───────────────────────────────────────────── */
+.daily-sub-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 24px 72px;
+}
+
+.daily-sub-card {
+  padding: 28px 24px;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.06) 0%, rgba(107, 72, 224, 0.04) 100%);
+  border: 1px solid rgba(201, 168, 76, 0.28);
+  border-radius: 16px;
+}
+
+.daily-sub-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.daily-sub-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.75);
+}
+
+.daily-sub-price {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgba(201, 168, 76, 0.95);
+  line-height: 1;
+}
+
+.daily-sub-price-period {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(201, 168, 76, 0.55);
+}
+
+.daily-sub-headline {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--white-94);
+  margin: 0 0 10px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.daily-sub-copy {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--white-55);
+  margin: 0 0 24px;
+}
+
+.daily-sub-btn {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.42);
+  border-radius: 10px;
+  color: rgba(201, 168, 76, 0.95);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--sans);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  box-sizing: border-box;
+}
+
+.daily-sub-btn:hover {
+  background: rgba(201, 168, 76, 0.20);
+  border-color: rgba(201, 168, 76, 0.65);
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
+}
+
+.daily-sub-note {
+  text-align: center;
+  font-size: 11px;
+  color: var(--white-22);
+  margin: 10px 0 0;
+  letter-spacing: 0.03em;
+}
+
+
+/* ─────────────────────────────────────────────
    FOOTER
 ───────────────────────────────────────────── */
 .site-footer {
@@ -1345,6 +1473,14 @@ onMounted(async () => {
   .cta-primary {
     width: 100%;
     justify-content: center;
+  }
+
+  .daily-sub-card {
+    padding: 20px 16px;
+  }
+
+  .daily-sub-btn {
+    font-size: 14px;
   }
 }
 
