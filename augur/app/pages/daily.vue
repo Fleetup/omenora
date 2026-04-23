@@ -259,50 +259,6 @@
     </main>
 
 
-    <!-- ═══════════════════════════════════════
-         EMAIL CAPTURE
-    ═══════════════════════════════════════════ -->
-    <section class="email-section" aria-label="Daily reading email signup">
-      <p class="sect-label">FREE DAILY HOROSCOPE</p>
-      <h2 class="email-headline">Get your daily horoscope in your inbox every morning</h2>
-
-      <form
-        v-if="!emailSuccess"
-        class="email-form"
-        @submit.prevent="submitEmail"
-        aria-label="Email capture form"
-        novalidate
-      >
-        <div class="email-row">
-          <input
-            v-model="emailInput"
-            type="email"
-            class="email-input"
-            placeholder="your@email.com"
-            autocomplete="email"
-            inputmode="email"
-            aria-label="Your email address"
-            :aria-invalid="emailError ? 'true' : 'false'"
-            :disabled="emailSubmitting"
-          />
-          <button
-            type="submit"
-            class="email-btn"
-            :disabled="emailSubmitting"
-          >
-            {{ emailSubmitting ? 'Sending…' : 'Subscribe' }}
-          </button>
-        </div>
-        <p v-if="emailError" class="email-error" role="alert">{{ emailError }}</p>
-        <p class="email-privacy">No spam. Unsubscribe anytime.</p>
-        <p class="email-free-note">Free forever · No credit card</p>
-      </form>
-
-      <div v-else class="email-success" role="status" aria-live="polite">
-        <p class="email-success-text">You're in. Your daily reading arrives tomorrow morning.</p>
-      </div>
-    </section>
-
 
     <!-- ═══════════════════════════════════════
          CTA SECTION
@@ -511,40 +467,6 @@ const featuredSignReading = computed<ZodiacReading | null>(() => {
 function firstSentence(text: string): string {
   const match = text.match(/^[^.!?]+[.!?]/)
   return match ? match[0] : text
-}
-
-// ── Email capture ──────────────────────────────
-const emailInput      = ref('')
-const emailError      = ref('')
-const emailSubmitting = ref(false)
-const emailSuccess    = ref(false)
-
-function validateEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
-
-async function submitEmail() {
-  emailError.value = ''
-  if (!validateEmail(emailInput.value)) {
-    emailError.value = 'Please enter a valid email address.'
-    return
-  }
-  emailSubmitting.value = true
-  try {
-    await $fetch('/api/capture-email', {
-      method: 'POST',
-      body: {
-        email:        emailInput.value.trim().toLowerCase(),
-        firstName:    '',
-        archetypeName: featuredArchetype.value ?? featuredSign.value ?? '',
-      },
-    })
-    emailSuccess.value = true
-  } catch {
-    emailError.value = 'Something went wrong. Please try again.'
-  } finally {
-    emailSubmitting.value = false
-  }
 }
 
 // ── Fetch on mount ─────────────────────────────
@@ -1054,139 +976,6 @@ onMounted(async () => {
 
 
 /* ─────────────────────────────────────────────
-   EMAIL CAPTURE
-───────────────────────────────────────────── */
-.email-section {
-  position: relative;
-  z-index: 1;
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 72px 24px 56px;
-  text-align: center;
-}
-
-.email-headline {
-  font-family: var(--serif);
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--white-94);
-  margin: 0 0 32px;
-  line-height: 1.4;
-  letter-spacing: 0.01em;
-}
-
-.email-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.email-row {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  max-width: 440px;
-}
-
-.email-input {
-  flex: 1;
-  height: 50px;
-  padding: 0 18px;
-  background: var(--white-05);
-  border: 1px solid var(--white-22);
-  border-radius: 12px;
-  color: var(--white-94);
-  font-size: 15px;
-  font-family: var(--sans);
-  outline: none;
-  transition:
-    border-color 0.15s ease,
-    background   0.15s ease;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.email-input::placeholder {
-  color: var(--white-38);
-}
-
-.email-input:focus {
-  border-color: var(--purple-hi);
-  background: rgba(107,72,224,0.07);
-}
-
-.email-input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.email-btn {
-  height: 50px;
-  padding: 0 24px;
-  background: var(--purple);
-  border: none;
-  border-radius: 12px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: var(--sans);
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    background 0.18s ease,
-    transform  0.12s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.email-btn:hover {
-  background: var(--purple-hi);
-  transform: translateY(-1px);
-}
-
-.email-btn:active {
-  transform: translateY(0) scale(0.985);
-  background: #5B38D0;
-}
-
-.email-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.email-error {
-  font-size: 13px;
-  color: #f08080;
-  margin: 0;
-}
-
-.email-privacy {
-  font-size: 12px;
-  color: var(--white-38);
-  margin: 4px 0 0;
-  letter-spacing: 0.02em;
-}
-
-.email-success {
-  padding: 20px 28px;
-  background: rgba(107,72,224,0.12);
-  border: 1px solid rgba(107,72,224,0.28);
-  border-radius: 14px;
-  max-width: 440px;
-  margin: 0 auto;
-}
-
-.email-success-text {
-  font-size: 16px;
-  color: var(--white-94);
-  margin: 0;
-  line-height: 1.5;
-}
-
-
-/* ─────────────────────────────────────────────
    CTA SECTION
 ───────────────────────────────────────────── */
 .cta-section {
@@ -1269,17 +1058,6 @@ onMounted(async () => {
 
 .cta-primary:hover .cta-arr {
   transform: translateX(3px);
-}
-
-
-/* ─────────────────────────────────────────────
-   EMAIL FREE NOTE
-───────────────────────────────────────────── */
-.email-free-note {
-  font-size: 11px;
-  color: rgba(201, 168, 76, 0.5);
-  margin: 0;
-  letter-spacing: 0.04em;
 }
 
 
@@ -1460,14 +1238,6 @@ onMounted(async () => {
 
   .grid-3col {
     grid-template-columns: 1fr;
-  }
-
-  .email-row {
-    flex-direction: column;
-  }
-
-  .email-btn {
-    width: 100%;
   }
 
   .cta-primary {
