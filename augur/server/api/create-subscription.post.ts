@@ -9,6 +9,11 @@ export default defineEventHandler(async (event) => {
   const email          = sanitizeString(body.email, 254)
   const lifePathNumber = sanitizeString(String(body.lifePathNumber ?? ''), 5)
   const originRaw      = sanitizeString(body.origin, 300)
+  const dateOfBirth    = sanitizeString(body.dateOfBirth ?? '', 20)
+  const timeOfBirth    = sanitizeString(body.timeOfBirth ?? '', 20)
+  const city           = sanitizeString(body.city ?? '', 100)
+  const element        = sanitizeString(body.element ?? '', 20)
+  const region         = sanitizeString(body.region ?? '', 20)
 
   assertInput(isValidEmail(email), 'Valid email is required')
   assertInput(isValidRedirectOrigin(originRaw), 'Invalid origin')
@@ -60,6 +65,11 @@ export default defineEventHandler(async (event) => {
         email,
         customerId: customer.id,
         type: 'subscription',
+        dateOfBirth,
+        timeOfBirth,
+        city,
+        element,
+        region,
       },
     })
 
