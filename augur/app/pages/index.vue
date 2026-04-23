@@ -370,14 +370,13 @@
 import { ref, onMounted } from 'vue'
 
 useSeoMeta({
-  title: 'OMENORA — Personality & Astrology Reading',
+  title: 'OMENORA — Free Daily Horoscope & Personal Astrology Reading',
   description:
-    'Discover your personality archetype through real natal chart calculations across ' +
-    '4 ancient traditions — Western, Vedic, BaZi & Tarot. ' +
-    'Personalized astrology and numerology reading. No account required.',
-  ogTitle: 'OMENORA — Personality & Astrology Reading',
+    'Free daily horoscope for all 12 signs plus your personal natal chart reading across ' +
+    '4 ancient traditions — Western, Vedic, BaZi & Tarot. No account required. Results in 60 seconds.',
+  ogTitle: 'OMENORA — Free Daily Horoscope & Personal Astrology Reading',
   ogDescription:
-    'Personalized astrology readings using real natal chart calculations across 4 ancient traditions.',
+    'Free daily horoscope updated every morning. Personal natal chart reading across 4 ancient traditions. No account. 60 seconds.',
   ogImage: 'https://omenora.com/og-image.png',
   ogUrl: 'https://omenora.com',
   twitterCard: 'summary_large_image',
@@ -440,6 +439,23 @@ useHead({
           '2026 astrology forecast',
           'Western, Vedic, BaZi and Tarot traditions'
         ]
+      })
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        '@id': 'https://omenora.com/#organization',
+        name: 'OMENORA',
+        url: 'https://omenora.com',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://omenora.com/android-chrome-512x512.png',
+          width: 512,
+          height: 512,
+        },
+        sameAs: [],
       })
     }
   ]
