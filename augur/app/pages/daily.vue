@@ -286,7 +286,7 @@
         </div>
         <h2 class="daily-sub-headline">Get YOUR personal horoscope every morning</h2>
         <p class="daily-sub-copy">Based on your exact birth chart — not just your sun sign. Love, Work &amp; Health, personalized to you.</p>
-        <NuxtLink to="/" class="daily-sub-btn">
+        <NuxtLink to="/subscribe" class="daily-sub-btn">
           Start Personal Horoscope →
         </NuxtLink>
         <p class="daily-sub-note">Complete your free reading first, then subscribe</p>
