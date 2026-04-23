@@ -517,9 +517,9 @@ async function submitEmail() {
     await $fetch('/api/capture-email', {
       method: 'POST',
       body: {
-        email:     emailInput.value.trim().toLowerCase(),
-        source:    'daily-page',
-        archetype: featuredArchetype.value ?? null,
+        email:        emailInput.value.trim().toLowerCase(),
+        firstName:    '',
+        archetypeName: featuredArchetype.value ?? featuredSign.value ?? '',
       },
     })
     emailSuccess.value = true
