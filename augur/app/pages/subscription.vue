@@ -22,14 +22,15 @@
       </div>
       <p class="brand-text">OMENORA</p>
       <p class="status-text">Something went wrong. Please contact support.</p>
-      <button class="return-btn" style="margin-top: 16px;" @click="navigateTo('/report')">
+      <button class="return-btn" @click="navigateTo('/report')">
         Return to Report
       </button>
     </div>
   </div>
 
   <!-- Success state -->
-  <div v-else class="sub-page">
+  <div v-else class="sub-page-bg">
+  <div class="sub-page">
     <!-- Check mark -->
     <div class="check-circle">
       <span class="check-symbol">✦</span>
@@ -61,6 +62,7 @@
     <button v-else class="return-btn" @click="navigateTo('/')">
       Back to Home
     </button>
+  </div>
   </div>
 </template>
 
@@ -193,9 +195,13 @@ onMounted(async () => {
 }
 
 /* Success page */
-.sub-page {
+.sub-page-bg {
   background: #0a0a0f;
   min-height: 100vh;
+  width: 100%;
+}
+
+.sub-page {
   color: white;
   max-width: 480px;
   margin: 0 auto;
@@ -340,6 +346,7 @@ onMounted(async () => {
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
+  margin-top: 16px;
 }
 
 .return-btn:hover {

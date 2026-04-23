@@ -38,39 +38,78 @@ export default defineEventHandler(async (event) => {
 
   const htmlContent = `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
   <title>Your Daily OMENORA Insight</title>
+  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #0a0a0f; font-family: system-ui, -apple-system, sans-serif;">
-  <div style="max-width: 520px; margin: 0 auto; padding: 40px 24px;">
+<body style="margin: 0; padding: 0; background-color: #f5f2ee; font-family: Georgia, 'Times New Roman', serif;" bgcolor="#f5f2ee">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f5f2ee;" bgcolor="#f5f2ee">
+    <tr>
+      <td align="center" style="padding: 40px 16px 48px;">
+        <table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width: 520px; width: 100%; background-color: #faf8f5; border-radius: 4px;" bgcolor="#faf8f5">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-      <p style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.2); letter-spacing: 0.15em; margin: 0;">OMENORA</p>
-      <p style="font-size: 11px; color: rgba(140,110,255,0.6); margin: 0;">${he(insight.moonPhase)} · ${he(insight.dayTheme)}</p>
-    </div>
+          <!-- Header -->
+          <tr>
+            <td style="padding: 32px 40px 24px; border-bottom: 1px solid #ede9e2;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="font-size: 11px; font-weight: 500; color: #9e9285; letter-spacing: 0.18em; font-family: Georgia, serif; text-transform: uppercase;">OMENORA</td>
+                  <td align="right" style="font-size: 11px; color: #a097c8; font-family: Georgia, serif;">${he(insight.moonPhase)} &middot; ${he(insight.dayTheme)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-    <p style="font-size: 22px; font-weight: 500; color: rgba(230,220,255,0.95); margin: 0 0 20px;">${he(insight.greeting)}</p>
+          <!-- Greeting -->
+          <tr>
+            <td style="padding: 32px 40px 0;">
+              <p style="font-size: 24px; font-weight: 500; color: #1a1410; margin: 0 0 20px; line-height: 1.3; font-family: Georgia, serif;">${he(insight.greeting)}</p>
+            </td>
+          </tr>
 
-    <p style="font-size: 15px; color: rgba(255,255,255,0.6); line-height: 1.8; margin: 0 0 28px;">${he(insight.insight)}</p>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 0 40px 28px;">
+              <p style="font-size: 15px; color: #3d3530; line-height: 1.85; margin: 0; font-family: Georgia, serif;">${he(insight.insight)}</p>
+            </td>
+          </tr>
 
-    <div style="text-align: center; padding: 20px; background: rgba(140,110,255,0.04); border: 1px solid rgba(140,110,255,0.1); border-radius: 12px; margin-bottom: 32px;">
-      <p style="font-size: 10px; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 10px;">A question worth sitting with</p>
-      <p style="font-size: 15px; font-weight: 400; font-style: italic; color: rgba(200,180,255,0.85); margin: 0; line-height: 1.6;">${he(insight.reflection_question)}</p>
-    </div>
+          <!-- Reflection question -->
+          <tr>
+            <td style="padding: 0 40px 36px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f0ece5; border-radius: 4px;" bgcolor="#f0ece5">
+                <tr>
+                  <td style="padding: 20px 24px;">
+                    <p style="font-size: 9px; color: #a097c8; text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 10px; font-family: Georgia, serif;">A question worth sitting with</p>
+                    <p style="font-size: 15px; font-style: italic; color: #3d3530; margin: 0; line-height: 1.65; font-family: Georgia, serif;">${he(insight.reflection_question)}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-    <div style="border-top: 1px solid rgba(255,255,255,0.08); margin-top: 40px; padding-top: 24px; text-align: center;">
-      <p style="color: rgba(255,255,255,0.25); font-size: 11px; line-height: 1.7; font-family: Inter, sans-serif; margin: 0 0 12px; max-width: 480px; margin-left: auto; margin-right: auto;">
-        OMENORA Daily Insights are for self-reflection and personal exploration only. They are not a substitute for professional advice, therapy, or medical care. If you are experiencing a mental health crisis, support is available 24/7 at 988 (call or text).
-      </p>
-      <p style="color: rgba(255,255,255,0.2); font-size: 11px; font-family: Inter, sans-serif; margin: 0;">
-        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe&body=${encodeURIComponent(email)}" style="color: rgba(255,255,255,0.3); text-decoration: underline;">Unsubscribe</a>
-        &nbsp;·&nbsp; omenora.com
-      </p>
-    </div>
-  </div>
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 40px 32px; border-top: 1px solid #ede9e2;">
+              <p style="font-size: 11px; color: #b0a89a; line-height: 1.7; margin: 0 0 12px; font-family: sans-serif;">
+                OMENORA Daily Insights are for self-reflection and personal exploration only. They are not a substitute for professional advice, therapy, or medical care. If you are experiencing a mental health crisis, support is available 24/7 at 988 (call or text).
+              </p>
+              <p style="font-size: 11px; color: #c0b8ac; margin: 0; font-family: sans-serif;">
+                <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe&body=${encodeURIComponent(email)}" style="color: #9e9285; text-decoration: underline;">Unsubscribe</a>
+                &nbsp;&middot;&nbsp; omenora.com
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`
 
