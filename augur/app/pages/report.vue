@@ -569,14 +569,24 @@
     </div>
 
     <!-- Daily insights subscription upsell -->
-    <div v-if="store.report && !store.subscriptionActive && !store.oraclePurchased" class="sub-upsell-banner">
-      <div class="sub-upsell-info">
-        <p class="sub-upsell-title">{{ t('dailyInsights') }}</p>
-        <p class="sub-upsell-desc">{{ t('personalizedArchetype') }}</p>
+    <div v-if="store.report && !store.subscriptionActive && !store.oraclePurchased" class="sub-upsell-card">
+      <div class="sub-upsell-card-top">
+        <span class="sub-upsell-badge">MOST POPULAR</span>
+        <span class="sub-upsell-price">$4.99<span class="sub-upsell-price-period">/mo</span></span>
       </div>
-      <button class="sub-upsell-btn" :disabled="isStartingSub" @click="startSubscription">
-        {{ isStartingSub ? 'Loading...' : t('subscribeCta') }}
+      <p class="sub-upsell-name">Personal Daily Horoscope</p>
+      <p class="sub-upsell-sub">Your natal chart read every morning</p>
+      <p class="sub-upsell-hook"><em>Everything in your report — delivered fresh every single day, tailored to your chart.</em></p>
+      <ul class="sub-upsell-features">
+        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Personal daily horoscope — Love, Work &amp; Health</li>
+        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Based on real planetary positions through your natal chart</li>
+        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Weekly Sunday forecast included</li>
+        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Delivered every morning at 7am</li>
+      </ul>
+      <button class="sub-upsell-cta" :disabled="isStartingSub" @click="startSubscription">
+        {{ isStartingSub ? 'Loading...' : 'Start My Personal Horoscope →' }}
       </button>
+      <p class="sub-upsell-note">Cancel anytime · No commitment</p>
     </div>
 
     <!-- Compatibility upsell -->
@@ -2171,54 +2181,124 @@ async function downloadReportPDF() {
   margin: 0;
 }
 
-/* ── Sub upsell banner ── */
-.sub-upsell-banner {
-  margin-bottom: 32px;
-  padding: 18px 20px;
-  background: rgba(140, 110, 255, 0.05);
-  border: 1px solid rgba(140, 110, 255, 0.18);
-  border-radius: 8px;
+/* ── Sub upsell card (premium) ── */
+.sub-upsell-card {
+  margin: 48px 0;
+  padding: 28px 24px;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.06) 0%, rgba(107, 72, 224, 0.04) 100%);
+  border: 1px solid rgba(201, 168, 76, 0.28);
+  border-radius: 16px;
+}
+
+.sub-upsell-card-top {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
-.sub-upsell-info {
-  flex: 1;
-  min-width: 180px;
+.sub-upsell-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.75);
 }
 
-.sub-upsell-title {
+.sub-upsell-price {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgba(201, 168, 76, 0.95);
+  line-height: 1;
+}
+
+.sub-upsell-price-period {
   font-size: 13px;
+  font-weight: 400;
+  color: rgba(201, 168, 76, 0.55);
+}
+
+.sub-upsell-name {
+  font-size: 18px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0 0 3px;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 4px;
 }
 
-.sub-upsell-desc {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.3);
-  margin: 0;
+.sub-upsell-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.38);
+  margin: 0 0 14px;
 }
 
-.sub-upsell-btn {
-  padding: 10px 20px;
-  background: rgba(140, 110, 255, 0.15);
-  border: 1px solid rgba(140, 110, 255, 0.35);
-  border-radius: 4px;
-  color: rgba(200, 180, 255, 0.88);
-  font-size: 12px;
-  letter-spacing: 0.04em;
+.sub-upsell-hook {
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  background: rgba(201, 168, 76, 0.05);
+  border-left: 2px solid rgba(201, 168, 76, 0.35);
+  border-radius: 0 8px 8px 0;
+}
+
+.sub-upsell-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sub-upsell-feat {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.sub-upsell-check {
+  color: rgba(201, 168, 76, 0.75);
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sub-upsell-cta {
+  width: 100%;
+  padding: 16px;
+  background: rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.42);
+  border-radius: 10px;
+  color: rgba(201, 168, 76, 0.95);
+  font-size: 15px;
+  font-weight: 500;
   font-family: inherit;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
+  transition: all 0.22s;
 }
 
-.sub-upsell-btn:hover:not(:disabled) {
-  background: rgba(140, 110, 255, 0.25);
-  border-color: rgba(140, 110, 255, 0.55);
+.sub-upsell-cta:not(:disabled):hover {
+  background: rgba(201, 168, 76, 0.20);
+  border-color: rgba(201, 168, 76, 0.65);
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
+}
+
+.sub-upsell-cta:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.sub-upsell-note {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.18);
+  margin: 10px 0 0;
+  letter-spacing: 0.03em;
 }
 
 /* ── Shared centered states ── */
@@ -3467,22 +3547,9 @@ async function downloadReportPDF() {
     padding: 2px 8px;
   }
 
-  /* Sub upsell banner: stack vertically */
-  .sub-upsell-banner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .sub-upsell-info {
-    min-width: unset;
-    width: 100%;
-  }
-
-  .sub-upsell-btn {
-    width: 100%;
-    text-align: center;
-    white-space: normal;
+  /* Sub upsell card: tighten padding on mobile */
+  .sub-upsell-card {
+    padding: 20px 16px;
   }
 
   /* Download row: stack vertically */
