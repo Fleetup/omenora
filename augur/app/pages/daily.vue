@@ -13,9 +13,6 @@
       <NuxtLink to="/" class="header-logo" aria-label="OMENORA home">
         OMENORA
       </NuxtLink>
-      <NuxtLink to="/" class="header-back">
-        ← Back to home
-      </NuxtLink>
     </header>
 
 
@@ -344,10 +341,10 @@ import { useRoute } from 'vue-router'
 
 // ── SEO ───────────────────────────────────────
 useSeoMeta({
-  title: 'Daily Horoscope & Archetype Readings — OMENORA',
-  description: 'Get your free daily horoscope and archetype reading. Real planetary positions. Updated every morning.',
-  ogTitle: 'Daily Horoscope & Archetype Readings — OMENORA',
-  ogDescription: 'Free daily horoscope for all 12 signs and archetype readings — real planetary data, updated every morning.',
+  title: 'Free Daily Horoscope for All 12 Signs — OMENORA',
+  description: 'Your free daily horoscope for today. Love, work and health reading for all 12 zodiac signs. Real planetary positions updated every morning.',
+  ogTitle: 'Free Daily Horoscope for All 12 Signs — OMENORA',
+  ogDescription: 'Love, work and health horoscope for Aries, Taurus, Gemini and all 12 signs. Real planetary data. Free every day.',
   ogUrl: 'https://omenora.com/daily',
   twitterCard: 'summary_large_image',
   robots: 'index, follow',
@@ -634,17 +631,6 @@ onMounted(async () => {
   text-decoration: none;
 }
 
-.header-back {
-  font-size: 13px;
-  color: var(--white-55);
-  text-decoration: none;
-  letter-spacing: 0.02em;
-  transition: color 0.15s ease;
-}
-
-.header-back:hover {
-  color: var(--white-94);
-}
 
 
 /* ─────────────────────────────────────────────

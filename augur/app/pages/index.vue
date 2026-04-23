@@ -11,12 +11,18 @@
     />
 
     <!-- ═══════════════════════════════════════
+         NAV
+    ═══════════════════════════════════════════ -->
+    <nav class="lp-nav" aria-label="Site navigation">
+      <NuxtLink to="/" class="lp-nav-logo">OMENORA</NuxtLink>
+      <NuxtLink to="/daily" class="lp-nav-daily">☽ Daily Horoscope</NuxtLink>
+    </nav>
+
+
+    <!-- ═══════════════════════════════════════
          HERO
     ═══════════════════════════════════════════ -->
     <section class="hero" aria-label="OMENORA hero">
-
-      <!-- Daily Horoscope nav link -->
-      <NuxtLink to="/daily" class="daily-nav-link">Daily Horoscope</NuxtLink>
 
       <!-- Orbital mark -->
       <div class="orbital-wrap a1">
@@ -551,6 +557,43 @@ onMounted(() => {
 
 
 /* ─────────────────────────────────────────────
+   NAV BAR
+───────────────────────────────────────────── */
+.lp-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  position: relative;
+  z-index: 10;
+}
+
+.lp-nav-logo {
+  font-family: var(--serif);
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  color: var(--white-94);
+  text-decoration: none;
+}
+
+.lp-nav-daily {
+  font-size: 13px;
+  color: var(--gold);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  border: 1px solid rgba(201,168,76,0.3);
+  padding: 6px 16px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.lp-nav-daily:hover {
+  background: rgba(201,168,76,0.1);
+  border-color: var(--gold);
+}
+
+
+/* ─────────────────────────────────────────────
    ENTRY ANIMATIONS
    Apple HIG: ease-out, 340–500ms, purposeful
 ───────────────────────────────────────────── */
@@ -592,22 +635,6 @@ onMounted(() => {
 /* Orbital mark */
 .orbital-wrap {
   margin-bottom: 28px;
-}
-
-/* Daily Horoscope nav link */
-.daily-nav-link {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 13px;
-  color: var(--white-55);
-  text-decoration: none;
-  letter-spacing: 0.04em;
-  transition: color 0.2s ease;
-}
-
-.daily-nav-link:hover {
-  color: var(--white-94);
 }
 
 /* Brand name */
@@ -1106,6 +1133,12 @@ onMounted(() => {
    RESPONSIVE — MOBILE FIRST
    Apple HIG: 44pt minimum touch targets
 ───────────────────────────────────────────── */
+
+/* Mobile nav */
+@media (max-width: 600px) {
+  .lp-nav         { padding: 16px 20px; }
+  .lp-nav-daily   { font-size: 11px; padding: 5px 12px; }
+}
 
 /* Tablet and up */
 @media (min-width: 600px) {
