@@ -88,6 +88,9 @@
       {{ traditionLabel }} tradition
     </p>
 
+    <!-- Urgency: real-time transit anchor -->
+    <p class="urgency-line">Your chart is calculated against today's planetary transits — this interpretation is specific to this window.</p>
+
     <!-- Locked sections strip -->
     <div class="locked-sections-strip">
       <div class="locked-header">
@@ -275,8 +278,9 @@
 
       <div class="guarantee-line">
         <span class="guarantee-check">✦</span>
-        <span class="guarantee-text">Not what you expected? Full refund within 24 hours — no questions asked.</span>
+        <span class="guarantee-text">If it doesn't feel like it was written for you — full refund, same day, no form to fill.</span>
       </div>
+      <p class="trust-onetime">One-time payment. Nothing recurring. Your reading arrives by email within seconds.</p>
       <p class="trust-secure">{{ t('securedStripe') }}</p>
       </div><!-- end pricing-section -->
 
@@ -1762,6 +1766,14 @@ async function handlePayment() {
   color: rgba(255, 255, 255, 0.22);
   text-align: center;
   margin: 12px 0 0;
+  line-height: 1.6;
+}
+
+.trust-onetime {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.22);
+  text-align: center;
+  margin: 0 0 8px;
   line-height: 1.6;
 }
 

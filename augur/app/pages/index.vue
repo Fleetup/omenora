@@ -41,9 +41,7 @@
 
       <!-- Sub-headline -->
       <p class="hero-sub a4">
-        Real Swiss Ephemeris calculations across
-        4&nbsp;ancient traditions —
-        Western, Vedic, BaZi &amp; Tarot.
+        Most horoscopes are written for 1 in 12 people. This calculates your exact planetary positions at the minute you were born — then maps them across 4 traditions to build something written for you specifically.
       </p>
 
       <!-- Trust strip -->
@@ -178,14 +176,14 @@
 
         <div class="why-item" role="listitem">
           <p class="why-item-title">4 ancient traditions</p>
-          <p class="why-item-desc">One reading that covers all of them.</p>
+          <p class="why-item-desc">Most services cover one tradition. We run four — weighted by your cultural background.</p>
         </div>
 
         <div class="why-sep" aria-hidden="true" />
 
         <div class="why-item" role="listitem">
           <p class="why-item-title">Built for every culture</p>
-          <p class="why-item-desc">Not just Western astrology.</p>
+          <p class="why-item-desc">We detect your region and default to the system most trusted where you grew up. Switch any time.</p>
         </div>
 
       </div>
@@ -278,6 +276,14 @@
 
 
     <!-- ═══════════════════════════════════════
+         METHOD CREDIBILITY STRIP
+    ═══════════════════════════════════════════ -->
+    <section class="method-strip" aria-label="Methodology">
+      <p class="method-strip-text">Swiss Ephemeris precision &nbsp;·&nbsp; Calculated to the minute &nbsp;·&nbsp; Not a sun-sign template</p>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
          BOTTOM CTA
     ═══════════════════════════════════════════ -->
     <section class="bottom-section"
@@ -300,6 +306,8 @@
       <p class="dim-label">
         No subscription · No account · One payment
       </p>
+
+      <p class="uniqueness-note">Two people born on the same day get different readings — birth time and city change every planetary position.</p>
 
     </section>
 
@@ -1038,6 +1046,35 @@ onMounted(() => {
 .bottom-section {
   border-top: 1px solid rgba(255,255,255,0.05);
   padding-top: 72px;
+}
+
+
+/* ─────────────────────────────────────────────
+   METHOD CREDIBILITY STRIP
+───────────────────────────────────────────── */
+.method-strip {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 28px 24px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.method-strip-text {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.28);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.uniqueness-note {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  margin: 16px 0 0;
+  line-height: 1.6;
+  max-width: 360px;
 }
 
 

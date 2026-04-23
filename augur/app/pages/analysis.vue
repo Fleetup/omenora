@@ -168,6 +168,7 @@
           <span class="birth-unlock-icon">✦</span>
           <span class="birth-unlock-text">{{ t('birthChartUnlocked') }}</span>
         </div>
+        <p class="time-hint">Without a birth time, Rising sign and house positions won’t be available — the reading still works, with less precision.</p>
       </div>
 
       <div class="region-section">
@@ -206,6 +207,8 @@
         </div>
       </div>
 
+      <p class="privacy-micro">Used only to calculate your chart.</p>
+
       <button
         class="cta-button"
         :class="{ disabled: !step1Valid }"
@@ -221,7 +224,7 @@
       <h1 class="heading">{{ t('fiveQuestions') }}</h1>
       <p class="subheading">{{ t('tapAnswer') }}</p>
 
-      <p class="data-use-notice">Your answers are used only to generate your personalized reading and are not stored, sold, or shared with third parties.</p>
+      <p class="data-use-notice">Answer honestly — these calibrate which parts of your chart the system weights. Two people born on the same day will get different readings based on this.</p>
 
       <div v-for="(question, index) in questions" :key="question.id" class="question-block">
         <div class="question-header">
@@ -908,6 +911,23 @@ async function handleSubmit() {
   margin: 0 0 28px;
   line-height: 1.6;
   letter-spacing: 0.02em;
+}
+
+.time-hint {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.20);
+  margin: 8px 0 0;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  padding: 0 4px;
+}
+
+.privacy-micro {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.20);
+  margin: 0 0 12px;
+  text-align: center;
+  letter-spacing: 0.01em;
 }
 
 

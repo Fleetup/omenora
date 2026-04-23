@@ -10,7 +10,7 @@ export const LANGUAGES = [
 export const UI_STRINGS: Record<string, Record<string, string>> = {
   en: {
     tellUs: 'Your reading starts here',
-    takesSeconds: 'Takes about 30 seconds',
+    takesSeconds: 'Takes 30 seconds — birth time improves your Rising sign accuracy',
     firstName: 'First Name',
     firstNamePlaceholder: 'Your first name',
     dateOfBirth: 'Date of Birth',
@@ -22,8 +22,8 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     readingTradition: 'Reading tradition',
     language: 'Language',
     continueBtn: 'Continue →',
-    fiveQuestions: 'Three quick questions',
-    tapAnswer: 'Tap your answer — no right or wrong',
+    fiveQuestions: 'Three questions that shape your reading',
+    tapAnswer: 'Your answers tell the system which parts of your chart to weight — two people born the same day get different readings',
     revealDestiny: 'Reveal My Archetype →',
     behavioralReport: 'Behavioral AI Report',
     yourArchetype: 'YOUR PERSONALITY ARCHETYPE',
