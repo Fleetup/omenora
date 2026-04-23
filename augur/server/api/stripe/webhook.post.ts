@@ -215,6 +215,81 @@ export default defineEventHandler(async (event) => {
       .eq('email', customerEmail.toLowerCase().trim())
   }
 
+  // ── Handle subscription checkout — save subscriber + send welcome insight ──
+  if (meta.type === 'subscription') {
+    const subEmail     = session.customer_details?.email || meta.email || ''
+    const subFirstName = sanitizeString(meta.firstName || '', 50)
+    const subArchetype = sanitizeString(meta.archetype || '', 30)
+    const subLPN       = Number.parseInt(meta.lifePathNumber || '0', 10) || 0
+    const subCustomer  = session.customer as string
+    const subId        = session.subscription as string
+
+    try {
+      await $fetch('/api/save-subscriber', {
+        method: 'POST',
+        body: {
+          email:                subEmail,
+          firstName:            subFirstName,
+          archetype:            subArchetype,
+          lifePathNumber:       subLPN,
+          stripeCustomerId:     subCustomer,
+          stripeSubscriptionId: subId,
+          element:              meta.element || 'Earth',
+          region:               isValidRegion(meta.region) ? meta.region : 'western',
+          active:               true,
+        },
+      })
+      console.info('[stripe-webhook] Subscriber saved:', { subId, subCustomer })
+    } catch (err: any) {
+      console.error('[stripe-webhook] save-subscriber failed (non-blocking):', err?.message)
+    }
+
+    const jobSecret = (config.emailJobSecret as string | undefined) ?? ''
+    if (jobSecret && isValidEmail(subEmail) && subFirstName && isValidArchetype(subArchetype)) {
+      try {
+        const todayDate = new Date().toISOString().split('T')[0]
+        const insightResult = await $fetch<{ success: boolean; insight: any }>('/api/generate-daily-insight', {
+          method: 'POST',
+          headers: { 'x-job-secret': jobSecret },
+          body: {
+            email:          subEmail,
+            firstName:      subFirstName,
+            archetype:      subArchetype,
+            lifePathNumber: subLPN,
+            element:        meta.element || 'Earth',
+            region:         isValidRegion(meta.region) ? meta.region : 'western',
+            targetDate:     todayDate,
+            language:       'en',
+          },
+        })
+
+        if (insightResult?.insight) {
+          try {
+            await $fetch('/api/send-daily-insight', {
+              method: 'POST',
+              headers: { 'x-job-secret': jobSecret },
+              body: {
+                email:     subEmail,
+                firstName: subFirstName,
+                archetype: subArchetype,
+                insight:   insightResult.insight,
+              },
+            })
+            console.info('[stripe-webhook] Welcome daily insight sent:', subEmail)
+          } catch (sendErr: any) {
+            console.error('[stripe-webhook] send-daily-insight failed (non-blocking):', sendErr?.message)
+          }
+        }
+      } catch (genErr: any) {
+        console.error('[stripe-webhook] generate-daily-insight failed (non-blocking):', genErr?.message)
+      }
+    } else if (!jobSecret) {
+      console.warn('[stripe-webhook] NUXT_EMAIL_JOB_SECRET not set — skipping welcome insight for:', subEmail)
+    }
+
+    return { received: true }
+  }
+
   // ── Check idempotency: skip if report already saved & email sent ───────────
   const supabase = createSupabaseAdmin()
   const { data: existing } = await supabase

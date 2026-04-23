@@ -35,41 +35,31 @@
       <span class="check-symbol">✦</span>
     </div>
 
-    <h1 class="success-title">Daily Insights Activated</h1>
-    <p class="success-sub">Your first insight is on its way to {{ store.email }}</p>
+    <h1 class="success-title">You're Subscribed</h1>
+    <p class="success-sub">Your first personal daily horoscope arrives tomorrow morning.</p>
 
     <!-- What to expect -->
     <div class="expect-box">
       <p class="expect-label">What happens next</p>
       <div class="expect-item">
         <span class="expect-dot" />
-        <span class="expect-text">Every morning, a personalized insight arrives in your inbox</span>
+        <span class="expect-text">Delivered to {{ store.email }} every morning at 7am</span>
       </div>
       <div class="expect-item">
         <span class="expect-dot" />
-        <span class="expect-text">Each insight is unique — generated from your archetype and the day's energy</span>
+        <span class="expect-text">Personalized to your exact natal chart</span>
       </div>
       <div class="expect-item" style="margin-bottom: 0;">
         <span class="expect-dot" />
-        <span class="expect-text">Cancel anytime from your email or Stripe dashboard</span>
+        <span class="expect-text">Cancel anytime from your email</span>
       </div>
     </div>
 
-    <!-- Today's insight preview -->
-    <div v-if="todayInsight" class="insight-preview">
-      <p class="insight-meta">{{ todayInsight.moonPhase }} · {{ todayInsight.dayTheme }}</p>
-      <p class="insight-greeting">{{ todayInsight.greeting }}</p>
-      <p class="insight-body">
-        {{ todayInsight.insight.slice(0, 100) }}...
-      </p>
-      <div class="insight-freq-box">
-        <p class="insight-freq-label">Today's Frequency</p>
-        <p class="insight-freq">"{{ todayInsight.frequency }}"</p>
-      </div>
-    </div>
-
-    <button class="return-btn" @click="returnToReport">
+    <button v-if="store.reportSessionId" class="return-btn" @click="returnToReport">
       Return to Your Report
+    </button>
+    <button v-else class="return-btn" @click="navigateTo('/')">
+      Back to Home
     </button>
   </div>
 </template>
@@ -86,7 +76,6 @@ const route = useRoute()
 
 const isLoading = ref(true)
 const hasError = ref(false)
-const todayInsight = ref<any>(null)
 
 function returnToReport() {
   const sessionId = store.reportSessionId
@@ -128,44 +117,6 @@ onMounted(async () => {
     if (meta.region) store.setRegion(meta.region, store.country)
 
     store.setSubscriptionActive(true)
-
-    await $fetch('/api/save-subscriber', {
-      method: 'POST',
-      body: {
-        stripeCustomerId: meta.customerId || '',
-        stripeSubscriptionId: sessionId,
-        email: store.email,
-        firstName: store.firstName,
-        archetype: store.archetype,
-        lifePathNumber: store.lifePathNumber,
-        element: store.report?.element || 'Earth',
-        region: store.region,
-      },
-    })
-
-    const result = await $fetch<{ success: boolean; insight: any }>('/api/generate-daily-insight', {
-      method: 'POST',
-      body: {
-        firstName: store.firstName,
-        archetype: store.archetype,
-        lifePathNumber: store.lifePathNumber,
-        element: store.report?.element || 'Earth',
-        region: store.region,
-        targetDate: new Date().toISOString(),
-      },
-    })
-
-    todayInsight.value = result.insight
-
-    await $fetch('/api/send-daily-insight', {
-      method: 'POST',
-      body: {
-        email: store.email,
-        firstName: store.firstName,
-        insight: result.insight,
-        archetype: store.archetype,
-      },
-    })
 
     isLoading.value = false
   } catch {
