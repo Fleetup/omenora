@@ -158,14 +158,15 @@
 
       <div class="time-choice-row">
         <button
-          class="time-choice-btn"
-          :class="{ active: timeKnown === true }"
+          class="option-tile"
+          :class="{ selected: timeKnown === true }"
           @click="timeKnown = true"
         >
           Yes, I know it
         </button>
         <button
-          class="time-choice-btn"
+          class="option-tile"
+          :class="{ selected: timeKnown === false }"
           @click="skipBirthTime"
         >
           Skip for now
@@ -1248,37 +1249,15 @@ async function handleSubmit() {
 .time-choice-row {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 24px;
 }
 
-.time-choice-btn {
-  width: 100%;
+.time-choice-row .option-tile {
+  flex: 1 0 100%;
   min-height: 56px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.65);
   font-size: 15px;
-  font-family: inherit;
-  cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    background   0.18s ease,
-    color        0.18s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.time-choice-btn:hover {
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.88);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.time-choice-btn.active {
-  border-color: rgba(107, 72, 224, 0.50);
-  background: rgba(107, 72, 224, 0.12);
-  color: rgba(200, 180, 255, 0.92);
+  text-align: center;
 }
 
 
