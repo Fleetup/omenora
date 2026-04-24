@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { he } from '~~/server/utils/report-email-builder'
+import { unsubscribeToken } from '~~/server/api/unsubscribe.get'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -20,6 +21,9 @@ export default defineEventHandler(async (event) => {
 
   assertInput(isValidEmail(email), 'Valid email is required')
   assertInput(rawInsight !== null, 'insight object is required')
+
+  const unsubToken = unsubscribeToken(email, expectedSecret)
+  const unsubUrl   = `https://omenora.com/api/unsubscribe?token=${unsubToken}&e=${encodeURIComponent(email)}`
 
   // Validate that all required fields are non-empty strings before interpolation.
   const insight = {
@@ -100,7 +104,7 @@ export default defineEventHandler(async (event) => {
                 OMENORA Daily Insights are for self-reflection and personal exploration only. They are not a substitute for professional advice, therapy, or medical care. If you are experiencing a mental health crisis, support is available 24/7 at 988 (call or text).
               </p>
               <p style="font-size: 11px; color: #c0b8ac; margin: 0; font-family: sans-serif;">
-                <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe&body=${encodeURIComponent(email)}" style="color: #9e9285; text-decoration: underline;">Unsubscribe</a>
+                <a href="${unsubUrl}" style="color: #9e9285; text-decoration: underline;">Unsubscribe</a>
                 &nbsp;&middot;&nbsp; omenora.com
               </p>
             </td>
@@ -134,7 +138,7 @@ export default defineEventHandler(async (event) => {
       `OMENORA Daily Insights are for self-reflection and personal exploration only. They are not a substitute for professional advice, therapy, or medical care. If you are experiencing a mental health crisis, support is available 24/7 at 988 (call or text).`,
       ``,
       `OMENORA · omenora.com`,
-      `To unsubscribe: mailto:unsubscribe@omenora.com?subject=unsubscribe`,
+      `To unsubscribe: ${unsubUrl}`,
     ].join('\n'),
   })
 

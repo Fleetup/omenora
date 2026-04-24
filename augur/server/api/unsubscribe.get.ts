@@ -55,5 +55,18 @@ export default defineEventHandler(async (event) => {
     cancelEmailJobs(email),
   ])
 
+  try {
+    const { error: subErr } = await supabase
+      .from('subscribers')
+      .update({ active: false, updated_at: new Date().toISOString() })
+      .eq('email', email.toLowerCase().trim())
+
+    if (subErr) {
+      console.error('[unsubscribe] Failed to deactivate subscriber:', subErr.code)
+    }
+  } catch (err: any) {
+    console.error('[unsubscribe] Unexpected error deactivating subscriber:', err?.message)
+  }
+
   return sendRedirect(event, '/?unsubscribed=true')
 })
