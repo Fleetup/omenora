@@ -4,16 +4,15 @@
     <div class="top-bar">
       <button class="back-btn" @click="goBack">←</button>
       <span class="brand">OMENORA</span>
-      <span class="step-indicator">{{ currentStep }} of 2</span>
+      <span class="step-indicator">{{ currentStep }} of 7</span>
     </div>
 
     <!-- Progress bar -->
     <div class="progress-bar">
-      <div class="progress-segment" :class="{ active: currentStep >= 1 }" />
-      <div class="progress-segment" :class="{ active: currentStep >= 2 }" />
+      <div class="progress-fill" :style="{ width: (currentStep / 7 * 100) + '%' }" />
     </div>
 
-    <!-- Step 1: Personal Info -->
+    <!-- Screen 1: First Name -->
     <template v-if="currentStep === 1">
       <h1 class="heading">{{ t('tellUs') }}</h1>
       <p class="subheading">{{ t('takesSeconds') }}</p>
@@ -35,6 +34,21 @@
           @blur="focusedField = null"
         >
       </div>
+
+      <button
+        class="cta-button"
+        :class="{ disabled: !store.firstName }"
+        :disabled="!store.firstName"
+        @click="advanceStep"
+      >
+        {{ t('continueBtn') }}
+      </button>
+    </template>
+
+    <!-- Screen 2: Date of Birth -->
+    <template v-else-if="currentStep === 2">
+      <h1 class="heading">{{ t('dateOfBirth') }}</h1>
+      <p class="subheading">{{ t('takesSeconds') }}</p>
 
       <div class="date-group">
         <div class="field-label">{{ t('dateOfBirth') }}</div>
@@ -94,6 +108,21 @@
         <input id="bday-year" name="bday-year" type="hidden" autocomplete="bday-year" :value="birthYear">
       </div>
 
+      <button
+        class="cta-button"
+        :class="{ disabled: !dateStep2Valid }"
+        :disabled="!dateStep2Valid"
+        @click="advanceStep"
+      >
+        {{ t('continueBtn') }}
+      </button>
+    </template>
+
+    <!-- Screen 3: City -->
+    <template v-else-if="currentStep === 3">
+      <h1 class="heading">{{ t('cityCountry') }}</h1>
+      <p class="subheading">{{ t('takesSeconds') }}</p>
+
       <div
         class="field-wrapper"
         :class="{ focused: focusedField === 'city' }"
@@ -112,149 +141,183 @@
         >
       </div>
 
-      <!-- Time of Birth -->
-      <div class="time-group">
-        <div class="field-header-row">
-          <div class="field-label">{{ t('timeOfBirth') }}</div>
-          <span class="field-optional-badge">{{ t('timeOptional') }}</span>
-        </div>
-        <div class="wheel-row">
-          <!-- Hour wheel -->
-          <div class="wheel-col">
-            <div class="wheel-label">Hour</div>
-            <div class="wheel-drum" ref="hourWheelRef">
-              <div class="wheel-track">
-                <div class="wheel-pad" />
-                <div
-                  v-for="h in hourOptions"
-                  :key="h"
-                  class="wheel-item"
-                  :class="{ selected: birthHour === h }"
-                >{{ h }}</div>
-                <div class="wheel-pad" />
-              </div>
-            </div>
-          </div>
-          <!-- Minute wheel -->
-          <div class="wheel-col">
-            <div class="wheel-label">Min</div>
-            <div class="wheel-drum" ref="minuteWheelRef">
-              <div class="wheel-track">
-                <div class="wheel-pad" />
-                <div
-                  v-for="m in minuteOptions"
-                  :key="m"
-                  class="wheel-item"
-                  :class="{ selected: birthMinute === m }"
-                >{{ m }}</div>
-                <div class="wheel-pad" />
-              </div>
-            </div>
-          </div>
-          <!-- AM/PM wheel -->
-          <div class="wheel-col">
-            <div class="wheel-label">AM/PM</div>
-            <div class="wheel-drum" ref="ampmWheelRef">
-              <div class="wheel-track">
-                <div class="wheel-pad" />
-                <div class="wheel-item" :class="{ selected: birthAmPm === 'AM' }">AM</div>
-                <div class="wheel-item" :class="{ selected: birthAmPm === 'PM' }">PM</div>
-                <div class="wheel-pad" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-if="timeOfBirth" class="birth-unlock-row">
-          <span class="birth-unlock-icon">✦</span>
-          <span class="birth-unlock-text">{{ t('birthChartUnlocked') }}</span>
-        </div>
-        <p class="time-hint">Without a birth time, Rising sign and house positions won’t be available — the reading still works, with less precision.</p>
-      </div>
-
-      <div class="region-section">
-        <p class="region-label">{{ t('chooseYourPath') }}</p>
-        <p class="tradition-explanation">Each tradition reads your birth data differently. Choose the one that resonates — you can see all 4 interpretations in your report.</p>
-        <div class="region-cards">
-          <button
-            v-for="opt in regionOptions"
-            :key="opt.value"
-            class="region-card"
-            :class="{ active: store.region === opt.value }"
-            @click="selectRegion(opt.value)"
-          >
-            <span class="region-card-icon">{{ opt.icon }}</span>
-            <span class="region-card-text">
-              <span class="region-card-name">{{ opt.name }}</span>
-              <span class="region-card-sub">{{ opt.sub }}</span>
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div class="lang-section">
-        <p class="lang-label">{{ t('language') }}</p>
-        <div class="lang-row">
-          <button
-            v-for="lang in LANGUAGES"
-            :key="lang.code"
-            class="lang-btn"
-            :class="{ 'lang-btn--active': store.language === lang.code }"
-            @click="selectLanguage(lang.code)"
-          >
-            <span>{{ lang.flag }}</span>
-            <span>{{ lang.label }}</span>
-          </button>
-        </div>
-      </div>
-
-      <p class="privacy-micro">Used only to calculate your chart.</p>
-
       <button
         class="cta-button"
-        :class="{ disabled: !step1Valid }"
-        :disabled="!step1Valid"
-        @click="continueToStep2"
+        :class="{ disabled: !store.city }"
+        :disabled="!store.city"
+        @click="advanceFromCity"
       >
         {{ t('continueBtn') }}
       </button>
     </template>
 
-    <!-- Step 2: Three Questions -->
-    <template v-else>
+    <!-- Screen 4: Birth Time (optional) -->
+    <template v-else-if="currentStep === 4">
+      <h1 class="heading">Do you know your birth time?</h1>
+      <p class="subheading">Birth time improves your Rising sign accuracy.</p>
+
+      <div class="time-choice-row">
+        <button
+          class="time-choice-btn"
+          :class="{ active: timeKnown === true }"
+          @click="timeKnown = true"
+        >
+          Yes, I know it
+        </button>
+        <button
+          class="time-choice-btn"
+          @click="skipBirthTime"
+        >
+          Skip for now
+        </button>
+      </div>
+
+      <template v-if="timeKnown === true">
+        <div class="time-group">
+          <div class="field-header-row">
+            <div class="field-label">{{ t('timeOfBirth') }}</div>
+            <span class="field-optional-badge">{{ t('timeOptional') }}</span>
+          </div>
+          <div class="wheel-row">
+            <!-- Hour wheel -->
+            <div class="wheel-col">
+              <div class="wheel-label">Hour</div>
+              <div class="wheel-drum" ref="hourWheelRef">
+                <div class="wheel-track">
+                  <div class="wheel-pad" />
+                  <div
+                    v-for="h in hourOptions"
+                    :key="h"
+                    class="wheel-item"
+                    :class="{ selected: birthHour === h }"
+                  >{{ h }}</div>
+                  <div class="wheel-pad" />
+                </div>
+              </div>
+            </div>
+            <!-- Minute wheel -->
+            <div class="wheel-col">
+              <div class="wheel-label">Min</div>
+              <div class="wheel-drum" ref="minuteWheelRef">
+                <div class="wheel-track">
+                  <div class="wheel-pad" />
+                  <div
+                    v-for="m in minuteOptions"
+                    :key="m"
+                    class="wheel-item"
+                    :class="{ selected: birthMinute === m }"
+                  >{{ m }}</div>
+                  <div class="wheel-pad" />
+                </div>
+              </div>
+            </div>
+            <!-- AM/PM wheel -->
+            <div class="wheel-col">
+              <div class="wheel-label">AM/PM</div>
+              <div class="wheel-drum" ref="ampmWheelRef">
+                <div class="wheel-track">
+                  <div class="wheel-pad" />
+                  <div class="wheel-item" :class="{ selected: birthAmPm === 'AM' }">AM</div>
+                  <div class="wheel-item" :class="{ selected: birthAmPm === 'PM' }">PM</div>
+                  <div class="wheel-pad" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="timeOfBirth" class="birth-unlock-row">
+            <span class="birth-unlock-icon">✦</span>
+            <span class="birth-unlock-text">{{ t('birthChartUnlocked') }}</span>
+          </div>
+          <p class="time-hint">Without a birth time, Rising sign and house positions won't be available — the reading still works, with less precision.</p>
+        </div>
+
+        <button
+          class="cta-button"
+          @click="advanceStep"
+        >
+          {{ t('continueBtn') }}
+        </button>
+      </template>
+    </template>
+
+    <!-- Screen 5: Question p1 -->
+    <template v-else-if="currentStep === 5">
       <h1 class="heading">{{ t('fiveQuestions') }}</h1>
       <p class="subheading">{{ t('tapAnswer') }}</p>
 
-      <p class="data-use-notice">Answer honestly — these calibrate which parts of your chart the system weights. Two people born on the same day will get different readings based on this.</p>
-
-      <div v-for="(question, index) in questions" :key="question.id" class="question-block">
+      <div class="question-block">
         <div class="question-header">
-          <span class="question-number">{{ String(index + 1).padStart(2, '0') }}</span>
-          <p class="question-text">{{ question.text }}</p>
+          <span class="question-number">01</span>
+          <p class="question-text">{{ questions[0]!.text }}</p>
         </div>
         <div class="options-row">
           <button
-            v-for="option in question.options"
+            v-for="option in questions[0]!.options"
             :key="option.value"
             class="option-tile"
-            :class="{
-              selected:
-                (store.answers as Record<string, string>)[question.id] ===
-                option.value,
-            }"
-            @click="handleAnswerSelect(question.id, option.value)"
+            :class="{ selected: (store.answers as Record<string, string>)['p1'] === option.value }"
+            @click="selectAndAdvance('p1', option.value)"
           >
             {{ option.label }}
           </button>
         </div>
-        <div v-if="index < questions.length - 1" class="divider" />
+      </div>
+    </template>
+
+    <!-- Screen 6: Question p2 -->
+    <template v-else-if="currentStep === 6">
+      <h1 class="heading">{{ t('fiveQuestions') }}</h1>
+      <p class="subheading">{{ t('tapAnswer') }}</p>
+
+      <div class="question-block">
+        <div class="question-header">
+          <span class="question-number">02</span>
+          <p class="question-text">{{ questions[1]!.text }}</p>
+        </div>
+        <div class="options-row">
+          <button
+            v-for="option in questions[1]!.options"
+            :key="option.value"
+            class="option-tile"
+            :class="{ selected: (store.answers as Record<string, string>)['p2'] === option.value }"
+            @click="selectAndAdvance('p2', option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+      </div>
+    </template>
+
+    <!-- Screen 7: Question p3 -->
+    <template v-else-if="currentStep === 7">
+      <h1 class="heading">{{ t('fiveQuestions') }}</h1>
+      <p class="subheading">{{ t('tapAnswer') }}</p>
+
+      <div class="question-block">
+        <div class="question-header">
+          <span class="question-number">03</span>
+          <p class="question-text">{{ questions[2]!.text }}</p>
+        </div>
+        <div class="options-row">
+          <button
+            v-for="option in questions[2]!.options"
+            :key="option.value"
+            class="option-tile"
+            :class="{ selected: (store.answers as Record<string, string>)['p3'] === option.value }"
+            @click="handleAnswerSelect('p3', option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
       </div>
 
       <p v-if="submitError" class="submit-error">{{ submitError }}</p>
 
       <button
+        v-if="(store.answers as Record<string, string>)['p3']"
         class="cta-button submit-btn"
-        :class="{ disabled: !allAnswered || isCalculating }"
-        :disabled="!allAnswered || isCalculating"
+        :class="{ disabled: isCalculating }"
+        :disabled="isCalculating"
         @click="handleSubmit"
       >
         {{ isCalculating ? 'Calculating…' : t('revealDestiny') }}
@@ -264,7 +327,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
 import { useAnalysisStore, type NatalChart } from '~/stores/analysisStore'
 import { LANGUAGES } from '~/utils/translations'
 import { useLanguage } from '~/composables/useLanguage'
@@ -279,6 +342,7 @@ const currentStep = ref(1)
 const focusedField = ref<string | null>(null)
 const isCalculating = ref(false)
 const submitError   = ref<string | null>(null)
+const timeKnown     = ref<boolean | null>(null)
 
 function selectLanguage(code: string) {
   store.setLanguageOverride(code)
@@ -587,33 +651,44 @@ onUnmounted(() => {
   wheelListenerCleanups.forEach(fn => fn())
 })
 
-// ── Initialise wheels to sensible defaults on mount ───────────────────────────
-onMounted(() => {
-  nextTick(() => {
-    // Default: day=01, month=01, year=1990, hour=12, minute=00, ampm=AM
-    const defaultDayIdx = 0
-    const defaultMonthIdx = 0
-    const defaultYearIdx = yearOptions.indexOf('1990') >= 0 ? yearOptions.indexOf('1990') : 0
-    birthDay.value = dayOptions[defaultDayIdx]!
-    birthMonth.value = monthOptions[defaultMonthIdx]!
-    birthYear.value = yearOptions[defaultYearIdx]!
-    scrollWheelToIndex(dayWheelRef.value, defaultDayIdx)
-    scrollWheelToIndex(monthWheelRef.value, defaultMonthIdx)
-    scrollWheelToIndex(yearWheelRef.value, defaultYearIdx)
-    // Time wheels default empty (optional field) — scroll to 0
-    scrollWheelToIndex(hourWheelRef.value, 0)
-    scrollWheelToIndex(minuteWheelRef.value, 0)
-    scrollWheelToIndex(ampmWheelRef.value, 0)
+// ── Initialise date wheels when Screen 2 first becomes visible ─────────────────
+// onMounted runs on Screen 1 — date wheel DOM doesn't exist yet.
+// Watch currentStep and init on first arrival at step 2.
+let dateWheelsInitialised = false
+watch(currentStep, (step) => {
+  if (step === 2 && !dateWheelsInitialised) {
+    nextTick(() => {
+      const defaultDayIdx = 0
+      const defaultMonthIdx = 0
+      const defaultYearIdx = yearOptions.indexOf('1990') >= 0 ? yearOptions.indexOf('1990') : 0
+      birthDay.value = dayOptions[defaultDayIdx]!
+      birthMonth.value = monthOptions[defaultMonthIdx]!
+      birthYear.value = yearOptions[defaultYearIdx]!
+      scrollWheelToIndex(dayWheelRef.value, defaultDayIdx)
+      scrollWheelToIndex(monthWheelRef.value, defaultMonthIdx)
+      scrollWheelToIndex(yearWheelRef.value, defaultYearIdx)
+      if (dayWheelRef.value) attachWheelListener('day', dayWheelRef.value)
+      if (monthWheelRef.value) attachWheelListener('month', monthWheelRef.value)
+      if (yearWheelRef.value) attachWheelListener('year', yearWheelRef.value)
+      dateWheelsInitialised = true
+    })
+  }
+})
 
-    // Attach scroll-end listeners AFTER initial positions are set so the
-    // programmatic scrollTop assignment above does not fire value reads.
-    if (dayWheelRef.value) attachWheelListener('day', dayWheelRef.value)
-    if (monthWheelRef.value) attachWheelListener('month', monthWheelRef.value)
-    if (yearWheelRef.value) attachWheelListener('year', yearWheelRef.value)
-    if (hourWheelRef.value) attachWheelListener('hour', hourWheelRef.value)
-    if (minuteWheelRef.value) attachWheelListener('minute', minuteWheelRef.value)
-    if (ampmWheelRef.value) attachWheelListener('ampm', ampmWheelRef.value)
-  })
+// ── Initialise time wheels when user selects "Yes" on Screen 4 ─────────────────
+let timeWheelsInitialised = false
+watch(timeKnown, (val) => {
+  if (val === true && !timeWheelsInitialised) {
+    nextTick(() => {
+      scrollWheelToIndex(hourWheelRef.value, 0)
+      scrollWheelToIndex(minuteWheelRef.value, 0)
+      scrollWheelToIndex(ampmWheelRef.value, 0)
+      if (hourWheelRef.value) attachWheelListener('hour', hourWheelRef.value)
+      if (minuteWheelRef.value) attachWheelListener('minute', minuteWheelRef.value)
+      if (ampmWheelRef.value) attachWheelListener('ampm', ampmWheelRef.value)
+      timeWheelsInitialised = true
+    })
+  }
 })
 
 // ── Derived values → store ────────────────────────────────────────────────────
@@ -648,8 +723,31 @@ watch(timeOfBirth, (val) => {
 })
 
 
+const dateStep2Valid = computed(
+  () => !!birthDay.value && !!birthMonth.value && !!birthYear.value,
+)
+
 function handleAnswerSelect(questionId: string, answerValue: string) {
   store.setAnswer(questionId, answerValue)
+}
+
+function selectAndAdvance(questionId: string, answerValue: string) {
+  store.setAnswer(questionId, answerValue)
+  currentStep.value++
+}
+
+function advanceStep() {
+  currentStep.value++
+}
+
+function advanceFromCity() {
+  $trackStep1Complete({ language: store.language })
+  currentStep.value++
+}
+
+function skipBirthTime() {
+  store.timeOfBirth = ''
+  currentStep.value++
 }
 
 const step1Valid = computed(
@@ -697,18 +795,15 @@ const allAnswered = computed(() =>
 
 function goBack() {
   if (currentStep.value > 1) {
+    if (currentStep.value === 5) {
+      timeKnown.value = null
+    }
     currentStep.value--
   } else {
     navigateTo('/')
   }
 }
 
-function continueToStep2() {
-  if (step1Valid.value) {
-    $trackStep1Complete({ language: store.language })
-    currentStep.value = 2
-  }
-}
 
 const regionOptions = computed(() => [
   { value: 'western', icon: '⭐', name: t('traditionWesternName'), sub: t('traditionWesternSub') },
@@ -867,20 +962,18 @@ async function handleSubmit() {
    PROGRESS BAR
 ───────────────────────────────────────────── */
 .progress-bar {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 36px;
-}
-
-.progress-segment {
-  flex: 1;
-  height: 1px;
+  height: 2px;
   background: rgba(255, 255, 255, 0.08);
-  transition: background 0.4s ease;
+  border-radius: 1px;
+  margin-bottom: 36px;
+  overflow: hidden;
 }
 
-.progress-segment.active {
+.progress-fill {
+  height: 100%;
   background: rgba(201, 168, 76, 0.60);
+  border-radius: 1px;
+  transition: width 0.3s ease;
 }
 
 
@@ -1146,6 +1239,46 @@ async function handleSubmit() {
   font-size: 11px;
   color: rgba(107, 72, 224, 0.70);
   letter-spacing: 0.02em;
+}
+
+
+/* ─────────────────────────────────────────────
+   TIME CHOICE BUTTONS (Screen 4)
+───────────────────────────────────────────── */
+.time-choice-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.time-choice-btn {
+  width: 100%;
+  min-height: 56px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background   0.18s ease,
+    color        0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.time-choice-btn:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.time-choice-btn.active {
+  border-color: rgba(107, 72, 224, 0.50);
+  background: rgba(107, 72, 224, 0.12);
+  color: rgba(200, 180, 255, 0.92);
 }
 
 
