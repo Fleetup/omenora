@@ -79,13 +79,8 @@ export default defineEventHandler(async (event) => {
         day:     'numeric',
       })
 
-      let generated = 0
-      let skipped   = 0
-      let failed    = 0
-
-      for (const zodiacSign of ZODIAC_SIGNS) {
-        console.log('[generate-daily-horoscope] Processing sign:', zodiacSign)
-
+      // ── Inner function: generate + upsert one sign — returns true on success ─
+      async function generateSignHoroscope(zodiacSign: string): Promise<boolean> {
         // ── Check if cache row already exists for this (sign, date, language) ─
         const { data: existing, error: existsErr } = await supabase
           .from('daily_zodiac_cache')
@@ -100,13 +95,11 @@ export default defineEventHandler(async (event) => {
             `[generate-daily-horoscope] Existence check failed for ${zodiacSign}:`,
             existsErr.code,
           )
-          failed++
-          continue
+          return false
         }
 
         if (existing) {
-          skipped++
-          continue
+          return true
         }
 
         // ── Build Claude prompt ───────────────────────────────────────────────
@@ -147,20 +140,18 @@ RESPOND WITH VALID JSON ONLY. No preamble. No markdown. No explanation.`
               `[generate-daily-horoscope] Structured output returned null parsed_output for ${zodiacSign}`,
               { rawResponsePreview: (rawText || '').slice(0, 300) },
             )
-            failed++
-            continue
+            return false
           }
         } catch (err: any) {
           console.error(
             `[generate-daily-horoscope] Claude call failed for ${zodiacSign}:`,
             err?.message ?? err,
           )
-          failed++
-          continue
+          return false
         }
 
         // ── Upsert into daily_zodiac_cache ────────────────────────────────────
-        if (!parsed) { failed++; continue }
+        if (!parsed) { return false }
 
         const { error: upsertErr } = await supabase
           .from('daily_zodiac_cache')
@@ -188,18 +179,78 @@ RESPOND WITH VALID JSON ONLY. No preamble. No markdown. No explanation.`
             `[generate-daily-horoscope] Upsert failed for ${zodiacSign}:`,
             upsertErr.code,
           )
-          failed++
-          continue
+          return false
         }
 
-        generated++
+        return true
+      }
 
-        console.log('[generate-daily-horoscope] Completed sign:', zodiacSign, '— generated:', generated, 'skipped:', skipped, 'failed:', failed)
+      // ── Main loop ────────────────────────────────────────────────────────────
+      let generated = 0
+      let skipped   = 0
+      const failedSigns: string[] = []
+
+      for (const zodiacSign of ZODIAC_SIGNS) {
+        console.log('[generate-daily-horoscope] Processing sign:', zodiacSign)
+        const ok = await generateSignHoroscope(zodiacSign)
+        if (ok) {
+          generated++
+          console.log('[generate-daily-horoscope] Completed sign:', zodiacSign, '— generated:', generated, 'skipped:', skipped)
+        } else {
+          failedSigns.push(zodiacSign)
+        }
       }
 
       console.log(
-        `[generate-daily-horoscope] Completed: generated=${generated} skipped=${skipped} failed=${failed} date=${targetDate} language=${language}`,
+        `[generate-daily-horoscope] First pass: generated=${generated} skipped=${skipped} failed=${failedSigns.length} date=${targetDate} language=${language}`,
       )
+
+      // ── Post-loop verification + retry ───────────────────────────────────────
+      const { data: presentRows } = await supabase
+        .from('daily_zodiac_cache')
+        .select('zodiac_sign')
+        .eq('cache_date', targetDate)
+        .eq('language', language)
+
+      const presentSigns = new Set((presentRows ?? []).map((r: { zodiac_sign: string }) => r.zodiac_sign))
+      const missingSigns = ZODIAC_SIGNS.filter(s => !presentSigns.has(s))
+      const toRetry      = Array.from(new Set([...failedSigns, ...missingSigns]))
+
+      if (toRetry.length > 0) {
+        console.log(`[generate-daily-horoscope] Signs to retry: ${toRetry.join(', ')}`)
+
+        for (const sign of toRetry) {
+          let succeeded = false
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            console.log(`[generate-daily-horoscope] Retrying ${sign} attempt ${attempt}/3`)
+            await new Promise(r => setTimeout(r, 2000))
+            const ok = await generateSignHoroscope(sign)
+            if (ok) {
+              succeeded = true
+              console.log(`[generate-daily-horoscope] Retry succeeded for ${sign} on attempt ${attempt}`)
+              break
+            }
+          }
+          if (!succeeded) {
+            console.error(`[generate-daily-horoscope] All 3 retry attempts failed for ${sign}`)
+          }
+        }
+      }
+
+      // ── Final verification query ──────────────────────────────────────────────
+      const { data: finalRows } = await supabase
+        .from('daily_zodiac_cache')
+        .select('zodiac_sign')
+        .eq('cache_date', targetDate)
+        .eq('language', language)
+
+      const finalPresent    = new Set((finalRows ?? []).map((r: { zodiac_sign: string }) => r.zodiac_sign))
+      const finalConfirmed  = ZODIAC_SIGNS.filter(s => finalPresent.has(s))
+      const finalFailed     = ZODIAC_SIGNS.filter(s => !finalPresent.has(s))
+
+      console.log(`[generate-daily-horoscope] FINAL STATUS — date: ${targetDate}`)
+      console.log(`[generate-daily-horoscope] Confirmed in DB: ${finalConfirmed.join(', ')}`)
+      console.log(`[generate-daily-horoscope] Permanently failed: ${finalFailed.length > 0 ? finalFailed.join(', ') : 'none'}`)
     } catch (outerErr: any) {
       console.error('[generate-daily-horoscope] Fatal background error:', outerErr?.message)
     }

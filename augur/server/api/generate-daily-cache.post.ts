@@ -161,6 +161,122 @@ export default defineEventHandler(async (event) => {
         console.log('[daily-cache] Completed archetype:', archetype, '— generated:', generated, 'skipped:', skipped, 'failed:', failed)
       }
 
+      console.log(
+        `[generate-daily-cache] First pass: generated=${generated} skipped=${skipped} failed=${failed} date=${targetDate} language=${language}`,
+      )
+
+      // ── Post-loop verification + retry ───────────────────────────────────────
+      const { data: presentRows } = await supabase
+        .from('daily_archetype_cache')
+        .select('archetype')
+        .eq('cache_date', targetDate)
+        .eq('language', language)
+
+      const presentArchetypes = new Set((presentRows ?? []).map((r: { archetype: string }) => r.archetype))
+      const missingArchetypes = ARCHETYPES.filter(a => !presentArchetypes.has(a))
+      const toRetry           = Array.from(new Set([...missingArchetypes]))
+
+      if (toRetry.length > 0) {
+        console.log(`[generate-daily-cache] Archetypes to retry: ${toRetry.join(', ')}`)
+
+        for (const archetype of toRetry) {
+          let succeeded = false
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            console.log(`[generate-daily-cache] Retrying archetype ${archetype} attempt ${attempt}/3`)
+            await new Promise(r => setTimeout(r, 2000))
+
+            let retryResult: {
+              success: boolean
+              insight: {
+                insight: string
+                reflection_question: string
+                theme: string
+                moonPhase: string
+                dayTheme: string
+                greeting: string
+                subject: string
+              }
+            } | null = null
+
+            try {
+              retryResult = await $fetch('/api/generate-daily-insight', {
+                method:  'POST',
+                headers: { 'x-job-secret': expectedSecret },
+                body: {
+                  firstName:      'Friend',
+                  archetype,
+                  lifePathNumber: 5,
+                  targetDate,
+                  language,
+                },
+              })
+            } catch (err: any) {
+              console.error(
+                `[generate-daily-cache] Retry generate-daily-insight failed for ${archetype} attempt ${attempt}:`,
+                err?.message ?? err,
+              )
+              continue
+            }
+
+            if (!retryResult?.success || !retryResult.insight) {
+              console.error(
+                `[generate-daily-cache] Retry unexpected response shape for ${archetype} attempt ${attempt}`,
+              )
+              continue
+            }
+
+            const { insight: retryInsight } = retryResult
+
+            const { error: retryUpsertErr } = await supabase
+              .from('daily_archetype_cache')
+              .upsert(
+                {
+                  archetype,
+                  cache_date:          targetDate,
+                  language,
+                  insight:             retryInsight.insight,
+                  reflection_question: retryInsight.reflection_question,
+                  theme:               retryInsight.theme,
+                  moon_phase:          retryInsight.moonPhase,
+                  created_at:          new Date().toISOString(),
+                },
+                { onConflict: 'archetype,cache_date,language', ignoreDuplicates: true },
+              )
+
+            if (retryUpsertErr) {
+              console.error(
+                `[generate-daily-cache] Retry upsert failed for ${archetype} attempt ${attempt}:`,
+                retryUpsertErr.code,
+              )
+              continue
+            }
+
+            succeeded = true
+            console.log(`[generate-daily-cache] Retry succeeded for ${archetype} on attempt ${attempt}`)
+            break
+          }
+
+          if (!succeeded) {
+            console.error(`[generate-daily-cache] All 3 retry attempts failed for archetype ${archetype}`)
+          }
+        }
+      }
+
+      // ── Final verification query ──────────────────────────────────────────────
+      const { data: finalRows } = await supabase
+        .from('daily_archetype_cache')
+        .select('archetype')
+        .eq('cache_date', targetDate)
+        .eq('language', language)
+
+      const finalPresent   = new Set((finalRows ?? []).map((r: { archetype: string }) => r.archetype))
+      const finalConfirmed = ARCHETYPES.filter(a => finalPresent.has(a))
+      const finalFailed    = ARCHETYPES.filter(a => !finalPresent.has(a))
+
+      console.log(`[generate-daily-cache] FINAL STATUS — date: ${targetDate}`)
+      console.log(`[generate-daily-cache] Archetypes confirmed in DB: ${finalConfirmed.join(', ')}`)
+      console.log(`[generate-daily-cache] Permanently failed: ${finalFailed.length > 0 ? finalFailed.join(', ') : 'none'}`)
+
       try {
         await $fetch('/api/generate-daily-horoscope', {
           method:  'POST',
@@ -171,10 +287,6 @@ export default defineEventHandler(async (event) => {
       } catch (zodiacErr: any) {
         console.error('[daily-cache] Failed to trigger zodiac horoscope generation:', zodiacErr?.message)
       }
-
-      console.log(
-        `[generate-daily-cache] Completed: generated=${generated} skipped=${skipped} failed=${failed} date=${targetDate} language=${language}`,
-      )
     } catch (outerErr: any) {
       console.error('[daily-cache] Fatal background error:', outerErr?.message)
     }
