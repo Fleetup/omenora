@@ -39,7 +39,58 @@ export default defineEventHandler(async (event) => {
   }
 
   if (!data || data.length === 0) {
-    return { success: true, date: cacheDate, data: null }
+    // ── Fallback: try yesterday's cache before returning null ─────────────────
+    const yesterdayDate = new Date(new Date(cacheDate).getTime() - 24 * 60 * 60 * 1000)
+      .toISOString().split('T')[0]!
+
+    console.log('[get-daily-cache] today empty — trying yesterday:', yesterdayDate)
+
+    const { data: yData, error: yError } = await supabase
+      .from('daily_archetype_cache')
+      .select('archetype, theme, insight, reflection_question, moon_phase')
+      .eq('cache_date', yesterdayDate)
+      .eq('language', language)
+
+    if (yError || !yData || yData.length === 0) {
+      return { success: true, date: cacheDate, data: null }
+    }
+
+    const yKeyed: Record<string, { theme: string; insight: string; reflection: string; moon_phase: string }> = {}
+    for (const row of yData) {
+      yKeyed[row.archetype] = {
+        theme:      row.theme,
+        insight:    row.insight,
+        reflection: row.reflection_question,
+        moon_phase: row.moon_phase,
+      }
+    }
+
+    const { data: yZodiacData } = await supabase
+      .from('daily_zodiac_cache')
+      .select('zodiac_sign, horoscope, love, job, health, theme, moon_phase, sun_sign, moon_sign, planetary_weather')
+      .eq('cache_date', yesterdayDate)
+      .eq('language', language)
+
+    const yZodiacKeyed: Record<string, { horoscope: string; love: string; job: string; health: string; theme: string; moon_phase: string; sun_sign: string; moon_sign: string; planetary_weather: string }> | null =
+      yZodiacData && yZodiacData.length > 0
+        ? yZodiacData.reduce((acc, row) => {
+            acc[row.zodiac_sign.toLowerCase()] = {
+              horoscope:         row.horoscope,
+              love:              row.love,
+              job:               row.job,
+              health:            row.health,
+              theme:             row.theme,
+              moon_phase:        row.moon_phase,
+              sun_sign:          row.sun_sign,
+              moon_sign:         row.moon_sign,
+              planetary_weather: row.planetary_weather,
+            }
+            return acc
+          }, {} as Record<string, { horoscope: string; love: string; job: string; health: string; theme: string; moon_phase: string; sun_sign: string; moon_sign: string; planetary_weather: string }>)
+        : null
+
+    console.log('[get-daily-cache] returning yesterday fallback:', yesterdayDate)
+    return { success: true, date: yesterdayDate, archetypes: yKeyed, zodiac: yZodiacKeyed }
   }
 
   const keyed: Record<string, {

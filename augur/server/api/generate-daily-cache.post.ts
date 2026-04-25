@@ -277,15 +277,27 @@ export default defineEventHandler(async (event) => {
       console.log(`[generate-daily-cache] Archetypes confirmed in DB: ${finalConfirmed.join(', ')}`)
       console.log(`[generate-daily-cache] Permanently failed: ${finalFailed.length > 0 ? finalFailed.join(', ') : 'none'}`)
 
-      try {
-        await $fetch('/api/generate-daily-horoscope', {
-          method:  'POST',
-          headers: { 'x-job-secret': expectedSecret },
-          body:    { targetDate, language },
-        })
-        console.log('[daily-cache] Zodiac horoscope generation triggered')
-      } catch (zodiacErr: any) {
-        console.error('[daily-cache] Failed to trigger zodiac horoscope generation:', zodiacErr?.message)
+      // ── Zodiac generation with retry ─────────────────────────────────────────
+      let zodiacSucceeded = false
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await $fetch('/api/generate-daily-horoscope', {
+            method:  'POST',
+            headers: { 'x-job-secret': expectedSecret },
+            body:    { targetDate, language },
+          })
+          console.log(`[daily-cache] Zodiac horoscope generation succeeded on attempt ${attempt}`)
+          zodiacSucceeded = true
+          break
+        } catch (zodiacErr: any) {
+          console.error(`[daily-cache] Zodiac generation attempt ${attempt}/3 failed:`, zodiacErr?.message ?? zodiacErr)
+          if (attempt < 3) {
+            await new Promise(r => setTimeout(r, 3000))
+          }
+        }
+      }
+      if (!zodiacSucceeded) {
+        console.error(`[daily-cache] Zodiac generation failed permanently for date ${targetDate} after 3 attempts — daily horoscope page will be empty`)
       }
     } catch (outerErr: any) {
       console.error('[daily-cache] Fatal background error:', outerErr?.message)

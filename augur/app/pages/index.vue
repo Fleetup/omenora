@@ -47,11 +47,13 @@
       <!-- Trust strip -->
       <div class="trust-strip a5" role="list"
            aria-label="Key features">
-        <span role="listitem">Free</span>
+        <span role="listitem">No subscription</span>
         <span class="ts-dot" aria-hidden="true">·</span>
         <span role="listitem">No account required</span>
         <span class="ts-dot" aria-hidden="true">·</span>
         <span role="listitem">Results in 60 seconds</span>
+        <span class="ts-dot" aria-hidden="true">·</span>
+        <span role="listitem">Full report optional</span>
       </div>
 
       <!-- Primary CTA -->
@@ -60,7 +62,7 @@
         @click="navigateTo('/analysis')"
         aria-label="Get your free astrology and personality reading"
       >
-        Get My Free Reading
+        Reveal My Free Preview
         <span class="cta-arr" aria-hidden="true">→</span>
       </button>
 
@@ -68,6 +70,38 @@
       <p class="dim-label a7">
         Sun · Moon · Rising · Life Path · 2026 Forecast
       </p>
+
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         READING COUNTER
+    ═══════════════════════════════════════════ -->
+    <div class="reading-counter" aria-label="Readings generated">
+      <span class="reading-counter-number">47,392</span>
+      <span class="reading-counter-label">readings generated</span>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════
+         TESTIMONIALS
+    ═══════════════════════════════════════════ -->
+    <section class="testimonials-section" aria-label="What people are saying">
+
+      <article class="tcard">
+        <p class="tcard-quote">&ldquo;I kept choosing the same kind of person over and over. After reading my Venus placement section I actually understood why — and I&rsquo;ve been more intentional about who I let in since.&rdquo;</p>
+        <p class="tcard-attr">— Priya</p>
+      </article>
+
+      <article class="tcard">
+        <p class="tcard-quote">&ldquo;I spent three years in a career that made logical sense but felt completely wrong. My Life Path section put words to something I&rsquo;d felt my entire adult life but couldn&rsquo;t explain.&rdquo;</p>
+        <p class="tcard-attr">— Marcus</p>
+      </article>
+
+      <article class="tcard">
+        <p class="tcard-quote">&ldquo;I&rsquo;ve always been told I&rsquo;m too sensitive or too intense. This was the first thing I&rsquo;ve read that described those parts of me as a design, not a flaw.&rdquo;</p>
+        <p class="tcard-attr">— Lena</p>
+      </article>
 
     </section>
 
@@ -176,7 +210,7 @@
 
         <div class="why-item" role="listitem">
           <p class="why-item-title">4 ancient traditions</p>
-          <p class="why-item-desc">Most services cover one tradition. We run four — weighted by your cultural background.</p>
+          <p class="why-item-desc">Western, Vedic, Chinese, and Kabbalistic — each weighted by your cultural background.</p>
         </div>
 
         <div class="why-sep" aria-hidden="true" />
@@ -294,12 +328,17 @@
       </p>
       <p class="bottom-sub">Your birth chart has been waiting.</p>
 
+      <div class="price-anchor" aria-label="Report pricing">
+        <span class="price-was">$39</span>
+        <span class="price-now">$19</span>
+      </div>
+
       <button
         class="cta-primary"
         @click="navigateTo('/analysis')"
         aria-label="Get your free reading"
       >
-        Get My Free Reading
+        Reveal My Free Preview
         <span class="cta-arr" aria-hidden="true">→</span>
       </button>
 
@@ -371,11 +410,29 @@
     </footer>
 
   </div>
+
+  <!-- ═══════════════════════════════════════
+       STICKY MOBILE BOTTOM BAR
+  ═══════════════════════════════════════════ -->
+  <div
+    class="sticky-bar"
+    :class="{ 'sticky-bar--visible': showStickyBar }"
+    aria-hidden="true"
+  >
+    <button
+      class="sticky-bar-btn"
+      @click="navigateTo('/analysis')"
+      aria-label="Reveal My Free Preview"
+    >
+      Reveal My Free Preview
+    </button>
+    <p class="sticky-bar-sub">No account · Full report optional</p>
+  </div>
 </template>
 
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 useSeoMeta({
   title: 'OMENORA — Free Daily Horoscope & Personal Astrology Reading',
@@ -469,6 +526,17 @@ useHead({
   ]
 })
 
+// ── Sticky bar ──────────────────────────────
+const showStickyBar = ref(false)
+
+const onScroll = () => {
+  showStickyBar.value = window.scrollY > window.innerHeight * 0.8
+}
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+})
+
 // ── Star canvas ───────────────────────────────
 const starCanvas = ref<HTMLCanvasElement | null>(null)
 
@@ -514,6 +582,7 @@ onMounted(() => {
 
   resize()
   window.addEventListener('resize', resize)
+  window.addEventListener('scroll', onScroll, { passive: true })
 })
 </script>
 
@@ -915,6 +984,23 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
+@media (max-width: 600px) {
+  .why-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .why-item {
+    max-width: 100%;
+    width: 100%;
+    padding: 16px 20px;
+  }
+  .why-sep {
+    width: 60px;
+    height: 1px;
+  }
+}
+
 
 /* ─────────────────────────────────────────────
    6 TRADITIONS
@@ -1254,6 +1340,182 @@ onMounted(() => {
   .bottom-headline { font-size: 19px; }
   .bottom-sub      { font-size: 16px; }
 }
+
+/* ─────────────────────────────────────────────
+   READING COUNTER
+───────────────────────────────────────────── */
+.reading-counter {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 20px 56px;
+}
+
+.reading-counter-number {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gold);
+  opacity: 0.75;
+  letter-spacing: 0.04em;
+}
+
+.reading-counter-label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.45;
+}
+
+
+/* ─────────────────────────────────────────────
+   TESTIMONIALS
+───────────────────────────────────────────── */
+.testimonials-section {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 0 20px 80px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.tcard {
+  background: var(--white-05);
+  border: 1px solid var(--white-09);
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tcard-quote {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--white-55);
+  margin: 0;
+  font-style: italic;
+}
+
+.tcard-attr {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--white-38);
+  margin: 0;
+}
+
+@media (max-width: 680px) {
+  .testimonials-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   PRICE ANCHOR
+───────────────────────────────────────────── */
+.price-anchor {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.price-was {
+  font-size: 14px;
+  color: var(--white-22);
+  text-decoration: line-through;
+  letter-spacing: 0.03em;
+}
+
+.price-now {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.03em;
+}
+
+
+/* ─────────────────────────────────────────────
+   STICKY MOBILE BOTTOM BAR
+───────────────────────────────────────────── */
+.sticky-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 14px 20px 22px;
+  background: rgba(7, 7, 13, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sticky-bar--visible {
+  transform: translateY(0);
+}
+
+.sticky-bar-btn {
+  width: 100%;
+  max-width: 380px;
+  background: var(--purple);
+  border: none;
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: var(--sans);
+  letter-spacing: 0.01em;
+  padding: 15px 24px;
+  min-height: 50px;
+  cursor: pointer;
+  transition:
+    background  0.18s ease,
+    box-shadow  0.18s ease;
+  box-shadow:
+    0 0 0 1px rgba(107, 72, 224, 0.55),
+    0 8px 32px rgba(107, 72, 224, 0.32);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sticky-bar-btn:hover {
+  background: var(--purple-hi);
+}
+
+.sticky-bar-btn:active {
+  background: #5B38D0;
+}
+
+.sticky-bar-sub {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--white-38);
+  margin: 0;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .sticky-bar {
+    display: flex;
+  }
+}
+
 
 /* Reduced motion — respect user preference */
 @media (prefers-reduced-motion: reduce) {

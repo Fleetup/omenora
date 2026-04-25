@@ -108,6 +108,8 @@
         <input id="bday-year" name="bday-year" type="hidden" autocomplete="bday-year" :value="birthYear">
       </div>
 
+      <p class="privacy-note">Used only to calculate your planetary positions.</p>
+
       <button
         class="cta-button"
         :class="{ disabled: !dateStep2Valid }"
@@ -140,6 +142,8 @@
           @blur="focusedField = null"
         >
       </div>
+
+      <p class="privacy-note">Used only to determine the horizon position at your birth. Never stored or sold.</p>
 
       <button
         class="cta-button"
@@ -324,6 +328,9 @@
         {{ isCalculating ? 'Calculating…' : t('revealDestiny') }}
       </button>
     </template>
+
+    <!-- Persistent trust footer — all steps -->
+    <p class="trust-footer">&#128274; Your birth data is used only to generate your reading. Never sold.</p>
   </div>
 </template>
 
@@ -1699,6 +1706,28 @@ async function handleSubmit() {
     font-size: 28px;
   }
 }
+
+/* ─────────────────────────────────────────────
+   PRIVACY & TRUST COPY
+───────────────────────────────────────────── */
+.privacy-note {
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.28);
+  text-align: center;
+  margin: 0 0 20px;
+  letter-spacing: 0.01em;
+}
+
+.trust-footer {
+  font-size: 10px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.22);
+  text-align: center;
+  margin: 40px 0 0;
+  letter-spacing: 0.02em;
+}
+
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
