@@ -20,12 +20,12 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
   const ctaUrl = data.sessionId
     ? `https://omenora.com/preview?tempId=${encodeURIComponent(data.sessionId)}`
     : 'https://omenora.com/preview'
-  const templates: Record<Lang, Record<number, { subject: string; preview: string; html: string }>> = {
+  const templates: Record<Lang, Record<number, { subject: string; preview: string; html: string; text: string }>> = {
     EN: {
       1: {
         subject: `${data.firstName}, your ${data.archetypeName} reading is still here`,
         preview: `We held it for you. It won't be here forever.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -45,7 +45,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       2: {
         subject: `What the ${data.archetypeName} never finds out about themselves`,
         preview: `This is in your locked sections.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -71,7 +71,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       3: {
         subject: `${data.firstName} — your reading expires tomorrow`,
         preview: `After that, your reading will no longer be accessible.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -92,7 +92,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       4: {
         subject: `Last chance. Your ${data.archetypeName} reading deletes tonight.`,
         preview: `This is the last email we'll send.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -113,7 +113,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       1: {
         subject: `${data.firstName}, tu lectura de ${data.archetypeName} sigue aquí`,
         preview: `La guardamos para ti. No estará aquí para siempre.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -133,7 +133,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       2: {
         subject: `Lo que el ${data.archetypeName} nunca descubre sobre sí mismo`,
         preview: `Esto está en tus secciones bloqueadas.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -157,7 +157,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       3: {
         subject: `${data.firstName} — tu lectura expira mañana`,
         preview: `Después de eso, tu análisis se elimina.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -176,7 +176,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       4: {
         subject: `Última oportunidad. Tu lectura de ${data.archetypeName} se elimina esta noche.`,
         preview: `Este es el último correo que enviaremos.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -196,7 +196,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       1: {
         subject: `${data.firstName}, sua leitura de ${data.archetypeName} ainda está aqui`,
         preview: `Guardamos para você. Não vai durar para sempre.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -216,7 +216,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       2: {
         subject: `O que o ${data.archetypeName} nunca descobre sobre si mesmo`,
         preview: `Isso está nas suas seções bloqueadas.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -238,7 +238,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       3: {
         subject: `${data.firstName} — sua leitura expira amanhã`,
         preview: `Depois disso, sua análise é deletada.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -256,7 +256,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       4: {
         subject: `Última chance. Sua leitura de ${data.archetypeName} é deletada hoje à noite.`,
         preview: `Este é o último e-mail que enviaremos.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -273,7 +273,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       1: {
         subject: `${data.firstName}님, 당신의 ${data.archetypeName} 리딩이 아직 여기 있습니다`,
         preview: `저희가 보관하고 있습니다. 영원히 있지는 않습니다.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -291,7 +291,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       2: {
         subject: `${data.archetypeName}이 자신에 대해 결코 알지 못하는 것`,
         preview: `이것은 잠긴 섹션에 있습니다.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -313,7 +313,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       3: {
         subject: `${data.firstName}님 — 리딩이 내일 만료됩니다`,
         preview: `이후에는 분석이 삭제됩니다.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -328,7 +328,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       4: {
         subject: `마지막 기회. ${data.archetypeName} 리딩이 오늘 밤 삭제됩니다.`,
         preview: `이것이 마지막 이메일입니다.`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -345,7 +345,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       1: {
         subject: `${data.firstName}，您的${data.archetypeName}解读仍在这里`,
         preview: `我们为您保留了它，但不会永远保留。`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -363,7 +363,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       2: {
         subject: `${data.archetypeName}从未发现的关于自己的事`,
         preview: `这在您的锁定部分中。`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -385,7 +385,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       3: {
         subject: `${data.firstName}——您的解读明天过期`,
         preview: `之后，您的分析将被删除。`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -400,7 +400,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       4: {
         subject: `最后机会。您的${data.archetypeName}解读今晚删除。`,
         preview: `这是我们发送的最后一封邮件。`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -417,7 +417,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       1: {
         subject: `${data.firstName}, आपकी ${data.archetypeName} रीडिंग अभी भी यहाँ है`,
         preview: `हमने इसे आपके लिए रखा है। यह हमेशा नहीं रहेगी।`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -435,7 +435,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       2: {
         subject: `वह जो ${data.archetypeName} खुद के बारे में कभी नहीं जान पाता`,
         preview: `यह आपके बंद अनुभागों में है।`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -457,7 +457,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       3: {
         subject: `${data.firstName} — आपकी रीडिंग कल समाप्त होती है`,
         preview: `उसके बाद, आपका विश्लेषण हटा दिया जाएगा।`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -472,7 +472,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
       4: {
         subject: `अंतिम मौका। आपकी ${data.archetypeName} रीडिंग आज रात हटा दी जाएगी।`,
         preview: `यह अंतिम ईमेल है जो हम भेजेंगे।`,
-        html: buildHtmlEmail({
+        ...buildHtmlEmail({
           emoji: data.archetypeEmoji,
           secret,
           ctaUrl,
@@ -559,7 +559,33 @@ function buildHtmlEmail({
   const unsubUrl = token
     ? `https://omenora.com/api/unsubscribe?token=${token}&e=${encodeURIComponent(email)}`
     : `https://omenora.com/api/unsubscribe?token=invalid&e=${encodeURIComponent(email)}`
-  return `<!DOCTYPE html>
+
+  const bodyPlain = body
+    .replace(/<li>/gi, '- ').replace(/<\/li>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#39;/g, "'")
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+  const text = [
+    `OMENORA`,
+    ``,
+    title,
+    ``,
+    bodyPlain,
+    ``,
+    `${ctaText}`,
+    ctaUrl,
+    ...(footerNote ? [``, footerNote] : []),
+    ``,
+    `---`,
+    `For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.`,
+    ``,
+    `OMENORA · To unsubscribe: ${unsubUrl}`,
+  ].join('\n')
+
+  const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -649,4 +675,6 @@ function buildHtmlEmail({
   </table>
 </body>
 </html>`
+
+  return { html, text }
 }

@@ -75,6 +75,7 @@ export default defineEventHandler(async (event) => {
       partnerName: partnerName ?? null,
       reportSessionId: reportSessionId ?? '',
       language,
+      unsubscribeSecret: config.emailJobSecret as string | undefined,
     })
     return { success: true, emailId }
   } catch (err: any) {

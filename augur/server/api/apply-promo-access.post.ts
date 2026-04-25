@@ -173,6 +173,7 @@ export default defineEventHandler(async (event) => {
         calendarData: null,
         birthChartData: null,
         language,
+        unsubscribeSecret: config.emailJobSecret as string | undefined,
       })
       emailSent = true
     } catch (err: any) {

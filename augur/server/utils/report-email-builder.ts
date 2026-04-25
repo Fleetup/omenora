@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { unsubscribeToken } from '~~/server/api/unsubscribe.get'
 
 const SYMBOL_TO_ID: Record<string, string> = {
   '●': 'phoenix',
@@ -53,6 +54,7 @@ export interface ReportEmailPayload {
   partnerName?: string | null
   reportSessionId?: string
   language?: string
+  unsubscribeSecret?: string
 }
 
 /**
@@ -81,6 +83,7 @@ export async function sendReportEmail(
     partnerName,
     reportSessionId,
     language = 'en',
+    unsubscribeSecret,
   } = payload
 
   let parsedReport = report
@@ -389,6 +392,11 @@ export async function sendReportEmail(
       `</div>`
   })()
 
+  const unsubToken = unsubscribeSecret ? unsubscribeToken(email, unsubscribeSecret) : ''
+  const unsubUrl = unsubToken
+    ? `https://omenora.com/api/unsubscribe?token=${unsubToken}&e=${encodeURIComponent(email)}`
+    : `https://omenora.com/api/unsubscribe?token=invalid&e=${encodeURIComponent(email)}`
+
   const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -482,7 +490,7 @@ export async function sendReportEmail(
       </p>
       <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0;">
         OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·
-        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe&body=${encodeURIComponent(email)}" style="color: rgba(255,255,255,0.15); text-decoration: underline;">Unsubscribe</a>
+        <a href="${unsubUrl}" style="color: rgba(255,255,255,0.15); text-decoration: underline;">Unsubscribe</a>
       </p>
     </div>
   </div>
@@ -510,7 +518,7 @@ export async function sendReportEmail(
     ``,
     `---`,
     `OMENORA · omenora.com`,
-    `To unsubscribe, email unsubscribe@omenora.com`,
+    `To unsubscribe: ${unsubUrl}`,
   ].join('\n')
 
   const resend = new Resend(resendApiKey)

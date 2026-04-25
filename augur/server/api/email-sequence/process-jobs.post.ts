@@ -100,13 +100,7 @@ export default defineEventHandler(async (event) => {
       sessionId:        capture.session_id         || undefined,
     }, expectedSecret)
 
-    const plainTextFallback = template.html
-      .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#39;/g, "'")
-      .replace(/[ \t]{2,}/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
+    const plainTextFallback = template.text
 
     let sendOk = false
     try {

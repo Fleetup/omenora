@@ -830,6 +830,7 @@ async function sendReportEmailViaWebhook(opts: {
       calendarData,
       birthChartData,
       language: opts.language,
+      unsubscribeSecret: opts.config.emailJobSecret as string | undefined,
     })
 
     await supabase

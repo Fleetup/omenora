@@ -169,7 +169,7 @@
           </p>
         </article>
 
-        <article class="card" aria-label="2026 Astrology Forecast">
+        <article class="card" :aria-label="`${currentYear} Astrology Forecast`">
           <div class="card-icon-bg">
             <img
               src="/symbols/Destiny Forecast copy.svg"
@@ -178,7 +178,7 @@
               class="card-icon"
             />
           </div>
-          <p class="card-title">2026 Astrology Forecast</p>
+          <p class="card-title">{{ currentYear }} Astrology Forecast</p>
           <p class="card-body">
             Month-by-month energy windows mapped to your
             natal chart — when to move, when to wait, and
@@ -326,6 +326,10 @@
         The answer to why your life keeps following the same path is already written.
       </p>
       <p class="bottom-sub">Your birth chart has been waiting.</p>
+
+      <p class="price-anchor" aria-label="Most popular bundle from $4.99, regular price $12.99">
+        <span class="price-anchor-was">$12.99</span> Most popular bundle from <span class="price-anchor-now">$4.99</span>
+      </p>
 
       <button
         class="cta-primary"
@@ -521,11 +525,15 @@ useHead({
   ]
 })
 
+// ── Current year ────────────────────────────
+const currentYear = new Date().getFullYear()
+
 // ── Sticky bar ──────────────────────────────
 const showStickyBar = ref(false)
 
 const onScroll = () => {
-  showStickyBar.value = window.scrollY > window.innerHeight * 0.8
+  const nearBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80
+  showStickyBar.value = window.scrollY > window.innerHeight * 0.8 && !nearBottom
 }
 
 onUnmounted(() => {
@@ -1194,7 +1202,25 @@ onMounted(() => {
   font-size: 18px;
   font-style: italic;
   color: var(--white-55);
-  margin: 0 0 36px;
+  margin: 0 0 20px;
+}
+
+.price-anchor {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--white-38);
+  text-align: center;
+  margin: 0 0 16px;
+}
+
+.price-anchor-was {
+  text-decoration: line-through;
+  color: var(--white-22);
+}
+
+.price-anchor-now {
+  color: var(--gold);
+  font-weight: 500;
 }
 
 
@@ -1477,6 +1503,10 @@ onMounted(() => {
 @media (max-width: 768px) {
   .sticky-bar {
     display: flex;
+  }
+
+  .site-footer {
+    padding-bottom: 112px;
   }
 }
 

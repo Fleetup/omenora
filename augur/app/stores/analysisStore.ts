@@ -57,6 +57,7 @@ export const useAnalysisStore = defineStore('analysis', {
     compatibilityData: null as any,
     language: 'en' as string,
     languageManualOverride: false as boolean,
+    clarityFocus: '' as string,
   }),
   actions: {
     setPersonalInfo(firstName: string, dob: string, city: string) {

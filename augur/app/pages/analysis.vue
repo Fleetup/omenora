@@ -4,13 +4,31 @@
     <div class="top-bar">
       <button class="back-btn" @click="goBack">←</button>
       <span class="brand">OMENORA</span>
-      <span class="step-indicator">{{ currentStep }} of 7</span>
+      <span v-if="currentStep >= 1" class="step-indicator">{{ currentStep }} of 7</span>
     </div>
 
     <!-- Progress bar -->
-    <div class="progress-bar">
+    <div v-if="currentStep >= 1" class="progress-bar">
       <div class="progress-fill" :style="{ width: (currentStep / 7 * 100) + '%' }" />
     </div>
+
+    <!-- Screen 0: Clarity focus pre-qualification -->
+    <template v-if="currentStep === 0">
+      <h1 class="heading">What do you want clarity on?</h1>
+      <p class="subheading">Your answer shapes how your reading is interpreted</p>
+
+      <div class="clarity-options">
+        <button
+          v-for="option in clarityOptions"
+          :key="option.value"
+          class="option-tile clarity-tile"
+          :class="{ selected: store.clarityFocus === option.value }"
+          @click="selectClarityFocus(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      </div>
+    </template>
 
     <!-- Screen 1: First Name -->
     <template v-if="currentStep === 1">
@@ -346,11 +364,23 @@ useSeoMeta({ title: 'Your Free Personality & Astrology Reading', robots: 'noinde
 
 const store = useAnalysisStore()
 const { t } = useLanguage()
-const currentStep = ref(1)
+const currentStep = ref(0)
 const focusedField = ref<string | null>(null)
 const isCalculating = ref(false)
 const submitError   = ref<string | null>(null)
 const timeKnown     = ref<boolean | null>(null)
+
+const clarityOptions = [
+  { label: 'Love & Relationships', value: 'love' },
+  { label: 'Career & Purpose',     value: 'career' },
+  { label: 'Who I Actually Am',    value: 'identity' },
+  { label: 'My Path Forward',      value: 'path' },
+]
+
+function selectClarityFocus(value: string) {
+  store.clarityFocus = value
+  currentStep.value = 1
+}
 
 function selectLanguage(code: string) {
   store.setLanguageOverride(code)
@@ -1609,6 +1639,27 @@ async function handleSubmit() {
   color: rgba(200, 180, 255, 0.92);
   transform: scale(1.02);
   animation: tilePulse 0.15s ease forwards;
+}
+
+
+/* ─────────────────────────────────────────────
+   CLARITY FOCUS — step 0
+───────────────────────────────────────────── */
+.clarity-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.clarity-tile {
+  flex: unset;
+  width: 100%;
+  min-height: 60px;
+  font-size: 15px;
+  text-align: center;
+  padding: 18px 20px;
+  color: rgba(255, 255, 255, 0.60);
 }
 
 
