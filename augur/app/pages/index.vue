@@ -33,15 +33,11 @@
       <h1 class="brand a2">OMENORA</h1>
 
       <!-- Headline -->
-      <p class="hero-headline a3">
-        Your natal chart.<br>
-        Your personality archetype.<br>
-        Decoded across 4 ancient traditions.
-      </p>
+      <p class="hero-headline a3" v-html="heroVariant.headline" />
 
       <!-- Sub-headline -->
       <p class="hero-sub a4">
-        Most horoscopes are written for 1 in 12 people. This calculates your exact planetary positions at the minute you were born — then maps them across 4 traditions to build something written for you specifically.
+        {{ heroVariant.subheadline }}
       </p>
 
       <!-- Trust strip -->
@@ -62,8 +58,7 @@
         @click="navigateTo('/analysis')"
         aria-label="Get your free astrology and personality reading"
       >
-        Reveal My Free Preview
-        <span class="cta-arr" aria-hidden="true">→</span>
+        {{ heroVariant.ctaLabel }}
       </button>
 
       <!-- Dimension label -->
@@ -433,6 +428,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 const { $trackLandingView } = useNuxtApp() as any
 
+const heroVariant = ref({
+  headline:    'Your natal chart.<br>Your personality archetype.<br>Decoded across 4 ancient traditions.',
+  subheadline: 'Most horoscopes are written for 1 in 12 people. This calculates your exact planetary positions at the minute you were born — then maps them across 4 traditions to build something written for you specifically.',
+  ctaLabel:    'Reveal My Free Preview →',
+})
+
 useSeoMeta({
   title: 'OMENORA — Free Daily Horoscope & Personal Astrology Reading',
   description:
@@ -555,6 +556,38 @@ onMounted(async () => {
   }
 
   $trackLandingView()
+
+  // ── Hero variant from utm_creative ──────────────────────────────────────
+  const utmCreative = new URLSearchParams(window.location.search).get('utm_creative')?.toLowerCase() ?? ''
+  const archetypeNames = [
+    'wildfire', 'oracle', 'shadow', 'mirror', 'sage', 'sovereign',
+    'dreamer', 'seeker', 'guardian', 'catalyst', 'weaver', 'ember',
+  ]
+  if (utmCreative.includes('relationship') || utmCreative.includes('trust')) {
+    heroVariant.value = {
+      headline:    "You don't attract the wrong people by accident.",
+      subheadline: 'Your Venus placement and archetype reveal the pattern.',
+      ctaLabel:    'See My Relationship Pattern →',
+    }
+  } else if (utmCreative.includes('pattern') || utmCreative.includes('2026')) {
+    heroVariant.value = {
+      headline:    "You've been repeating the same pattern for years.",
+      subheadline: 'Your birth chart shows the exact window where it breaks.',
+      ctaLabel:    'Find My 2026 Window →',
+    }
+  } else if (utmCreative.includes('accuracy') || utmCreative.includes('unsaid')) {
+    heroVariant.value = {
+      headline:    'It described things about me I never typed.',
+      subheadline: 'Calculated from your exact birth minute — not your sun sign.',
+      ctaLabel:    'Reveal My Reading →',
+    }
+  } else if (utmCreative.includes('archetype') || archetypeNames.some(name => utmCreative.includes(name))) {
+    heroVariant.value = {
+      headline:    "Most people never find out what's actually driving them.",
+      subheadline: 'Your archetype is written in your birth data. Not your sun sign.',
+      ctaLabel:    'Find My Archetype →',
+    }
+  }
 
   const canvas = starCanvas.value
   if (!canvas) return

@@ -120,19 +120,34 @@ export default defineNuxtPlugin(() => {
   }
 
   // ─── B-3: UTM + context helpers ─────────────────────────────────────────────
+  const UTM_SESSION_KEY = 'omenora_utms'
+  const UTM_KEYS = ['utm_source', 'utm_campaign', 'utm_adset', 'utm_creative', 'utm_medium', 'utm_content'] as const
+
   function getUtmParams(): Record<string, string> {
+    try {
+      const stored = sessionStorage.getItem(UTM_SESSION_KEY)
+      if (stored) return JSON.parse(stored) as Record<string, string>
+    } catch {
+      // sessionStorage unavailable or corrupt — fall through to URL
+    }
     try {
       const sp = new URLSearchParams(window.location.search)
       const result: Record<string, string> = {}
-      for (const key of ['utm_source', 'utm_campaign', 'utm_adset', 'utm_creative', 'utm_medium', 'utm_content']) {
+      for (const key of UTM_KEYS) {
         const val = sp.get(key)
         if (val) result[key] = val
+      }
+      if (Object.keys(result).length > 0) {
+        try { sessionStorage.setItem(UTM_SESSION_KEY, JSON.stringify(result)) } catch { /* quota exceeded */ }
       }
       return result
     } catch {
       return {}
     }
   }
+
+  // Seed sessionStorage on plugin init so UTMs are captured from the landing URL
+  getUtmParams()
 
   function getDeviceType(): string {
     try {
