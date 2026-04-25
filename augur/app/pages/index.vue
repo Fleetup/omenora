@@ -75,33 +75,32 @@
 
 
     <!-- ═══════════════════════════════════════
-         READING COUNTER
+         STATS
     ═══════════════════════════════════════════ -->
-    <div class="reading-counter" aria-label="Readings generated">
-      <span class="reading-counter-number">47,392</span>
-      <span class="reading-counter-label">readings generated</span>
-    </div>
+    <section class="stats-section" aria-label="Key statistics">
 
+      <div class="stats-row">
 
-    <!-- ═══════════════════════════════════════
-         TESTIMONIALS
-    ═══════════════════════════════════════════ -->
-    <section class="testimonials-section" aria-label="What people are saying">
+        <div class="stat-item">
+          <span class="stat-number">47,392</span>
+          <span class="stat-label">readings generated</span>
+        </div>
 
-      <article class="tcard">
-        <p class="tcard-quote">&ldquo;I kept choosing the same kind of person over and over. After reading my Venus placement section I actually understood why — and I&rsquo;ve been more intentional about who I let in since.&rdquo;</p>
-        <p class="tcard-attr">— Priya</p>
-      </article>
+        <div class="stat-sep" aria-hidden="true" />
 
-      <article class="tcard">
-        <p class="tcard-quote">&ldquo;I spent three years in a career that made logical sense but felt completely wrong. My Life Path section put words to something I&rsquo;d felt my entire adult life but couldn&rsquo;t explain.&rdquo;</p>
-        <p class="tcard-attr">— Marcus</p>
-      </article>
+        <div class="stat-item">
+          <span class="stat-number">4</span>
+          <span class="stat-label">ancient traditions</span>
+        </div>
 
-      <article class="tcard">
-        <p class="tcard-quote">&ldquo;I&rsquo;ve always been told I&rsquo;m too sensitive or too intense. This was the first thing I&rsquo;ve read that described those parts of me as a design, not a flaw.&rdquo;</p>
-        <p class="tcard-attr">— Lena</p>
-      </article>
+        <div class="stat-sep" aria-hidden="true" />
+
+        <div class="stat-item">
+          <span class="stat-number">60 sec</span>
+          <span class="stat-label">average delivery time</span>
+        </div>
+
+      </div>
 
     </section>
 
@@ -433,6 +432,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+const { $trackLandingView } = useNuxtApp() as any
 
 useSeoMeta({
   title: 'OMENORA — Free Daily Horoscope & Personal Astrology Reading',
@@ -541,6 +541,8 @@ onUnmounted(() => {
 const starCanvas = ref<HTMLCanvasElement | null>(null)
 
 onMounted(() => {
+  $trackLandingView()
+
   const canvas = starCanvas.value
   if (!canvas) return
   const ctx = canvas.getContext('2d')
@@ -1342,79 +1344,69 @@ onMounted(() => {
 }
 
 /* ─────────────────────────────────────────────
-   READING COUNTER
+   STATS
 ───────────────────────────────────────────── */
-.reading-counter {
+.stats-section {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 7px;
-  padding: 0 20px 56px;
-}
-
-.reading-counter-number {
-  font-family: var(--serif);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--gold);
-  opacity: 0.75;
-  letter-spacing: 0.04em;
-}
-
-.reading-counter-label {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--gold);
-  opacity: 0.45;
-}
-
-
-/* ─────────────────────────────────────────────
-   TESTIMONIALS
-───────────────────────────────────────────── */
-.testimonials-section {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
   padding: 0 20px 80px;
-  max-width: 860px;
+  max-width: 680px;
   margin: 0 auto;
 }
 
-.tcard {
-  background: var(--white-05);
-  border: 1px solid var(--white-09);
-  border-radius: 16px;
-  padding: 22px 20px;
+.stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.stat-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 16px;
 }
 
-.tcard-quote {
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--white-70);
-  margin: 0;
-  font-style: italic;
+.stat-number {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--gold);
+  opacity: 0.85;
+  letter-spacing: 0.03em;
+  line-height: 1;
 }
 
-.tcard-attr {
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  color: var(--white-55);
-  margin: 0;
+.stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white-38);
 }
 
-@media (max-width: 680px) {
-  .testimonials-section {
-    grid-template-columns: 1fr;
+.stat-sep {
+  width: 1px;
+  height: 36px;
+  background: var(--white-09);
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .stats-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .stat-item {
+    width: 100%;
+    padding: 18px 20px;
+  }
+  .stat-sep {
+    width: 60px;
+    height: 1px;
   }
 }
 
