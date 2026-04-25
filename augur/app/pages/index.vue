@@ -971,9 +971,9 @@ onMounted(() => {
 }
 
 .why-item-desc {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.55;
-  color: var(--white-38);
+  color: var(--white-55);
   margin: 0;
 }
 
@@ -1108,9 +1108,9 @@ onMounted(() => {
 }
 
 .how-desc {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.60;
-  color: var(--white-38);
+  color: var(--white-55);
   margin: 0;
   padding: 0 4px;
 }
@@ -1398,17 +1398,17 @@ onMounted(() => {
 }
 
 .tcard-quote {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.7;
-  color: var(--white-55);
+  color: var(--white-70);
   margin: 0;
   font-style: italic;
 }
 
 .tcard-attr {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.05em;
-  color: var(--white-38);
+  color: var(--white-55);
   margin: 0;
 }
 
