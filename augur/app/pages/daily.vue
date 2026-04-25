@@ -268,8 +268,10 @@
       <p class="cta-copy">
         Your horoscope is the general reading. Get a full personal report built from your exact birth date, time, and city.
       </p>
-      <button class="cta-primary" @click="navigateTo('/')">
-        Get My Personal Reading
+      <button class="cta-primary" @click="navigateTo('/analysis')">
+        <template v-if="featuredSign">See What YOUR Chart Says Beyond {{ signDisplayName(featuredSign) }}</template>
+        <template v-else-if="featuredArchetype">Get Your Full {{ archetypeDisplayName(featuredArchetype) }} Reading</template>
+        <template v-else>Get My Personal Reading</template>
         <span class="cta-arr" aria-hidden="true">→</span>
       </button>
     </section>
@@ -289,7 +291,7 @@
         <NuxtLink to="/subscribe" class="daily-sub-btn">
           Start Personal Horoscope →
         </NuxtLink>
-        <p class="daily-sub-note">Complete your free reading first, then subscribe</p>
+        <p class="daily-sub-note">Cancel anytime · No commitment</p>
       </div>
     </div>
 

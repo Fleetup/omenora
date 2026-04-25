@@ -82,7 +82,7 @@
       <div class="stats-row">
 
         <div class="stat-item">
-          <span class="stat-number">47,392</span>
+          <span class="stat-number">{{ readingCount }}</span>
           <span class="stat-label">readings generated</span>
         </div>
 
@@ -542,8 +542,18 @@ onUnmounted(() => {
 
 // ── Star canvas ───────────────────────────────
 const starCanvas = ref<HTMLCanvasElement | null>(null)
+const readingCount = ref('47,392')
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const data = await $fetch<{ count: number }>('/api/get-reading-count')
+    if (data?.count) {
+      readingCount.value = data.count.toLocaleString('en-US')
+    }
+  } catch {
+    // silently keep fallback
+  }
+
   $trackLandingView()
 
   const canvas = starCanvas.value
