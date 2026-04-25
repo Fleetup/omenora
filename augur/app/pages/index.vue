@@ -327,11 +327,6 @@
       </p>
       <p class="bottom-sub">Your birth chart has been waiting.</p>
 
-      <div class="price-anchor" aria-label="Report pricing">
-        <span class="price-was">$39</span>
-        <span class="price-now">$19</span>
-      </div>
-
       <button
         class="cta-primary"
         @click="navigateTo('/analysis')"
@@ -961,7 +956,8 @@ onMounted(() => {
   gap: 6px;
   padding: 12px 28px;
   flex: 1;
-  max-width: 200px;
+  min-width: 0;
+  text-align: center;
 }
 
 .why-item-title {
@@ -970,6 +966,7 @@ onMounted(() => {
   color: var(--white-94);
   margin: 0;
   letter-spacing: 0.01em;
+  text-align: center;
 }
 
 .why-item-desc {
@@ -977,6 +974,7 @@ onMounted(() => {
   line-height: 1.55;
   color: var(--white-55);
   margin: 0;
+  text-align: center;
 }
 
 .why-sep {
@@ -1408,32 +1406,6 @@ onMounted(() => {
     width: 60px;
     height: 1px;
   }
-}
-
-
-/* ─────────────────────────────────────────────
-   PRICE ANCHOR
-───────────────────────────────────────────── */
-.price-anchor {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.price-was {
-  font-size: 14px;
-  color: var(--white-22);
-  text-decoration: line-through;
-  letter-spacing: 0.03em;
-}
-
-.price-now {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--gold);
-  letter-spacing: 0.03em;
 }
 
 
