@@ -19,12 +19,10 @@
     <!-- Top bar -->
     <div class="top-bar">
       <button
-        v-if="currentStep > 1"
         class="back-btn"
         aria-label="Go back"
         @click="goBack"
       >←</button>
-      <span v-else class="back-placeholder" />
       <span class="brand">OMENORA</span>
       <span class="step-indicator">{{ currentStep }} of 3</span>
     </div>
@@ -691,8 +689,6 @@ onUnmounted(() => {
 }
 
 .back-btn:hover { color: rgba(255, 255, 255, 0.75); }
-
-.back-placeholder { width: 44px; }
 
 .brand {
   font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
