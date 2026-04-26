@@ -64,7 +64,7 @@
         class="mobile-drawer"
         :class="{ 'mobile-drawer--open': navOpen }"
         role="dialog"
-        :aria-hidden="!navOpen"
+        :inert="!navOpen"
         aria-label="Mobile navigation"
       >
         <nav class="mobile-drawer-nav">

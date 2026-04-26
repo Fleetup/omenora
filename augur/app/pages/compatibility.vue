@@ -30,6 +30,9 @@
   <div v-else-if="!isPreviewMode && compatibility" class="compat-page">
 
     <div class="top-bar">
+      <button class="top-bar-back" aria-label="Go back" @click="navigateTo('/')">
+        <span aria-hidden="true">←</span>
+      </button>
       <p class="top-brand">OMENORA</p>
       <span class="report-label">{{ t('compatReading') }}</span>
     </div>
@@ -68,6 +71,9 @@
 
     <!-- Top bar -->
     <div class="top-bar">
+      <button class="top-bar-back" aria-label="Go back" @click="navigateTo('/compatibility-quiz')">
+        <span aria-hidden="true">←</span>
+      </button>
       <p class="top-brand">OMENORA</p>
       <span class="preview-badge">FREE PREVIEW</span>
     </div>
@@ -618,6 +624,28 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
+}
+
+.top-bar-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.top-bar-back:hover {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .top-brand {

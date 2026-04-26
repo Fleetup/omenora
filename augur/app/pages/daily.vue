@@ -9,10 +9,89 @@
     <!-- ═══════════════════════════════════════
          HEADER
     ═══════════════════════════════════════════ -->
-    <header class="site-header" role="banner">
-      <NuxtLink to="/" class="header-logo" aria-label="OMENORA home">
-        OMENORA
-      </NuxtLink>
+    <header class="site-header" :class="{ 'site-header--scrolled': headerScrolled }" role="banner">
+      <div class="header-inner">
+
+        <NuxtLink to="/" class="header-logo" aria-label="OMENORA — home">OMENORA</NuxtLink>
+
+        <nav class="header-nav" aria-label="Main navigation">
+          <NuxtLink to="/daily" class="header-nav-link header-nav-link--active">
+            <span class="header-nav-glyph" aria-hidden="true">☽</span>
+            Daily Horoscope
+          </NuxtLink>
+          <span class="header-nav-sep" aria-hidden="true" />
+          <NuxtLink to="/compatibility-quiz" class="header-nav-link">
+            <span class="header-nav-glyph" aria-hidden="true">✦</span>
+            Compatibility
+          </NuxtLink>
+        </nav>
+
+        <div class="header-actions">
+          <button
+            class="header-cta"
+            @click="navigateTo('/analysis')"
+            aria-label="Get your free reading"
+          >
+            Get My Reading
+            <span class="header-cta-arr" aria-hidden="true">→</span>
+          </button>
+
+          <button
+            class="header-hamburger"
+            :class="{ 'header-hamburger--open': navOpen }"
+            :aria-expanded="navOpen"
+            aria-controls="mobile-nav-daily"
+            aria-label="Toggle navigation"
+            @click="navOpen = !navOpen"
+          >
+            <span /><span /><span />
+          </button>
+        </div>
+
+      </div>
+
+      <div
+        id="mobile-nav-daily"
+        class="mobile-drawer"
+        :class="{ 'mobile-drawer--open': navOpen }"
+        role="dialog"
+        :inert="!navOpen"
+        aria-label="Mobile navigation"
+      >
+        <nav class="mobile-drawer-nav">
+          <NuxtLink
+            to="/daily"
+            class="mobile-nav-link mobile-nav-link--active"
+            @click="navOpen = false"
+          >
+            <span class="mobile-nav-glyph" aria-hidden="true">☽</span>
+            Daily Horoscope
+          </NuxtLink>
+          <NuxtLink
+            to="/compatibility-quiz"
+            class="mobile-nav-link mobile-nav-link--compat"
+            @click="navOpen = false"
+          >
+            <span class="mobile-nav-glyph" aria-hidden="true">✦</span>
+            Compatibility Reading
+            <span class="mobile-nav-badge">Free Preview</span>
+          </NuxtLink>
+        </nav>
+        <button
+          class="mobile-drawer-cta"
+          @click="navigateTo('/analysis'); navOpen = false"
+        >
+          Get My Free Reading →
+        </button>
+        <p class="mobile-drawer-sub">No account · Results in 60 seconds</p>
+      </div>
+
+      <div
+        v-if="navOpen"
+        class="drawer-backdrop"
+        aria-hidden="true"
+        @click="navOpen = false"
+      />
     </header>
 
 
@@ -314,8 +393,13 @@
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+
+// ── Header state ─────────────────────────────
+const navOpen        = ref(false)
+const headerScrolled = ref(false)
+const onScroll = () => { headerScrolled.value = window.scrollY > 24 }
 
 // ── SEO ───────────────────────────────────────
 useSeoMeta({
@@ -474,6 +558,7 @@ function firstSentence(text: string): string {
 // ── Fetch on mount ─────────────────────────────
 onMounted(async () => {
   moonPhase.value = computeMoonPhase(today)
+  window.addEventListener('scroll', onScroll, { passive: true })
 
   const tabParam = route.query.tab
   if (tabParam === 'archetype' || (route.query.archetype && typeof route.query.archetype === 'string')) {
@@ -498,6 +583,10 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
 })
 </script>
 
@@ -557,22 +646,296 @@ onMounted(async () => {
    HEADER
 ───────────────────────────────────────────── */
 .site-header {
-  position: relative;
-  z-index: 10;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  transition: background 0.28s ease, border-color 0.28s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.site-header--scrolled {
+  background: rgba(7, 7, 13, 0.82);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 28px;
-  border-bottom: 1px solid var(--white-09);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 64px;
+  gap: 24px;
 }
 
 .header-logo {
   font-family: var(--serif);
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-size: 15px;
+  letter-spacing: 0.22em;
   color: var(--white-94);
   text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.header-logo:hover { opacity: 0.75; }
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.header-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--white-55);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: color 0.18s ease, background 0.18s ease;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-nav-link:hover,
+.header-nav-link--active {
+  color: var(--white-94);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.header-nav-glyph {
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.header-nav-sep {
+  display: block;
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.header-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--purple);
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--sans);
+  letter-spacing: 0.02em;
+  padding: 10px 20px;
+  min-height: 40px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+  box-shadow:
+    0 0 0 1px rgba(107, 72, 224, 0.50),
+    0 4px 16px rgba(107, 72, 224, 0.28);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-cta:hover {
+  background: var(--purple-hi);
+  box-shadow:
+    0 0 0 1px rgba(123, 90, 242, 0.60),
+    0 8px 28px rgba(107, 72, 224, 0.40);
+  transform: translateY(-1px);
+}
+
+.header-cta:active {
+  transform: translateY(0) scale(0.97);
+  background: #5B38D0;
+}
+
+.header-cta-arr {
+  font-size: 14px;
+  transition: transform 0.15s ease;
+}
+
+.header-cta:hover .header-cta-arr { transform: translateX(3px); }
+
+.header-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-hamburger:hover { background: rgba(255, 255, 255, 0.06); }
+
+.header-hamburger span {
+  display: block;
+  height: 1.5px;
+  background: var(--white-70);
+  border-radius: 2px;
+  transform-origin: center;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease, width 0.22s ease;
+}
+
+.header-hamburger span:nth-child(1) { width: 100%; }
+.header-hamburger span:nth-child(2) { width: 75%; }
+.header-hamburger span:nth-child(3) { width: 100%; }
+
+.header-hamburger--open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); width: 100%; }
+.header-hamburger--open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.header-hamburger--open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); width: 100%; }
+
+.mobile-drawer {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 190;
+  background: rgba(9, 8, 18, 0.97);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0 24px 28px;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+}
+
+.mobile-drawer--open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-drawer-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 20px;
+  gap: 2px;
+}
+
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 4px;
+  font-size: 16px;
+  color: var(--white-70);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  border-radius: 10px;
+  transition: color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-link--active,
+.mobile-nav-link:hover { color: var(--white-94); }
+
+.mobile-nav-link--compat { color: rgba(201, 168, 76, 0.85); }
+.mobile-nav-link--compat:hover { color: var(--gold); }
+
+.mobile-nav-glyph {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.mobile-nav-badge {
+  margin-left: auto;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.65);
+  border: 1px solid rgba(201, 168, 76, 0.22);
+  border-radius: 3px;
+  padding: 3px 8px;
+  flex-shrink: 0;
+}
+
+.mobile-drawer-cta {
+  width: 100%;
+  background: var(--purple);
+  border: none;
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--sans);
+  letter-spacing: 0.01em;
+  padding: 16px 24px;
+  min-height: 52px;
+  cursor: pointer;
+  transition: background 0.18s ease;
+  box-shadow: 0 0 0 1px rgba(107, 72, 224, 0.55), 0 6px 24px rgba(107, 72, 224, 0.30);
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 12px;
+}
+
+.mobile-drawer-cta:hover  { background: var(--purple-hi); }
+.mobile-drawer-cta:active { background: #5B38D0; }
+
+.mobile-drawer-sub {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--white-38);
+  margin: 0;
+  text-align: center;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+@media (max-width: 768px) {
+  .header-inner     { padding: 0 20px; height: 58px; }
+  .header-nav       { display: none; }
+  .header-cta       { display: none; }
+  .header-hamburger { display: flex; }
+  .mobile-drawer    { top: 58px; }
+}
+
+@media (min-width: 769px) {
+  .mobile-drawer    { display: none; }
+  .drawer-backdrop  { display: none; }
 }
 
 
@@ -587,7 +950,11 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 64px 24px 32px;
+  padding: 120px 24px 32px; /* 64px content + 56px fixed header clearance */
+}
+
+@media (max-width: 768px) {
+  .hero { padding-top: 100px; }
 }
 
 .hero-eyebrow {
