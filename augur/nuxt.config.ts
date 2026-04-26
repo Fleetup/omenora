@@ -19,6 +19,8 @@ export default defineNuxtConfig({
     supabaseUrl: '',
     supabaseServiceKey: '',
     stripeDailyPriceId: '',
+    stripeCompatPlusPriceId: '',
+    stripeCompatSinglePriceId: '',
     emailJobSecret: '',
     stripeWebhookSecret: '',
     redisUrl: '',

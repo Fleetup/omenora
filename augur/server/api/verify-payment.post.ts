@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
       'firstName', 'archetype', 'lifePathNumber', 'region', 'language',
       'dateOfBirth', 'bundle', 'oracle', 'birth_chart', 'type',
       'tradition_switch', 'newTradition', 'reportId', 'customerId',
-      'email', 'partnerName',
+      'email', 'partnerName', 'partnerDob', 'partnerCity', 'tier',
     ]
     for (const key of ALLOWED_META_KEYS) {
       if (raw[key] !== undefined) metadata[key] = raw[key]!

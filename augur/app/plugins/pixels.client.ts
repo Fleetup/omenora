@@ -397,6 +397,10 @@ export default defineNuxtPlugin(() => {
           ...getUtmParams(),
         })
       },
+
+      trackCustomEvent: (eventName: string, params?: Record<string, unknown>) => {
+        safeTrack(eventName, { ...params, device_type: getDeviceType(), ...getUtmParams() })
+      },
     },
   }
 })

@@ -1,29 +1,99 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
-import { CompatibilitySchema, type CompatibilityType } from '~~/server/utils/ai-schemas'
+import { CompatibilitySchema, type CompatibilityType, type CompatibilityReceiptType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
+import { getSunSign, getLifePathNumber } from '~~/server/utils/quick-signs'
+import { calculateNatalChart, assignArchetypeFromChart } from '~~/app/utils/natalChart'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
 
   const body = await readBody(event)
 
+  // ── Raw field extraction ─────────────────────────────────────────────────
+
   const firstName      = sanitizeString(body.firstName, 50)
-  const archetype      = sanitizeString(body.archetype, 30)
-  const element        = sanitizeString(body.element, 20)
-  const lifePathNumber = Number(body.lifePathNumber)
-  const powerTraits    = Array.isArray(body.powerTraits)
-    ? (body.powerTraits as unknown[]).slice(0, 5).map((t) => sanitizeString(String(t ?? ''), 80))
-    : []
   const partnerName    = sanitizeString(body.partnerName, 50)
   const partnerDob     = sanitizeString(body.partnerDob, 10)
   const partnerCity    = sanitizeString(body.partnerCity, 100)
   const language       = sanitizeString(body.language || 'en', 5)
+  const previewMode    = body.previewMode === true
 
-  assertInput(!!firstName, 'firstName is required')
-  assertInput(isValidArchetype(archetype), 'Invalid archetype')
-  assertInput(isValidDateOfBirth(partnerDob), 'Invalid partner date of birth')
+  // Optional archetype-reading fields (CASE 1) vs. standalone fields (CASE 2)
+  const rawArchetype      = body.archetype  != null ? sanitizeString(body.archetype, 30)  : null
+  const rawElement        = body.element    != null ? sanitizeString(body.element, 20)    : null
+  const rawLifePathNumber = body.lifePathNumber != null ? Number(body.lifePathNumber)      : null
+  const rawPowerTraits    = Array.isArray(body.powerTraits)
+    ? (body.powerTraits as unknown[]).slice(0, 5).map((t) => sanitizeString(String(t ?? ''), 80))
+    : null
+  const rawDateOfBirth    = body.dateOfBirth != null ? sanitizeString(body.dateOfBirth, 10) : null
+
+  // ── Input validation ─────────────────────────────────────────────────────
+
+  assertInput(!!firstName,  'firstName is required')
   assertInput(!!partnerName, 'partnerName is required')
+  assertInput(isValidDateOfBirth(partnerDob), 'Invalid partner date of birth')
+
+  // CASE 1: archetype-reading data present — validate it
+  // CASE 2: standalone mode — dateOfBirth (User A) is required instead
+  const standaloneMode = rawArchetype === null || rawArchetype === ''
+  if (!standaloneMode) {
+    assertInput(isValidArchetype(rawArchetype!), 'Invalid archetype')
+  } else {
+    assertInput(
+      rawDateOfBirth !== null && isValidDateOfBirth(rawDateOfBirth),
+      'dateOfBirth is required when archetype is not provided',
+    )
+  }
+
+  // ── Resolve Person 1 fields ──────────────────────────────────────────────
+
+  let archetype:      string
+  let element:        string
+  let lifePathNumber: number
+  let powerTraits:    string[]
+  let person1Dob:     string
+
+  if (!standaloneMode) {
+    // CASE 1: use caller-supplied values verbatim
+    archetype      = rawArchetype!
+    element        = rawElement ?? ''
+    lifePathNumber = rawLifePathNumber ?? 0
+    powerTraits    = rawPowerTraits ?? []
+    person1Dob     = rawDateOfBirth ?? ''
+  } else {
+    // CASE 2: derive everything from dateOfBirth using deterministic calculations
+    person1Dob = rawDateOfBirth!
+
+    const person1LifePathResult = getLifePathNumber(person1Dob)
+    lifePathNumber = person1LifePathResult.number
+
+    const person1SunSign = getSunSign(person1Dob)
+    // Element from quick-signs is Title Case (Fire/Earth/Air/Water) — matches prompt expectations
+    element = person1SunSign.element
+
+    // Derive archetype via Swiss Ephemeris natal chart (same pipeline as calculate-chart.post.ts).
+    // With lat=0/lon=0 and no time, ascendant is null — archetype resolves from Sun+Moon elements only.
+    const chart  = calculateNatalChart({ dateOfBirth: person1Dob, timeOfBirth: null, utcOffsetMinutes: 0, city: '', lat: 0, lon: 0 })
+    archetype    = assignArchetypeFromChart(chart)
+
+    powerTraits = rawPowerTraits ?? []
+  }
+
+  // ── Partner calculations ─────────────────────────────────────────────────
+
+  // Change 1: replaced inline IIFE with getLifePathNumber() from quick-signs.ts
+  const partnerLifePath = getLifePathNumber(partnerDob).number
+
+  const partnerSeason = (() => {
+    const month = new Date(partnerDob).getMonth()
+    if (month >= 2 && month <= 4) return 'spring'
+    if (month >= 5 && month <= 7) return 'summer'
+    if (month >= 8 && month <= 10) return 'autumn'
+    return 'winter'
+  })()
+
+  // ── Language instruction ──────────────────────────────────────────────────
 
   const languageInstructions: Record<string, string> = {
     en: 'Respond entirely in English.',
@@ -33,30 +103,13 @@ export default defineEventHandler(async (event) => {
     ko: '전체적으로 한국어로 답변해 주세요. 따뜻하고 시적이며 개인적인 어조를 사용하세요.',
     zh: '完全用简体中文回答。使用温暖、诗意和个人化的语气。',
   }
-  const langInstruction = languageInstructions[language as string] ?? languageInstructions['en'] ?? ''
+  const langInstruction = languageInstructions[language] ?? languageInstructions['en'] ?? ''
+
+  // ── Anthropic client ──────────────────────────────────────────────────────
 
   const client = new Anthropic({
     apiKey: config.anthropicApiKey as string,
   })
-
-  const partnerLifePath = (() => {
-    const digits = partnerDob.replace(/-/g, '')
-      .split('').map(Number)
-    let sum = digits.reduce((a: number, b: number) => a + b, 0)
-    while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
-      sum = sum.toString().split('')
-        .map(Number).reduce((a: number, b: number) => a + b, 0)
-    }
-    return sum
-  })()
-
-  const partnerSeason = (() => {
-    const month = new Date(partnerDob).getMonth()
-    if (month >= 2 && month <= 4) return 'spring'
-    if (month >= 5 && month <= 7) return 'summer'
-    if (month >= 8 && month <= 10) return 'autumn'
-    return 'winter'
-  })()
 
   const prompt = `${langInstruction}
 
@@ -166,5 +219,53 @@ Return ONLY valid JSON, no markdown:
 
   const compatibilityData: CompatibilityType = zodResult.data
 
-  return { success: true, compatibility: compatibilityData }
+  // ── Change 3: Preview mode transform ─────────────────────────────────────
+  // When previewMode is true: keep score, title, and challenge section fully.
+  // Replace the other 4 sections' content with "[locked]" but keep their titles.
+
+  const sections = previewMode
+    ? {
+        bond:      { title: compatibilityData.sections.bond.title,     content: '[locked]' },
+        strength:  { title: compatibilityData.sections.strength.title, content: '[locked]' },
+        challenge: compatibilityData.sections.challenge,
+        forecast:  { title: compatibilityData.sections.forecast.title, content: '[locked]' },
+        advice:    { title: compatibilityData.sections.advice.title,   content: '[locked]' },
+      }
+    : compatibilityData.sections
+
+  // ── Change 4: Calculation receipt ─────────────────────────────────────────
+
+  const person1SunSignForReceipt = person1Dob && isValidDateOfBirth(person1Dob)
+    ? getSunSign(person1Dob).name
+    : ''
+
+  const calculationReceipt: CompatibilityReceiptType = {
+    person1: {
+      name:           firstName,
+      dateOfBirth:    person1Dob,
+      sunSign:        person1SunSignForReceipt,
+      lifePathNumber: lifePathNumber,
+      archetype:      archetype,
+    },
+    person2: {
+      name:           partnerName,
+      dateOfBirth:    partnerDob,
+      sunSign:        getSunSign(partnerDob).name,
+      lifePathNumber: partnerLifePath,
+    },
+    tradition:         'Western (Tropical)',
+    calculationSource: 'Swiss Ephemeris',
+    generatedAt:       new Date().toISOString(),
+  }
+
+  return {
+    success: true,
+    compatibility: {
+      compatibilityScore: compatibilityData.compatibilityScore,
+      compatibilityTitle: compatibilityData.compatibilityTitle,
+      sections,
+      ...(previewMode ? { previewMode: true } : {}),
+      calculationReceipt,
+    },
+  }
 })

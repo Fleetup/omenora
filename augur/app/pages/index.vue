@@ -11,12 +11,98 @@
     />
 
     <!-- ═══════════════════════════════════════
-         NAV
+         HEADER
     ═══════════════════════════════════════════ -->
-    <nav class="lp-nav" aria-label="Site navigation">
-      <NuxtLink to="/" class="lp-nav-logo">OMENORA</NuxtLink>
-      <NuxtLink to="/daily" class="lp-nav-daily">☽ Daily Horoscope</NuxtLink>
-    </nav>
+    <header class="site-header" :class="{ 'site-header--scrolled': headerScrolled }" role="banner">
+      <div class="header-inner">
+
+        <!-- Logo -->
+        <NuxtLink to="/" class="header-logo" aria-label="OMENORA — home">OMENORA</NuxtLink>
+
+        <!-- Desktop nav links (hidden on mobile) -->
+        <nav class="header-nav" aria-label="Main navigation">
+          <NuxtLink to="/daily" class="header-nav-link">
+            <span class="header-nav-glyph" aria-hidden="true">☽</span>
+            Daily Horoscope
+          </NuxtLink>
+          <span class="header-nav-sep" aria-hidden="true" />
+          <NuxtLink to="/compatibility-quiz" class="header-nav-link">
+            <span class="header-nav-glyph" aria-hidden="true">✦</span>
+            Compatibility
+          </NuxtLink>
+        </nav>
+
+        <!-- Right side: CTA + hamburger -->
+        <div class="header-actions">
+          <button
+            class="header-cta"
+            @click="navigateTo('/analysis')"
+            aria-label="Get your free reading"
+          >
+            Get My Reading
+            <span class="header-cta-arr" aria-hidden="true">→</span>
+          </button>
+
+          <!-- Hamburger (mobile only) -->
+          <button
+            class="header-hamburger"
+            :class="{ 'header-hamburger--open': navOpen }"
+            :aria-expanded="navOpen"
+            aria-controls="mobile-nav"
+            aria-label="Toggle navigation"
+            @click="navOpen = !navOpen"
+          >
+            <span /><span /><span />
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Mobile nav drawer -->
+      <div
+        id="mobile-nav"
+        class="mobile-drawer"
+        :class="{ 'mobile-drawer--open': navOpen }"
+        role="dialog"
+        :aria-hidden="!navOpen"
+        aria-label="Mobile navigation"
+      >
+        <nav class="mobile-drawer-nav">
+          <NuxtLink
+            to="/daily"
+            class="mobile-nav-link"
+            @click="navOpen = false"
+          >
+            <span class="mobile-nav-glyph" aria-hidden="true">☽</span>
+            Daily Horoscope
+          </NuxtLink>
+          <NuxtLink
+            to="/compatibility-quiz"
+            class="mobile-nav-link mobile-nav-link--compat"
+            @click="navOpen = false"
+          >
+            <span class="mobile-nav-glyph" aria-hidden="true">✦</span>
+            Compatibility Reading
+            <span class="mobile-nav-badge">Free Preview</span>
+          </NuxtLink>
+        </nav>
+        <button
+          class="mobile-drawer-cta"
+          @click="navigateTo('/analysis'); navOpen = false"
+        >
+          Get My Free Reading →
+        </button>
+        <p class="mobile-drawer-sub">No account · Results in 60 seconds</p>
+      </div>
+
+      <!-- Drawer backdrop -->
+      <div
+        v-if="navOpen"
+        class="drawer-backdrop"
+        aria-hidden="true"
+        @click="navOpen = false"
+      />
+    </header>
 
 
     <!-- ═══════════════════════════════════════
@@ -65,6 +151,20 @@
       <p class="dim-label a7">
         Sun · Moon · Rising · Life Path · 2026 Forecast
       </p>
+
+      <!-- Compatibility entry point -->
+      <div class="hero-compat-link a7">
+        <span class="hero-compat-sep" aria-hidden="true">or</span>
+        <button
+          class="hero-compat-btn"
+          @click="navigateTo('/compatibility-quiz')"
+          aria-label="Check love compatibility for free"
+        >
+          <span class="hero-compat-glyph" aria-hidden="true">✦</span>
+          Check love compatibility
+          <span class="hero-compat-badge">Free</span>
+        </button>
+      </div>
 
     </section>
 
@@ -428,6 +528,10 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 const { $trackLandingView } = useNuxtApp() as any
 
+// ── Header state ─────────────────────────────
+const navOpen       = ref(false)
+const headerScrolled = ref(false)
+
 const heroVariant = ref({
   headline:    'Your natal chart.<br>Your personality archetype.<br>Decoded across 4 ancient traditions.',
   subheadline: 'Most horoscopes are written for 1 in 12 people. This calculates your exact planetary positions at the minute you were born — then maps them across 4 traditions to build something written for you specifically.',
@@ -534,7 +638,8 @@ const showStickyBar = ref(false)
 
 const onScroll = () => {
   const nearBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80
-  showStickyBar.value = window.scrollY > window.innerHeight * 0.8 && !nearBottom
+  showStickyBar.value   = window.scrollY > window.innerHeight * 0.8 && !nearBottom
+  headerScrolled.value  = window.scrollY > 24
 }
 
 onUnmounted(() => {
@@ -698,39 +803,324 @@ onMounted(async () => {
 
 
 /* ─────────────────────────────────────────────
-   NAV BAR
+   HEADER
 ───────────────────────────────────────────── */
-.lp-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
-  position: relative;
-  z-index: 10;
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  transition: background 0.28s ease, border-color 0.28s ease, backdrop-filter 0.28s ease;
+  border-bottom: 1px solid transparent;
 }
 
-.lp-nav-logo {
+.site-header--scrolled {
+  background: rgba(7, 7, 13, 0.82);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 64px;
+  gap: 24px;
+}
+
+/* Logo */
+.header-logo {
   font-family: var(--serif);
   font-size: 15px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   color: var(--white-94);
   text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
 }
 
-.lp-nav-daily {
+.header-logo:hover { opacity: 0.75; }
+
+/* Desktop nav */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.header-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 13px;
-  color: var(--gold);
+  color: var(--white-55);
   text-decoration: none;
-  letter-spacing: 0.06em;
-  border: 1px solid rgba(201,168,76,0.3);
-  padding: 6px 16px;
-  border-radius: 20px;
-  transition: all 0.2s ease;
+  letter-spacing: 0.03em;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: color 0.18s ease, background 0.18s ease;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.lp-nav-daily:hover {
-  background: rgba(201,168,76,0.1);
-  border-color: var(--gold);
+.header-nav-link:hover {
+  color: var(--white-94);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.header-nav-link.router-link-active {
+  color: var(--white-94);
+}
+
+.header-nav-glyph {
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.header-nav-sep {
+  display: block;
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+/* Header right: CTA + hamburger */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Desktop CTA */
+.header-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--purple);
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--sans);
+  letter-spacing: 0.02em;
+  padding: 10px 20px;
+  min-height: 40px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+  box-shadow:
+    0 0 0 1px rgba(107, 72, 224, 0.50),
+    0 4px 16px rgba(107, 72, 224, 0.28);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-cta:hover {
+  background: var(--purple-hi);
+  box-shadow:
+    0 0 0 1px rgba(123, 90, 242, 0.60),
+    0 8px 28px rgba(107, 72, 224, 0.40);
+  transform: translateY(-1px);
+}
+
+.header-cta:active {
+  transform: translateY(0) scale(0.97);
+  background: #5B38D0;
+}
+
+.header-cta-arr {
+  font-size: 14px;
+  transition: transform 0.15s ease;
+}
+
+.header-cta:hover .header-cta-arr {
+  transform: translateX(3px);
+}
+
+/* Hamburger */
+.header-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-hamburger:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.header-hamburger span {
+  display: block;
+  height: 1.5px;
+  background: var(--white-70);
+  border-radius: 2px;
+  transform-origin: center;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   0.22s ease,
+              width     0.22s ease;
+}
+
+.header-hamburger span:nth-child(1) { width: 100%; }
+.header-hamburger span:nth-child(2) { width: 75%; }
+.header-hamburger span:nth-child(3) { width: 100%; }
+
+/* Open state → X */
+.header-hamburger--open span:nth-child(1) {
+  transform: translateY(6.5px) rotate(45deg);
+  width: 100%;
+}
+.header-hamburger--open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.header-hamburger--open span:nth-child(3) {
+  transform: translateY(-6.5px) rotate(-45deg);
+  width: 100%;
+}
+
+/* ── Mobile drawer ── */
+.mobile-drawer {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 190;
+  background: rgba(9, 8, 18, 0.97);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0 24px 28px;
+  gap: 0;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity   0.22s ease;
+}
+
+.mobile-drawer--open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-drawer-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 20px;
+  gap: 2px;
+}
+
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 4px;
+  font-size: 16px;
+  color: var(--white-70);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  border-radius: 10px;
+  transition: color 0.15s ease, background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link.router-link-active {
+  color: var(--white-94);
+}
+
+.mobile-nav-link--compat {
+  color: rgba(201, 168, 76, 0.85);
+}
+
+.mobile-nav-link--compat:hover {
+  color: var(--gold);
+}
+
+.mobile-nav-glyph {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.mobile-nav-badge {
+  margin-left: auto;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.65);
+  border: 1px solid rgba(201, 168, 76, 0.22);
+  border-radius: 3px;
+  padding: 3px 8px;
+  flex-shrink: 0;
+}
+
+.mobile-drawer-cta {
+  width: 100%;
+  background: var(--purple);
+  border: none;
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--sans);
+  letter-spacing: 0.01em;
+  padding: 16px 24px;
+  min-height: 52px;
+  cursor: pointer;
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+  box-shadow:
+    0 0 0 1px rgba(107, 72, 224, 0.55),
+    0 6px 24px rgba(107, 72, 224, 0.30);
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 12px;
+}
+
+.mobile-drawer-cta:hover  { background: var(--purple-hi); }
+.mobile-drawer-cta:active { background: #5B38D0; }
+
+.mobile-drawer-sub {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--white-38);
+  margin: 0;
+  text-align: center;
+}
+
+/* Drawer backdrop */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  background: rgba(0, 0, 0, 0.55);
 }
 
 
@@ -768,9 +1158,67 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 96px 24px 80px;
+  padding: 160px 24px 80px; /* 96px content + 64px fixed header */
   max-width: 600px;
   margin: 0 auto;
+}
+
+/* ── Compat secondary CTA ── */
+.hero-compat-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.hero-compat-sep {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white-22);
+  flex-shrink: 0;
+}
+
+.hero-compat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(201, 168, 76, 0.28);
+  border-radius: 10px;
+  color: rgba(201, 168, 76, 0.80);
+  font-size: 13px;
+  font-family: var(--sans);
+  letter-spacing: 0.02em;
+  padding: 9px 18px;
+  min-height: 40px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hero-compat-btn:hover {
+  color: var(--gold);
+  border-color: rgba(201, 168, 76, 0.55);
+  background: rgba(201, 168, 76, 0.06);
+}
+
+.hero-compat-glyph {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.hero-compat-badge {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.65);
+  border: 1px solid rgba(201, 168, 76, 0.22);
+  border-radius: 3px;
+  padding: 2px 7px;
+  flex-shrink: 0;
+  margin-left: 2px;
 }
 
 /* Orbital mark */
@@ -1342,10 +1790,18 @@ onMounted(async () => {
    Apple HIG: 44pt minimum touch targets
 ───────────────────────────────────────────── */
 
-/* Mobile nav */
-@media (max-width: 600px) {
-  .lp-nav         { padding: 16px 20px; }
-  .lp-nav-daily   { font-size: 11px; padding: 5px 12px; }
+/* Header responsive */
+@media (max-width: 768px) {
+  .header-inner    { padding: 0 20px; height: 58px; }
+  .header-nav      { display: none; }
+  .header-cta      { display: none; }
+  .header-hamburger { display: flex; }
+  .mobile-drawer   { top: 58px; }
+}
+
+@media (min-width: 769px) {
+  .mobile-drawer   { display: none; }
+  .drawer-backdrop { display: none; }
 }
 
 /* Tablet and up */
@@ -1358,15 +1814,17 @@ onMounted(async () => {
 @media (min-width: 900px) {
   .brand         { font-size: 96px; }
   .hero-headline { font-size: 34px; }
-  .hero          { padding-top: 120px; }
+  .hero          { padding-top: 176px; } /* 96px content + 80px breathing room */
 }
 
 /* Mobile — single column cards */
 @media (max-width: 480px) {
   .brand         { font-size: 52px; }
   .hero-headline { font-size: 22px; }
-  .hero          { padding-top: 72px; padding-bottom: 56px; }
+  .hero          { padding-top: 120px; padding-bottom: 56px; } /* 58px header + 62px breathing */
   .hero-sub      { font-size: 14px; }
+  .hero-compat-link { flex-direction: column; gap: 8px; }
+  .hero-compat-btn  { width: 100%; max-width: 300px; justify-content: center; }
 
   /* Full-width CTA on mobile (Apple HIG 44pt target) */
   .cta-primary {

@@ -149,6 +149,10 @@ export type CalendarType = z.infer<typeof CalendarSchema>
 //     advice:    { title, content },
 //   }
 // }
+//
+// API response also includes (added server-side, not from Claude):
+//   previewMode:        boolean (optional, true when sections are partially locked)
+//   calculationReceipt: object  (transparent math receipt shown on the report)
 
 const CompatibilitySectionSchema = z.object({
   title:   z.string().min(1),
@@ -168,6 +172,28 @@ export const CompatibilitySchema = z.object({
 })
 
 export type CompatibilityType = z.infer<typeof CompatibilitySchema>
+
+// ── CompatibilityReceipt ────────────────────────────────────────────────────
+// Transparent calculation receipt appended to every compatibility response.
+// Not validated by Claude — assembled server-side from deterministic inputs.
+
+export const CompatibilityReceiptPersonSchema = z.object({
+  name:           z.string(),
+  dateOfBirth:    z.string(),
+  sunSign:        z.string(),
+  lifePathNumber: z.number().int(),
+  archetype:      z.string().optional(),
+})
+
+export const CompatibilityReceiptSchema = z.object({
+  person1:           CompatibilityReceiptPersonSchema,
+  person2:           CompatibilityReceiptPersonSchema.omit({ archetype: true }),
+  tradition:         z.literal('Western (Tropical)'),
+  calculationSource: z.literal('Swiss Ephemeris'),
+  generatedAt:       z.string(),
+})
+
+export type CompatibilityReceiptType = z.infer<typeof CompatibilityReceiptSchema>
 
 // ── BirthChartSchema ────────────────────────────────────────────────────────
 // Used by: generate-birth-chart.post.ts
