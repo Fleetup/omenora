@@ -37,23 +37,20 @@
       <h1 class="heading">Whose chart are<br>we comparing?</h1>
       <p class="subheading">Enter your birth details to start</p>
 
-      <!-- Birth date wheel -->
-      <div class="date-group">
-        <div class="field-label">Your birth date</div>
-        <div class="wheel-row">
-          <div class="wheel-col">
-            <div class="wheel-label">DD</div>
-            <div class="wheel-drum" ref="myDayRef" />
-          </div>
-          <div class="wheel-col">
-            <div class="wheel-label">MM</div>
-            <div class="wheel-drum" ref="myMonthRef" />
-          </div>
-          <div class="wheel-col wheel-col--wide">
-            <div class="wheel-label">YYYY</div>
-            <div class="wheel-drum" ref="myYearRef" />
-          </div>
-        </div>
+      <!-- Birth date -->
+      <div class="field-wrapper" :class="{ focused: focusedField === 'myDob' }">
+        <label class="field-label" for="compat-my-dob">Your birth date</label>
+        <input
+          id="compat-my-dob"
+          v-model="myDob"
+          type="date"
+          class="field-input native-date"
+          min="1924-01-01"
+          :max="todayMax"
+          required
+          @focus="focusedField = 'myDob'"
+          @blur="focusedField = null"
+        >
       </div>
 
       <!-- Birth city -->
@@ -71,27 +68,21 @@
         >
       </div>
 
-      <!-- Birth time wheel (optional) -->
-      <div class="date-group">
+      <!-- Birth time (optional) -->
+      <div class="field-wrapper" :class="{ focused: focusedField === 'myTime' }">
         <div class="field-header-row">
-          <div class="field-label">Your birth time</div>
-          <span class="field-optional-badge">Optional</span>
+          <label class="field-label" for="compat-my-time">Your birth time</label>
+          <button type="button" class="skip-time-btn" @click="myTime = ''">Skip</button>
         </div>
-        <div class="wheel-row">
-          <div class="wheel-col">
-            <div class="wheel-label">Hour</div>
-            <div class="wheel-drum" ref="myHourRef" />
-          </div>
-          <div class="wheel-col">
-            <div class="wheel-label">Min</div>
-            <div class="wheel-drum" ref="myMinRef" />
-          </div>
-          <div class="wheel-col">
-            <div class="wheel-label">AM/PM</div>
-            <div class="wheel-drum" ref="myAmPmRef" />
-          </div>
-        </div>
-        <p class="time-hint">More accurate Rising sign — skip if unknown</p>
+        <input
+          id="compat-my-time"
+          v-model="myTime"
+          type="time"
+          class="field-input native-date"
+          @focus="focusedField = 'myTime'"
+          @blur="focusedField = null"
+        >
+        <p class="time-hint">More accurate Rising sign — leave blank if unknown</p>
       </div>
 
       <p class="privacy-note">Used only to calculate your planetary positions. Never sold.</p>
@@ -118,23 +109,20 @@
       <h1 class="heading">Now their<br>birth details</h1>
       <p class="subheading">We'll compare your charts</p>
 
-      <!-- Their birth date wheel -->
-      <div class="date-group">
-        <div class="field-label">Their birth date</div>
-        <div class="wheel-row">
-          <div class="wheel-col">
-            <div class="wheel-label">DD</div>
-            <div class="wheel-drum" ref="theirDayRef" />
-          </div>
-          <div class="wheel-col">
-            <div class="wheel-label">MM</div>
-            <div class="wheel-drum" ref="theirMonthRef" />
-          </div>
-          <div class="wheel-col wheel-col--wide">
-            <div class="wheel-label">YYYY</div>
-            <div class="wheel-drum" ref="theirYearRef" />
-          </div>
-        </div>
+      <!-- Their birth date -->
+      <div class="field-wrapper" :class="{ focused: focusedField === 'theirDob' }">
+        <label class="field-label" for="compat-their-dob">Their birth date</label>
+        <input
+          id="compat-their-dob"
+          v-model="theirDob"
+          type="date"
+          class="field-input native-date"
+          min="1924-01-01"
+          :max="todayMax"
+          required
+          @focus="focusedField = 'theirDob'"
+          @blur="focusedField = null"
+        >
       </div>
 
       <!-- Their birth city -->
@@ -152,27 +140,21 @@
         >
       </div>
 
-      <!-- Their birth time wheel (optional) -->
-      <div class="date-group">
+      <!-- Their birth time (optional) -->
+      <div class="field-wrapper" :class="{ focused: focusedField === 'theirTime' }">
         <div class="field-header-row">
-          <div class="field-label">Their birth time</div>
-          <span class="field-optional-badge">Optional</span>
+          <label class="field-label" for="compat-their-time">Their birth time</label>
+          <button type="button" class="skip-time-btn" @click="theirTime = ''">Skip</button>
         </div>
-        <div class="wheel-row">
-          <div class="wheel-col">
-            <div class="wheel-label">Hour</div>
-            <div class="wheel-drum" ref="theirHourRef" />
-          </div>
-          <div class="wheel-col">
-            <div class="wheel-label">Min</div>
-            <div class="wheel-drum" ref="theirMinRef" />
-          </div>
-          <div class="wheel-col">
-            <div class="wheel-label">AM/PM</div>
-            <div class="wheel-drum" ref="theirAmPmRef" />
-          </div>
-        </div>
-        <p class="time-hint">More accurate Rising sign — skip if unknown</p>
+        <input
+          id="compat-their-time"
+          v-model="theirTime"
+          type="time"
+          class="field-input native-date"
+          @focus="focusedField = 'theirTime'"
+          @blur="focusedField = null"
+        >
+        <p class="time-hint">More accurate Rising sign — leave blank if unknown</p>
       </div>
 
       <p class="privacy-note">Used only to calculate chart positions. Never sold.</p>
@@ -221,7 +203,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, type Ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import { getSunSign, getLifePathNumber, type SunSign } from '~/utils/quick-signs-client'
 import { useAnalysisStore } from '~/stores/analysisStore'
 
@@ -234,64 +216,23 @@ function trackEvent(name: string, props?: Record<string, unknown>) {
   try { $trackCustomEvent?.(name, props ?? {}) } catch { /* never throw into the funnel */ }
 }
 
-// ── Wheel engine constants ────────────────────────────────────────────────────
-const ITEM_H = 44
-const currentYear = new Date().getFullYear()
+// ── Date/time form state ───────────────────────────────────────────────────
+const myDob    = ref('')
+const myTime   = ref('')
+const theirDob = ref('')
+const theirTime = ref('')
 
-const dayOptions    = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'))
-const monthOptions  = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
-const yearOptions   = Array.from({ length: currentYear - 1923 }, (_, i) => String(currentYear - 1 - i))
-const hourOptions   = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
-const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'))
+const todayMax = computed(() => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+})
 
-// ── Per-person wheel value state ──────────────────────────────────────────────
-const myDay    = ref(dayOptions[0]!)
-const myMonth  = ref(monthOptions[0]!)
-const myYear   = ref(yearOptions[yearOptions.indexOf('1990') >= 0 ? yearOptions.indexOf('1990') : 0]!)
-const myHour   = ref(hourOptions[0]!)
-const myMin    = ref(minuteOptions[0]!)
-const myAmPm   = ref<'AM' | 'PM'>('AM')
-
-const theirDay   = ref(dayOptions[0]!)
-const theirMonth = ref(monthOptions[0]!)
-const theirYear  = ref(yearOptions[yearOptions.indexOf('1990') >= 0 ? yearOptions.indexOf('1990') : 0]!)
-const theirHour  = ref(hourOptions[0]!)
-const theirMin   = ref(minuteOptions[0]!)
-const theirAmPm  = ref<'AM' | 'PM'>('AM')
-
-// ── Wheel DOM refs ────────────────────────────────────────────────────────────
-const myDayRef   = ref<HTMLElement>()
-const myMonthRef = ref<HTMLElement>()
-const myYearRef  = ref<HTMLElement>()
-const myHourRef  = ref<HTMLElement>()
-const myMinRef   = ref<HTMLElement>()
-const myAmPmRef  = ref<HTMLElement>()
-
-const theirDayRef   = ref<HTMLElement>()
-const theirMonthRef = ref<HTMLElement>()
-const theirYearRef  = ref<HTMLElement>()
-const theirHourRef  = ref<HTMLElement>()
-const theirMinRef   = ref<HTMLElement>()
-const theirAmPmRef  = ref<HTMLElement>()
-
-// ── Derived DOB strings ───────────────────────────────────────────────────────
-const myDob = computed(() =>
-  myDay.value && myMonth.value && myYear.value
-    ? `${myYear.value}-${myMonth.value}-${myDay.value}`
-    : '',
-)
-const theirDob = computed(() =>
-  theirDay.value && theirMonth.value && theirYear.value
-    ? `${theirYear.value}-${theirMonth.value}-${theirDay.value}`
-    : '',
-)
-
-// ── Other form state ──────────────────────────────────────────────────────────
+// ── Other form state ──────────────────────────────────────────────────────
 const myCity    = ref('')
 const theirCity = ref('')
 const focusedField = ref<string | null>(null)
 
-// ── Step state ────────────────────────────────────────────────────────────────
+// ── Step state ──────────────────────────────────────────────────────
 const currentStep   = ref(1)
 const revealVisible = ref(false)
 
@@ -300,11 +241,11 @@ const myLifePath:    Ref<number>         = ref(0)
 const theirSunSign:  Ref<SunSign | null> = ref(null)
 const theirLifePath: Ref<number>         = ref(0)
 
-// ── Validation ────────────────────────────────────────────────────────────────
+// ── Validation ──────────────────────────────────────────────────────
 const step1Valid = computed(() => myDob.value.length === 10 && myCity.value.trim().length >= 2)
 const step2Valid = computed(() => theirDob.value.length === 10 && theirCity.value.trim().length >= 2)
 
-// ── Loading ───────────────────────────────────────────────────────────────────
+// ── Loading ─────────────────────────────────────────────────────────
 const apiError       = ref(false)
 const loadingMsgIdx  = ref(0)
 const loadingMessages = [
@@ -313,221 +254,6 @@ const loadingMessages = [
   'Generating your reading...',
 ]
 let loadingInterval: ReturnType<typeof setInterval> | null = null
-
-// ── Wheel engine ──────────────────────────────────────────────────────────────
-const wheelCleanups: Array<() => void> = []
-
-type WheelType = 'myDay'|'myMonth'|'myYear'|'myHour'|'myMin'|'myAmPm'|
-                 'theirDay'|'theirMonth'|'theirYear'|'theirHour'|'theirMin'|'theirAmPm'
-
-function getOptionsForWheel(type: WheelType) {
-  if (type === 'myDay'   || type === 'theirDay')   return dayOptions
-  if (type === 'myMonth' || type === 'theirMonth') return monthOptions
-  if (type === 'myYear'  || type === 'theirYear')  return yearOptions
-  if (type === 'myHour'  || type === 'theirHour')  return hourOptions
-  if (type === 'myMin'   || type === 'theirMin')   return minuteOptions
-  return ['AM', 'PM']
-}
-
-function applyWheelValue(type: WheelType, idx: number) {
-  const opts = getOptionsForWheel(type)
-  const clamped = Math.max(0, Math.min(idx, opts.length - 1))
-  const val = opts[clamped]!
-  if (type === 'myDay')    myDay.value    = val
-  else if (type === 'myMonth')  myMonth.value  = val
-  else if (type === 'myYear')   myYear.value   = val
-  else if (type === 'myHour')   myHour.value   = val
-  else if (type === 'myMin')    myMin.value    = val
-  else if (type === 'myAmPm')   myAmPm.value   = (clamped === 0 ? 'AM' : 'PM')
-  else if (type === 'theirDay')   theirDay.value   = val
-  else if (type === 'theirMonth') theirMonth.value = val
-  else if (type === 'theirYear')  theirYear.value  = val
-  else if (type === 'theirHour')  theirHour.value  = val
-  else if (type === 'theirMin')   theirMin.value   = val
-  else if (type === 'theirAmPm')  theirAmPm.value  = (clamped === 0 ? 'AM' : 'PM')
-}
-
-function buildWheelTrack(opts: string[]): HTMLElement {
-  const track = document.createElement('div')
-  track.className = 'wheel-track'
-  const pad1 = document.createElement('div'); pad1.className = 'wheel-pad'; track.appendChild(pad1)
-  for (const o of opts) {
-    const item = document.createElement('div'); item.className = 'wheel-item'; item.textContent = o; track.appendChild(item)
-  }
-  const pad2 = document.createElement('div'); pad2.className = 'wheel-pad'; track.appendChild(pad2)
-  return track
-}
-
-function updateSelectedClass(track: HTMLElement, idx: number, opts: string[]) {
-  const items = track.querySelectorAll('.wheel-item')
-  items.forEach((el, i) => el.classList.toggle('selected', i === idx))
-}
-
-function attachWheelEngine(type: WheelType, drum: HTMLElement) {
-  const opts = getOptionsForWheel(type)
-  const maxIdx = opts.length - 1
-  const maxOffset = maxIdx * ITEM_H
-
-  const track = buildWheelTrack(opts)
-  drum.innerHTML = ''
-  drum.appendChild(track)
-
-  let offset = 0
-  let isDragging = false
-  let startClientY = 0
-  let lastClientY = 0
-  let lastTime = 0
-  let velocity = 0
-  let cancelAnim = () => {}
-  let rafId = 0
-
-  const clampOffset = (v: number) => Math.max(0, Math.min(v, maxOffset))
-
-  function setTrackY(px: number) {
-    track.style.transform = `translateY(${-px}px)`
-  }
-
-  function animateTo(from: number, to: number, dur: number, onDone?: () => void): () => void {
-    let id = 0
-    const t0 = performance.now()
-    const delta = to - from
-    if (Math.abs(delta) < 0.5) { setTrackY(to); onDone?.(); return () => {} }
-    function step(now: number) {
-      const t = Math.min((now - t0) / dur, 1)
-      const ease = 1 - Math.pow(1 - t, 4)
-      setTrackY(from + delta * ease)
-      if (t < 1) { id = requestAnimationFrame(step) } else { setTrackY(to); onDone?.() }
-    }
-    id = requestAnimationFrame(step)
-    return () => { if (id) cancelAnimationFrame(id) }
-  }
-
-  function snapTo(rawIdx: number, fast = false) {
-    cancelAnim()
-    if (rafId) { cancelAnimationFrame(rafId); rafId = 0 }
-    const idx = Math.max(0, Math.min(Math.round(rawIdx), maxIdx))
-    const target = idx * ITEM_H
-    const dur = fast ? 120 : Math.min(60 + Math.abs(target - offset) * 0.4, 320)
-    cancelAnim = animateTo(offset, target, dur, () => { offset = target })
-    applyWheelValue(type, idx)
-    updateSelectedClass(track, idx, opts)
-  }
-
-  function snapNearest() { snapTo(offset / ITEM_H) }
-
-  const DECEL = 0.998; const MIN_V = 0.02; let lastRafT = 0
-  function runMomentum(now: number) {
-    const dt = now - lastRafT; lastRafT = now
-    velocity *= Math.pow(DECEL, dt)
-    offset = clampOffset(offset + velocity * dt)
-    setTrackY(offset)
-    if (Math.abs(velocity) > MIN_V) { rafId = requestAnimationFrame(runMomentum) }
-    else { rafId = 0; velocity = 0; snapNearest() }
-  }
-
-  function onPointerDown(e: PointerEvent) {
-    if (e.button !== 0) return
-    cancelAnim(); if (rafId) { cancelAnimationFrame(rafId); rafId = 0 }
-    isDragging = true; startClientY = e.clientY; lastClientY = e.clientY
-    lastTime = performance.now(); velocity = 0; e.preventDefault()
-    document.addEventListener('pointermove', onPointerMove, { passive: false })
-    document.addEventListener('pointerup', onPointerUp)
-    document.addEventListener('pointercancel', onPointerCancel)
-  }
-  function onPointerMove(e: PointerEvent) {
-    if (!isDragging) return
-    const now = performance.now(); const dt = Math.max(now - lastTime, 1)
-    const dy = lastClientY - e.clientY
-    velocity = velocity * 0.6 + (dy / dt) * 0.4
-    offset = clampOffset(offset + dy); setTrackY(offset)
-    lastClientY = e.clientY; lastTime = now
-  }
-  function onPointerUp(e: PointerEvent) {
-    if (!isDragging) return; isDragging = false
-    document.removeEventListener('pointermove', onPointerMove)
-    document.removeEventListener('pointerup', onPointerUp)
-    document.removeEventListener('pointercancel', onPointerCancel)
-    const travel = Math.abs(e.clientY - startClientY)
-    if (travel < 5) {
-      const rect = drum.getBoundingClientRect()
-      const rel = (e.clientY - rect.top - rect.height / 2) / ITEM_H
-      snapTo(Math.round(offset / ITEM_H) + Math.round(rel), true)
-      return
-    }
-    if (Math.abs(velocity) > MIN_V) { lastRafT = performance.now(); rafId = requestAnimationFrame(runMomentum) }
-    else { snapNearest() }
-  }
-  function onPointerCancel() {
-    isDragging = false
-    document.removeEventListener('pointermove', onPointerMove)
-    document.removeEventListener('pointerup', onPointerUp)
-    document.removeEventListener('pointercancel', onPointerCancel)
-    snapNearest()
-  }
-  let wheelTimer = 0
-  function onWheel(e: WheelEvent) {
-    e.preventDefault(); cancelAnim(); if (rafId) { cancelAnimationFrame(rafId); rafId = 0 }
-    const step = Math.abs(e.deltaY) > 50 ? Math.sign(e.deltaY) * ITEM_H : e.deltaY
-    offset = clampOffset(offset + step); setTrackY(offset)
-    clearTimeout(wheelTimer); wheelTimer = window.setTimeout(() => snapNearest(), 100)
-  }
-
-  drum.addEventListener('pointerdown', onPointerDown)
-  drum.addEventListener('wheel', onWheel, { passive: false })
-
-  // Init to default index
-  const defaultIdx = type === 'myYear' || type === 'theirYear'
-    ? Math.max(0, yearOptions.indexOf('1990'))
-    : 0
-  offset = defaultIdx * ITEM_H
-  setTrackY(offset)
-  applyWheelValue(type, defaultIdx)
-  updateSelectedClass(track, defaultIdx, opts)
-
-  // Expose for programmatic set
-  ;(drum as any)._setIdx = (idx: number) => {
-    cancelAnim(); offset = clampOffset(idx * ITEM_H); setTrackY(offset)
-    applyWheelValue(type, idx); updateSelectedClass(track, idx, opts)
-  }
-
-  wheelCleanups.push(() => {
-    cancelAnim(); if (rafId) cancelAnimationFrame(rafId); clearTimeout(wheelTimer)
-    drum.removeEventListener('pointerdown', onPointerDown)
-    drum.removeEventListener('wheel', onWheel)
-    document.removeEventListener('pointermove', onPointerMove)
-    document.removeEventListener('pointerup', onPointerUp)
-    document.removeEventListener('pointercancel', onPointerCancel)
-  })
-}
-
-// ── Mount wheels on correct step ─────────────────────────────────────────────
-let step1Mounted = false
-let step2Mounted = false
-
-watch(currentStep, (step) => {
-  if (step === 1 && !step1Mounted) {
-    nextTick(() => {
-      if (myDayRef.value)   attachWheelEngine('myDay',   myDayRef.value)
-      if (myMonthRef.value) attachWheelEngine('myMonth', myMonthRef.value)
-      if (myYearRef.value)  attachWheelEngine('myYear',  myYearRef.value)
-      if (myHourRef.value)  attachWheelEngine('myHour',  myHourRef.value)
-      if (myMinRef.value)   attachWheelEngine('myMin',   myMinRef.value)
-      if (myAmPmRef.value)  attachWheelEngine('myAmPm',  myAmPmRef.value)
-      step1Mounted = true
-    })
-  }
-  if (step === 2 && !step2Mounted) {
-    nextTick(() => {
-      if (theirDayRef.value)   attachWheelEngine('theirDay',   theirDayRef.value)
-      if (theirMonthRef.value) attachWheelEngine('theirMonth', theirMonthRef.value)
-      if (theirYearRef.value)  attachWheelEngine('theirYear',  theirYearRef.value)
-      if (theirHourRef.value)  attachWheelEngine('theirHour',  theirHourRef.value)
-      if (theirMinRef.value)   attachWheelEngine('theirMin',   theirMinRef.value)
-      if (theirAmPmRef.value)  attachWheelEngine('theirAmPm',  theirAmPmRef.value)
-      step2Mounted = true
-    })
-  }
-})
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 function triggerReveal() {
@@ -612,21 +338,10 @@ async function runApiCall() {
 onMounted(() => {
   trackEvent('compatibility_quiz_started')
   triggerReveal()
-  // Mount step 1 wheels on first load
-  nextTick(() => {
-    if (myDayRef.value)   attachWheelEngine('myDay',   myDayRef.value)
-    if (myMonthRef.value) attachWheelEngine('myMonth', myMonthRef.value)
-    if (myYearRef.value)  attachWheelEngine('myYear',  myYearRef.value)
-    if (myHourRef.value)  attachWheelEngine('myHour',  myHourRef.value)
-    if (myMinRef.value)   attachWheelEngine('myMin',   myMinRef.value)
-    if (myAmPmRef.value)  attachWheelEngine('myAmPm',  myAmPmRef.value)
-    step1Mounted = true
-  })
 })
 
 onUnmounted(() => {
   stopLoadingCycle()
-  wheelCleanups.forEach(fn => fn())
 })
 </script>
 
@@ -782,112 +497,74 @@ onUnmounted(() => {
   transition: background-color 9999s ease-in-out 0s;
 }
 
-/* ── Date/time groups (wheel containers) ── */
-.date-group {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  padding: 16px 16px 14px;
-  margin-bottom: 12px;
-}
-
-.date-group .field-label { margin-bottom: 14px; }
-
+/* ── Field header row (label + skip button) ── */
 .field-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 5px;
 }
 
-.field-optional-badge {
+/* ── Native date / time inputs ── */
+.native-date {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: max(16px, 1em);
+  font-family: inherit;
+  width: 100%;
+  min-height: 28px;
+  padding: 0;
+  cursor: pointer;
+  caret-color: rgba(201, 168, 76, 0.85);
+}
+
+.native-date::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.45);
+  cursor: pointer;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+.native-date::-webkit-datetime-edit-fields-wrapper { padding: 0; }
+.native-date::-webkit-datetime-edit             { padding: 0; color: rgba(255, 255, 255, 0.88); }
+.native-date::-webkit-datetime-edit-text         { color: rgba(255, 255, 255, 0.30); }
+.native-date::-webkit-datetime-edit-year-field,
+.native-date::-webkit-datetime-edit-month-field,
+.native-date::-webkit-datetime-edit-day-field,
+.native-date::-webkit-datetime-edit-hour-field,
+.native-date::-webkit-datetime-edit-minute-field,
+.native-date::-webkit-datetime-edit-ampm-field  { color: rgba(255, 255, 255, 0.88); }
+
+.native-date:focus::-webkit-datetime-edit-year-field,
+.native-date:focus::-webkit-datetime-edit-month-field,
+.native-date:focus::-webkit-datetime-edit-day-field,
+.native-date:focus::-webkit-datetime-edit-hour-field,
+.native-date:focus::-webkit-datetime-edit-minute-field,
+.native-date:focus::-webkit-datetime-edit-ampm-field {
+  background: rgba(140, 110, 255, 0.18);
+  color: #ffffff;
+  border-radius: 3px;
+}
+
+/* ── Skip time button ── */
+.skip-time-btn {
+  background: none;
+  border: none;
   font-size: 10px;
   color: rgba(107, 72, 224, 0.65);
-  letter-spacing: 0.02em;
-}
-
-/* ── Wheel drums ── */
-.wheel-row {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-.wheel-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.wheel-col--wide { flex: 1.6; }
-
-.wheel-label {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.22);
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-}
-
-.wheel-drum {
-  width: 100%;
-  height: 132px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  position: relative;
-  touch-action: none;
-  user-select: none;
-  cursor: grab;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 20%, rgba(0,0,0,1) 35%, rgba(0,0,0,1) 65%, rgba(0,0,0,0.4) 80%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 20%, rgba(0,0,0,1) 35%, rgba(0,0,0,1) 65%, rgba(0,0,0,0.4) 80%, transparent 100%);
-}
-
-.wheel-drum:active { cursor: grabbing; }
-
-.wheel-drum::after {
-  content: '';
-  position: absolute;
-  left: 10%; right: 10%;
-  top: calc(50% - 22px);
-  height: 44px;
-  border-top: 1px solid rgba(201, 168, 76, 0.18);
-  border-bottom: 1px solid rgba(201, 168, 76, 0.18);
-  pointer-events: none;
-  border-radius: 2px;
-}
-
-:deep(.wheel-track) {
-  display: flex;
-  flex-direction: column;
-  will-change: transform;
-  transform: translateY(0);
-}
-
-:deep(.wheel-pad) { height: 44px; flex-shrink: 0; }
-
-:deep(.wheel-item) {
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 18px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.22);
+  letter-spacing: 0.06em;
   cursor: pointer;
-  user-select: none;
-  transition: color 0.18s ease, background 0.18s ease;
-  border-radius: 4px;
-  letter-spacing: 0.04em;
+  padding: 0;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s ease;
 }
 
-:deep(.wheel-item.selected) {
-  color: rgba(201, 168, 76, 0.95);
-  background: rgba(201, 168, 76, 0.07);
-}
+.skip-time-btn:hover { color: rgba(140, 110, 255, 0.90); }
 
 /* ── Time hint ── */
 .time-hint {
