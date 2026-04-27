@@ -1016,25 +1016,30 @@ onMounted(async () => {
         store.setReportSessionId(sessionId)
         store.setPaymentComplete(true)
 
-        if (!existsData.emailSent) {
-          // First load — verify Stripe payment for bundle/oracle flags
-          const paymentData = await $fetch<{
-            paid: boolean
-            customerEmail: string | null
-            metadata: Record<string, string> | null
-          }>('/api/verify-payment', {
-            method: 'POST',
-            body: { sessionId },
-          })
+        const isStripeSession = sessionId.startsWith('cs_live_') || sessionId.startsWith('cs_test_')
 
-          if (!paymentData.paid) {
-            navigateTo('/preview')
-            return
+        if (!existsData.emailSent) {
+          // First load — verify Stripe payment for bundle/oracle flags.
+          // Skip for temp_* / promo_* IDs (account history view) — report in DB = proof of purchase.
+          let meta: Record<string, string> = {}
+          if (isStripeSession) {
+            const paymentData = await $fetch<{
+              paid: boolean
+              customerEmail: string | null
+              metadata: Record<string, string> | null
+            }>('/api/verify-payment', {
+              method: 'POST',
+              body: { sessionId },
+            })
+
+            if (!paymentData.paid) {
+              navigateTo('/preview')
+              return
+            }
+            meta = paymentData.metadata || {}
           }
 
-          const meta = paymentData.metadata || {}
-
-          const _suppressEmail = meta.email || paymentData.customerEmail || store.email
+          const _suppressEmail = meta.email || store.email
           if (_suppressEmail) {
             $fetch('/api/suppress-abandon-sequence', {
               method: 'POST',
@@ -1065,27 +1070,30 @@ onMounted(async () => {
             await generateBundleCalendar()
           }
         } else {
-          // Email already sent — refresh detected, skip email but still verify purchase tier
-          const refreshPayment = await $fetch<{
-            paid: boolean
-            customerEmail: string | null
-            metadata: Record<string, string> | null
-          }>('/api/verify-payment', {
-            method: 'POST',
-            body: { sessionId },
-          })
+          // Email already sent — refresh detected, skip email but still verify purchase tier.
+          // Skip verify-payment for non-Stripe IDs (account history view).
+          if (isStripeSession) {
+            const refreshPayment = await $fetch<{
+              paid: boolean
+              customerEmail: string | null
+              metadata: Record<string, string> | null
+            }>('/api/verify-payment', {
+              method: 'POST',
+              body: { sessionId },
+            })
 
-          if (!refreshPayment.paid) {
-            navigateTo('/preview')
-            return
+            if (!refreshPayment.paid) {
+              navigateTo('/preview')
+              return
+            }
+
+            const refreshMeta = refreshPayment.metadata || {}
+            store.setBundlePurchased(refreshMeta.bundle === 'true' || refreshMeta.oracle === 'true')
+            store.setCalendarPurchased(refreshMeta.bundle === 'true' || refreshMeta.oracle === 'true')
+            store.setOraclePurchased(refreshMeta.oracle === 'true')
+            store.setSubscriptionActive(refreshMeta.oracle === 'true')
+            store.setBirthChartPurchased(refreshMeta.birth_chart === 'true')
           }
-
-          const refreshMeta = refreshPayment.metadata || {}
-          store.setBundlePurchased(refreshMeta.bundle === 'true' || refreshMeta.oracle === 'true')
-          store.setCalendarPurchased(refreshMeta.bundle === 'true' || refreshMeta.oracle === 'true')
-          store.setOraclePurchased(refreshMeta.oracle === 'true')
-          store.setSubscriptionActive(refreshMeta.oracle === 'true')
-          store.setBirthChartPurchased(refreshMeta.birth_chart === 'true')
 
           isLoadingReport.value = false
           showAddon.value = false
@@ -1099,8 +1107,9 @@ onMounted(async () => {
           await loadRegionalSection()
         }
 
-        // Silently provision Supabase Auth account (non-blocking — report renders regardless)
-        provisionUser({ sessionId }).catch(() => {})
+        // Silently provision Supabase Auth account (non-blocking — report renders regardless).
+        // Only applies to Stripe sessions — temp_* / promo_* IDs are already provisioned.
+        if (isStripeSession) provisionUser({ sessionId }).catch(() => {})
         return
       }
 
