@@ -30,6 +30,7 @@ export default defineEventHandler(async (event) => {
     const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
+      options: { redirectTo: 'https://omenora.com/account' },
     })
 
     if (!linkErr && linkData?.properties?.hashed_token) {

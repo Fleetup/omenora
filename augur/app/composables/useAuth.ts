@@ -85,6 +85,7 @@ export function useAuth() {
     // provisionUser(). No dependency on Supabase dashboard PKCE/implicit
     // flow settings or Site URL configuration.
     if (import.meta.client) {
+      // CASE A1: our Resend email — token arrives as ?token_hash= query param
       const tokenHash = new URLSearchParams(window.location.search).get('token_hash')
       if (tokenHash) {
         const { data, error } = await supabase.auth.verifyOtp({
@@ -93,12 +94,33 @@ export function useAuth() {
         })
         if (!error && data.session) {
           session.value = data.session
-          // Clean the token from the URL so refresh/back doesn't re-use it
-          const cleanUrl = window.location.pathname
-          window.history.replaceState({}, '', cleanUrl)
+          window.history.replaceState({}, '', window.location.pathname)
           return true
         }
         // Token invalid/expired — fall through to show the sign-in form
+      }
+
+      // CASE A2: Supabase's own built-in email — after /auth/v1/verify processes
+      // the token it redirects here with #access_token=...&refresh_token=...
+      // The Supabase client reads this automatically when detectSessionInUrl is
+      // true, but we have it disabled. Handle it manually here instead.
+      if (window.location.hash.includes('access_token=')) {
+        const hashParams = new URLSearchParams(window.location.hash.slice(1))
+        const accessToken  = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        if (accessToken && refreshToken) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token:  accessToken,
+            refresh_token: refreshToken,
+          })
+          if (!error && data.session) {
+            session.value = data.session
+            window.history.replaceState({}, '', window.location.pathname)
+            return true
+          }
+        }
+        // Clean the hash even if session exchange failed
+        window.history.replaceState({}, '', window.location.pathname)
       }
     }
 
