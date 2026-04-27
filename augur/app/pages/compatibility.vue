@@ -244,7 +244,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
 
@@ -427,12 +427,19 @@ async function handleCheckout(tier: 'subscription' | 'single') {
 
 // ── onMounted: routing branches ───────────────────────────────────────────────
 onMounted(async () => {
-  const sessionId = route.query.session_id as string | undefined
-  const preview   = route.query.preview   as string | undefined
-  const canceled  = route.query.canceled  as string | undefined
+  await nextTick() // ensure route query is fully settled after navigation
 
-  // CASE B / C — preview or post-cancel
-  if (preview === '1' || canceled === '1') {
+  const sessionId  = route.query.session_id as string | undefined
+  const preview    = route.query.preview    as string | undefined
+  const canceled   = route.query.canceled   as string | undefined
+
+  const isPreview  = preview  === '1'
+  const isCanceled = canceled === '1'
+
+  console.warn('[compatibility] onMounted params', { sessionId: !!sessionId, isPreview, isCanceled, hasStoreData: !!store.compatibilityData })
+
+  // CASE B / C — preview or post-cancel: ALWAYS wins, even if session_id is also present
+  if (isPreview || isCanceled) {
     if (!store.compatibilityData) {
       return // template renders "session expired" state
     }
@@ -444,8 +451,8 @@ onMounted(async () => {
     return
   }
 
-  // CASE A — post-payment
-  if (sessionId) {
+  // CASE A — post-payment (only reachable when preview/canceled are both absent)
+  if (!isPreview && !isCanceled && sessionId) {
     isLoading.value = true
     try {
       const paymentData = await $fetch<{
