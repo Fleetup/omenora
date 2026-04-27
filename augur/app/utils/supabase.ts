@@ -22,7 +22,13 @@ export function getSupabaseClient() {
     nuxtApp[SUPABASE_CLIENT_KEY] = createClient(
       config.public.supabaseUrl as string,
       config.public.supabaseAnonKey as string,
-      { auth: { persistSession: import.meta.client } },
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: false,
+        },
+      },
     )
   }
 
