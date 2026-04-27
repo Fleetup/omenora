@@ -30,8 +30,10 @@ export default defineEventHandler(async (event) => {
 
   // ── Input validation ─────────────────────────────────────────────────────
 
-  assertInput(!!firstName,  'firstName is required')
-  assertInput(!!partnerName, 'partnerName is required')
+  if (!previewMode) {
+    assertInput(!!firstName,  'firstName is required')
+    assertInput(!!partnerName, 'partnerName is required')
+  }
   assertInput(isValidDateOfBirth(partnerDob), 'Invalid partner date of birth')
 
   // CASE 1: archetype-reading data present — validate it
@@ -115,17 +117,17 @@ export default defineEventHandler(async (event) => {
 
 You are OMENORA, an AI destiny analysis system. Generate a compatibility report between two people.
 Be specific, poetic, and personal. Reference their actual names, archetypes, life paths, and seasons throughout.
-Never be generic. Write in second person to ${firstName}.
+Never be generic. Write in second person to ${firstName || 'the user'}.
 
 Person 1 (the user):
-- Name: ${firstName}
+- Name: ${firstName || '(not provided — address as "you")'}
 - Archetype: ${archetype}
 - Element: ${element}
 - Life Path: ${lifePathNumber}
 - Traits: ${powerTraits?.join(', ')}
 
 Person 2 (their person):
-- Name: ${partnerName}
+- Name: ${partnerName || '(not provided — refer to as "your partner")'}
 - Born: ${partnerSeason} season
 - Life Path: ${partnerLifePath}
 - City: ${partnerCity}
