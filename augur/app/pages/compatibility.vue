@@ -270,7 +270,7 @@ useSeoMeta({ title: 'Your Love Compatibility Reading', robots: 'noindex, nofollo
 const store = useAnalysisStore()
 const route = useRoute()
 const { t } = useLanguage()
-const { provisionUser } = useAuth()
+const { provisionUser, session, restoreSession } = useAuth()
 const { $trackCustomEvent, $trackInitiateCheckout, $trackPurchase } = useNuxtApp() as any
 
 function trackEvent(name: string, props?: Record<string, unknown>) {
@@ -500,11 +500,39 @@ onMounted(async () => {
   const sessionId  = route.query.session_id as string | undefined
   const preview    = route.query.preview    as string | undefined
   const canceled   = route.query.canceled   as string | undefined
+  const fromHistory = route.query.from      === 'history'
 
   const isPreview  = preview  === '1'
   const isCanceled = canceled === '1'
 
-  console.warn('[compatibility] onMounted params', { sessionId: !!sessionId, isPreview, isCanceled, hasStoreData: !!store.compatibilityData })
+  console.warn('[compatibility] onMounted params', { sessionId: !!sessionId, isPreview, isCanceled, fromHistory, hasStoreData: !!store.compatibilityData })
+
+  // CASE H — history view from account page: load saved reading from DB, no re-generation
+  if (fromHistory && sessionId) {
+    isLoading.value = true
+    try {
+      // Restore session so we have a Bearer token
+      await restoreSession()
+      const token = session.value?.access_token
+      if (!token) {
+        await navigateTo('/account')
+        return
+      }
+      const { reading } = await $fetch<{ reading: any }>('/api/get-compatibility-reading', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: { sessionId },
+      })
+      compatibility.value = reading.compatibility_data
+      if (!store.firstName   && reading.first_name)   store.firstName   = reading.first_name
+      if (!store.partnerName && reading.partner_name)  store.setPartnerData({ name: reading.partner_name, dob: reading.partner_dob || '', city: '' })
+      isLoading.value = false
+    } catch {
+      hasError.value  = true
+      isLoading.value = false
+    }
+    return
+  }
 
   // CASE B / C — preview or post-cancel: ALWAYS wins, even if session_id is also present
   if (isPreview || isCanceled) {

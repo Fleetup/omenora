@@ -36,6 +36,7 @@ export default defineEventHandler(async (event) => {
 
   const reportRow = {
     session_id:       sessionId,
+    type:             'archetype',
     first_name:       firstName,
     archetype,
     life_path_number: lifePathNumber,

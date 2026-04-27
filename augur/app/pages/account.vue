@@ -145,7 +145,10 @@
                 <p class="reading-date">{{ formatDate(report.created_at) }}</p>
               </div>
             </div>
-            <button class="view-btn" @click="navigateTo(`/report?session_id=${report.session_id}`)">View</button>
+            <button
+              class="view-btn"
+              @click="navigateTo(report.type === 'compatibility' ? `/compatibility?session_id=${report.session_id}&from=history` : `/report?session_id=${report.session_id}`)"
+            >View</button>
           </div>
         </div>
       </section>

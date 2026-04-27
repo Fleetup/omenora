@@ -445,6 +445,7 @@ export default defineEventHandler(async (event) => {
   const { error: saveErr } = await supabase.from('reports').upsert(
     {
       session_id:       sessionId,
+      type:             'archetype',
       first_name:       firstName,
       archetype,
       life_path_number: lifePathNumber,

@@ -43,9 +43,19 @@ export default defineEventHandler(async (event) => {
   }
 
   // Deduplicate: for compatibility readings keep only one row per partner+dob pair;
-  // for archetype readings keep only one row per date_of_birth (same user, same report).
+  // for archetype readings keep only one row per date_of_birth+archetype pair.
+  // Priority: paid cs_live_ rows always win over temp_/promo_ rows on collision.
+  // We sort so paid rows appear first, then dedup keeps the first-seen winner.
+  const rows = (data ?? []).slice().sort((a, b) => {
+    const aPaid = a.session_id?.startsWith('cs_live_') || a.session_id?.startsWith('cs_test_') ? 0 : 1
+    const bPaid = b.session_id?.startsWith('cs_live_') || b.session_id?.startsWith('cs_test_') ? 0 : 1
+    if (aPaid !== bPaid) return aPaid - bPaid
+    // Within same tier, keep most recent first
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  })
+
   const seen = new Set<string>()
-  const deduped = (data ?? []).filter((row) => {
+  const deduped = rows.filter((row) => {
     const key = row.type === 'compatibility'
       ? `compat:${(row.partner_name ?? '').toLowerCase().trim()}:${row.date_of_birth ?? ''}`
       : `archetype:${row.date_of_birth ?? ''}:${row.archetype ?? ''}`
@@ -53,6 +63,9 @@ export default defineEventHandler(async (event) => {
     seen.add(key)
     return true
   })
+
+  // Re-sort by date descending for display (most recent first)
+  deduped.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   return { reports: deduped }
 })
