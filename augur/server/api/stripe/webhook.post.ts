@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
       const supabaseInv = createSupabaseAdmin()
       const { error: invErr } = await supabaseInv
         .from('subscribers')
-        .update({ active: false, updated_at: new Date().toISOString() })
+        .update({ active: false })
         .eq('stripe_customer_id', customerId)
       if (invErr) {
         console.error('[stripe-webhook] invoice.payment_failed — failed to deactivate subscriber:', invErr.code, 'customer:', customerId)
@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
       const supabaseSub = createSupabaseAdmin()
       const { error: subErr } = await supabaseSub
         .from('subscribers')
-        .update({ active: false, updated_at: new Date().toISOString() })
+        .update({ active: false })
         .eq('stripe_customer_id', customerId)
       if (subErr) {
         console.error('[stripe-webhook] customer.subscription.deleted — failed to deactivate subscriber:', subErr.code, 'customer:', customerId)
@@ -211,7 +211,7 @@ export default defineEventHandler(async (event) => {
 
     void createSupabaseAdmin()
       .from('email_captures')
-      .update({ purchased: true, sequence_completed: true, updated_at: new Date().toISOString() })
+      .update({ purchased: true, sequence_completed: true })
       .eq('email', customerEmail.toLowerCase().trim())
   }
 
@@ -247,7 +247,7 @@ export default defineEventHandler(async (event) => {
           await stripe.subscriptions.cancel(existingSubId)
           await createSupabaseAdmin()
             .from('subscribers')
-            .update({ active: false, updated_at: new Date().toISOString() })
+            .update({ active: false })
             .eq('email', subEmail)
             .eq('plan_type', 'daily_horoscope')
           console.info('[stripe-webhook] Canceled daily_horoscope sub for upgrade:', existingSubId)
