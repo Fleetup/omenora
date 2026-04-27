@@ -33,13 +33,13 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!linkErr && linkData?.properties?.hashed_token) {
-      // Build the verification URL ourselves using the hashed_token so that
-      // redirect_to is fully controlled by our code — not by the Supabase
-      // project's "Site URL" setting in the dashboard (which defaults to
-      // localhost:3000 in dev and can cause wrong redirects if misconfigured).
-      const supabaseUrl = (config.supabaseUrl as string).replace(/\/$/, '')
-      const redirectTo  = encodeURIComponent('https://omenora.com/account')
-      magicLinkUrl = `${supabaseUrl}/auth/v1/verify?token=${linkData.properties.hashed_token}&type=magiclink&redirect_to=${redirectTo}`
+      // Send the user directly to our own /account page with the token_hash as
+      // a query param. account.vue calls supabase.auth.verifyOtp() on mount —
+      // the same pattern used in provisionUser(). This bypasses the Supabase
+      // /auth/v1/verify redirect entirely so PKCE/implicit flow settings and
+      // the Supabase dashboard Site URL have zero effect on where the user lands.
+      const token = encodeURIComponent(linkData.properties.hashed_token)
+      magicLinkUrl = `https://omenora.com/account?token_hash=${token}`
     } else if (linkErr) {
       // Log internally but do not surface to caller
       console.error('[request-magic-link] generateLink error:', linkErr.code)

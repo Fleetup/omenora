@@ -79,35 +79,30 @@ export function useAuth() {
    * (mobile). Call this in onMounted of any page that should respect auth state.
    */
   async function restoreSession(): Promise<boolean> {
-    // After a magic-link click, Supabase redirects to our page with either:
-    //   a) a URL hash fragment: #access_token=...&type=magiclink  (implicit flow)
-    //   b) query params:        ?code=...                          (PKCE flow)
-    // Supabase JS v2 detects both automatically via onAuthStateChange, but the
-    // event fires asynchronously AFTER the first getSession() call returns null.
-    // We must wait for SIGNED_IN if we detect an auth callback in the URL.
-    const isAuthCallback = import.meta.client && (
-      window.location.hash.includes('access_token') ||
-      window.location.hash.includes('type=magiclink') ||
-      new URLSearchParams(window.location.search).has('code')
-    )
-
-    if (isAuthCallback) {
-      // Wait up to 5 seconds for Supabase to exchange the token and fire SIGNED_IN
-      const resolved = await new Promise<boolean>((resolve) => {
-        const timer = setTimeout(() => resolve(false), 5000)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
-          if (event === 'SIGNED_IN' && s) {
-            clearTimeout(timer)
-            subscription.unsubscribe()
-            session.value = s
-            resolve(true)
-          }
+    // CASE A: magic-link click — our email sends the user to
+    //   https://omenora.com/account?token_hash=<hashed_token>
+    // Exchange the one-time token directly via verifyOtp(), identical to
+    // provisionUser(). No dependency on Supabase dashboard PKCE/implicit
+    // flow settings or Site URL configuration.
+    if (import.meta.client) {
+      const tokenHash = new URLSearchParams(window.location.search).get('token_hash')
+      if (tokenHash) {
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'email',
         })
-      })
-      if (resolved) return true
+        if (!error && data.session) {
+          session.value = data.session
+          // Clean the token from the URL so refresh/back doesn't re-use it
+          const cleanUrl = window.location.pathname
+          window.history.replaceState({}, '', cleanUrl)
+          return true
+        }
+        // Token invalid/expired — fall through to show the sign-in form
+      }
     }
 
-    // Standard path: read persisted session from localStorage
+    // CASE B: standard path — read persisted session from localStorage.
     // getSession() reads from localStorage without a network call — it cannot
     // detect revoked tokens. We use it only to check if a local token exists,
     // then call getUser() which validates the JWT against the Supabase server.
