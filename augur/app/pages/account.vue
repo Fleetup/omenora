@@ -76,20 +76,18 @@
 
   <!-- ── STATE 3: Authenticated dashboard ── -->
   <div v-else class="account-page">
-
     <div class="account-content">
 
-      <!-- ── Top bar: ← back · OMENORA · email ── -->
-      <div class="top-bar">
-        <button class="top-bar-back" aria-label="Go back" @click="navigateTo('/')">
-          <span aria-hidden="true">←</span>
-        </button>
-        <p class="top-brand">OMENORA</p>
-        <p class="top-email">{{ userEmail }}</p>
+      <!-- ── Page header ── -->
+      <div class="page-header">
+        <BackButton to="/" text="Home" />
+        <p class="page-header-brand">OMENORA</p>
+        <p class="page-header-email">{{ userEmail }}</p>
       </div>
 
-      <!-- ── Hero greeting ── -->
+      <!-- ── Hero ── -->
       <div class="account-hero">
+        <div class="account-hero-glyph" aria-hidden="true">✦</div>
         <p class="account-hero-label">YOUR ACCOUNT</p>
         <p class="account-hero-email">{{ userEmail }}</p>
       </div>
@@ -103,11 +101,14 @@
         </div>
 
         <div v-else-if="subscriptionActive" class="sub-status-card">
-          <div class="sub-status-row">
-            <span class="active-badge">Active</span>
-            <span class="sub-label">Compatibility Plus · $9.99/mo</span>
+          <div class="sub-status-top">
+            <div class="sub-status-row">
+              <span class="active-badge">Active</span>
+              <span class="sub-label">Personal Daily Horoscope</span>
+            </div>
+            <span class="sub-price">$4.99<span class="sub-price-period">/mo</span></span>
           </div>
-          <p class="sub-desc">Daily horoscope · Unlimited compatibility readings · 7-day insight archive</p>
+          <p class="sub-desc">Daily personalized horoscope · Based on your exact birth chart · Delivered every morning</p>
           <button
             class="action-btn"
             :disabled="isOpeningPortal"
@@ -123,14 +124,93 @@
             <span class="inactive-badge">Inactive</span>
             <span class="sub-label">No active subscription</span>
           </div>
-          <p class="sub-desc">Get daily personalized horoscopes + unlimited compatibility readings.</p>
-          <button class="action-btn action-btn--primary" @click="navigateTo('/compatibility-quiz')">
-            See plans — from $9.99/mo
+          <p class="sub-desc">Get a daily personal horoscope built from your exact birth chart.</p>
+          <button class="action-btn action-btn--primary" @click="navigateTo('/subscribe')">
+            Start Personal Horoscope — $4.99/mo
           </button>
         </div>
       </section>
 
-      <!-- ── Section 2: Reading history ── -->
+      <!-- ── Section 2: Daily Horoscope Insights (subscribers only) ── -->
+      <section v-if="subscriptionActive" class="account-section">
+        <div class="section-header-row">
+          <h2 class="section-heading">Daily Horoscope</h2>
+          <span class="section-badge">Last 7 days</span>
+        </div>
+
+        <div v-if="isLoadingInsights" class="status-loading">
+          <span class="status-dot-pulse" /> Loading insights...
+        </div>
+
+        <div v-else-if="dailyInsights.length === 0" class="empty-state">
+          <div class="empty-state-icon" aria-hidden="true">☽</div>
+          <p class="empty-state-text">Your first daily insight will appear here after tomorrow morning's delivery.</p>
+        </div>
+
+        <div v-else class="insight-cards-list">
+          <div
+            v-for="entry in dailyInsights"
+            :key="entry.sent_date"
+            class="insight-entry"
+          >
+            <!-- Collapsed header -->
+            <button
+              class="insight-entry-header"
+              :aria-expanded="expandedInsight === entry.sent_date"
+              @click="toggleInsight(entry.sent_date)"
+            >
+              <div class="insight-entry-left">
+                <span class="insight-entry-glyph" aria-hidden="true">✦</span>
+                <div class="insight-entry-meta">
+                  <p class="insight-entry-date">{{ formatDate(entry.sent_date) }}</p>
+                  <p class="insight-entry-theme">{{ entry.theme_used }}</p>
+                </div>
+              </div>
+              <svg
+                class="insight-entry-chevron"
+                :class="{ 'insight-entry-chevron--open': expandedInsight === entry.sent_date }"
+                viewBox="0 0 16 16" fill="none" aria-hidden="true"
+              >
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <!-- Expanded body -->
+            <div v-if="expandedInsight === entry.sent_date" class="insight-entry-body">
+
+              <!-- Insight card (visual, downloadable) -->
+              <div class="insight-visual-card">
+                <div class="ivc-header">
+                  <span class="ivc-brand">OMENORA</span>
+                  <span class="ivc-date">{{ formatDate(entry.sent_date) }}</span>
+                </div>
+                <div class="ivc-theme-line" aria-hidden="true" />
+                <p class="ivc-theme">{{ entry.theme_used }}</p>
+                <p class="ivc-body">{{ entry.insight_full || entry.insight_preview }}</p>
+                <div v-if="entry.reflection_question" class="ivc-reflection">
+                  <span class="ivc-reflection-label">REFLECTION</span>
+                  <p class="ivc-reflection-text">{{ entry.reflection_question }}</p>
+                </div>
+              </div>
+
+              <!-- Download button -->
+              <button
+                class="insight-dl-btn"
+                :disabled="downloadingInsight === entry.sent_date"
+                @click="downloadInsightCard(entry)"
+              >
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="insight-dl-icon">
+                  <path d="M8 2v8M5 7l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                {{ downloadingInsight === entry.sent_date ? 'Generating...' : 'Download as Image' }}
+              </button>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 3: Reading history ── -->
       <section class="account-section">
         <h2 class="section-heading">Reading History</h2>
 
@@ -170,48 +250,6 @@
         </div>
       </section>
 
-      <!-- ── Section 3: Daily insights feed (subscribers only) ── -->
-      <section v-if="subscriptionActive" class="account-section">
-        <h2 class="section-heading">Daily Insights</h2>
-
-        <div v-if="isLoadingInsights" class="status-loading">
-          <span class="status-dot-pulse" /> Loading insights...
-        </div>
-
-        <div v-else-if="dailyInsights.length === 0" class="empty-state">
-          <p class="empty-state-text">Your first daily insight will appear here after it's sent.</p>
-        </div>
-
-        <div v-else class="insights-list">
-          <div
-            v-for="entry in dailyInsights"
-            :key="entry.sent_date"
-            class="insight-card"
-            :class="{ 'insight-card--expanded': expandedInsight === entry.sent_date }"
-          >
-            <button
-              class="insight-card-header"
-              :aria-expanded="expandedInsight === entry.sent_date"
-              @click="expandedInsight = expandedInsight === entry.sent_date ? null : entry.sent_date"
-            >
-              <div class="insight-header-left">
-                <span class="insight-icon">✦</span>
-                <div>
-                  <p class="insight-date">{{ formatDate(entry.sent_date) }}</p>
-                  <p class="insight-theme">{{ entry.theme_used }}</p>
-                </div>
-              </div>
-              <span class="insight-chevron" :class="{ 'insight-chevron--open': expandedInsight === entry.sent_date }">›</span>
-            </button>
-
-            <div v-if="expandedInsight === entry.sent_date" class="insight-body">
-              <p class="insight-text">{{ entry.insight_full || entry.insight_preview }}</p>
-              <p v-if="entry.reflection_question" class="insight-question">{{ entry.reflection_question }}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- ── Section 4: Account actions ── -->
       <section class="account-section account-section--last">
         <button class="action-btn action-btn--ghost" @click="handleSignOut">Sign out</button>
@@ -229,6 +267,133 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
+
+// ── Canvas-based insight card download ────────────────────────────────────────
+const downloadingInsight = ref<string | null>(null)
+
+async function downloadInsightCard(entry: { sent_date: string; theme_used: string; insight_full?: string; insight_preview?: string; reflection_question?: string }) {
+  if (downloadingInsight.value) return
+  downloadingInsight.value = entry.sent_date
+
+  try {
+    const W = 1080
+    const H = 1350
+    const canvas = document.createElement('canvas')
+    canvas.width  = W
+    canvas.height = H
+    const ctx = canvas.getContext('2d')!
+
+    // Background
+    ctx.fillStyle = '#07070D'
+    ctx.fillRect(0, 0, W, H)
+
+    // Radial top glow
+    const glow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, H * 0.65)
+    glow.addColorStop(0,   'rgba(75, 45, 155, 0.30)')
+    glow.addColorStop(0.5, 'rgba(50, 25, 110, 0.12)')
+    glow.addColorStop(1,   'rgba(0,0,0,0)')
+    ctx.fillStyle = glow
+    ctx.fillRect(0, 0, W, H)
+
+    // Header line
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'
+    ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(72, 120); ctx.lineTo(W - 72, 120); ctx.stroke()
+
+    // Brand
+    ctx.font = '500 28px -apple-system, BlinkMacSystemFont, sans-serif'
+    ctx.letterSpacing = '0.22em'
+    ctx.fillStyle = 'rgba(255,255,255,0.28)'
+    ctx.textAlign = 'left'
+    ctx.fillText('OMENORA', 72, 92)
+
+    // Date
+    ctx.font = '400 26px -apple-system, BlinkMacSystemFont, sans-serif'
+    ctx.letterSpacing = '0.04em'
+    ctx.fillStyle = 'rgba(255,255,255,0.22)'
+    ctx.textAlign = 'right'
+    ctx.fillText(formatDate(entry.sent_date), W - 72, 92)
+
+    // Glyph
+    ctx.font = '400 48px serif'
+    ctx.fillStyle = 'rgba(107, 72, 224, 0.60)'
+    ctx.textAlign = 'center'
+    ctx.fillText('✦', W / 2, 200)
+
+    // Theme
+    ctx.font = '300 52px Georgia, serif'
+    ctx.fillStyle = 'rgba(220, 210, 255, 0.88)'
+    ctx.textAlign = 'center'
+    ctx.letterSpacing = '0.02em'
+    wrapText(ctx, entry.theme_used, W / 2, 280, W - 144, 68)
+
+    // Divider
+    const divY = 380
+    ctx.strokeStyle = 'rgba(107, 72, 224, 0.20)'
+    ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(144, divY); ctx.lineTo(W - 144, divY); ctx.stroke()
+
+    // Insight body
+    const bodyText = entry.insight_full || entry.insight_preview || ''
+    ctx.font = '300 34px -apple-system, BlinkMacSystemFont, sans-serif'
+    ctx.fillStyle = 'rgba(255,255,255,0.72)'
+    ctx.textAlign = 'left'
+    ctx.letterSpacing = '0.01em'
+    const bodyEndY = wrapText(ctx, bodyText, 72, 440, W - 144, 50)
+
+    // Reflection
+    if (entry.reflection_question) {
+      const rfY = Math.max(bodyEndY + 60, 900)
+      ctx.font = 'italic 400 30px Georgia, serif'
+      ctx.fillStyle = 'rgba(255,255,255,0.38)'
+      ctx.textAlign = 'left'
+      ctx.letterSpacing = '0.01em'
+      ctx.fillText('Reflection', 72, rfY)
+      ctx.font = 'italic 300 30px Georgia, serif'
+      ctx.fillStyle = 'rgba(200, 180, 255, 0.60)'
+      wrapText(ctx, entry.reflection_question, 72, rfY + 48, W - 144, 44)
+    }
+
+    // Footer
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'
+    ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(72, H - 100); ctx.lineTo(W - 72, H - 100); ctx.stroke()
+    ctx.font = '400 24px -apple-system, BlinkMacSystemFont, sans-serif'
+    ctx.fillStyle = 'rgba(255,255,255,0.14)'
+    ctx.textAlign = 'center'
+    ctx.letterSpacing = '0.10em'
+    ctx.fillText('omenora.com', W / 2, H - 60)
+
+    const link = document.createElement('a')
+    link.download = `omenora-insight-${entry.sent_date}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+    showToast('Image saved!')
+  } catch {
+    showToast('Download failed. Please try again.')
+  } finally {
+    downloadingInsight.value = null
+  }
+}
+
+function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {
+  const words = text.split(' ')
+  let line = ''
+  let cy = y
+  for (let n = 0; n < words.length; n++) {
+    const testLine  = line + words[n] + ' '
+    const metrics   = ctx.measureText(testLine)
+    if (metrics.width > maxWidth && n > 0) {
+      ctx.fillText(line.trim(), x, cy)
+      line = words[n] + ' '
+      cy += lineHeight
+    } else {
+      line = testLine
+    }
+  }
+  if (line.trim()) { ctx.fillText(line.trim(), x, cy); cy += lineHeight }
+  return cy
+}
 
 useSeoMeta({ title: 'My Account — OMENORA', robots: 'noindex, nofollow' })
 
@@ -262,6 +427,10 @@ const reports          = ref<any[]>([])
 const isLoadingInsights = ref(false)
 const dailyInsights     = ref<any[]>([])
 const expandedInsight   = ref<string | null>(null)
+
+function toggleInsight(date: string) {
+  expandedInsight.value = expandedInsight.value === date ? null : date
+}
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 const toast = ref('')
@@ -438,27 +607,24 @@ function formatDate(iso: string | null | undefined): string {
   box-sizing: border-box;
 }
 
-/* ── Radial gradient overlay — matches all other pages ── */
 .center-page::before,
 .account-page::before {
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 55% at 50% 0%, rgba(75, 45, 155, 0.18) 0%, transparent 68%),
-    radial-gradient(ellipse 50% 40% at 15% 55%, rgba(50, 25, 110, 0.10) 0%, transparent 60%);
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(75, 45, 155, 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 45% at 85% 70%, rgba(50, 25, 110, 0.10) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
 
-/* All direct children sit above the gradient overlay */
 .center-page > *,
 .account-page > * {
   position: relative;
   z-index: 1;
 }
 
-/* ── Authenticated: content wrapper ── */
 .account-page {
   display: block;
 }
@@ -493,7 +659,7 @@ function formatDate(iso: string | null | undefined): string {
   margin: 0;
 }
 
-/* ── STATE 2: Auth page layout ── */
+/* ── STATE 2: Auth ── */
 .auth-page {
   flex-direction: column;
   justify-content: flex-start;
@@ -539,7 +705,7 @@ function formatDate(iso: string | null | undefined): string {
 .email-input {
   width: 100%;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.85);
   font-size: 15px;
@@ -553,19 +719,10 @@ function formatDate(iso: string | null | undefined): string {
   appearance: none;
 }
 
-.email-input:focus {
-  border-color: rgba(107, 72, 224, 0.50);
-}
+.email-input:focus { border-color: rgba(107, 72, 224, 0.50); }
+.email-input::placeholder { color: rgba(255, 255, 255, 0.2); }
+.email-input:disabled { opacity: 0.5; }
 
-.email-input::placeholder {
-  color: rgba(255, 255, 255, 0.2);
-}
-
-.email-input:disabled {
-  opacity: 0.5;
-}
-
-/* ── CTA button (magic link send) ── */
 .cta-btn {
   width: 100%;
   background: transparent;
@@ -590,10 +747,7 @@ function formatDate(iso: string | null | undefined): string {
   color: rgba(200, 180, 255, 1);
 }
 
-.cta-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
+.cta-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .error-text {
   font-size: 13px;
@@ -603,10 +757,7 @@ function formatDate(iso: string | null | undefined): string {
   line-height: 1.5;
 }
 
-.confirm-error {
-  margin-top: 20px;
-  text-align: center;
-}
+.confirm-error { margin-top: 20px; text-align: center; }
 
 .confirm-error p {
   font-size: 13px;
@@ -627,15 +778,9 @@ function formatDate(iso: string | null | undefined): string {
   transition: color 0.15s ease;
 }
 
-.link-btn:hover {
-  color: rgba(170, 140, 255, 0.90);
-}
+.link-btn:hover { color: rgba(170, 140, 255, 0.90); }
 
-/* ── Sent confirmation ── */
-.sent-message {
-  text-align: center;
-  padding: 8px 0;
-}
+.sent-message { text-align: center; padding: 8px 0; }
 
 .sent-icon {
   font-size: 28px;
@@ -657,94 +802,80 @@ function formatDate(iso: string | null | undefined): string {
   margin: 0;
 }
 
-/* ── Content wrapper (contains top-bar + all sections) ── */
+/* ── Authenticated layout ── */
 .account-content {
   max-width: 560px;
   margin: 0 auto;
   padding: 20px 20px 80px;
 }
 
-/* ── Top bar — matches compatibility.vue pattern exactly ── */
-.top-bar {
+/* ── Page header — BackButton + brand + email ── */
+.page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
 }
 
-.top-bar-back {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
-  color: rgba(255, 255, 255, 0.50);
-  font-size: 16px;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.18s ease, color 0.18s ease;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-}
-
-.top-bar-back:hover {
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.07);
-}
-
-.top-brand {
+.page-header-brand {
   font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
   font-size: 13px;
-  letter-spacing: 0.20em;
+  letter-spacing: 0.22em;
   color: rgba(255, 255, 255, 0.28);
   margin: 0;
   flex: 1;
   text-align: center;
 }
 
-.top-email {
+.page-header-email {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.20);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 160px;
+  max-width: 150px;
   text-align: right;
   flex-shrink: 0;
 }
 
-/* ── Hero greeting ── */
+/* ── Hero ── */
 .account-hero {
   text-align: center;
-  padding: 16px 0 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px 0 40px;
   margin-bottom: 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.account-hero-glyph {
+  font-size: 22px;
+  color: rgba(107, 72, 224, 0.45);
+  margin-bottom: 16px;
+  display: block;
 }
 
 .account-hero-label {
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.18em;
-  color: rgba(107, 72, 224, 0.60);
-  margin: 0 0 12px;
+  letter-spacing: 0.20em;
+  color: rgba(107, 72, 224, 0.55);
+  margin: 0 0 14px;
 }
 
 .account-hero-email {
   font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 300;
-  color: rgba(220, 210, 255, 0.70);
+  color: rgba(220, 210, 255, 0.65);
   margin: 0;
   word-break: break-all;
+  letter-spacing: 0.01em;
 }
 
+/* ── Sections ── */
 .account-section {
-  margin-bottom: 40px;
-  padding-bottom: 40px;
+  margin-bottom: 44px;
+  padding-bottom: 44px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -756,13 +887,34 @@ function formatDate(iso: string | null | undefined): string {
 .section-heading {
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.14em;
-  color: rgba(107, 72, 224, 0.70);
+  letter-spacing: 0.16em;
+  color: rgba(107, 72, 224, 0.65);
   text-transform: uppercase;
-  margin: 0 0 20px;
+  margin: 0 0 18px;
 }
 
-/* ── Inline loading indicator ── */
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.section-header-row .section-heading {
+  margin: 0;
+}
+
+.section-badge {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  padding: 3px 10px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Loading indicator ── */
 .status-loading {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.30);
@@ -786,19 +938,28 @@ function formatDate(iso: string | null | undefined): string {
   flex-shrink: 0;
 }
 
-/* ── Subscription cards ── */
+/* ── Subscription card ── */
 .sub-status-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(107, 72, 224, 0.18);
-  border-radius: 14px;
-  padding: 20px;
+  background: rgba(107, 72, 224, 0.04);
+  border: 1px solid rgba(107, 72, 224, 0.16);
+  border-radius: 16px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
 .sub-status-card--inactive {
+  background: rgba(255, 255, 255, 0.02);
   border-color: rgba(255, 255, 255, 0.06);
+}
+
+.sub-status-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .sub-status-row,
@@ -812,7 +973,7 @@ function formatDate(iso: string | null | undefined): string {
 .active-badge {
   font-size: 10px;
   font-weight: 500;
-  color: rgba(90, 210, 130, 0.90);
+  color: rgba(90, 210, 130, 0.92);
   background: rgba(90, 210, 130, 0.08);
   border: 1px solid rgba(90, 210, 130, 0.20);
   border-radius: 20px;
@@ -835,21 +996,35 @@ function formatDate(iso: string | null | undefined): string {
 
 .sub-label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.60);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sub-price {
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: rgba(220, 210, 255, 0.80);
+  white-space: nowrap;
+}
+
+.sub-price-period {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.30);
 }
 
 .sub-desc {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.28);
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 /* ── Action buttons ── */
 .action-btn {
   width: 100%;
   background: transparent;
-  border: 1px solid rgba(107, 72, 224, 0.40);
+  border: 1px solid rgba(107, 72, 224, 0.38);
   border-radius: 12px;
   padding: 13px 24px;
   min-height: 46px;
@@ -865,39 +1040,36 @@ function formatDate(iso: string | null | undefined): string {
 
 .action-btn:hover:not(:disabled) {
   background: rgba(107, 72, 224, 0.10);
-  border-color: rgba(107, 72, 224, 0.65);
+  border-color: rgba(107, 72, 224, 0.62);
   color: rgba(200, 180, 255, 1);
 }
 
-.action-btn:disabled {
-  opacity: 0.40;
-  cursor: not-allowed;
-}
+.action-btn:disabled { opacity: 0.40; cursor: not-allowed; }
 
 .action-btn--primary {
-  background: rgba(107, 72, 224, 0.12);
-  border-color: rgba(107, 72, 224, 0.55);
+  background: rgba(107, 72, 224, 0.10);
+  border-color: rgba(107, 72, 224, 0.50);
   color: rgba(200, 180, 255, 0.90);
 }
 
 .action-btn--primary:hover:not(:disabled) {
-  background: rgba(107, 72, 224, 0.20);
-  border-color: rgba(107, 72, 224, 0.80);
+  background: rgba(107, 72, 224, 0.18);
+  border-color: rgba(107, 72, 224, 0.75);
   color: rgba(220, 200, 255, 1);
 }
 
 .action-btn--ghost {
   width: auto;
   padding: 10px 20px;
-  border-color: rgba(255, 255, 255, 0.10);
-  color: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.32);
   font-size: 12px;
 }
 
 .action-btn--ghost:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.20);
-  color: rgba(255, 255, 255, 0.60);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.58);
 }
 
 /* ── Empty states ── */
@@ -905,22 +1077,23 @@ function formatDate(iso: string | null | undefined): string {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 14px;
+  gap: 12px;
+}
+
+.empty-state-icon {
+  font-size: 24px;
+  color: rgba(107, 72, 224, 0.30);
+  margin-bottom: 2px;
 }
 
 .empty-state-text {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.25);
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 /* ── Reading history ── */
-.no-reports {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.25);
-}
-
 .reading-list {
   display: flex;
   flex-direction: column;
@@ -933,9 +1106,14 @@ function formatDate(iso: string | null | undefined): string {
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 14px 16px;
   gap: 12px;
+  transition: border-color 0.18s ease;
+}
+
+.reading-card:hover {
+  border-color: rgba(107, 72, 224, 0.18);
 }
 
 .reading-card-left {
@@ -947,14 +1125,19 @@ function formatDate(iso: string | null | undefined): string {
 }
 
 .reading-icon {
-  font-size: 15px;
-  color: rgba(107, 72, 224, 0.55);
+  font-size: 14px;
+  color: rgba(107, 72, 224, 0.50);
   flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(107, 72, 224, 0.07);
+  border-radius: 8px;
 }
 
-.reading-info {
-  min-width: 0;
-}
+.reading-info { min-width: 0; }
 
 .reading-title {
   font-size: 13px;
@@ -973,8 +1156,8 @@ function formatDate(iso: string | null | undefined): string {
 
 .view-btn {
   background: none;
-  border: 1px solid rgba(107, 72, 224, 0.22);
-  color: rgba(107, 72, 224, 0.65);
+  border: 1px solid rgba(107, 72, 224, 0.20);
+  color: rgba(107, 72, 224, 0.60);
   font-size: 11px;
   font-family: inherit;
   padding: 5px 12px;
@@ -982,43 +1165,44 @@ function formatDate(iso: string | null | undefined): string {
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: border-color 0.18s ease, color 0.18s ease;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
   -webkit-tap-highlight-color: transparent;
   letter-spacing: 0.03em;
 }
 
 .view-btn:hover {
-  border-color: rgba(107, 72, 224, 0.50);
+  background: rgba(107, 72, 224, 0.07);
+  border-color: rgba(107, 72, 224, 0.45);
   color: rgba(140, 110, 255, 0.90);
 }
 
-/* ── Daily insights feed ── */
-.insights-list {
+/* ── Daily horoscope insight entries ── */
+.insight-cards-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
-.insight-card {
+.insight-entry {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: 14px;
   overflow: hidden;
-  transition: border-color 0.18s ease;
+  transition: border-color 0.2s ease;
 }
 
-.insight-card--expanded {
-  border-color: rgba(107, 72, 224, 0.22);
+.insight-entry:has(.insight-entry-body) {
+  border-color: rgba(107, 72, 224, 0.20);
 }
 
-.insight-card-header {
+.insight-entry-header {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: none;
   border: none;
-  padding: 14px 16px;
+  padding: 16px 18px;
   cursor: pointer;
   text-align: left;
   color: inherit;
@@ -1027,68 +1211,177 @@ function formatDate(iso: string | null | undefined): string {
   -webkit-tap-highlight-color: transparent;
 }
 
-.insight-header-left {
+.insight-entry-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
   flex: 1;
 }
 
-.insight-icon {
-  font-size: 13px;
+.insight-entry-glyph {
+  font-size: 12px;
   color: rgba(107, 72, 224, 0.55);
   flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(107, 72, 224, 0.08);
+  border-radius: 8px;
 }
 
-.insight-date {
+.insight-entry-meta { min-width: 0; }
+
+.insight-entry-date {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.72);
-  margin: 0 0 2px;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 3px;
+  font-weight: 400;
 }
 
-.insight-theme {
+.insight-entry-theme {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.28);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-style: italic;
 }
 
-.insight-chevron {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.18);
+.insight-entry-chevron {
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.20);
   flex-shrink: 0;
-  transition: transform 0.2s ease, color 0.18s ease;
-  line-height: 1;
+  transition: transform 0.22s ease, color 0.18s ease;
 }
 
-.insight-chevron--open {
-  transform: rotate(90deg);
-  color: rgba(107, 72, 224, 0.55);
+.insight-entry-chevron--open {
+  transform: rotate(180deg);
+  color: rgba(107, 72, 224, 0.60);
 }
 
-.insight-body {
-  padding: 0 16px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+/* ── Expanded insight body ── */
+.insight-entry-body {
+  padding: 0 18px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.insight-text {
+/* ── Visual insight card (premium readable card) ── */
+.insight-visual-card {
+  background: rgba(107, 72, 224, 0.05);
+  border: 1px solid rgba(107, 72, 224, 0.12);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+  margin-bottom: 14px;
+}
+
+.ivc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.ivc-brand {
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.20em;
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.ivc-date {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.22);
+  letter-spacing: 0.03em;
+}
+
+.ivc-theme-line {
+  height: 1px;
+  background: rgba(107, 72, 224, 0.18);
+  margin-bottom: 16px;
+}
+
+.ivc-theme {
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: rgba(220, 210, 255, 0.88);
+  margin: 0 0 14px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.ivc-body {
   font-size: 14px;
-  color: rgba(220, 210, 255, 0.82);
-  line-height: 1.7;
-  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.75;
+  margin: 0;
 }
 
-.insight-question {
+.ivc-reflection {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(107, 72, 224, 0.10);
+}
+
+.ivc-reflection-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: rgba(107, 72, 224, 0.50);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.ivc-reflection-text {
   font-size: 13px;
   font-style: italic;
+  color: rgba(200, 185, 255, 0.55);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Download button ── */
+.insight-dl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  padding: 11px 18px;
+  font-size: 12px;
+  font-family: inherit;
+  letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.38);
-  line-height: 1.6;
-  margin: 12px 0 0;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.insight-dl-btn:hover:not(:disabled) {
+  background: rgba(107, 72, 224, 0.08);
+  border-color: rgba(107, 72, 224, 0.30);
+  color: rgba(200, 180, 255, 0.75);
+}
+
+.insight-dl-btn:disabled {
+  opacity: 0.40;
+  cursor: not-allowed;
+}
+
+.insight-dl-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 /* ── Account actions section ── */
@@ -1113,53 +1406,41 @@ function formatDate(iso: string | null | undefined): string {
   transition: color 0.15s ease;
 }
 
-.support-link:hover {
-  color: rgba(140, 110, 255, 0.70);
-}
+.support-link:hover { color: rgba(140, 110, 255, 0.70); }
 
-/* ── Toast notification ── */
+/* ── Toast ── */
 .toast {
   position: fixed;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   background: rgba(22, 18, 42, 0.96);
-  border: 1px solid rgba(107, 72, 224, 0.25);
-  color: rgba(220, 210, 255, 0.85);
+  border: 1px solid rgba(107, 72, 224, 0.28);
+  color: rgba(220, 210, 255, 0.88);
   font-size: 13px;
   font-family: inherit;
-  padding: 11px 20px;
+  padding: 11px 22px;
   border-radius: 8px;
   white-space: nowrap;
   pointer-events: none;
   z-index: 100;
   letter-spacing: 0.01em;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 /* ── Responsive ── */
 @media (max-width: 400px) {
-  .top-email {
-    display: none;
-  }
+  .page-header-email { display: none; }
 
-  .auth-card {
-    padding: 36px 20px 32px;
-  }
+  .auth-card { padding: 36px 20px 32px; }
 
-  .account-content {
-    padding: 16px 16px 60px;
-  }
+  .account-content { padding: 16px 16px 60px; }
 
-  .reading-card {
-    padding: 12px 14px;
-  }
+  .reading-card { padding: 12px 14px; }
 
-  .sub-status-card {
-    padding: 16px;
-  }
+  .sub-status-card { padding: 16px; }
 
-  .account-hero {
-    padding: 8px 0 32px;
-  }
+  .account-hero { padding: 12px 0 32px; }
 }
 </style>
