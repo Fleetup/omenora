@@ -750,6 +750,14 @@ onMounted(async () => {
     })
   }
 
+  // If Supabase /auth/v1/verify redirects here with an auth token in the hash
+  // (because the dashboard Site URL points to /), forward to /account so
+  // restoreSession() can exchange the token and establish the session.
+  if (window.location.hash.includes('access_token=')) {
+    window.location.replace('/account' + window.location.hash)
+    return
+  }
+
   resize()
   window.addEventListener('resize', resize)
   window.addEventListener('scroll', onScroll, { passive: true })
