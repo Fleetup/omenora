@@ -34,16 +34,13 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!linkErr && linkData?.properties?.hashed_token) {
-      // Send the user directly to our own /account page with the token_hash as
-      // a query param. account.vue calls supabase.auth.verifyOtp() on mount —
-      // the same pattern used in provisionUser(). This bypasses the Supabase
-      // /auth/v1/verify redirect entirely so PKCE/implicit flow settings and
-      // the Supabase dashboard Site URL have zero effect on where the user lands.
       const token = encodeURIComponent(linkData.properties.hashed_token)
       magicLinkUrl = `https://omenora.com/account?token_hash=${token}`
+      console.log('[request-magic-link] built URL:', magicLinkUrl)
     } else if (linkErr) {
-      // Log internally but do not surface to caller
-      console.error('[request-magic-link] generateLink error:', linkErr.code)
+      console.error('[request-magic-link] generateLink error:', linkErr.code, linkErr.message)
+    } else {
+      console.error('[request-magic-link] generateLink returned no token. linkData:', JSON.stringify(linkData))
     }
   } catch (err: any) {
     console.error('[request-magic-link] Unexpected error generating link:', err?.message)
@@ -121,7 +118,8 @@ export default defineEventHandler(async (event) => {
     ].join('\n')
 
     try {
-      const { error: sendErr } = await resend.emails.send({
+      console.log('[request-magic-link] sending email to:', email)
+      const { data: sendData, error: sendErr } = await resend.emails.send({
         from: 'OMENORA <reading@omenora.com>',
         replyTo: 'support@omenora.com',
         to: [email],
@@ -132,6 +130,8 @@ export default defineEventHandler(async (event) => {
 
       if (sendErr) {
         console.error('[request-magic-link] Resend error:', sendErr.message, sendErr.name)
+      } else {
+        console.log('[request-magic-link] Resend success, id:', sendData?.id)
       }
     } catch (sendErr: any) {
       console.error('[request-magic-link] Unexpected send error:', sendErr?.message)
