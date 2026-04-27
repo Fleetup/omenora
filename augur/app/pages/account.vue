@@ -77,15 +77,24 @@
   <!-- ── STATE 3: Authenticated dashboard ── -->
   <div v-else class="account-page">
 
-    <div class="top-bar">
-      <p class="top-brand">OMENORA</p>
-      <p class="top-email">{{ userEmail }}</p>
-      <button class="signout-btn" @click="handleSignOut">Sign out</button>
-    </div>
-
     <div class="account-content">
 
-      <!-- ── Section 1: Subscription status ── -->
+      <!-- ── Top bar: ← back · OMENORA · email ── -->
+      <div class="top-bar">
+        <button class="top-bar-back" aria-label="Go back" @click="navigateTo('/')">
+          <span aria-hidden="true">←</span>
+        </button>
+        <p class="top-brand">OMENORA</p>
+        <p class="top-email">{{ userEmail }}</p>
+      </div>
+
+      <!-- ── Hero greeting ── -->
+      <div class="account-hero">
+        <p class="account-hero-label">YOUR ACCOUNT</p>
+        <p class="account-hero-email">{{ userEmail }}</p>
+      </div>
+
+      <!-- ── Section 1: Subscription ── -->
       <section class="account-section">
         <h2 class="section-heading">Subscription</h2>
 
@@ -96,8 +105,9 @@
         <div v-else-if="subscriptionActive" class="sub-status-card">
           <div class="sub-status-row">
             <span class="active-badge">Active</span>
-            <span class="sub-label">Compatibility Plus</span>
+            <span class="sub-label">Compatibility Plus · $9.99/mo</span>
           </div>
+          <p class="sub-desc">Daily horoscope · Unlimited compatibility readings · 7-day insight archive</p>
           <button
             class="action-btn"
             :disabled="isOpeningPortal"
@@ -108,10 +118,14 @@
           <p v-if="portalError" class="error-text">{{ portalError }}</p>
         </div>
 
-        <div v-else class="sub-status-card inactive">
-          <p class="no-sub-text">No active subscription</p>
-          <button class="action-btn" @click="navigateTo('/compatibility-quiz')">
-            See plans
+        <div v-else class="sub-status-card sub-status-card--inactive">
+          <div class="no-sub-row">
+            <span class="inactive-badge">Inactive</span>
+            <span class="sub-label">No active subscription</span>
+          </div>
+          <p class="sub-desc">Get daily personalized horoscopes + unlimited compatibility readings.</p>
+          <button class="action-btn action-btn--primary" @click="navigateTo('/compatibility-quiz')">
+            See plans — from $9.99/mo
           </button>
         </div>
       </section>
@@ -124,8 +138,11 @@
           <span class="status-dot-pulse" /> Loading readings...
         </div>
 
-        <div v-else-if="reports.length === 0" class="no-reports">
-          No readings yet.
+        <div v-else-if="reports.length === 0" class="empty-state">
+          <p class="empty-state-text">No readings yet.</p>
+          <button class="action-btn action-btn--ghost" @click="navigateTo('/')">
+            Get your first reading
+          </button>
         </div>
 
         <div v-else class="reading-list">
@@ -153,9 +170,51 @@
         </div>
       </section>
 
-      <!-- ── Section 3: Account actions ── -->
-      <section class="account-section account-actions">
-        <button class="action-btn signout-action" @click="handleSignOut">Sign out</button>
+      <!-- ── Section 3: Daily insights feed (subscribers only) ── -->
+      <section v-if="subscriptionActive" class="account-section">
+        <h2 class="section-heading">Daily Insights</h2>
+
+        <div v-if="isLoadingInsights" class="status-loading">
+          <span class="status-dot-pulse" /> Loading insights...
+        </div>
+
+        <div v-else-if="dailyInsights.length === 0" class="empty-state">
+          <p class="empty-state-text">Your first daily insight will appear here after it's sent.</p>
+        </div>
+
+        <div v-else class="insights-list">
+          <div
+            v-for="entry in dailyInsights"
+            :key="entry.sent_date"
+            class="insight-card"
+            :class="{ 'insight-card--expanded': expandedInsight === entry.sent_date }"
+          >
+            <button
+              class="insight-card-header"
+              :aria-expanded="expandedInsight === entry.sent_date"
+              @click="expandedInsight = expandedInsight === entry.sent_date ? null : entry.sent_date"
+            >
+              <div class="insight-header-left">
+                <span class="insight-icon">✦</span>
+                <div>
+                  <p class="insight-date">{{ formatDate(entry.sent_date) }}</p>
+                  <p class="insight-theme">{{ entry.theme_used }}</p>
+                </div>
+              </div>
+              <span class="insight-chevron" :class="{ 'insight-chevron--open': expandedInsight === entry.sent_date }">›</span>
+            </button>
+
+            <div v-if="expandedInsight === entry.sent_date" class="insight-body">
+              <p class="insight-text">{{ entry.insight_full || entry.insight_preview }}</p>
+              <p v-if="entry.reflection_question" class="insight-question">{{ entry.reflection_question }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 4: Account actions ── -->
+      <section class="account-section account-section--last">
+        <button class="action-btn action-btn--ghost" @click="handleSignOut">Sign out</button>
         <p class="support-text">Questions? <a href="mailto:support@omenora.com" class="support-link">support@omenora.com</a></p>
       </section>
 
@@ -199,6 +258,11 @@ const portalError           = ref('')
 const isLoadingReports = ref(false)
 const reports          = ref<any[]>([])
 
+// ── Daily insights state ──────────────────────────────────────────────────────
+const isLoadingInsights = ref(false)
+const dailyInsights     = ref<any[]>([])
+const expandedInsight   = ref<string | null>(null)
+
 // ── Toast ─────────────────────────────────────────────────────────────────────
 const toast = ref('')
 let toastTimer: ReturnType<typeof setTimeout> | null = null
@@ -229,6 +293,7 @@ onMounted(async () => {
   if (authenticated) {
     loadSubscription()
     loadReports()
+    loadDailyInsights()
   }
 })
 
@@ -244,6 +309,7 @@ async function handleConfirmMagicLink() {
     pendingTokenHash.value = null
     loadSubscription()
     loadReports()
+    loadDailyInsights()
   } else {
     confirmError.value = result
   }
@@ -265,6 +331,23 @@ async function loadSubscription() {
     // Non-critical — silently fail
   } finally {
     isLoadingSubscription.value = false
+  }
+}
+
+// ── Load daily insights ─────────────────────────────────────────────────────
+async function loadDailyInsights() {
+  isLoadingInsights.value = true
+  try {
+    const token = session.value?.access_token
+    if (!token) return
+    const data = await $fetch<{ insights: any[] }>('/api/me/daily-insights', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    dailyInsights.value = data.insights
+  } catch {
+    dailyInsights.value = []
+  } finally {
+    isLoadingInsights.value = false
   }
 }
 
@@ -332,7 +415,7 @@ async function handleSignOut() {
   navigateTo('/')
 }
 
-// ── Date formatter ────────────────────────────────────────────────────────────
+// ── Date formatter (shared by reports and insights) ─────────────────────────
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return ''
   try {
@@ -373,6 +456,11 @@ function formatDate(iso: string | null | undefined): string {
 .account-page > * {
   position: relative;
   z-index: 1;
+}
+
+/* ── Authenticated: content wrapper ── */
+.account-page {
+  display: block;
 }
 
 /* ── STATE 1: Loading ── */
@@ -569,13 +657,42 @@ function formatDate(iso: string | null | undefined): string {
   margin: 0;
 }
 
-/* ── Top bar (authenticated state) ── */
+/* ── Content wrapper (contains top-bar + all sections) ── */
+.account-content {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 20px 20px 80px;
+}
+
+/* ── Top bar — matches compatibility.vue pattern exactly ── */
 .top-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.top-bar-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.50);
+  font-size: 16px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.18s ease, color 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.top-bar-back:hover {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .top-brand {
@@ -584,45 +701,45 @@ function formatDate(iso: string | null | undefined): string {
   letter-spacing: 0.20em;
   color: rgba(255, 255, 255, 0.28);
   margin: 0;
-  flex-shrink: 0;
+  flex: 1;
+  text-align: center;
 }
 
 .top-email {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.28);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.22);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-}
-
-.signout-btn {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 12px;
-  font-family: inherit;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
+  max-width: 160px;
+  text-align: right;
   flex-shrink: 0;
-  transition: border-color 0.18s ease, color 0.18s ease;
-  -webkit-tap-highlight-color: transparent;
 }
 
-.signout-btn:hover {
-  border-color: rgba(255, 255, 255, 0.22);
-  color: rgba(255, 255, 255, 0.60);
+/* ── Hero greeting ── */
+.account-hero {
+  text-align: center;
+  padding: 16px 0 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 40px;
 }
 
-/* ── Authenticated dashboard content ── */
-.account-content {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 32px 20px 60px;
+.account-hero-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: rgba(107, 72, 224, 0.60);
+  margin: 0 0 12px;
+}
+
+.account-hero-email {
+  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  font-size: 20px;
+  font-weight: 300;
+  color: rgba(220, 210, 255, 0.70);
+  margin: 0;
+  word-break: break-all;
 }
 
 .account-section {
@@ -669,22 +786,23 @@ function formatDate(iso: string | null | undefined): string {
   flex-shrink: 0;
 }
 
-/* ── Subscription / info cards ── */
+/* ── Subscription cards ── */
 .sub-status-card {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(107, 72, 224, 0.18);
   border-radius: 14px;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.sub-status-card.inactive {
-  border-color: rgba(255, 255, 255, 0.05);
+.sub-status-card--inactive {
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
-.sub-status-row {
+.sub-status-row,
+.no-sub-row {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -703,18 +821,31 @@ function formatDate(iso: string | null | undefined): string {
   text-transform: uppercase;
 }
 
+.inactive-badge {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.30);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 3px 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .sub-label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.60);
 }
 
-.no-sub-text {
-  font-size: 14px;
+.sub-desc {
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.28);
   margin: 0;
+  line-height: 1.6;
 }
 
-/* ── Action button (matches retry-btn / return-btn pattern site-wide) ── */
+/* ── Action buttons ── */
 .action-btn {
   width: 100%;
   background: transparent;
@@ -743,17 +874,45 @@ function formatDate(iso: string | null | undefined): string {
   cursor: not-allowed;
 }
 
-.action-btn.signout-action {
-  width: auto;
-  padding: 10px 20px;
-  border-color: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.40);
+.action-btn--primary {
+  background: rgba(107, 72, 224, 0.12);
+  border-color: rgba(107, 72, 224, 0.55);
+  color: rgba(200, 180, 255, 0.90);
 }
 
-.action-btn.signout-action:hover {
+.action-btn--primary:hover:not(:disabled) {
+  background: rgba(107, 72, 224, 0.20);
+  border-color: rgba(107, 72, 224, 0.80);
+  color: rgba(220, 200, 255, 1);
+}
+
+.action-btn--ghost {
+  width: auto;
+  padding: 10px 20px;
+  border-color: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 12px;
+}
+
+.action-btn--ghost:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.20);
   color: rgba(255, 255, 255, 0.60);
+}
+
+/* ── Empty states ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.empty-state-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.25);
+  margin: 0;
+  line-height: 1.6;
 }
 
 /* ── Reading history ── */
@@ -833,8 +992,109 @@ function formatDate(iso: string | null | undefined): string {
   color: rgba(140, 110, 255, 0.90);
 }
 
+/* ── Daily insights feed ── */
+.insights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.insight-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.18s ease;
+}
+
+.insight-card--expanded {
+  border-color: rgba(107, 72, 224, 0.22);
+}
+
+.insight-card-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font-family: inherit;
+  gap: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.insight-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.insight-icon {
+  font-size: 13px;
+  color: rgba(107, 72, 224, 0.55);
+  flex-shrink: 0;
+}
+
+.insight-date {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0 0 2px;
+}
+
+.insight-theme {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.22);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.insight-chevron {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+  transition: transform 0.2s ease, color 0.18s ease;
+  line-height: 1;
+}
+
+.insight-chevron--open {
+  transform: rotate(90deg);
+  color: rgba(107, 72, 224, 0.55);
+}
+
+.insight-body {
+  padding: 0 16px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.insight-text {
+  font-size: 14px;
+  color: rgba(220, 210, 255, 0.82);
+  line-height: 1.7;
+  margin: 14px 0 0;
+}
+
+.insight-question {
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.38);
+  line-height: 1.6;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
 /* ── Account actions section ── */
-.account-actions {
+.account-section--last {
+  border-bottom: none;
+  margin-bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -887,7 +1147,7 @@ function formatDate(iso: string | null | undefined): string {
   }
 
   .account-content {
-    padding: 24px 16px 60px;
+    padding: 16px 16px 60px;
   }
 
   .reading-card {
@@ -896,6 +1156,10 @@ function formatDate(iso: string | null | undefined): string {
 
   .sub-status-card {
     padding: 16px;
+  }
+
+  .account-hero {
+    padding: 8px 0 32px;
   }
 }
 </style>

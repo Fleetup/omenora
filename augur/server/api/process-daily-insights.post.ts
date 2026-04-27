@@ -152,15 +152,16 @@ export default defineEventHandler(async (event) => {
     }
 
     // ── Log the send ──────────────────────────────────────────────────────────
-    const insightPreview = insightResult.insight.insight.substring(0, 100)
     const { error: logErr } = await supabase
       .from('daily_insight_logs')
       .upsert(
         {
-          subscriber_email: email,
-          sent_date:        todayDate,
-          theme_used:       insightResult.insight.theme,
-          insight_preview:  insightPreview,
+          subscriber_email:    email,
+          sent_date:           todayDate,
+          theme_used:          insightResult.insight.theme,
+          insight_preview:     insightResult.insight.insight.substring(0, 100),
+          insight_full:        insightResult.insight.insight,
+          reflection_question: insightResult.insight.reflection_question,
         },
         { onConflict: 'subscriber_email,sent_date', ignoreDuplicates: true },
       )

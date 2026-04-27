@@ -257,15 +257,16 @@ Exactly this structure:
 
   // ── Log insight after generation (used post-send by caller) ───────────
   if (email) {
-    const insightPreview = generatedInsight.insight.substring(0, 100)
     await supabase
       .from('daily_insight_logs')
       .upsert(
         {
-          subscriber_email: email,
-          sent_date: today.toISOString().split('T')[0],
-          theme_used: todayTheme,
-          insight_preview: insightPreview,
+          subscriber_email:    email,
+          sent_date:           today.toISOString().split('T')[0],
+          theme_used:          todayTheme,
+          insight_preview:     generatedInsight.insight.substring(0, 100),
+          insight_full:        generatedInsight.insight,
+          reflection_question: generatedInsight.reflection_question,
         },
         { onConflict: 'subscriber_email,sent_date', ignoreDuplicates: true },
       )
