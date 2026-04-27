@@ -581,7 +581,7 @@
       <ul class="sub-upsell-features">
         <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Personal daily horoscope — Love, Work &amp; Health</li>
         <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Based on real planetary positions through your natal chart</li>
-        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Weekly Sunday forecast included</li>
+        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Delivered to your inbox every morning — no app needed</li>
         <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Delivered every morning at 7am</li>
       </ul>
       <button class="sub-upsell-cta" :disabled="isStartingSub" @click="startSubscription">

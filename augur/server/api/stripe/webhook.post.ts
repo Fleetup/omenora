@@ -226,6 +226,10 @@ export default defineEventHandler(async (event) => {
     const subCustomer  = session.customer as string
     const subId        = session.subscription as string
 
+    const planType = (meta.type === 'compatibility' && meta.tier === 'subscription')
+      ? 'compatibility_plus'
+      : 'daily_horoscope'
+
     try {
       await $fetch('/api/save-subscriber', {
         method: 'POST',
@@ -239,6 +243,7 @@ export default defineEventHandler(async (event) => {
           element:              meta.element || 'Earth',
           region:               isValidRegion(meta.region) ? meta.region : 'western',
           active:               true,
+          planType,
         },
       })
       console.info('[stripe-webhook] Subscriber saved:', { subId, subCustomer })

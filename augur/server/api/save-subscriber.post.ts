@@ -12,6 +12,8 @@ export default defineEventHandler(async (event) => {
   const lifePathNumber       = body.lifePathNumber !== undefined ? Number(body.lifePathNumber) : null
   const element              = sanitizeString(body.element, 20)
   const region               = isValidRegion(body.region) ? body.region : 'western'
+  const rawPlanType          = sanitizeString(body.planType || '', 30)
+  const planType             = rawPlanType === 'compatibility_plus' ? 'compatibility_plus' : 'daily_horoscope'
 
   assertInput(/^cus_\w{10,200}$/.test(stripeCustomerId), 'Invalid stripeCustomerId')
   assertInput(/^sub_\w{10,200}$/.test(stripeSubscriptionId), 'Invalid stripeSubscriptionId')
@@ -24,17 +26,21 @@ export default defineEventHandler(async (event) => {
 
   const { error } = await supabase
     .from('subscribers')
-    .upsert({
-      stripe_customer_id: stripeCustomerId,
-      stripe_subscription_id: stripeSubscriptionId,
-      email,
-      first_name: firstName,
-      archetype,
-      life_path_number: lifePathNumber,
-      element,
-      region,
-      active: true,
-    })
+    .upsert(
+      {
+        stripe_customer_id:     stripeCustomerId,
+        stripe_subscription_id: stripeSubscriptionId,
+        email,
+        first_name:             firstName,
+        archetype,
+        life_path_number:       lifePathNumber,
+        element,
+        region,
+        active:                 true,
+        plan_type:              planType,
+      },
+      { onConflict: 'stripe_customer_id' },
+    )
 
   if (error) {
     console.error('[save-subscriber] Upsert error:', error.code)

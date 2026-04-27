@@ -14,6 +14,33 @@
       <span class="price-amount">$4.99<span class="price-period">/month</span></span>
     </div>
 
+    <!-- Feature list -->
+    <div>
+      <div class="birth-unlock-row">
+        <span class="birth-unlock-icon">◆</span>
+        <span class="birth-unlock-text">Daily horoscope — love, work &amp; health</span>
+      </div>
+      <div class="birth-unlock-row">
+        <span class="birth-unlock-icon">◆</span>
+        <span class="birth-unlock-text">Personalized to your exact birth chart — not your sun sign</span>
+      </div>
+      <div class="birth-unlock-row">
+        <span class="birth-unlock-icon">◆</span>
+        <span class="birth-unlock-text">Delivered to your inbox every morning</span>
+      </div>
+      <div class="birth-unlock-row">
+        <span class="birth-unlock-icon">◆</span>
+        <span class="birth-unlock-text">Real planetary transits calculated daily with Swiss Ephemeris</span>
+      </div>
+    </div>
+
+    <!-- Comparison note -->
+    <p class="sub-note">
+      Want compatibility readings too?
+      <NuxtLink to="/compatibility">Compatibility Plus</NuxtLink>
+      includes everything here — plus unlimited readings.
+    </p>
+
     <!-- Form -->
     <form class="form" novalidate @submit.prevent="handleSubmit">
 

@@ -149,7 +149,7 @@
     <!-- Paywall -->
     <div class="paywall-block">
       <h2 class="paywall-heading">Unlock your full reading</h2>
-      <p class="paywall-sub">{{ previewData.compatibilityScore }}% is just the surface. The bond, strength, forecast, and one piece of advice — written for this exact connection.</p>
+      <p class="paywall-sub">Your challenge is just the beginning. The bond, strength, forecast, and one piece of advice — written for this exact connection, grounded in real chart data.</p>
 
       <!-- Name + email capture -->
       <div class="email-capture-card">
@@ -202,10 +202,11 @@
         <p class="pay-card-name">Compatibility Plus</p>
         <p class="pay-card-price">$9.99<span class="pay-card-freq"> / month</span></p>
         <ul class="pay-card-bullets">
-          <li>Unlimited compatibility readings (any pairing)</li>
-          <li>Weekly relationship transit forecasts</li>
-          <li>Daily personalized horoscope</li>
-          <li>Save up to 10 people for ongoing tracking</li>
+          <li>Unlimited compatibility readings — any pairing, any time</li>
+          <li>Weekly relationship weather — every Monday in your inbox</li>
+          <li>Daily horoscope — love, work &amp; health, personalized to your chart</li>
+          <li>Full reading history on your account</li>
+          <li>Real chart math — Swiss Ephemeris, not sun sign guesses</li>
         </ul>
         <button
           class="pay-btn pay-btn--primary"
@@ -227,8 +228,8 @@
         <p class="pay-card-price">$7.99<span class="pay-card-freq"> one-time</span></p>
         <ul class="pay-card-bullets">
           <li>Full compatibility analysis for this pairing only</li>
-          <li>All 5 sections unlocked</li>
-          <li>PDF export</li>
+          <li>All 5 sections unlocked — bond, strength, challenge, forecast &amp; advice</li>
+          <li>Shareable reading card included</li>
         </ul>
         <button
           class="pay-btn pay-btn--secondary"

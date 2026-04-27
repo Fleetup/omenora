@@ -30,13 +30,15 @@ export default defineEventHandler(async (event) => {
     moonPhase:           sanitizeString(rawInsight.moonPhase, 100),
     dayTheme:            sanitizeString(rawInsight.dayTheme, 100),
     greeting:            sanitizeString(rawInsight.greeting, 300),
-    insight:             sanitizeString(rawInsight.insight, 2000),
+    love:                sanitizeString(rawInsight.love, 1000),
+    work:                sanitizeString(rawInsight.work, 1000),
+    health:              sanitizeString(rawInsight.health, 1000),
     reflection_question: sanitizeString(rawInsight.reflection_question ?? rawInsight.action ?? '', 500),
     subject:             sanitizeString(rawInsight.subject ?? '', 200),
   }
 
   assertInput(!!insight.greeting, 'insight.greeting is required')
-  assertInput(!!insight.insight, 'insight.insight is required')
+  assertInput(!!insight.love, 'insight.love is required')
 
   const resend = new Resend(config.resendApiKey)
 
@@ -76,16 +78,33 @@ export default defineEventHandler(async (event) => {
             </td>
           </tr>
 
-          <!-- Body -->
+          <!-- Love section -->
           <tr>
-            <td style="padding: 0 40px 28px;">
-              <p style="font-size: 15px; color: #3d3530; line-height: 1.85; margin: 0; font-family: Georgia, serif;">${he(insight.insight)}</p>
+            <td style="padding: 24px 40px 0;">
+              <p style="font-size: 10px; font-weight: 600; color: #b8893a; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 8px; font-family: Georgia, serif;">&#9829; LOVE</p>
+              <p style="font-size: 15px; color: #3d3530; line-height: 1.85; margin: 0; font-family: Georgia, serif;">${he(insight.love)}</p>
+            </td>
+          </tr>
+
+          <!-- Work section -->
+          <tr>
+            <td style="padding: 20px 40px 0;">
+              <p style="font-size: 10px; font-weight: 600; color: #7a64c8; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 8px; font-family: Georgia, serif;">&#10022; WORK</p>
+              <p style="font-size: 15px; color: #3d3530; line-height: 1.85; margin: 0; font-family: Georgia, serif;">${he(insight.work)}</p>
+            </td>
+          </tr>
+
+          <!-- Health section -->
+          <tr>
+            <td style="padding: 20px 40px 0;">
+              <p style="font-size: 10px; font-weight: 600; color: #3a9e78; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 8px; font-family: Georgia, serif;">&#10047; HEALTH</p>
+              <p style="font-size: 15px; color: #3d3530; line-height: 1.85; margin: 0; font-family: Georgia, serif;">${he(insight.health)}</p>
             </td>
           </tr>
 
           <!-- Reflection question -->
           <tr>
-            <td style="padding: 0 40px 36px;">
+            <td style="padding: 20px 40px 36px;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f0ece5; border-radius: 4px;" bgcolor="#f0ece5">
                 <tr>
                   <td style="padding: 20px 24px;">
@@ -129,9 +148,16 @@ export default defineEventHandler(async (event) => {
       ``,
       insight.greeting || '',
       ``,
-      insight.insight || '',
+      `LOVE`,
+      insight.love || '',
       ``,
-      `A question worth sitting with:`,
+      `WORK`,
+      insight.work || '',
+      ``,
+      `HEALTH`,
+      insight.health || '',
+      ``,
+      `---`,
       insight.reflection_question || '',
       ``,
       `---`,

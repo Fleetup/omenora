@@ -142,11 +142,13 @@ ${recentThemes}
 
 CONTENT REQUIREMENTS:
 
-1. Write for TODAY specifically — ${targetDate || today.toISOString().split('T')[0]}. Reference the actual day, not the month or season. This must feel different from yesterday's reading. Use the real planetary positions above to ground the insight in what is astronomically true right now.
+1. LOVE section: How today's planetary energy affects ${firstName}'s relationships, emotional connections, and how they give/receive affection. Ground this in their ${archetype} archetype pattern — how this archetype specifically experiences love.
+2. WORK section: How today's energy affects ${firstName}'s focus, productivity, and professional decisions. Ground this in their life path ${lifePathNumber} — how this number approaches work and accomplishment.
+3. HEALTH section: Physical and mental wellbeing for today. Ground this in their ${element} element — how this element manifests in body and mind under today's moon phase (${moonPhaseName}).
+4. REFLECTION QUESTION: One precise inward-facing question that ties the day's theme to their specific archetype.
+5. THEME: Keep the existing theme label (planetary summary, max 60 chars).
 
-2. Address today's theme (${todayTheme}) through the specific lens of the ${archetype} archetype. How does THIS archetype experience this theme differently from others?
-
-3. Length: 3-4 sentences for the insight. One precise, inward-facing reflection question.
+Each section is 2-3 sentences. Never generic. Never applicable to all people — if it could be said to anyone, rewrite it.
 
 ---
 
@@ -194,7 +196,9 @@ No preamble. No markdown. No explanation.
 Exactly this structure:
 
 {
-  "insight": "3-4 sentences of the daily insight",
+  "love": "...",
+  "work": "...",
+  "health": "...",
   "reflection_question": "one inward-facing question",
   "theme": "${todayTheme}"
 }`
@@ -205,18 +209,20 @@ Exactly this structure:
   const dailyInsightJsonSchema = {
     type: 'object',
     properties: {
-      insight:             { type: 'string' },
+      love:                { type: 'string' },
+      work:                { type: 'string' },
+      health:              { type: 'string' },
       reflection_question: { type: 'string' },
       theme:               { type: 'string' },
     },
-    required: ['insight', 'reflection_question', 'theme'],
+    required: ['love', 'work', 'health', 'reflection_question', 'theme'],
   } as const
 
   const message = await withAiRetry('generate-daily-insight', () =>
     client.messages.parse({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      system: `You are writing a single daily insight for one specific person. It must feel like it was written only for them — their archetype, their life path, the current moon phase. It must be grounded and specific, never generic. Write at B2 English level. Short sentences. The insight must leave the reader with one clear thing to sit with for the day — not a list, not advice, not a prediction. One true observation.`,
+      max_tokens: 1500,
+      system: `You are writing a personalized daily horoscope for one specific person — not their sun sign, but their exact archetype, life path, and elemental energy. Each section (love, work, health) must feel like it was written for them specifically, not for all people of their zodiac sign. Ground each insight in today's planetary positions. 2-3 sentences per section. Direct, grounded, specific. Never vague or generic.`,
       messages: [{ role: 'user', content: insightPrompt }],
       output_config: { format: jsonSchemaOutputFormat(dailyInsightJsonSchema) },
     })
@@ -264,8 +270,8 @@ Exactly this structure:
           subscriber_email:    email,
           sent_date:           today.toISOString().split('T')[0],
           theme_used:          todayTheme,
-          insight_preview:     generatedInsight.insight.substring(0, 100),
-          insight_full:        generatedInsight.insight,
+          insight_preview:     generatedInsight.love.substring(0, 120),
+          insight_full:        JSON.stringify({ love: generatedInsight.love, work: generatedInsight.work, health: generatedInsight.health, reflection_question: generatedInsight.reflection_question }),
           reflection_question: generatedInsight.reflection_question,
         },
         { onConflict: 'subscriber_email,sent_date', ignoreDuplicates: true },

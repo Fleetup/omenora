@@ -372,17 +372,43 @@ export type TarotSectionType = z.infer<typeof TarotSectionSchema>
 // ── DailyInsightSchema ──────────────────────────────────────────────────────
 // Used by: generate-daily-insight.post.ts
 //
-// Expected Claude output shape (from generate-daily-insight prompt lines 218–223):
+// Expected Claude output shape:
 // {
-//   insight:             "3-4 sentences of the daily insight",
+//   love:                "2-3 sentences — love/relationships insight",
+//   work:                "2-3 sentences — work/focus/energy insight",
+//   health:              "2-3 sentences — physical/mental wellbeing insight",
 //   reflection_question: "one inward-facing question",
 //   theme:               "<todayTheme>",
 // }
 
 export const DailyInsightSchema = z.object({
-  insight:             z.string().min(1),
+  love:                z.string().min(1),
+  work:                z.string().min(1),
+  health:              z.string().min(1),
   reflection_question: z.string().min(1),
   theme:               z.string().min(1),
 })
 
 export type DailyInsightType = z.infer<typeof DailyInsightSchema>
+
+// ── WeeklyTransitSchema ──────────────────────────────────────────────────────
+// Used by: generate-weekly-transit.post.ts
+//
+// Expected Claude output shape:
+// {
+//   connection:    "2-3 sentences — overall connection energy this week",
+//   communication: "2-3 sentences — Mercury-influenced communication patterns",
+//   tension:       "2-3 sentences — honest friction points to be aware of",
+//   advice:        "1-2 sentences — specific actionable suggestion",
+//   weekTheme:     "short planetary theme label, max 50 chars",
+// }
+
+export const WeeklyTransitSchema = z.object({
+  connection:    z.string().min(1),
+  communication: z.string().min(1),
+  tension:       z.string().min(1),
+  advice:        z.string().min(1),
+  weekTheme:     z.string().min(1),
+})
+
+export type WeeklyTransitType = z.infer<typeof WeeklyTransitSchema>

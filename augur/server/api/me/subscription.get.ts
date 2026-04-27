@@ -4,7 +4,8 @@
  * Returns the active subscription status for the authenticated user.
  * Requires a valid Supabase Bearer token in the Authorization header.
  *
- * Output: { active: boolean, stripeSubscriptionId: string | null, email: string }
+ * Output: { active: boolean, stripeSubscriptionId: string | null, email: string,
+ *           planName: string | null, planPrice: string | null, planType: string | null }
  */
 import { createClient } from '@supabase/supabase-js'
 
@@ -26,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: subscriber, error } = await supabase
     .from('subscribers')
-    .select('stripe_subscription_id, active')
+    .select('stripe_subscription_id, active, plan_type')
     .eq('email', user.email)
     .eq('active', true)
     .maybeSingle()
@@ -41,12 +42,26 @@ export default defineEventHandler(async (event) => {
       active: false,
       stripeSubscriptionId: null,
       email: user.email,
+      planName: null,
+      planPrice: null,
+      planType: null,
     }
   }
+
+  const planName = subscriber.plan_type === 'compatibility_plus'
+    ? 'Compatibility Plus'
+    : 'Personal Daily Horoscope'
+
+  const planPrice = subscriber.plan_type === 'compatibility_plus'
+    ? '$9.99'
+    : '$4.99'
 
   return {
     active: true,
     stripeSubscriptionId: subscriber.stripe_subscription_id as string | null,
     email: user.email,
+    planName,
+    planPrice,
+    planType: subscriber.plan_type as string | null,
   }
 })

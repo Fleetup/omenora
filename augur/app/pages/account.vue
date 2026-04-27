@@ -104,11 +104,21 @@
           <div class="sub-status-top">
             <div class="sub-status-row">
               <span class="active-badge">Active</span>
-              <span class="sub-label">Personal Daily Horoscope</span>
+              <span class="sub-label">{{ subscriptionPlanName }}</span>
             </div>
-            <span class="sub-price">$4.99<span class="sub-price-period">/mo</span></span>
+            <span class="sub-price">{{ subscriptionPlanPrice }}<span class="sub-price-period">/mo</span></span>
           </div>
-          <p class="sub-desc">Daily personalized horoscope · Based on your exact birth chart · Delivered every morning</p>
+          <ul v-if="subscriptionPlanType === 'compatibility_plus'" class="sub-features">
+            <li>Unlimited compatibility readings</li>
+            <li>Daily horoscope — love, work &amp; health</li>
+            <li>Reading history saved to your account</li>
+            <li>Weekly relationship weather (coming soon)</li>
+          </ul>
+          <ul v-else class="sub-features">
+            <li>Daily personalized horoscope</li>
+            <li>Love, work &amp; health insights</li>
+            <li>Delivered to your inbox every morning</li>
+          </ul>
           <button
             class="action-btn"
             :disabled="isOpeningPortal"
@@ -186,8 +196,25 @@
                 </div>
                 <div class="ivc-theme-line" aria-hidden="true" />
                 <p class="ivc-theme">{{ entry.theme_used }}</p>
-                <p class="ivc-body">{{ entry.insight_full || entry.insight_preview }}</p>
-                <div v-if="entry.reflection_question" class="ivc-reflection">
+                <div v-if="entry.structured" class="insight-sections">
+                  <div class="insight-section-row">
+                    <span class="insight-section-label insight-section-label--love">♥ LOVE</span>
+                    <p class="insight-section-text">{{ entry.structured.love }}</p>
+                  </div>
+                  <div class="insight-section-row">
+                    <span class="insight-section-label insight-section-label--work">✦ WORK</span>
+                    <p class="insight-section-text">{{ entry.structured.work }}</p>
+                  </div>
+                  <div class="insight-section-row">
+                    <span class="insight-section-label insight-section-label--health">✿ HEALTH</span>
+                    <p class="insight-section-text">{{ entry.structured.health }}</p>
+                  </div>
+                  <p v-if="entry.structured.reflection_question" class="insight-reflection">
+                    {{ entry.structured.reflection_question }}
+                  </p>
+                </div>
+                <p v-else class="ivc-body">{{ entry.insight_preview }}</p>
+                <div v-if="!entry.structured && entry.reflection_question" class="ivc-reflection">
                   <span class="ivc-reflection-label">REFLECTION</span>
                   <p class="ivc-reflection-text">{{ entry.reflection_question }}</p>
                 </div>
@@ -210,7 +237,43 @@
         </div>
       </section>
 
-      <!-- ── Section 3: Reading history ── -->
+      <!-- ── Section 3: Compatibility readings ── -->
+      <section class="account-section">
+        <h2 class="section-heading">Compatibility Readings</h2>
+
+        <div v-if="isLoadingCompatReadings" class="section-loading">Loading readings...</div>
+
+        <div v-else-if="compatibilityReadings.length === 0" class="section-empty">
+          <p>No compatibility readings yet.</p>
+          <button class="cta-small" @click="navigateTo('/compatibility-quiz')">
+            Try your first reading →
+          </button>
+        </div>
+
+        <div v-else class="compat-readings-list">
+          <div
+            v-for="reading in compatibilityReadings"
+            :key="reading.id"
+            class="compat-reading-card"
+          >
+            <div class="crc-header">
+              <span class="crc-partner">{{ reading.partnerName || 'Unknown partner' }}</span>
+              <span v-if="reading.score !== null" class="crc-score" :style="{ color: scoreColor(reading.score) }">
+                {{ reading.score }}%
+              </span>
+            </div>
+            <p v-if="reading.title" class="crc-title">{{ reading.title }}</p>
+            <div class="crc-footer">
+              <span class="crc-date">{{ formatDate(reading.createdAt) }}</span>
+              <button class="crc-view-btn" @click="navigateTo('/compatibility?session_id=' + reading.sessionId)">
+                View reading →
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 4: Reading history ── -->
       <section class="account-section">
         <h2 class="section-heading">Reading History</h2>
 
@@ -416,6 +479,9 @@ const confirmError        = ref<'expired' | 'error' | null>(null)
 // ── Subscription state ────────────────────────────────────────────────────────
 const isLoadingSubscription = ref(false)
 const subscriptionActive    = ref(false)
+const subscriptionPlanName  = ref<string | null>(null)
+const subscriptionPlanPrice = ref<string | null>(null)
+const subscriptionPlanType  = ref<string | null>(null)
 const isOpeningPortal       = ref(false)
 const portalError           = ref('')
 
@@ -427,6 +493,10 @@ const reports          = ref<any[]>([])
 const isLoadingInsights = ref(false)
 const dailyInsights     = ref<any[]>([])
 const expandedInsight   = ref<string | null>(null)
+
+// ── Compatibility readings state ───────────────────────────────────────────────
+const compatibilityReadings    = ref<any[]>([])
+const isLoadingCompatReadings  = ref(false)
 
 function toggleInsight(date: string) {
   expandedInsight.value = expandedInsight.value === date ? null : date
@@ -463,6 +533,7 @@ onMounted(async () => {
     loadSubscription()
     loadReports()
     loadDailyInsights()
+    loadCompatibilityReadings()
   }
 })
 
@@ -479,6 +550,7 @@ async function handleConfirmMagicLink() {
     loadSubscription()
     loadReports()
     loadDailyInsights()
+    loadCompatibilityReadings()
   } else {
     confirmError.value = result
   }
@@ -492,10 +564,19 @@ async function loadSubscription() {
     const token = session.value?.access_token
     if (!token) return
 
-    const data = await $fetch<{ active: boolean; stripeSubscriptionId: string | null }>('/api/me/subscription', {
+    const data = await $fetch<{
+      active: boolean
+      stripeSubscriptionId: string | null
+      planName: string | null
+      planPrice: string | null
+      planType: string | null
+    }>('/api/me/subscription', {
       headers: { Authorization: `Bearer ${token}` },
     })
-    subscriptionActive.value = data.active
+    subscriptionActive.value    = data.active
+    subscriptionPlanName.value  = data.planName
+    subscriptionPlanPrice.value = data.planPrice
+    subscriptionPlanType.value  = data.planType
   } catch {
     // Non-critical — silently fail
   } finally {
@@ -512,7 +593,16 @@ async function loadDailyInsights() {
     const data = await $fetch<{ insights: any[] }>('/api/me/daily-insights', {
       headers: { Authorization: `Bearer ${token}` },
     })
-    dailyInsights.value = data.insights
+    const parsedInsights = data.insights.map((item: any) => {
+      let structured = null
+      try {
+        structured = item.insight_full ? JSON.parse(item.insight_full) : null
+      } catch {
+        structured = null
+      }
+      return { ...item, structured }
+    })
+    dailyInsights.value = parsedInsights
   } catch {
     dailyInsights.value = []
   } finally {
@@ -582,6 +672,30 @@ async function openPortal() {
 async function handleSignOut() {
   await signOut()
   navigateTo('/')
+}
+
+// ── Compatibility readings loader ────────────────────────────────────────────
+async function loadCompatibilityReadings() {
+  isLoadingCompatReadings.value = true
+  try {
+    const token = session.value?.access_token
+    if (!token) return
+    const data = await $fetch<{ readings: any[] }>('/api/me/compatibility-readings', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    compatibilityReadings.value = data.readings ?? []
+  } catch {
+    compatibilityReadings.value = []
+  } finally {
+    isLoadingCompatReadings.value = false
+  }
+}
+
+// ── Score colour helper ───────────────────────────────────────────────────────
+function scoreColor(score: number): string {
+  if (score >= 80) return 'rgba(140, 110, 255, 0.9)'
+  if (score >= 60) return 'rgba(200, 150, 50, 0.9)'
+  return 'rgba(180, 80, 80, 0.9)'
 }
 
 // ── Date formatter (shared by reports and insights) ─────────────────────────
@@ -1020,6 +1134,29 @@ function formatDate(iso: string | null | undefined): string {
   line-height: 1.65;
 }
 
+.sub-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sub-features li {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.60);
+  padding: 3px 0;
+  padding-left: 1.1em;
+  position: relative;
+}
+
+.sub-features li::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  color: rgba(140, 110, 255, 0.70);
+  font-size: 0.6rem;
+  top: 5px;
+}
+
 /* ── Action buttons ── */
 .action-btn {
   width: 100%;
@@ -1323,6 +1460,43 @@ function formatDate(iso: string | null | undefined): string {
   margin: 0;
 }
 
+.insight-sections {
+  margin-top: 12px;
+}
+
+.insight-section-row {
+  margin-bottom: 14px;
+}
+
+.insight-section-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.insight-section-label--love   { color: rgba(200, 150, 50, 0.90); }
+.insight-section-label--work   { color: rgba(140, 110, 255, 0.90); }
+.insight-section-label--health { color: rgba(100, 200, 150, 0.90); }
+
+.insight-section-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.insight-reflection {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.40);
+  font-style: italic;
+  margin-top: 12px;
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+
 .ivc-reflection {
   margin-top: 16px;
   padding-top: 16px;
@@ -1407,6 +1581,52 @@ function formatDate(iso: string | null | undefined): string {
 }
 
 .support-link:hover { color: rgba(140, 110, 255, 0.70); }
+
+/* ── Compatibility reading cards ── */
+.compat-readings-list { display: flex; flex-direction: column; gap: 12px; }
+
+.compat-reading-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.crc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.crc-partner { font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.9); }
+.crc-score { font-size: 18px; font-weight: 700; }
+
+.crc-title { font-size: 12px; color: rgba(255, 255, 255, 0.5); font-style: italic; margin: 0 0 10px; line-height: 1.4; }
+
+.crc-footer { display: flex; justify-content: space-between; align-items: center; }
+.crc-date { font-size: 11px; color: rgba(255, 255, 255, 0.3); }
+
+.crc-view-btn {
+  font-size: 12px;
+  color: rgba(140, 110, 255, 0.8);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.crc-view-btn:hover { color: rgba(140, 110, 255, 1); }
+
+.section-loading { color: rgba(255, 255, 255, 0.4); font-size: 13px; padding: 12px 0; }
+
+.section-empty { text-align: center; padding: 20px 0; }
+.section-empty p { color: rgba(255, 255, 255, 0.4); font-size: 13px; margin-bottom: 12px; }
+
+.cta-small {
+  background: rgba(140, 110, 255, 0.15);
+  border: 1px solid rgba(140, 110, 255, 0.3);
+  color: rgba(140, 110, 255, 0.9);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.cta-small:hover { background: rgba(140, 110, 255, 0.25); }
 
 /* ── Toast ── */
 .toast {
