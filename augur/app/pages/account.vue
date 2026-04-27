@@ -198,15 +198,18 @@
                 <p class="ivc-theme">{{ entry.theme_used }}</p>
                 <div v-if="entry.structured" class="insight-sections">
                   <div class="insight-section-row">
-                    <span class="insight-section-label insight-section-label--love">♥ LOVE</span>
+                    <span class="insight-section-icon" aria-hidden="true">♥</span>
+                    <span class="insight-section-label insight-section-label--love">LOVE</span>
                     <p class="insight-section-text">{{ entry.structured.love }}</p>
                   </div>
                   <div class="insight-section-row">
-                    <span class="insight-section-label insight-section-label--work">✦ WORK</span>
+                    <span class="insight-section-icon" aria-hidden="true">✦</span>
+                    <span class="insight-section-label insight-section-label--work">WORK</span>
                     <p class="insight-section-text">{{ entry.structured.work }}</p>
                   </div>
                   <div class="insight-section-row">
-                    <span class="insight-section-label insight-section-label--health">✿ HEALTH</span>
+                    <span class="insight-section-icon" aria-hidden="true">✿</span>
+                    <span class="insight-section-label insight-section-label--health">HEALTH</span>
                     <p class="insight-section-text">{{ entry.structured.health }}</p>
                   </div>
                   <p v-if="entry.structured.reflection_question" class="insight-reflection">
@@ -1409,10 +1412,10 @@ function formatDate(iso: string | null | undefined): string {
 
 /* ── Visual insight card (premium readable card) ── */
 .insight-visual-card {
-  background: rgba(107, 72, 224, 0.05);
-  border: 1px solid rgba(107, 72, 224, 0.12);
-  border-radius: 12px;
-  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 24px;
+  padding: 32px 28px;
   margin-top: 16px;
   margin-bottom: 14px;
 }
@@ -1439,18 +1442,18 @@ function formatDate(iso: string | null | undefined): string {
 
 .ivc-theme-line {
   height: 1px;
-  background: rgba(107, 72, 224, 0.18);
+  background: rgba(255, 255, 255, 0.07);
   margin-bottom: 16px;
 }
 
 .ivc-theme {
   font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 400;
-  color: rgba(220, 210, 255, 0.88);
+  color: rgba(201, 168, 76, 0.95);
   margin: 0 0 14px;
-  line-height: 1.4;
-  letter-spacing: 0.01em;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
 }
 
 .ivc-body {
@@ -1465,26 +1468,42 @@ function formatDate(iso: string | null | undefined): string {
 }
 
 .insight-section-row {
-  margin-bottom: 14px;
+  display: grid;
+  grid-template-columns: 14px 52px 1fr;
+  align-items: baseline;
+  gap: 6px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.insight-section-row:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.insight-section-icon {
+  font-size: 11px;
+  color: rgba(201, 168, 76, 0.85);
+  line-height: 1;
 }
 
 .insight-section-label {
-  display: block;
-  font-size: 10px;
+  font-size: 9px;
+  font-weight: 700;
   letter-spacing: 0.12em;
-  font-weight: 600;
-  margin-bottom: 4px;
   text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  line-height: 1.4;
 }
 
-.insight-section-label--love   { color: rgba(200, 150, 50, 0.90); }
-.insight-section-label--work   { color: rgba(140, 110, 255, 0.90); }
-.insight-section-label--health { color: rgba(100, 200, 150, 0.90); }
+.insight-section-label--love   { color: rgba(255, 255, 255, 0.38); }
+.insight-section-label--work   { color: rgba(255, 255, 255, 0.38); }
+.insight-section-label--health { color: rgba(255, 255, 255, 0.38); }
 
 .insight-section-text {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.70);
+  line-height: 1.55;
   margin: 0;
 }
 
@@ -1528,23 +1547,23 @@ function formatDate(iso: string | null | undefined): string {
   justify-content: center;
   gap: 8px;
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(201, 168, 76, 0.10);
+  border: 1px solid rgba(201, 168, 76, 0.40);
   border-radius: 10px;
-  padding: 11px 18px;
-  font-size: 12px;
+  padding: 14px 18px;
+  font-size: 13px;
   font-family: inherit;
   letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.38);
+  color: rgba(201, 168, 76, 0.90);
   cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .insight-dl-btn:hover:not(:disabled) {
-  background: rgba(107, 72, 224, 0.08);
-  border-color: rgba(107, 72, 224, 0.30);
-  color: rgba(200, 180, 255, 0.75);
+  background: rgba(201, 168, 76, 0.18);
+  border-color: rgba(201, 168, 76, 0.65);
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
 }
 
 .insight-dl-btn:disabled {
