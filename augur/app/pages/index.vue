@@ -750,11 +750,11 @@ onMounted(async () => {
     })
   }
 
-  // If Supabase /auth/v1/verify redirects here with an auth token in the hash
-  // (because the dashboard Site URL points to /), forward to /account so
-  // restoreSession() can exchange the token and establish the session.
-  if (window.location.hash.includes('access_token=')) {
-    window.location.replace('/account' + window.location.hash)
+  // If the magic link email lands on the root URL instead of /account
+  // (e.g. browser auto-strips the path), forward to /account preserving
+  // the token_hash query param so the confirm flow can proceed.
+  if (new URLSearchParams(window.location.search).get('token_hash')) {
+    window.location.replace('/account' + window.location.search)
     return
   }
 

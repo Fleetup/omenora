@@ -8,6 +8,35 @@
     </div>
   </div>
 
+  <!-- ── STATE 2b: Magic link pending — require explicit click to confirm ── -->
+  <div v-else-if="pendingTokenHash" class="center-page auth-page">
+    <div class="auth-top-bar">
+      <p class="top-brand">OMENORA</p>
+    </div>
+    <div class="auth-card">
+      <p class="sent-icon">✦</p>
+      <p class="auth-title">Complete your sign-in</p>
+      <p class="auth-sub">Click the button below to finish signing in to your account.</p>
+
+      <button
+        class="cta-btn"
+        :disabled="isConfirming"
+        @click="handleConfirmMagicLink"
+      >
+        {{ isConfirming ? 'Signing in...' : 'Sign in to OMENORA' }}
+      </button>
+
+      <div v-if="confirmError === 'expired'" class="confirm-error">
+        <p>This link has expired or was already used.</p>
+        <button class="link-btn" @click="pendingTokenHash = null">Request a new link →</button>
+      </div>
+      <div v-else-if="confirmError === 'error'" class="confirm-error">
+        <p>Something went wrong. Please try again.</p>
+        <button class="link-btn" @click="pendingTokenHash = null">Request a new link →</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── STATE 2: Not authenticated — magic link sign-in ── -->
   <div v-else-if="!isAuthenticated" class="center-page auth-page">
     <div class="auth-top-bar">
@@ -141,7 +170,7 @@ import { useAuth } from '~/composables/useAuth'
 
 useSeoMeta({ title: 'My Account — OMENORA', robots: 'noindex, nofollow' })
 
-const { isAuthenticated, userEmail, session, restoreSession, getMyReports, signOut } = useAuth()
+const { isAuthenticated, userEmail, session, restoreSession, confirmMagicLink, getMyReports, signOut } = useAuth()
 
 // ── Page-level state ──────────────────────────────────────────────────────────
 const isLoading = ref(true)
@@ -151,6 +180,11 @@ const emailInput      = ref('')
 const isSendingLink   = ref(false)
 const magicLinkSent   = ref(false)
 const magicLinkError  = ref('')
+
+// ── Magic link confirm state (click-to-confirm, prevents prefetch consumption)
+const pendingTokenHash    = ref<string | null>(null)
+const isConfirming        = ref(false)
+const confirmError        = ref<'expired' | 'error' | null>(null)
 
 // ── Subscription state ────────────────────────────────────────────────────────
 const isLoadingSubscription = ref(false)
@@ -174,6 +208,18 @@ function showToast(msg: string) {
 
 // ── onMounted: restore session then load data ─────────────────────────────────
 onMounted(async () => {
+  // Detect magic link token in URL — do NOT exchange it here.
+  // Show a confirmation button instead so email prefetch scanners
+  // (Gmail, Outlook Safe Links, etc.) cannot consume the one-time token.
+  if (import.meta.client) {
+    const urlToken = new URLSearchParams(window.location.search).get('token_hash')
+    if (urlToken) {
+      pendingTokenHash.value = urlToken
+      isLoading.value = false
+      return
+    }
+  }
+
   const authenticated = await restoreSession()
   isLoading.value = false
 
@@ -182,6 +228,24 @@ onMounted(async () => {
     loadReports()
   }
 })
+
+// ── Confirm magic link on explicit user click ─────────────────────────────────
+async function handleConfirmMagicLink() {
+  if (!pendingTokenHash.value || isConfirming.value) return
+  isConfirming.value = true
+  confirmError.value = null
+
+  const result = await confirmMagicLink(pendingTokenHash.value)
+
+  if (result === 'ok') {
+    pendingTokenHash.value = null
+    loadSubscription()
+    loadReports()
+  } else {
+    confirmError.value = result
+  }
+  isConfirming.value = false
+}
 
 // ── Load subscription status ──────────────────────────────────────────────────
 async function loadSubscription() {
@@ -451,6 +515,34 @@ function formatDate(iso: string | null | undefined): string {
   margin: 10px 0 0;
   text-align: center;
   line-height: 1.5;
+}
+
+.confirm-error {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.confirm-error p {
+  font-size: 13px;
+  color: rgba(255, 100, 100, 0.75);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: rgba(140, 110, 255, 0.70);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+.link-btn:hover {
+  color: rgba(170, 140, 255, 0.90);
 }
 
 /* ── Sent confirmation ── */

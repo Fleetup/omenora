@@ -85,43 +85,10 @@ export function useAuth() {
     // provisionUser(). No dependency on Supabase dashboard PKCE/implicit
     // flow settings or Site URL configuration.
     if (import.meta.client) {
-      // CASE A1: our Resend email — token arrives as ?token_hash= query param
-      const tokenHash = new URLSearchParams(window.location.search).get('token_hash')
-      if (tokenHash) {
-        const { data, error } = await supabase.auth.verifyOtp({
-          token_hash: tokenHash,
-          type: 'email',
-        })
-        if (!error && data.session) {
-          session.value = data.session
-          window.history.replaceState({}, '', window.location.pathname)
-          return true
-        }
-        // Token invalid/expired — fall through to show the sign-in form
-      }
-
-      // CASE A2: Supabase's own built-in email — after /auth/v1/verify processes
-      // the token it redirects here with #access_token=...&refresh_token=...
-      // The Supabase client reads this automatically when detectSessionInUrl is
-      // true, but we have it disabled. Handle it manually here instead.
-      if (window.location.hash.includes('access_token=')) {
-        const hashParams = new URLSearchParams(window.location.hash.slice(1))
-        const accessToken  = hashParams.get('access_token')
-        const refreshToken = hashParams.get('refresh_token')
-        if (accessToken && refreshToken) {
-          const { data, error } = await supabase.auth.setSession({
-            access_token:  accessToken,
-            refresh_token: refreshToken,
-          })
-          if (!error && data.session) {
-            session.value = data.session
-            window.history.replaceState({}, '', window.location.pathname)
-            return true
-          }
-        }
-        // Clean the hash even if session exchange failed
-        window.history.replaceState({}, '', window.location.pathname)
-      }
+      // token_hash is intentionally NOT auto-consumed here.
+      // account.vue detects it and shows a click-to-confirm button so that
+      // email prefetch scanners cannot consume the one-time token before the
+      // user actually clicks. See confirmMagicLink() below.
     }
 
     // CASE B: standard path — read persisted session from localStorage.
@@ -144,6 +111,30 @@ export function useAuth() {
 
     session.value = localData.session
     return true
+  }
+
+  // ── Confirm magic link on explicit user click ───────────────────────────────
+
+  /**
+   * Exchange the token_hash from the URL for a live session.
+   * Must only be called in response to a user gesture (button click) — never
+   * on mount — so email prefetch scanners cannot consume the one-time token.
+   *
+   * Returns: 'ok' | 'expired' | 'error'
+   */
+  async function confirmMagicLink(tokenHash: string): Promise<'ok' | 'expired' | 'error'> {
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'email',
+    })
+    if (!error && data.session) {
+      session.value = data.session
+      window.history.replaceState({}, '', window.location.pathname)
+      return 'ok'
+    }
+    const msg = error?.message?.toLowerCase() ?? ''
+    if (msg.includes('expired') || msg.includes('invalid')) return 'expired'
+    return 'error'
   }
 
   // ── Protected API calls ────────────────────────────────────────────────────
@@ -185,6 +176,7 @@ export function useAuth() {
     userEmail,
     provisionUser,
     restoreSession,
+    confirmMagicLink,
     getMyReports,
     signOut,
   }
