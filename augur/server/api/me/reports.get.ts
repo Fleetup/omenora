@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
       'id, session_id, first_name, archetype, life_path_number, report_data, region, date_of_birth, created_at, type, partner_name',
     )
     .eq('email', user.email)
+    .not('session_id', 'like', 'compat_%') // exclude pre-payment tempId rows
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -41,5 +42,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Failed to load reports' })
   }
 
-  return { reports: data ?? [] }
+  // Deduplicate: for compatibility readings keep only one row per partner+dob pair;
+  // for archetype readings keep only one row per date_of_birth (same user, same report).
+  const seen = new Set<string>()
+  const deduped = (data ?? []).filter((row) => {
+    const key = row.type === 'compatibility'
+      ? `compat:${(row.partner_name ?? '').toLowerCase().trim()}:${row.date_of_birth ?? ''}`
+      : `archetype:${row.date_of_birth ?? ''}:${row.archetype ?? ''}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  return { reports: deduped }
 })

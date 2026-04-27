@@ -30,11 +30,16 @@ export default defineEventHandler(async (event) => {
     const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
-      options: { redirectTo: 'https://omenora.com/account' },
     })
 
-    if (!linkErr && linkData?.properties?.action_link) {
-      magicLinkUrl = linkData.properties.action_link
+    if (!linkErr && linkData?.properties?.hashed_token) {
+      // Build the verification URL ourselves using the hashed_token so that
+      // redirect_to is fully controlled by our code — not by the Supabase
+      // project's "Site URL" setting in the dashboard (which defaults to
+      // localhost:3000 in dev and can cause wrong redirects if misconfigured).
+      const supabaseUrl = (config.supabaseUrl as string).replace(/\/$/, '')
+      const redirectTo  = encodeURIComponent('https://omenora.com/account')
+      magicLinkUrl = `${supabaseUrl}/auth/v1/verify?token=${linkData.properties.hashed_token}&type=magiclink&redirect_to=${redirectTo}`
     } else if (linkErr) {
       // Log internally but do not surface to caller
       console.error('[request-magic-link] generateLink error:', linkErr.code)

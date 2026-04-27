@@ -79,6 +79,35 @@ export function useAuth() {
    * (mobile). Call this in onMounted of any page that should respect auth state.
    */
   async function restoreSession(): Promise<boolean> {
+    // After a magic-link click, Supabase redirects to our page with either:
+    //   a) a URL hash fragment: #access_token=...&type=magiclink  (implicit flow)
+    //   b) query params:        ?code=...                          (PKCE flow)
+    // Supabase JS v2 detects both automatically via onAuthStateChange, but the
+    // event fires asynchronously AFTER the first getSession() call returns null.
+    // We must wait for SIGNED_IN if we detect an auth callback in the URL.
+    const isAuthCallback = import.meta.client && (
+      window.location.hash.includes('access_token') ||
+      window.location.hash.includes('type=magiclink') ||
+      new URLSearchParams(window.location.search).has('code')
+    )
+
+    if (isAuthCallback) {
+      // Wait up to 5 seconds for Supabase to exchange the token and fire SIGNED_IN
+      const resolved = await new Promise<boolean>((resolve) => {
+        const timer = setTimeout(() => resolve(false), 5000)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+          if (event === 'SIGNED_IN' && s) {
+            clearTimeout(timer)
+            subscription.unsubscribe()
+            session.value = s
+            resolve(true)
+          }
+        })
+      })
+      if (resolved) return true
+    }
+
+    // Standard path: read persisted session from localStorage
     // getSession() reads from localStorage without a network call — it cannot
     // detect revoked tokens. We use it only to check if a local token exists,
     // then call getUser() which validates the JWT against the Supabase server.

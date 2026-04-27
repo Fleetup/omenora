@@ -271,7 +271,7 @@ const store = useAnalysisStore()
 const route = useRoute()
 const { t } = useLanguage()
 const { provisionUser } = useAuth()
-const { $trackCustomEvent } = useNuxtApp() as any
+const { $trackCustomEvent, $trackInitiateCheckout, $trackPurchase } = useNuxtApp() as any
 
 function trackEvent(name: string, props?: Record<string, unknown>) {
   try { $trackCustomEvent?.(name, props ?? {}) } catch { /* never block UI */ }
@@ -435,6 +435,13 @@ async function handleCheckout(tier: 'subscription' | 'single') {
   }
   emailPrompt.value = false
 
+  try {
+    $trackInitiateCheckout?.({
+      value: tier === 'subscription' ? 9.99 : 7.99,
+      currency: 'USD',
+      content_name: tier === 'subscription' ? 'Compatibility Plus Subscription' : 'Compatibility Reading',
+    })
+  } catch { /* never block UI */ }
   trackEvent('initiate_checkout', {
     tier,
     value: tier === 'subscription' ? 9.99 : 7.99,
@@ -589,6 +596,20 @@ onMounted(async () => {
           language:          store.language || 'en',
         },
       }).catch(() => {}) // fire-and-forget, never blocks reading render
+
+      // Fire purchase pixel events (dedup guard prevents double-firing on re-mount)
+      try {
+        const pixelKey = `omenora_purchase_tracked_${sessionId}`
+        if (!sessionStorage.getItem(pixelKey)) {
+          sessionStorage.setItem(pixelKey, '1')
+          const purchaseValue = meta.tier === 'subscription' ? 9.99 : (meta.tier === 'single' ? 7.99 : 2.99)
+          $trackPurchase?.({
+            value: purchaseValue,
+            currency: 'USD',
+            content_name: meta.tier === 'subscription' ? 'Compatibility Plus Subscription' : 'Compatibility Reading',
+          })
+        }
+      } catch { /* never block UI */ }
 
       isLoading.value = false
     } catch {
