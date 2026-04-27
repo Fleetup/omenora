@@ -157,7 +157,7 @@ export default defineEventHandler(async (event) => {
       </p>
       <p style="font-size: 10px; color: rgba(255,255,255,0.10); margin: 6px 0 0;">
         ${tier === 'subscription'
-          ? `<a href="https://billing.stripe.com/p/login/" style="color: rgba(200,180,255,0.4); text-decoration: underline; margin-right: 12px;">Manage subscription</a>`
+          ? `<a href="https://omenora.com/account" style="color: rgba(200,180,255,0.4); text-decoration: underline; margin-right: 12px;">Manage your subscription</a><br><span style="font-size: 10px; color: rgba(255,255,255,0.12);">To cancel: click &ldquo;Manage your subscription&rdquo; above &rarr; Cancel plan. Takes 10 seconds.</span>`
           : ''}
         <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe" style="color: rgba(255,255,255,0.15); text-decoration: underline;">Unsubscribe</a>
       </p>
@@ -192,7 +192,7 @@ export default defineEventHandler(async (event) => {
     ``,
     `---`,
     `OMENORA · omenora.com`,
-    ...(tier === 'subscription' ? [`Manage subscription: https://billing.stripe.com/p/login/`] : []),
+    ...(tier === 'subscription' ? [`Manage your subscription: https://omenora.com/account`, `To cancel: visit the link above → Cancel plan. Takes 10 seconds.`] : []),
     `To unsubscribe, email unsubscribe@omenora.com`,
   ].filter(s => s !== '').join('\n\n')
 

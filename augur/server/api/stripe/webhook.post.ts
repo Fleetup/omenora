@@ -216,7 +216,9 @@ export default defineEventHandler(async (event) => {
   }
 
   // ── Handle subscription checkout — save subscriber + send welcome insight ──
-  if (meta.type === 'subscription') {
+  // Covers both the archetype subscription flow (meta.type === 'subscription')
+  // and the compatibility subscription flow (meta.type === 'compatibility' && meta.tier === 'subscription').
+  if (meta.type === 'subscription' || (meta.type === 'compatibility' && meta.tier === 'subscription')) {
     const subEmail     = session.customer_details?.email || meta.email || ''
     const subFirstName = sanitizeString(meta.firstName || '', 50)
     const subArchetype = sanitizeString(meta.archetype || '', 30)

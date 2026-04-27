@@ -263,12 +263,14 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
+import { useAuth } from '~/composables/useAuth'
 
 useSeoMeta({ title: 'Your Love Compatibility Reading', robots: 'noindex, nofollow' })
 
 const store = useAnalysisStore()
 const route = useRoute()
 const { t } = useLanguage()
+const { provisionUser } = useAuth()
 const { $trackCustomEvent } = useNuxtApp() as any
 
 function trackEvent(name: string, props?: Record<string, unknown>) {
@@ -570,6 +572,23 @@ onMounted(async () => {
           console.error('Compatibility email failed')
         }
       }
+
+      // Silently provision Supabase Auth account (non-blocking)
+      provisionUser({ sessionId }).catch(() => {})
+
+      // Persist reading to DB so it appears in account history (fire-and-forget, never blocks render)
+      $fetch('/api/save-compatibility-reading', {
+        method: 'POST',
+        body: {
+          sessionId,
+          email:             store.email || paymentData.customerEmail || '',
+          firstName:         store.firstName || '',
+          partnerName:       store.partnerName || '',
+          partnerDob:        store.partnerDob || '',
+          compatibilityData: compatibility.value,
+          language:          store.language || 'en',
+        },
+      }).catch(() => {}) // fire-and-forget, never blocks reading render
 
       isLoading.value = false
     } catch {

@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   const { data, error } = await supabase
     .from('reports')
     .select(
-      'id, session_id, first_name, archetype, life_path_number, report_data, region, date_of_birth, created_at',
+      'id, session_id, first_name, archetype, life_path_number, report_data, region, date_of_birth, created_at, type, partner_name',
     )
     .eq('email', user.email)
     .order('created_at', { ascending: false })

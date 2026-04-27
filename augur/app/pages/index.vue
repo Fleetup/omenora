@@ -30,6 +30,11 @@
             <span class="header-nav-glyph" aria-hidden="true">✦</span>
             Compatibility
           </NuxtLink>
+          <span class="header-nav-sep" aria-hidden="true" />
+          <NuxtLink to="/account" class="header-nav-link">
+            <span class="header-nav-glyph" aria-hidden="true">◎</span>
+            My Account
+          </NuxtLink>
         </nav>
 
         <!-- Right side: CTA + hamburger -->
@@ -84,6 +89,14 @@
             <span class="mobile-nav-glyph" aria-hidden="true">✦</span>
             Compatibility Reading
             <span class="mobile-nav-badge">Free Preview</span>
+          </NuxtLink>
+          <NuxtLink
+            to="/account"
+            class="mobile-nav-link"
+            @click="navOpen = false"
+          >
+            <span class="mobile-nav-glyph" aria-hidden="true">◎</span>
+            My Account
           </NuxtLink>
         </nav>
         <button
@@ -493,6 +506,10 @@
         <span class="footer-dot" aria-hidden="true">·</span>
         <NuxtLink to="/terms" class="footer-link">
           Terms
+        </NuxtLink>
+        <span class="footer-dot" aria-hidden="true">·</span>
+        <NuxtLink to="/account" class="footer-link">
+          My Account
         </NuxtLink>
       </nav>
       <p class="footer-copy">© 2026 OMENORA</p>

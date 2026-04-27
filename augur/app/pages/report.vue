@@ -96,6 +96,7 @@
     <div class="top-bar">
       <span class="brand-text top-brand">OMENORA</span>
       <span class="report-label">{{ t('completeReport') }}</span>
+      <NuxtLink to="/account" class="top-account-link">My Account</NuxtLink>
     </div>
 
     <!-- Hero block -->
@@ -2376,6 +2377,19 @@ async function downloadReportPDF() {
 .report-label {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.3);
+}
+
+.top-account-link {
+  font-size: 11px;
+  color: rgba(140, 110, 255, 0.55);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.top-account-link:hover {
+  color: rgba(140, 110, 255, 0.85);
 }
 
 /* Hero block */
