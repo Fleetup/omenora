@@ -230,6 +230,58 @@ export default defineEventHandler(async (event) => {
       ? 'compatibility_plus'
       : 'daily_horoscope'
 
+    // ── Upgrade path: cancel existing daily_horoscope when buying compatibility_plus ──
+    if (planType === 'compatibility_plus' && isValidEmail(subEmail)) {
+      try {
+        const supabaseUpgrade = createSupabaseAdmin()
+        const { data: existingDaily } = await supabaseUpgrade
+          .from('subscribers')
+          .select('stripe_subscription_id')
+          .eq('email', subEmail)
+          .eq('plan_type', 'daily_horoscope')
+          .eq('active', true)
+          .maybeSingle()
+
+        const existingSubId = existingDaily?.stripe_subscription_id as string | undefined
+        if (existingSubId && existingSubId.startsWith('sub_')) {
+          await stripe.subscriptions.cancel(existingSubId)
+          await createSupabaseAdmin()
+            .from('subscribers')
+            .update({ active: false, updated_at: new Date().toISOString() })
+            .eq('email', subEmail)
+            .eq('plan_type', 'daily_horoscope')
+          console.info('[stripe-webhook] Canceled daily_horoscope sub for upgrade:', existingSubId)
+        }
+      } catch (upgradeErr: any) {
+        console.error('[stripe-webhook] Failed to cancel daily_horoscope on upgrade (non-blocking):', upgradeErr?.message)
+      }
+    }
+
+    // ── Downgrade guard: block daily_horoscope save if compatibility_plus already active ──
+    if (planType === 'daily_horoscope' && isValidEmail(subEmail)) {
+      try {
+        const supabaseGuard = createSupabaseAdmin()
+        const { data: existingPlus } = await supabaseGuard
+          .from('subscribers')
+          .select('stripe_subscription_id')
+          .eq('email', subEmail)
+          .eq('plan_type', 'compatibility_plus')
+          .eq('active', true)
+          .maybeSingle()
+
+        const existingPlusId = existingPlus?.stripe_subscription_id as string | undefined
+        if (existingPlusId) {
+          if (subId && subId.startsWith('sub_')) {
+            await stripe.subscriptions.cancel(subId)
+          }
+          console.info('[stripe-webhook] Blocked daily_horoscope save — compatibility_plus already active for this email:', subEmail)
+          return { received: true }
+        }
+      } catch (guardErr: any) {
+        console.error('[stripe-webhook] Downgrade guard check failed (non-blocking):', guardErr?.message)
+      }
+    }
+
     try {
       await $fetch('/api/save-subscriber', {
         method: 'POST',
