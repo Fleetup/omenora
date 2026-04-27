@@ -68,6 +68,7 @@ export function isValidReportId(val: unknown): val is string {
   if (typeof val !== 'string') return false
   return /^cs_(?:live|test)_\w{10,200}$/.test(val) ||
          /^temp_\d{10,15}[\w-]{1,60}$/.test(val)  ||
+         /^promo_\d{10,15}[\w-]{1,80}$/.test(val) ||
          /^promo_[0-9a-f]{32}$/.test(val)
 }
 

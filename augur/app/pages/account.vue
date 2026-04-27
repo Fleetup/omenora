@@ -145,7 +145,7 @@
                 <p class="reading-date">{{ formatDate(report.created_at) }}</p>
               </div>
             </div>
-            <button class="view-btn" @click="showComingSoon">View</button>
+            <button class="view-btn" @click="navigateTo(`/report?session_id=${report.session_id}`)">View</button>
           </div>
         </div>
       </section>
@@ -327,11 +327,6 @@ async function openPortal() {
 async function handleSignOut() {
   await signOut()
   navigateTo('/')
-}
-
-// ── Coming soon stub for view reading ────────────────────────────────────────
-function showComingSoon() {
-  showToast('Full reading re-access coming soon.')
 }
 
 // ── Date formatter ────────────────────────────────────────────────────────────
