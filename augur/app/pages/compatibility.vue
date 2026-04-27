@@ -407,6 +407,7 @@ async function handleCheckout(tier: 'subscription' | 'single') {
           tier,
           firstName,
           partnerName,
+          dateOfBirth: store.dateOfBirth,
           partnerDob:  store.partnerDob,
           partnerCity: store.partnerCity,
           email,
@@ -470,10 +471,12 @@ onMounted(async () => {
       }
 
       const meta = paymentData.metadata || {}
-      if (!store.firstName)   store.setPersonalInfo(meta.firstName  || '', store.dateOfBirth, store.city)
-      if (!store.email)       store.setEmail(meta.email || paymentData.customerEmail || '')
-      if (!store.partnerName) store.setPartnerData({ name: meta.partnerName || '', dob: store.partnerDob, city: store.partnerCity })
-      if (!store.tempId)      store.setTempId(meta.tempId || '')
+      if (!store.firstName)    store.setPersonalInfo(meta.firstName || '', meta.dateOfBirth || store.dateOfBirth, store.city)
+      if (!store.dateOfBirth && meta.dateOfBirth) store.setPersonalInfo(store.firstName, meta.dateOfBirth, store.city)
+      if (!store.email)        store.setEmail(meta.email || paymentData.customerEmail || '')
+      if (!store.partnerName)  store.setPartnerData({ name: meta.partnerName || '', dob: meta.partnerDob || store.partnerDob, city: meta.partnerCity || store.partnerCity })
+      if (!store.partnerDob && meta.partnerDob)   store.setPartnerData({ name: store.partnerName, dob: meta.partnerDob, city: meta.partnerCity || store.partnerCity })
+      if (!store.tempId)       store.setTempId(meta.tempId || '')
       if (!store.languageManualOverride && meta.language) store.setLanguage(meta.language)
 
       const { compatibility: data } = await $fetch<{
@@ -483,14 +486,16 @@ onMounted(async () => {
         method: 'POST',
         body: {
           firstName:      store.firstName,
-          archetype:      store.archetype,
-          element:        store.report?.element,
-          lifePathNumber: store.lifePathNumber,
-          powerTraits:    store.report?.powerTraits,
+          dateOfBirth:    store.dateOfBirth || meta.dateOfBirth || '',
+          archetype:      store.archetype   || undefined,
+          element:        store.report?.element        || undefined,
+          lifePathNumber: store.lifePathNumber          || undefined,
+          powerTraits:    store.report?.powerTraits     || undefined,
           partnerName:    store.partnerName,
           partnerDob:     store.partnerDob,
           partnerCity:    store.partnerCity,
           language:       store.language,
+          previewMode:    false,
         },
       })
 

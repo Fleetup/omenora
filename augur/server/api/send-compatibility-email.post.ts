@@ -12,7 +12,6 @@ export default defineEventHandler(async (event) => {
   const language    = sanitizeString(body.language || 'en', 5)
 
   assertInput(isValidEmail(email), 'Valid email is required')
-  assertInput(!!firstName, 'firstName is required')
   assertInput(
     body.compatibility !== null && typeof body.compatibility === 'object',
     'compatibility object is required',
