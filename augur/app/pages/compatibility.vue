@@ -460,6 +460,9 @@ async function handleCheckout(tier: 'subscription' | 'single') {
   if (theirNameInput.value.trim()) store.setPartnerData({ name: theirNameInput.value.trim(), dob: store.partnerDob, city: store.partnerCity })
 
   try {
+    const storedUtm = sessionStorage.getItem('omenora_utms')
+    const utmParams = storedUtm ? (JSON.parse(storedUtm) as Record<string, string>) : {}
+
     const { url } = await $fetch<{ sessionId: string; url: string | null }>(
       '/api/create-compatibility-payment',
       {
@@ -475,6 +478,9 @@ async function handleCheckout(tier: 'subscription' | 'single') {
           tempId:      store.tempId || `compat_${Date.now()}`,
           language:    store.language || 'en',
           origin:      window.location.origin,
+          utmCreative: utmParams.utm_creative || '',
+          utmSource:   utmParams.utm_source   || '',
+          utmCampaign: utmParams.utm_campaign  || '',
         },
       },
     )

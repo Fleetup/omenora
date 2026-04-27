@@ -18,6 +18,9 @@ export default defineEventHandler(async (event) => {
   const partnerCity  = body.partnerCity  != null ? sanitizeString(body.partnerCity, 100)  : ''
   const partnerDob   = body.partnerDob   != null ? sanitizeString(body.partnerDob, 10)   : ''
   const dateOfBirth  = body.dateOfBirth  != null ? sanitizeString(body.dateOfBirth, 10)  : ''
+  const utmCreative  = sanitizeString(body.utmCreative  || '', 100)
+  const utmSource    = sanitizeString(body.utmSource    || '', 100)
+  const utmCampaign  = sanitizeString(body.utmCampaign  || '', 100)
 
   // tier: default to 'legacy' if missing or not a recognised value
   const rawTier = sanitizeString(body.tier ?? '', 20)
@@ -55,6 +58,9 @@ export default defineEventHandler(async (event) => {
     ...(partnerDob   ? { partnerDob }   : {}),
     ...(partnerCity  ? { partnerCity }  : {}),
     ...(dateOfBirth  ? { dateOfBirth }  : {}),
+    ...(utmCreative  ? { utm_creative: utmCreative } : {}),
+    ...(utmSource    ? { utm_source:   utmSource }   : {}),
+    ...(utmCampaign  ? { utm_campaign: utmCampaign } : {}),
   }
 
   // ── Stripe session construction ───────────────────────────────────────────

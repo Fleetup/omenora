@@ -210,6 +210,7 @@ import { useAnalysisStore } from '~/stores/analysisStore'
 useSeoMeta({ title: 'Free Compatibility Reading — OMENORA', robots: 'noindex, nofollow' })
 
 const store = useAnalysisStore()
+const route = useRoute()
 const { $trackCustomEvent } = useNuxtApp() as any
 
 function trackEvent(name: string, props?: Record<string, unknown>) {
@@ -338,6 +339,21 @@ async function runApiCall() {
 onMounted(() => {
   trackEvent('compatibility_quiz_started')
   triggerReveal()
+
+  // Capture UTM params from the landing URL and persist to sessionStorage.
+  // Uses the same key ('omenora_utms') as getUtmParams() in pixels.client.ts
+  // so pixel events on /compatibility automatically include attribution.
+  try {
+    const utmParams = {
+      utm_source:   (route.query.utm_source   as string) || '',
+      utm_campaign: (route.query.utm_campaign as string) || '',
+      utm_creative: (route.query.utm_creative as string) || '',
+      utm_medium:   (route.query.utm_medium   as string) || '',
+    }
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('omenora_utms', JSON.stringify(utmParams))
+    }
+  } catch { /* sessionStorage unavailable — non-blocking */ }
 })
 
 onUnmounted(() => {
