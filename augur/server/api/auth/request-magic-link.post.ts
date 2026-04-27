@@ -119,13 +119,21 @@ export default defineEventHandler(async (event) => {
 
     try {
       console.log('[request-magic-link] sending email to:', email)
+      const uniqueId = Date.now()
+      const shortCode = uniqueId.toString(36).slice(-4).toUpperCase()
       const { data: sendData, error: sendErr } = await resend.emails.send({
         from: 'OMENORA <reading@omenora.com>',
         replyTo: 'support@omenora.com',
         to: [email],
-        subject: 'Sign in to OMENORA',
+        subject: `Sign in to OMENORA [${shortCode}]`,
         html: htmlContent,
         text: plainText,
+        headers: {
+          'X-Entity-Ref-ID': `magic-link-${uniqueId}`,
+          'Message-ID': `<magic-link-${uniqueId}@omenora.com>`,
+          'X-PM-Message-Id': `magic-link-${uniqueId}`,
+        },
+        tags: [{ name: 'category', value: 'magic_link' }],
       })
 
       if (sendErr) {
