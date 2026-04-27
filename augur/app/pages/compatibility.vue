@@ -62,7 +62,23 @@
     <!-- Share -->
     <div class="share-section">
       <h3 class="share-title">{{ t('shareYourReading') }}</h3>
-      <p class="share-subtitle">{{ t('shareCompatSubtitle').replace('{name}', store.partnerName) }}</p>
+      <p class="share-subtitle">{{ t('shareCompatSubtitle').replace('{name}', store.partnerName || 'them') }}</p>
+
+      <!-- Preview card -->
+      <div class="compat-share-card">
+        <p class="compat-share-card-label">DESTINY COMPATIBILITY</p>
+        <p class="compat-share-card-names">{{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}</p>
+        <p class="compat-share-card-score" :style="{ color: scoreColor }">{{ compatibility.compatibilityScore }}%</p>
+        <p class="compat-share-card-title">{{ compatibility.compatibilityTitle }}</p>
+        <p class="compat-share-card-domain">omenora.com</p>
+      </div>
+
+      <div class="compat-download-row">
+        <button class="compat-download-btn" :disabled="isDownloadingCard" @click="downloadCompatCard">
+          {{ isDownloadingCard ? 'Generating...' : 'Download your compatibility card' }}
+        </button>
+      </div>
+      <p v-if="cardDownloadError" class="compat-download-error">{{ cardDownloadError }}</p>
     </div>
   </div>
 
@@ -328,6 +344,42 @@ const nextChargeDate = computed(() => {
 })
 
 // ── Name + email capture ──────────────────────────────────────────────────────
+const isDownloadingCard = ref(false)
+const cardDownloadError = ref('')
+
+async function downloadCompatCard() {
+  if (isDownloadingCard.value || !compatibility.value) return
+  isDownloadingCard.value = true
+  cardDownloadError.value = ''
+  try {
+    const response = await fetch('/api/generate-compatibility-card', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName:          store.firstName          || '',
+        partnerName:        store.partnerName        || '',
+        compatibilityScore: compatibility.value.compatibilityScore,
+        compatibilityTitle: compatibility.value.compatibilityTitle,
+        challengeContent:   compatibility.value.sections?.challenge?.content || '',
+      }),
+    })
+    if (!response.ok) throw new Error('Failed to generate card')
+    const blob = await response.blob()
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `omenora-compatibility-${store.firstName || 'reading'}.png`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch {
+    cardDownloadError.value = 'Unable to generate image — please try again.'
+  } finally {
+    isDownloadingCard.value = false
+  }
+}
+
 const myNameInput         = ref(store.firstName   || '')
 const theirNameInput      = ref(store.partnerName || '')
 const emailInput          = ref(store.email       || '')
@@ -511,6 +563,7 @@ onMounted(async () => {
               partnerName: store.partnerName,
               compatibility: data,
               language:    store.language,
+              tier:        meta.tier || '',
             },
           })
         } catch {
@@ -1218,6 +1271,7 @@ onMounted(async () => {
 /* ── Share section (post-payment) ── */
 .share-section {
   margin-top: 48px;
+  padding: 0 20px;
   text-align: center;
 }
 
@@ -1231,7 +1285,91 @@ onMounted(async () => {
 .share-subtitle {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.35);
+  margin: 0 0 20px;
+}
+
+.compat-share-card {
+  width: min(280px, 100%);
+  background: linear-gradient(140deg, #0d0b1e, #12101f);
+  border: 1px solid rgba(140, 110, 255, 0.25);
+  border-radius: 16px;
+  margin: 0 auto 16px;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.compat-share-card-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(140, 110, 255, 0.6);
+  letter-spacing: 0.1em;
+  margin: 0 0 6px;
+}
+
+.compat-share-card-names {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(230, 220, 255, 0.90);
   margin: 0;
+}
+
+.compat-share-card-score {
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.1;
+  margin: 6px 0 0;
+}
+
+.compat-share-card-title {
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(200, 180, 255, 0.70);
+  margin: 2px 0 8px;
+}
+
+.compat-share-card-domain {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.20);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.compat-download-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.compat-download-btn {
+  background: rgba(140, 110, 255, 0.12);
+  border: 1px solid rgba(140, 110, 255, 0.35);
+  border-radius: 10px;
+  color: rgba(200, 180, 255, 0.90);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 11px 22px;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  font-family: inherit;
+}
+
+.compat-download-btn:hover:not(:disabled) {
+  background: rgba(140, 110, 255, 0.20);
+}
+
+.compat-download-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.compat-download-error {
+  font-size: 12px;
+  color: rgba(255, 100, 100, 0.7);
+  text-align: center;
+  margin: 8px 0 0;
 }
 
 /* ── Footer ── */

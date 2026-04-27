@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
   const firstName   = sanitizeString(body.firstName ?? '', 50)
   const partnerName = sanitizeString(body.partnerName ?? '', 50)
   const language    = sanitizeString(body.language || 'en', 5)
+  const tier        = sanitizeString(body.tier ?? '', 20)
 
   assertInput(isValidEmail(email), 'Valid email is required')
   assertInput(
@@ -143,7 +144,7 @@ export default defineEventHandler(async (event) => {
       <p style="font-size: 12px;
         color: rgba(255,255,255,0.15);
         margin: 0 0 8px;">
-        omenora.com — AI Destiny Analysis
+        omenora.com &mdash; Destiny Compatibility Reading
       </p>
 
       <p style="font-size: 11px;
@@ -152,7 +153,12 @@ export default defineEventHandler(async (event) => {
       </p>
 
       <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0;">
-        OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·
+        OMENORA &middot; 1309 Coffeen Ave STE 1200, Sheridan, WY 82801
+      </p>
+      <p style="font-size: 10px; color: rgba(255,255,255,0.10); margin: 6px 0 0;">
+        ${tier === 'subscription'
+          ? `<a href="https://billing.stripe.com/p/login/" style="color: rgba(200,180,255,0.4); text-decoration: underline; margin-right: 12px;">Manage subscription</a>`
+          : ''}
         <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe" style="color: rgba(255,255,255,0.15); text-decoration: underline;">Unsubscribe</a>
       </p>
     </div>
@@ -186,6 +192,7 @@ export default defineEventHandler(async (event) => {
     ``,
     `---`,
     `OMENORA · omenora.com`,
+    ...(tier === 'subscription' ? [`Manage subscription: https://billing.stripe.com/p/login/`] : []),
     `To unsubscribe, email unsubscribe@omenora.com`,
   ].filter(s => s !== '').join('\n\n')
 
