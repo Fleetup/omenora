@@ -21,7 +21,7 @@
   <div v-else-if="isPreviewMode && !previewData" class="compat-state-page">
     <div class="compat-state-inner">
       <p class="label-caps compat-state-brand">Omenora</p>
-      <p class="annotation compat-state-msg" style="max-width: 280px;">Session expired. Start the quiz again to see your reading.</p>
+      <p class="annotation compat-state-msg" style="max-width: 280px;">Session expired. Start the quiz again to see your forecast.</p>
       <CTAButton :arrow="true" @click="navigateTo('/compatibility-quiz')">Restart the quiz</CTAButton>
     </div>
   </div>
@@ -118,7 +118,7 @@
 
     <!-- Canceled banner (CASE C) -->
     <div v-if="isCanceled" class="compat-canceled" role="status">
-      <p class="annotation">Checkout canceled. Your reading is still here when you're ready.</p>
+      <p class="annotation">Checkout canceled. Your forecast is still here when you're ready.</p>
     </div>
 
     <!-- Preview masthead -->
@@ -152,7 +152,7 @@
     <!-- Locked sections strip -->
     <div class="locked-strip">
       <div class="locked-strip__header">
-        <span class="label-caps locked-strip__label">Still locked in your reading</span>
+        <span class="label-caps locked-strip__label">Still locked in your forecast</span>
       </div>
       <div class="locked-strip__cards">
         <div v-for="key in LOCKED_SECTIONS" :key="key" class="locked-card">
@@ -182,7 +182,7 @@
 
     <!-- Paywall block -->
     <div class="paywall">
-      <h2 class="paywall__heading font-display-italic">Unlock your full reading</h2>
+      <h2 class="paywall__heading font-display-italic">Unlock your full forecast</h2>
       <p class="paywall__sub annotation">
         Your challenge is just the beginning. The bond, strength, forecast, and one piece of advice — written for this exact connection, grounded in real chart data.
       </p>
@@ -237,10 +237,10 @@
         <p class="pay-card__name">Compatibility Plus</p>
         <p class="pay-card__price font-serif">$9.99<span class="pay-card__freq annotation"> / month</span></p>
         <ul class="pay-card__bullets annotation">
-          <li>Unlimited compatibility readings — any pairing, any time</li>
+          <li>Unlimited compatibility forecasts — any pairing, any time</li>
           <li>Weekly relationship weather — every Monday in your inbox</li>
           <li>Daily horoscope — love, work &amp; health, personalized to your chart</li>
-          <li>Full reading history on your account</li>
+          <li>Full forecast history on your account</li>
           <li>Real chart math — Swiss Ephemeris, not sun sign guesses</li>
         </ul>
         <CTAButton
@@ -260,12 +260,12 @@
 
       <!-- Option 2: Single (secondary) -->
       <div class="pay-card pay-card--secondary">
-        <p class="pay-card__name">Just this reading</p>
+        <p class="pay-card__name">Just this forecast</p>
         <p class="pay-card__price font-serif">$7.99<span class="pay-card__freq annotation"> one-time</span></p>
         <ul class="pay-card__bullets annotation">
           <li>Full compatibility analysis for this pairing only</li>
           <li>All 5 sections unlocked — bond, strength, challenge, forecast &amp; advice</li>
-          <li>Shareable reading card included</li>
+          <li>Shareable forecast card included</li>
         </ul>
         <button
           class="pay-card__btn pay-card__btn--secondary"
@@ -274,7 +274,7 @@
           @click="handleCheckout('single')"
         >
           <span v-if="isProcessing && activeTier === 'single'">Processing…</span>
-          <span v-else>Get this reading — $7.99</span>
+          <span v-else>Get this forecast — $7.99</span>
         </button>
       </div>
 

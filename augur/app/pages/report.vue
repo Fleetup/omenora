@@ -64,7 +64,7 @@
   <div v-else-if="!store.report" class="report-state-page">
     <div class="report-state-inner">
       <PhoenixLoader :size="88" class="report-state__phoenix" />
-      <p class="label-caps report-state__eyebrow">Reading complete</p>
+      <p class="label-caps report-state__eyebrow">Forecast complete</p>
       <h2 class="report-state__heading font-display-italic">{{ t('reportReady') }}</h2>
       <p class="annotation report-state__sub">{{ t('checkEmail') }}</p>
     </div>
@@ -77,7 +77,7 @@
     <Transition name="banner-fade">
       <div v-if="showPaymentBanner" class="payment-banner">
         <span class="payment-banner__text annotation">
-          ❆ Your complete reading has been sent to {{ store.email }}
+          ❆ Your complete forecast has been sent to {{ store.email }}
         </span>
         <button class="payment-banner__dismiss" aria-label="Dismiss" @click="showPaymentBanner = false">×</button>
       </div>
@@ -105,7 +105,7 @@
       <div class="report-masthead__inner">
 
         <p class="label-caps report-masthead__eyebrow">
-          Complete Natal Reading · {{ store.firstName }}
+          Complete Natal Forecast · {{ store.firstName }}
         </p>
 
         <h1 class="report-masthead__name font-display-italic">
@@ -533,7 +533,7 @@
           </div>
           <div class="upsell-item">
             <div class="upsell-item__info">
-              <p class="upsell-item__name">Compatibility Reading</p>
+              <p class="upsell-item__name">Compatibility Forecast</p>
               <p class="annotation upsell-item__desc">Discover your destiny match</p>
             </div>
             <span class="upsell-item__price font-serif">$2.99</span>
@@ -712,10 +712,10 @@
       <div class="editorial-rule" />
       <div class="report-footer-cta__inner">
         <h2 class="font-display-italic report-footer-cta__headline">
-          Your reading is complete.
+          Your forecast is complete.
         </h2>
         <p class="report-footer-cta__body">
-          Return tomorrow for your daily reading,
+          Return tomorrow for your daily forecast,
           tailored to your {{ store.report.archetypeName }} archetype.
         </p>
         <div class="report-footer-cta__actions">
