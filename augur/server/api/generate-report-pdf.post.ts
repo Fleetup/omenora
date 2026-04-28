@@ -111,44 +111,103 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // ── COVER (page 1) ─────────────────────────────────────────────────────────
-  doc.y = 52
+  // ── COVER (page 1) — fixed Y positions, full A4 distribution ─────────────
 
-  // Wordmark
-  doc.font('Inter-Medium').fontSize(9).fillColor(INK_FAINT)
-     .text('O M E N O R A', ML, doc.y, { width: CW, align: 'center' })
-  doc.moveDown(0.5)
-  drawRule(ML + 160, ML + CW - 160)
-  doc.moveDown(1)
+  // Strip leading "The " if present so we can draw "The" and name separately
+  const rawArchetypeName = report.archetypeName || ''
+  const archetypeName = rawArchetypeName.replace(/^The\s+/i, '') || rawArchetypeName
 
-  // Archetype name
-  const archetypeName = report.archetypeName || ''
-  doc.font('Cormorant-Italic').fontSize(32).fillColor(INK)
-     .text(archetypeName, ML, doc.y, { width: CW, align: 'center' })
-  doc.moveDown(0.5)
+  // ── Wordmark ──
+  doc.font('Inter-Medium').fontSize(10).fillColor(INK_FAINT)
+     .text('O M E N O R A', ML, 48, { align: 'center', width: CW })
 
-  // Symbol image
+  doc.moveTo(ML + CW * 0.35, 64)
+     .lineTo(ML + CW * 0.65, 64)
+     .strokeColor(INK_GHOST).lineWidth(0.5).stroke()
+
+  // ── Eyebrow ──
+  doc.font('Inter').fontSize(8).fillColor(INK_FAINT)
+     .text('COMPLETE NATAL READING', ML, 78, { align: 'center', width: CW })
+
+  // ── Rule below eyebrow ──
+  doc.moveTo(ML, 98).lineTo(ML + CW, 98)
+     .strokeColor(INK_GHOST).lineWidth(0.5).stroke()
+
+  // ── "The" prefix ──
+  doc.font('Cormorant-Italic').fontSize(20).fillColor(INK_FAINT)
+     .text('The', ML, 114, { align: 'center', width: CW })
+
+  // ── Archetype name ──
+  const nameFontSize = archetypeName.length > 10 ? 44 : 52
+  doc.font('Cormorant-Italic').fontSize(nameFontSize).fillColor(INK)
+     .text(archetypeName, ML, 136, { align: 'center', width: CW, lineBreak: false })
+
+  // ── Short center rule ──
+  doc.moveTo(ML + CW / 2 - 40, 205)
+     .lineTo(ML + CW / 2 + 40, 205)
+     .strokeColor(INK_GHOST).lineWidth(0.5).stroke()
+
+  // ── Symbol image 120×120 ──
   const symbolPngPath = resolveSymbolPath(report.archetypeSymbol || '◆')
-  const symbolPdfSize = 52
+  const symbolPdfSize = 120
+  const symbolX = ML + (CW - symbolPdfSize) / 2
   if (symbolPngPath) {
-    const imgX = W / 2 - symbolPdfSize / 2
-    const imgY = (doc as any).y
-    doc.image(symbolPngPath, imgX, imgY, { width: symbolPdfSize, height: symbolPdfSize })
-    doc.y = imgY + symbolPdfSize + 8
+    doc.image(symbolPngPath, symbolX, 220, { width: symbolPdfSize, height: symbolPdfSize })
   }
 
-  // Element · Life Path
-  doc.font('Inter').fontSize(11).fillColor(INK_FAINT)
-     .text(`${report.element || ''}  ·  Life Path ${lifePathNumber || ''}`, ML, doc.y, { width: CW, align: 'center' })
-  doc.moveDown(0.4)
+  // ── Element · Life Path ──
+  doc.font('Inter').fontSize(10).fillColor(INK_FAINT)
+     .text(`${report.element || ''}  ·  Life Path ${lifePathNumber || ''}`, ML, 355, { align: 'center', width: CW })
 
-  // Power traits
-  const traits = (report.powerTraits || []).join('  ·  ')
-  doc.font('Inter').fontSize(10).fillColor(INK_MID)
-     .text(traits, ML, doc.y, { width: CW, align: 'center' })
-  doc.moveDown(1)
+  // ── Rule ──
+  doc.moveTo(ML, 376).lineTo(ML + CW, 376)
+     .strokeColor(INK_GHOST).lineWidth(0.5).stroke()
 
-  drawRule()
+  // ── Power Traits — stacked [01][02][03] annotation ──
+  const coverTraits: string[] = Array.isArray(report.powerTraits)
+    ? (report.powerTraits as string[]).slice(0, 3)
+    : []
+  let traitY = 395
+  const traitLabelX = ML + 40
+
+  coverTraits.forEach((trait: string, i: number) => {
+    doc.font('Inter-Medium').fontSize(8).fillColor(GOLD)
+       .text(`[0${i + 1}]`, traitLabelX, traitY, { continued: true, width: 28 })
+    doc.font('Inter').fontSize(10).fillColor(INK_MID)
+       .text(`  ${trait}`, { width: CW - 80 })
+    traitY += 26
+  })
+
+  // ── Rule before affirmation ──
+  const afterTraitsY = traitY + 18
+  doc.moveTo(ML, afterTraitsY).lineTo(ML + CW, afterTraitsY)
+     .strokeColor(INK_GHOST).lineWidth(0.5).stroke()
+
+  // ── Affirmation box ──
+  const affirmContent  = (report.sections?.affirmation?.content as string) || ''
+  const affirmText     = `"${affirmContent}"`
+  const affirmBoxY     = afterTraitsY + 16
+
+  doc.font('Cormorant-Italic').fontSize(13)
+  const affirmTextH = doc.heightOfString(affirmText, { width: CW - 48 })
+  const affirmBoxH  = affirmTextH + 56
+
+  doc.rect(ML, affirmBoxY, CW, affirmBoxH)
+     .strokeColor(GOLD).lineWidth(0.5).stroke()
+
+  doc.font('Inter-Medium').fontSize(7).fillColor(GOLD)
+     .text('YOUR POWER STATEMENT', ML, affirmBoxY + 12, { width: CW, align: 'center' })
+
+  doc.font('Cormorant-Italic').fontSize(13).fillColor(INK)
+     .text(affirmText, ML + 24, affirmBoxY + 28, { width: CW - 48, align: 'center' })
+
+  // ── Bottom rule ──
+  doc.moveTo(ML, 790).lineTo(ML + CW, 790)
+     .strokeColor(INK_GHOST).lineWidth(0.5).stroke()
+
+  // ── Footer ──
+  doc.font('Inter').fontSize(8).fillColor(INK_FAINT)
+     .text('omenora.com — Your destiny, decoded', ML, 806, { align: 'center', width: CW })
 
   // Cover ends here — sections always start on a fresh page
   doc.addPage({ size: 'A4', margin: 0 })
