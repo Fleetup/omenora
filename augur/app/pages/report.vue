@@ -1869,18 +1869,17 @@ async function downloadReportPDF() {
    REPORT PAGE — EDITORIAL DESIGN SYSTEM
    ───────────────────────────────────────────── */
 
-/* ── Report-local design tokens — dark pages only ── */
+/* ── Report-local design tokens — editorial bone/ink ── */
 .report-page,
 .report-loading-page {
-  --color-paper:      #0d0c18;
-  --color-text:       rgba(255,255,255,0.78);
-  --color-text-dim:   rgba(255,255,255,0.42);
-  --color-ink-faint:  rgba(255,255,255,0.18);
-  --color-gold:       rgba(201,168,76,0.75);
-  --color-gold-dim:   rgba(201,168,76,0.35);
+  --color-paper:      var(--color-bone, #F2EBDD);
+  --color-text:       var(--color-ink-mid, #3D3530);
+  --color-text-dim:   var(--color-ink-faint, rgba(26,22,18,0.45));
+  --color-gold:       #C9A84C;
+  --color-gold-dim:   rgba(201,168,76,0.5);
   --font-display:     'Fraunces', 'Cormorant Garamond', serif;
   --font-serif:       'Cormorant Garamond', Georgia, serif;
-  --font-sans:        'Inter', system-ui, sans-serif;
+  --font-sans:        'Hanken Grotesk', 'Inter', system-ui, sans-serif;
 }
 
 /* ── report-state-page uses global Editorial (bone) tokens ── */
@@ -1928,7 +1927,7 @@ async function downloadReportPDF() {
 .editorial-rule {
   width: 100%;
   height: 1px;
-  background: rgba(255,255,255,0.06);
+  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
   margin: 20px 0;
 }
 
@@ -1937,7 +1936,7 @@ async function downloadReportPDF() {
    ───────────────────────────────────────────── */
 
 .report-loading-page {
-  background: var(--color-paper);
+  background: var(--color-bone, #F2EBDD);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -1957,7 +1956,7 @@ async function downloadReportPDF() {
 
 .rload-eyebrow {
   margin: 0;
-  color: rgba(255,255,255,0.2);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
 }
 
 .rload-msg {
@@ -1965,7 +1964,7 @@ async function downloadReportPDF() {
   font-style: italic;
   font-size: 16px;
   font-weight: 300;
-  color: rgba(255,255,255,0.45);
+  color: var(--color-ink-mid, #3D3530);
   margin: 0;
   text-align: center;
 }
@@ -1973,7 +1972,7 @@ async function downloadReportPDF() {
 .rload-track {
   width: 120px;
   height: 1px;
-  background: rgba(255,255,255,0.07);
+  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
   overflow: hidden;
 }
 
@@ -1984,7 +1983,7 @@ async function downloadReportPDF() {
 
 .rload-fill {
   height: 100%;
-  background: linear-gradient(90deg, rgba(140,110,255,0.45), rgba(201,168,76,0.45));
+  background: linear-gradient(90deg, rgba(201,168,76,0.4), rgba(201,168,76,0.8));
   animation: fillProgress 8s ease-out forwards;
 }
 
@@ -2184,7 +2183,7 @@ async function downloadReportPDF() {
 .payment-banner__dismiss {
   background: none;
   border: none;
-  color: rgba(255,255,255,0.25);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
   font-size: 18px;
   cursor: pointer;
   padding: 0;
@@ -2207,9 +2206,9 @@ async function downloadReportPDF() {
    ───────────────────────────────────────────── */
 
 .report-page {
-  background: var(--color-paper);
+  background: var(--color-bone, #F2EBDD);
   min-height: 100vh;
-  color: var(--color-text);
+  color: var(--color-ink, #1A1612);
   font-family: var(--font-sans);
 }
 
@@ -2227,7 +2226,7 @@ async function downloadReportPDF() {
 }
 
 .report-account-link:hover {
-  color: rgba(255,255,255,0.5);
+  color: var(--color-ink, #1A1612);
 }
 
 .report-export-btn {
@@ -2277,7 +2276,7 @@ async function downloadReportPDF() {
   font-size: 48px;
   font-weight: 400;
   line-height: 1.1;
-  color: rgba(255,255,255,0.92);
+  color: var(--color-ink, #1A1612);
   margin: 0 0 24px;
 }
 
@@ -2290,7 +2289,7 @@ async function downloadReportPDF() {
   height: 80px;
   object-fit: contain;
   opacity: 0.75;
-  filter: drop-shadow(0 0 20px rgba(140,110,255,0.2));
+  filter: none;
 }
 
 /* Planet cells */
@@ -2308,7 +2307,7 @@ async function downloadReportPDF() {
   align-items: center;
   gap: 3px;
   padding: 10px 14px;
-  border-right: 1px solid rgba(255,255,255,0.05);
+  border-right: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .planet-cell:last-child {
@@ -2323,13 +2322,13 @@ async function downloadReportPDF() {
 
 .planet-cell__sign {
   font-size: 11px;
-  color: rgba(255,255,255,0.65);
+  color: var(--color-ink-mid, #3D3530);
 }
 
 .planet-cell__label {
   font-size: 8px;
   letter-spacing: 0.14em;
-  color: rgba(255,255,255,0.22);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
   text-transform: uppercase;
 }
 
@@ -2399,8 +2398,8 @@ async function downloadReportPDF() {
   max-width: 480px;
   margin: 0 auto 24px;
   padding: 14px 20px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: transparent;
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
   display: flex;
   align-items: center;
   gap: 16px;
@@ -2419,11 +2418,11 @@ async function downloadReportPDF() {
 
 .upsell-inline__title {
   margin: 0 0 3px;
-  color: rgba(255,255,255,0.75);
+  color: var(--color-ink, #1A1612);
 }
 
 .upsell-inline__title--dim {
-  color: rgba(255,255,255,0.3);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
 }
 
 .upsell-inline__desc {
@@ -2454,10 +2453,10 @@ async function downloadReportPDF() {
 }
 
 .upsell-inline__locked-badge {
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
   padding: 4px 10px;
   border-radius: 1px;
-  color: rgba(255,255,255,0.18);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
   flex-shrink: 0;
 }
 
@@ -2505,7 +2504,7 @@ async function downloadReportPDF() {
   font-family: var(--font-serif);
   font-size: 22px;
   font-weight: 400;
-  color: rgba(255,255,255,0.9);
+  color: var(--color-ink, #1A1612);
   margin: 0;
   line-height: 1.2;
 }
@@ -2529,8 +2528,8 @@ async function downloadReportPDF() {
 /* ── Affirmation block ── */
 .affirmation-block {
   padding: 20px 0;
-  border-top: 1px solid rgba(255,255,255,0.04);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-top: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border-bottom: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .affirmation-block__text {
@@ -2538,7 +2537,7 @@ async function downloadReportPDF() {
   font-style: italic;
   font-size: 18px;
   font-weight: 300;
-  color: rgba(255,255,255,0.65);
+  color: var(--color-ink-mid, #3D3530);
   text-align: center;
   line-height: 1.6;
   margin: 0;
@@ -2557,14 +2556,14 @@ async function downloadReportPDF() {
   flex-wrap: wrap;
   gap: 1px;
   margin-bottom: 20px;
-  background: rgba(255,255,255,0.04);
+  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .bc-sign-cell {
   flex: 1;
   min-width: 80px;
   padding: 12px 14px;
-  background: var(--color-paper);
+  background: var(--color-bone, #F2EBDD);
 }
 
 .bc-sign-cell__label {
@@ -2575,13 +2574,13 @@ async function downloadReportPDF() {
 .bc-sign-cell__value {
   font-family: var(--font-serif);
   font-size: 14px;
-  color: rgba(255,255,255,0.82);
+  color: var(--color-ink, #1A1612);
   margin: 0;
 }
 
 .bc-forecast-box {
   padding: 14px 16px;
-  background: rgba(255,255,255,0.02);
+  background: rgba(201,168,76,0.04);
   border-left: 2px solid var(--color-gold-dim);
   margin-top: 16px;
 }
@@ -2595,7 +2594,7 @@ async function downloadReportPDF() {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 14px;
-  color: rgba(255,255,255,0.6);
+  color: var(--color-ink-mid, #3D3530);
   margin: 0;
   line-height: 1.7;
 }
@@ -2619,8 +2618,8 @@ async function downloadReportPDF() {
   flex: 1;
   min-width: 100px;
   padding: 10px 14px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: transparent;
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .regional-pill__label {
@@ -2631,13 +2630,13 @@ async function downloadReportPDF() {
 .regional-pill__value {
   font-family: var(--font-serif);
   font-size: 14px;
-  color: rgba(255,255,255,0.82);
+  color: var(--color-ink, #1A1612);
   margin: 0;
 }
 
 .regional-highlight {
   padding: 12px 16px;
-  background: rgba(255,255,255,0.02);
+  background: rgba(201,168,76,0.04);
   border-left: 2px solid var(--color-gold-dim);
   margin: 16px 0;
 }
@@ -2645,7 +2644,7 @@ async function downloadReportPDF() {
 .regional-highlight--center {
   text-align: center;
   border-left: none;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .regional-highlight__label {
@@ -2657,7 +2656,7 @@ async function downloadReportPDF() {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 14px;
-  color: rgba(255,255,255,0.65);
+  color: var(--color-ink-mid, #3D3530);
   margin: 0;
   line-height: 1.7;
 }
@@ -2672,7 +2671,7 @@ async function downloadReportPDF() {
 
 .regional-tags__label {
   margin: 0;
-  color: rgba(255,255,255,0.22);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
 }
 
 .regional-tag {
@@ -2690,7 +2689,7 @@ async function downloadReportPDF() {
   margin: 0 auto 24px;
   padding: 20px 24px;
   text-align: center;
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .regional-loading__text {
@@ -2731,19 +2730,19 @@ async function downloadReportPDF() {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: transparent;
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
   cursor: pointer;
   text-align: left;
-  color: rgba(255,255,255,0.65);
+  color: var(--color-ink-mid, #3D3530);
   font-family: var(--font-sans);
   transition: background 0.2s, border-color 0.2s;
   border-radius: 1px;
 }
 
 .tradition-opt-btn:hover:not(:disabled) {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.1);
+  background: rgba(26,22,18,0.04);
+  border-color: rgba(26,22,18,0.15);
 }
 
 .tradition-opt-btn:disabled {
@@ -2773,7 +2772,7 @@ async function downloadReportPDF() {
 
 .tradition-opt-name {
   font-size: 13px;
-  color: rgba(255,255,255,0.75);
+  color: var(--color-ink, #1A1612);
 }
 
 .tradition-opt-sub {
@@ -2799,8 +2798,8 @@ async function downloadReportPDF() {
 }
 
 .tradition-opt-tag--paid {
-  color: rgba(255,255,255,0.3);
-  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .tradition-loading {
@@ -2892,8 +2891,8 @@ async function downloadReportPDF() {
 
 .month-card {
   padding: 16px 16px 12px;
-  background: rgba(255,255,255,0.015);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: transparent;
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
   border-left: 2px solid var(--color-gold);
 }
 
@@ -2908,7 +2907,7 @@ async function downloadReportPDF() {
 .month-card__name {
   font-family: var(--font-serif);
   font-size: 15px;
-  color: rgba(255,255,255,0.82);
+  color: var(--color-ink, #1A1612);
   margin: 0 0 2px;
 }
 
@@ -2931,7 +2930,7 @@ async function downloadReportPDF() {
 .month-card__energy-track {
   width: 90px;
   height: 2px;
-  background: rgba(255,255,255,0.07);
+  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .month-card__energy-fill {
@@ -2965,7 +2964,7 @@ async function downloadReportPDF() {
 
 .month-card__lucky {
   margin: 0;
-  border-top: 1px solid rgba(255,255,255,0.04);
+  border-top: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
   padding-top: 8px;
 }
 
@@ -2994,19 +2993,19 @@ async function downloadReportPDF() {
   font-family: var(--font-serif);
   font-size: 36px;
   font-weight: 400;
-  color: rgba(255,255,255,0.88);
+  color: var(--color-ink, #1A1612);
   margin: 0;
 }
 
 .compat-result__title {
   margin: 4px 0 0;
-  color: rgba(200,180,255,0.6);
+  color: var(--color-ink-mid, #3D3530);
 }
 
 .compat-result__section {
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .compat-result__section-title {
@@ -3058,7 +3057,7 @@ async function downloadReportPDF() {
   font-style: italic;
   font-size: 22px;
   font-weight: 300;
-  color: rgba(255,255,255,0.88);
+  color: var(--color-ink, #1A1612);
   margin: 0;
 }
 
@@ -3077,7 +3076,7 @@ async function downloadReportPDF() {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 14px;
-  color: rgba(255,255,255,0.55);
+  color: var(--color-ink-mid, #3D3530);
   line-height: 1.7;
   margin: 0;
 }
@@ -3086,18 +3085,18 @@ async function downloadReportPDF() {
   font-family: var(--font-serif);
   font-size: 28px;
   font-weight: 400;
-  color: rgba(200,180,255,0.88);
+  color: var(--color-ink, #1A1612);
   white-space: nowrap;
 }
 
 .upsell-section__price-period {
   font-size: 14px;
-  color: rgba(200,180,255,0.5);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
 }
 
 .upsell-section__rule {
   height: 1px;
-  background: rgba(255,255,255,0.05);
+  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .upsell-section__total-row,
@@ -3109,7 +3108,7 @@ async function downloadReportPDF() {
 
 .upsell-section__strike {
   text-decoration: line-through;
-  color: rgba(255,255,255,0.22);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
 }
 
 .upsell-section__note {
@@ -3121,7 +3120,7 @@ async function downloadReportPDF() {
   display: flex;
   flex-direction: column;
   gap: 0;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .upsell-item {
@@ -3129,7 +3128,7 @@ async function downloadReportPDF() {
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .upsell-item:last-child {
@@ -3142,7 +3141,7 @@ async function downloadReportPDF() {
 
 .upsell-item__name {
   font-size: 13px;
-  color: rgba(255,255,255,0.75);
+  color: var(--color-ink, #1A1612);
   margin: 0 0 2px;
 }
 
@@ -3153,7 +3152,7 @@ async function downloadReportPDF() {
 .upsell-item__price {
   font-family: var(--font-serif);
   font-size: 16px;
-  color: rgba(255,255,255,0.35);
+  color: var(--color-ink-mid, #3D3530);
   flex-shrink: 0;
 }
 
@@ -3197,15 +3196,15 @@ async function downloadReportPDF() {
 }
 
 .upsell-cta-btn--secondary {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.6);
+  background: transparent;
+  border-color: var(--color-ink-ghost, rgba(26,22,18,0.1));
+  color: var(--color-ink-mid, #3D3530);
 }
 
 .upsell-cta-btn--ghost {
   background: none;
-  border-color: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.35);
+  border-color: var(--color-ink-ghost, rgba(26,22,18,0.08));
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
 }
 
 /* ── Calendar bar preview ── */
@@ -3230,7 +3229,7 @@ async function downloadReportPDF() {
 .cal-bar-track {
   flex: 1;
   height: 2px;
-  background: rgba(255,255,255,0.06);
+  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .cal-bar-fill {
@@ -3248,9 +3247,9 @@ async function downloadReportPDF() {
 .compat-tag {
   margin: 0;
   padding: 4px 10px;
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
   border-radius: 1px;
-  color: rgba(255,255,255,0.35);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
 }
 
 /* ── Compat input ── */
@@ -3259,10 +3258,10 @@ async function downloadReportPDF() {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 14px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.09);
+  background: transparent;
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.12));
   border-radius: 1px;
-  color: rgba(255,255,255,0.78);
+  color: var(--color-ink, #1A1612);
   font-size: 13px;
   font-family: var(--font-sans);
   outline: none;
@@ -3275,7 +3274,7 @@ async function downloadReportPDF() {
 }
 
 .compat-input--date {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .compat-submit-btn {
@@ -3311,8 +3310,8 @@ async function downloadReportPDF() {
 
 .share-card {
   padding: 20px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: transparent;
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
   text-align: center;
   margin: 16px 0;
 }
@@ -3321,7 +3320,7 @@ async function downloadReportPDF() {
   font-family: var(--font-serif);
   font-size: 16px;
   font-style: normal;
-  color: rgba(255,255,255,0.75);
+  color: var(--color-ink, #1A1612);
   margin: 0 0 10px;
 }
 
@@ -3336,12 +3335,12 @@ async function downloadReportPDF() {
 .share-card__trait {
   margin: 0;
   padding: 3px 8px;
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
 }
 
 .share-card__domain {
   margin: 0;
-  color: rgba(255,255,255,0.2);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
 }
 
 .share-actions {
@@ -3352,9 +3351,9 @@ async function downloadReportPDF() {
 .share-btn {
   flex: 1;
   padding: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.09);
-  color: rgba(255,255,255,0.55);
+  background: transparent;
+  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.1));
+  color: var(--color-ink-mid, #3D3530);
   font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 0.06em;
@@ -3364,7 +3363,7 @@ async function downloadReportPDF() {
 }
 
 .share-btn:hover:not(:disabled) {
-  background: rgba(255,255,255,0.06);
+  background: rgba(26,22,18,0.04);
 }
 
 .share-btn:disabled {
@@ -3417,13 +3416,13 @@ async function downloadReportPDF() {
   font-style: italic;
   font-size: 32px;
   font-weight: 400;
-  color: rgba(255,255,255,0.82);
+  color: var(--color-ink, #1A1612);
   margin: 0 0 12px;
 }
 
 .report-footer-cta__body {
   font-size: 13px;
-  color: rgba(255,255,255,0.38);
+  color: var(--color-ink-mid, #3D3530);
   line-height: 1.7;
   margin: 0 0 24px;
 }
@@ -3457,7 +3456,7 @@ async function downloadReportPDF() {
 .report-footer {
   padding: 20px 24px calc(16px + env(safe-area-inset-bottom, 0px));
   text-align: center;
-  border-top: 1px solid rgba(255,255,255,0.04);
+  border-top: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3467,24 +3466,24 @@ async function downloadReportPDF() {
 .report-footer-link {
   font-family: var(--font-sans);
   font-size: 10px;
-  color: rgba(255,255,255,0.2);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
   text-decoration: none;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .report-footer-link:hover {
-  color: rgba(255,255,255,0.4);
+  color: var(--color-ink, #1A1612);
 }
 
 .report-footer-sep {
   margin: 0 8px;
-  color: rgba(255,255,255,0.12);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
 }
 
 .report-footer-crisis {
   margin: 0;
-  color: rgba(255,255,255,0.15);
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
   font-size: 10px;
 }
 
