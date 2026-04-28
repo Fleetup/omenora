@@ -3,6 +3,30 @@ import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join, dirname } from 'node:path'
 
+// ── Design tokens ────────────────────────────────────────────────────────────
+const BONE      = '#F2EBDD'
+const INK       = '#1A1612'
+const INK_MID   = '#3D3530'
+const INK_FAINT = 'rgba(26,22,18,0.45)'
+const INK_GHOST = 'rgba(26,22,18,0.15)'
+const GOLD      = '#C9A961'
+
+// ── Archetype identity lines ─────────────────────────────────────────────────
+const IDENTITY_LINES: Record<string, string> = {
+  alchemist:  'The one who turns crisis into invention.',
+  architect:  'The one who builds what others only imagine.',
+  catalyst:   'The one who changes every room they enter.',
+  guardian:   'The one who protects without being asked.',
+  lighthouse: 'The one others navigate toward in the dark.',
+  mirror:     'The one who reflects truth back to the world.',
+  phoenix:    'The one who rises stronger from every ending.',
+  sage:       'The one who knows before being told.',
+  storm:      'The one who moves through chaos with calm.',
+  visionary:  'The one who lives ten years ahead.',
+  wanderer:   'The one who finds home everywhere and nowhere.',
+  wildfire:   'The one who loves without a safety net.',
+}
+
 const SYMBOL_TO_ID: Record<string, string> = {
   '●': 'phoenix',
   '◆': 'architect',
@@ -34,9 +58,7 @@ function resolveSymbolPath(archetypeId: string): string {
 //   prod → .output/public/fonts/  (sibling of .output/server/ where this bundle runs)
 function resolveFontPath(filename: string): string {
   const candidates = [
-    // Production: font is at .output/public/fonts/ — one level up from .output/server/
     join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'fonts', filename),
-    // Dev fallback: project root public/fonts/
     join(process.cwd(), 'public', 'fonts', filename),
   ]
   const found = candidates.find(p => existsSync(p))
@@ -48,190 +70,39 @@ let fontsRegistered = false
 
 function ensureFonts() {
   if (fontsRegistered) return
-  registerFont(resolveFontPath('Inter-Light.ttf'),   { family: 'Inter', weight: '300', style: 'normal' })
-  registerFont(resolveFontPath('Inter-Regular.ttf'), { family: 'Inter', weight: '400', style: 'normal' })
-  registerFont(resolveFontPath('Inter-Medium.ttf'),  { family: 'Inter', weight: '500', style: 'normal' })
-  registerFont(resolveFontPath('Inter-Italic.ttf'),  { family: 'Inter', weight: '400', style: 'italic' })
+  registerFont(resolveFontPath('Inter-Light.ttf'),            { family: 'Inter',     weight: '300', style: 'normal' })
+  registerFont(resolveFontPath('Inter-Regular.ttf'),          { family: 'Inter',     weight: '400', style: 'normal' })
+  registerFont(resolveFontPath('Inter-Medium.ttf'),           { family: 'Inter',     weight: '500', style: 'normal' })
+  registerFont(resolveFontPath('Inter-Italic.ttf'),           { family: 'Inter',     weight: '400', style: 'italic' })
+  registerFont(resolveFontPath('Fraunces-Light.ttf'),         { family: 'Fraunces',  weight: '300', style: 'normal' })
+  registerFont(resolveFontPath('Fraunces-LightItalic.ttf'),   { family: 'Fraunces',  weight: '300', style: 'italic' })
+  registerFont(resolveFontPath('Cormorant-Light.ttf'),        { family: 'Cormorant', weight: '300', style: 'normal' })
+  registerFont(resolveFontPath('Cormorant-LightItalic.ttf'),  { family: 'Cormorant', weight: '300', style: 'italic' })
   fontsRegistered = true
 }
 
-/**
- * Draws each archetype symbol as native canvas paths.
- * Maps the archetype's Unicode symbol to its corresponding geometric shape.
- * This is font-independent — identical on dev, Railway Linux, and any OS.
- *
- * @param ctx   Canvas 2D context
- * @param symbol The archetype symbol character (from ARCHETYPES array)
- * @param cx    Center X
- * @param cy    Center Y
- * @param r     Radius / size reference
- */
-function drawArchetypeSymbol(
+function drawWrappedText(
   ctx: any,
-  symbol: string,
-  cx: number,
-  cy: number,
-  r: number,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
 ): void {
-  const color = 'rgba(200, 180, 255, 0.55)'
-  const strokeW = r * 0.055
-
-  ctx.save()
-  ctx.strokeStyle = color
-  ctx.fillStyle = color
-  ctx.lineWidth = strokeW
-  ctx.lineCap = 'round'
-  ctx.lineJoin = 'round'
-
-  switch (symbol) {
-    // ● phoenix — filled circle
-    case '●': {
-      ctx.beginPath()
-      ctx.arc(cx, cy, r * 0.72, 0, Math.PI * 2)
-      ctx.fill()
-      break
-    }
-    // ◆ architect — filled diamond
-    case '◆': {
-      ctx.beginPath()
-      ctx.moveTo(cx, cy - r)
-      ctx.lineTo(cx + r * 0.7, cy)
-      ctx.lineTo(cx, cy + r)
-      ctx.lineTo(cx - r * 0.7, cy)
-      ctx.closePath()
-      ctx.fill()
-      break
-    }
-    // ▲ storm — filled upward triangle
-    case '▲': {
-      const h = r * 1.1
-      ctx.beginPath()
-      ctx.moveTo(cx, cy - h * 0.72)
-      ctx.lineTo(cx + h * 0.84, cy + h * 0.48)
-      ctx.lineTo(cx - h * 0.84, cy + h * 0.48)
-      ctx.closePath()
-      ctx.fill()
-      break
-    }
-    // ◇ lighthouse — open diamond
-    case '◇': {
-      ctx.beginPath()
-      ctx.moveTo(cx, cy - r)
-      ctx.lineTo(cx + r * 0.7, cy)
-      ctx.lineTo(cx, cy + r)
-      ctx.lineTo(cx - r * 0.7, cy)
-      ctx.closePath()
-      ctx.stroke()
-      break
-    }
-    // ○ wanderer — open circle
-    case '○': {
-      ctx.beginPath()
-      ctx.arc(cx, cy, r * 0.72, 0, Math.PI * 2)
-      ctx.stroke()
-      break
-    }
-    // ⬡ alchemist — hexagon (flat-top)
-    case '⬡': {
-      ctx.beginPath()
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 3) * i - Math.PI / 6
-        const px = cx + r * 0.9 * Math.cos(angle)
-        const py = cy + r * 0.9 * Math.sin(angle)
-        if (i === 0) ctx.moveTo(px, py)
-        else ctx.lineTo(px, py)
-      }
-      ctx.closePath()
-      ctx.stroke()
-      break
-    }
-    // □ guardian — open square
-    case '□': {
-      const s = r * 1.1
-      ctx.beginPath()
-      ctx.rect(cx - s * 0.5, cy - s * 0.5, s, s)
-      ctx.stroke()
-      break
-    }
-    // ⬟ visionary — rotated square (diamond-like but wider)
-    case '⬟': {
-      const s = r * 0.88
-      ctx.beginPath()
-      ctx.moveTo(cx, cy - s)
-      ctx.lineTo(cx + s, cy)
-      ctx.lineTo(cx, cy + s)
-      ctx.lineTo(cx - s, cy)
-      ctx.closePath()
-      ctx.stroke()
-      break
-    }
-    // ◉ mirror — filled circle with outer ring
-    case '◉': {
-      ctx.beginPath()
-      ctx.arc(cx, cy, r * 0.4, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.beginPath()
-      ctx.arc(cx, cy, r * 0.75, 0, Math.PI * 2)
-      ctx.stroke()
-      break
-    }
-    // ✦ catalyst — 4-pointed star
-    case '✦': {
-      const pts = 4
-      const outer = r * 0.9
-      const inner = r * 0.3
-      ctx.beginPath()
-      for (let i = 0; i < pts * 2; i++) {
-        const angle = (Math.PI / pts) * i - Math.PI / 2
-        const rad = i % 2 === 0 ? outer : inner
-        const px = cx + rad * Math.cos(angle)
-        const py = cy + rad * Math.sin(angle)
-        if (i === 0) ctx.moveTo(px, py)
-        else ctx.lineTo(px, py)
-      }
-      ctx.closePath()
-      ctx.fill()
-      break
-    }
-    // ▽ sage — open downward triangle
-    case '▽': {
-      const h = r * 1.1
-      ctx.beginPath()
-      ctx.moveTo(cx - h * 0.84, cy - h * 0.48)
-      ctx.lineTo(cx + h * 0.84, cy - h * 0.48)
-      ctx.lineTo(cx, cy + h * 0.72)
-      ctx.closePath()
-      ctx.stroke()
-      break
-    }
-    // ★ wildfire — 5-pointed filled star
-    case '★': {
-      const pts = 5
-      const outer = r * 0.9
-      const inner = r * 0.38
-      ctx.beginPath()
-      for (let i = 0; i < pts * 2; i++) {
-        const angle = (Math.PI / pts) * i - Math.PI / 2
-        const rad = i % 2 === 0 ? outer : inner
-        const px = cx + rad * Math.cos(angle)
-        const py = cy + rad * Math.sin(angle)
-        if (i === 0) ctx.moveTo(px, py)
-        else ctx.lineTo(px, py)
-      }
-      ctx.closePath()
-      ctx.fill()
-      break
-    }
-    // fallback — filled circle
-    default: {
-      ctx.beginPath()
-      ctx.arc(cx, cy, r * 0.72, 0, Math.PI * 2)
-      ctx.fill()
-      break
+  const words = text.split(' ')
+  let line = ''
+  let currentY = y
+  for (const word of words) {
+    const testLine = line + word + ' '
+    if (ctx.measureText(testLine).width > maxWidth && line !== '') {
+      ctx.fillText(line.trim(), x, currentY)
+      line = word + ' '
+      currentY += lineHeight
+    } else {
+      line = testLine
     }
   }
-
-  ctx.restore()
+  if (line.trim()) ctx.fillText(line.trim(), x, currentY)
 }
 
 export default defineEventHandler(async (event) => {
@@ -252,296 +123,163 @@ export default defineEventHandler(async (event) => {
   assertInput(!!firstName, 'firstName is required')
   assertInput(!!archetypeName, 'archetypeName is required')
 
-  const width = 1080
+  const archetypeId = SYMBOL_TO_ID[archetypeSymbol] ?? 'phoenix'
+
+  const width  = 1080
   const height = 1920
   const canvas = createCanvas(width, height)
-  const ctx = canvas.getContext('2d')
+  const ctx    = canvas.getContext('2d')
+  const cx     = width / 2
 
-  // --- BACKGROUND ---
-  const bgGradient = ctx.createLinearGradient(0, 0, width, height)
-  bgGradient.addColorStop(0, '#0d0b1e')
-  bgGradient.addColorStop(0.5, '#0a0a0f')
-  bgGradient.addColorStop(1, '#0d0b1e')
-  ctx.fillStyle = bgGradient
+  // ── 1. BACKGROUND ─────────────────────────────────────────────────────────
+  ctx.fillStyle = BONE
   ctx.fillRect(0, 0, width, height)
 
-  // --- STAR FIELD ---
-  const stars = [
-    { x: 0.15, y: 0.08, size: 2 },
-    { x: 0.75, y: 0.05, size: 1.5 },
-    { x: 0.40, y: 0.12, size: 2.5 },
-    { x: 0.85, y: 0.18, size: 1.5 },
-    { x: 0.25, y: 0.22, size: 2 },
-    { x: 0.60, y: 0.15, size: 1 },
-    { x: 0.90, y: 0.30, size: 2 },
-    { x: 0.10, y: 0.35, size: 1.5 },
-    { x: 0.50, y: 0.08, size: 1 },
-    { x: 0.70, y: 0.25, size: 2.5 },
-    { x: 0.30, y: 0.40, size: 1 },
-    { x: 0.88, y: 0.55, size: 1.5 },
-    { x: 0.15, y: 0.65, size: 2 },
-    { x: 0.55, y: 0.72, size: 1 },
-    { x: 0.80, y: 0.80, size: 1.5 },
-    { x: 0.20, y: 0.85, size: 2 },
-    { x: 0.65, y: 0.90, size: 1 },
-    { x: 0.40, y: 0.95, size: 1.5 },
-  ]
-
-  stars.forEach(star => {
+  // Paper grain — deterministic dot pattern (avoid Math.random for reproducibility)
+  ctx.fillStyle = 'rgba(26,22,18,0.03)'
+  for (let i = 0; i < 800; i++) {
+    const gx = ((i * 137.508) % width)
+    const gy = ((i * 97.632 + i * i * 0.00031) % height)
+    const gr = (i % 3 === 0) ? 1.5 : (i % 3 === 1 ? 1.0 : 0.6)
     ctx.beginPath()
-    ctx.arc(star.x * width, star.y * height, star.size, 0, Math.PI * 2)
-    ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.random() * 0.4})`
+    ctx.arc(gx, gy, gr, 0, Math.PI * 2)
     ctx.fill()
+  }
+
+  // ── 2. WORDMARK ────────────────────────────────────────────────────────────
+  ctx.font = '500 28px Inter'
+  ctx.fillStyle = INK
+  ctx.textAlign = 'center'
+  ctx.fillText('O M E N O R A', cx, 90)
+
+  ctx.strokeStyle = INK_GHOST
+  ctx.lineWidth = 0.5
+  ctx.beginPath()
+  ctx.moveTo(cx - 100, 112)
+  ctx.lineTo(cx + 100, 112)
+  ctx.stroke()
+
+  // ── 3. EYEBROW LABEL ───────────────────────────────────────────────────────
+  ctx.font = '400 22px Inter'
+  ctx.fillStyle = INK_FAINT
+  ctx.fillText('YOUR ARCHETYPE', cx, 168)
+
+  // ── 4. ARCHETYPE SYMBOL ───────────────────────────────────────────────────
+  const symbolSize = 320
+  const symbolX    = cx - symbolSize / 2
+  const symbolY    = 210
+
+  const symbolImg = await loadImage(resolveSymbolPath(archetypeId))
+
+  // Draw symbol on offscreen canvas for multiply blend
+  const offCanvas = createCanvas(symbolSize, symbolSize)
+  const offCtx    = offCanvas.getContext('2d')
+  offCtx.drawImage(symbolImg, 0, 0, symbolSize, symbolSize)
+  // Multiply blend: overlay ink-mid to tint the gold symbol toward ink tones on bone
+  offCtx.globalCompositeOperation = 'multiply'
+  offCtx.fillStyle = INK_MID
+  offCtx.fillRect(0, 0, symbolSize, symbolSize)
+
+  ctx.drawImage(offCanvas, symbolX, symbolY)
+
+  // ── 5. ARCHETYPE NAME ─────────────────────────────────────────────────────
+  const nameWithout = (archetypeName || 'The Phoenix').replace(/^The\s+/i, '')
+  const nameFontSize = nameWithout.length > 10 ? 88 : 112
+
+  ctx.font = 'italic 300 52px Fraunces'
+  ctx.fillStyle = 'rgba(26,22,18,0.5)'
+  ctx.fillText('The', cx, 592)
+
+  ctx.font = `italic 300 ${nameFontSize}px Fraunces`
+  ctx.fillStyle = INK
+  ctx.fillText(nameWithout, cx, 712)
+
+  // ── 6. THIN RULE ──────────────────────────────────────────────────────────
+  ctx.strokeStyle = INK_GHOST
+  ctx.lineWidth = 0.5
+  ctx.beginPath()
+  ctx.moveTo(cx - 200, 752)
+  ctx.lineTo(cx + 200, 752)
+  ctx.stroke()
+
+  // ── 7. IDENTITY LINE ──────────────────────────────────────────────────────
+  const identityLine = IDENTITY_LINES[archetypeId] || ''
+  ctx.font = 'italic 300 38px Cormorant'
+  ctx.fillStyle = INK_MID
+  drawWrappedText(ctx, identityLine, cx, 820, 720, 52)
+
+  // ── 8. META ROW ───────────────────────────────────────────────────────────
+  ctx.font = '400 24px Inter'
+  ctx.fillStyle = INK_FAINT
+  ctx.fillText(`${element || 'Fire'}  ·  Life Path ${lifePathNumber || 7}`, cx, 1010)
+
+  // ── 9. POWER TRAITS (editorial annotation style) ─────────────────────────
+  const displayTraits = (powerTraits.length ? powerTraits : ['Resilient', 'Visionary', 'Grounded'])
+    .slice(0, 3)
+    .map((t: string) => t.length > 48 ? t.slice(0, 47).trimEnd() + '…' : t)
+
+  let traitY = 1090
+  displayTraits.forEach((trait: string, i: number) => {
+    const numLabel = `[0${i + 1}]`
+    ctx.font = '400 20px Inter'
+    ctx.textAlign = 'left'
+    ctx.fillStyle = GOLD
+    ctx.fillText(numLabel, cx - 340, traitY)
+    ctx.fillStyle = 'rgba(26,22,18,0.70)'
+    ctx.fillText(trait, cx - 280, traitY)
+    ctx.textAlign = 'center'
+    traitY += 56
   })
 
-  // --- TOP SUBTLE GLOW ---
-  const topGlow = ctx.createRadialGradient(width / 2, 0, 0, width / 2, 0, 600)
-  topGlow.addColorStop(0, 'rgba(140, 110, 255, 0.12)')
-  topGlow.addColorStop(1, 'rgba(140, 110, 255, 0)')
-  ctx.fillStyle = topGlow
-  ctx.fillRect(0, 0, width, height)
+  // ── 10. AFFIRMATION BOX ───────────────────────────────────────────────────
+  const boxTop = 1340
+  const boxH   = 200
 
-  // --- BRAND NAME TOP ---
-  ctx.font = '500 32px Inter'
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.25)'
+  ctx.strokeStyle = INK_GHOST
+  ctx.lineWidth   = 0.5
+  ctx.strokeRect(180, boxTop, 720, boxH)
+
+  ctx.font      = '400 18px Inter'
+  ctx.fillStyle = INK_FAINT
   ctx.textAlign = 'center'
-  ctx.fillText('OMENORA', width / 2, 90)
+  ctx.fillText('YOUR POWER STATEMENT', cx, boxTop + 38)
 
+  // Thin rule inside box
   ctx.beginPath()
-  ctx.moveTo(width / 2 - 60, 110)
-  ctx.lineTo(width / 2 + 60, 110)
-  ctx.strokeStyle = 'rgba(140, 110, 255, 0.2)'
-  ctx.lineWidth = 0.5
+  ctx.moveTo(cx - 60, boxTop + 52)
+  ctx.lineTo(cx + 60, boxTop + 52)
   ctx.stroke()
-
-  // --- ARCHETYPE LABEL ---
-  ctx.font = '400 26px Inter'
-  ctx.fillStyle = 'rgba(140, 110, 255, 0.6)'
-  ctx.textAlign = 'center'
-  ctx.fillText('YOUR DESTINY ARCHETYPE', width / 2, 220)
-
-  // --- SYMBOL (gold medallion PNG) ---
-  const archetypeId = SYMBOL_TO_ID[archetypeSymbol] ?? 'phoenix'
-  const symbolImg = await loadImage(resolveSymbolPath(archetypeId))
-  const symbolSize = 260
-  ctx.drawImage(symbolImg, width / 2 - symbolSize / 2, 390 - symbolSize / 2, symbolSize, symbolSize)
-
-  ctx.beginPath()
-  ctx.arc(width / 2, 390, 130, 0, Math.PI * 2)
-  ctx.strokeStyle = 'rgba(140, 110, 255, 0.15)'
-  ctx.lineWidth = 1
-  ctx.stroke()
-
-  ctx.beginPath()
-  ctx.arc(width / 2, 390, 150, 0, Math.PI * 2)
-  ctx.strokeStyle = 'rgba(140, 110, 255, 0.08)'
-  ctx.lineWidth = 0.5
-  ctx.stroke()
-
-  // --- ARCHETYPE NAME ---
-  const nameParts = (archetypeName || 'The Alchemist').replace('The ', '')
-
-  ctx.font = '400 48px Inter'
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
-  ctx.textAlign = 'center'
-  ctx.fillText('The', width / 2, 580)
-
-  ctx.font = '500 88px Inter'
-  ctx.fillStyle = 'rgba(230, 220, 255, 0.95)'
-  ctx.textAlign = 'center'
-  ctx.fillText(nameParts, width / 2, 670)
-
-  // --- ELEMENT & LIFE PATH ---
-  ctx.font = '400 32px Inter'
-  ctx.fillStyle = 'rgba(140, 110, 255, 0.55)'
-  ctx.textAlign = 'center'
-  ctx.fillText(`${element || 'Earth'} · Life Path ${lifePathNumber || 7}`, width / 2, 730)
-
-  // --- DIVIDER ---
-  ctx.beginPath()
-  ctx.moveTo(width / 2 - 80, 775)
-  ctx.lineTo(width / 2 + 80, 775)
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)'
-  ctx.lineWidth = 1
-  ctx.stroke()
-
-  // --- POWER TRAITS ---
-  const rawTraits: string[] = powerTraits || ['Analytical', 'Driven', 'Strategic']
-
-  const TRAIT_FONT_SIZE = 26
-  const TRAIT_PADDING = 28
-  const TRAIT_GAP = 18
-  const TRAIT_H = 52
-  const TRAIT_R = 26
-  const MAX_PILL_WIDTH = 460
-  const CANVAS_INNER = width - 120
-
-  ctx.font = `400 ${TRAIT_FONT_SIZE}px Inter`
-
-  const MAX_TRAIT_CHARS = 42
-  const displayTraits = rawTraits.map((t: string) =>
-    t.length > MAX_TRAIT_CHARS ? t.slice(0, MAX_TRAIT_CHARS - 1).trimEnd() + '…' : t
-  )
-
-  const pillWidths = displayTraits.map((t: string) =>
-    Math.min(ctx.measureText(t).width + TRAIT_PADDING * 2, MAX_PILL_WIDTH)
-  )
-
-  const totalSingleRow = pillWidths.reduce((a: number, b: number) => a + b, 0)
-    + TRAIT_GAP * (displayTraits.length - 1)
-
-  function drawTraitPill(label: string, pillW: number, px: number, py: number) {
-    const ty = py - TRAIT_H / 2
-    ctx.beginPath()
-    ctx.moveTo(px + TRAIT_R, ty)
-    ctx.lineTo(px + pillW - TRAIT_R, ty)
-    ctx.quadraticCurveTo(px + pillW, ty, px + pillW, ty + TRAIT_R)
-    ctx.lineTo(px + pillW, ty + TRAIT_H - TRAIT_R)
-    ctx.quadraticCurveTo(px + pillW, ty + TRAIT_H, px + pillW - TRAIT_R, ty + TRAIT_H)
-    ctx.lineTo(px + TRAIT_R, ty + TRAIT_H)
-    ctx.quadraticCurveTo(px, ty + TRAIT_H, px, ty + TRAIT_H - TRAIT_R)
-    ctx.lineTo(px, ty + TRAIT_R)
-    ctx.quadraticCurveTo(px, ty, px + TRAIT_R, ty)
-    ctx.closePath()
-    ctx.fillStyle = 'rgba(140, 110, 255, 0.08)'
-    ctx.fill()
-    ctx.strokeStyle = 'rgba(140, 110, 255, 0.25)'
-    ctx.lineWidth = 1
-    ctx.stroke()
-
-    ctx.font = `400 ${TRAIT_FONT_SIZE}px Inter`
-    ctx.fillStyle = 'rgba(200, 180, 255, 0.75)'
-    ctx.textAlign = 'center'
-    ctx.fillText(label, px + pillW / 2, py + 9)
-  }
-
-  if (totalSingleRow <= CANVAS_INNER) {
-    // Single row — fits fine
-    const traitY = 870
-    let traitX = (width - totalSingleRow) / 2
-    displayTraits.forEach((trait: string, i: number) => {
-      const tw = pillWidths[i] ?? 0
-      drawTraitPill(trait, tw, traitX, traitY)
-      traitX += tw + TRAIT_GAP
-    })
-  } else {
-    // Two-row layout: first trait on row 1, remaining on row 2
-    const ROW1_Y = 840
-    const ROW2_Y = 910
-    const firstW = pillWidths[0] ?? 0
-    drawTraitPill(displayTraits[0] ?? '', firstW, (width - firstW) / 2, ROW1_Y)
-
-    const row2Traits = displayTraits.slice(1)
-    const row2Widths = pillWidths.slice(1)
-    const totalRow2 = row2Widths.reduce((a: number, b: number) => a + b, 0)
-      + TRAIT_GAP * (row2Traits.length - 1)
-    let rx = Math.max(60, (width - Math.min(totalRow2, CANVAS_INNER)) / 2)
-    row2Traits.forEach((trait: string, i: number) => {
-      const tw = row2Widths[i] ?? 0
-      drawTraitPill(trait, tw, rx, ROW2_Y)
-      rx += tw + TRAIT_GAP
-    })
-  }
-
-  // --- AFFIRMATION SECTION ---
-  const affirmY = 1050
-  const boxX = 80
-  const boxW = width - 160
-  const boxH = 300
-  const boxR = 24
-
-  ctx.beginPath()
-  ctx.moveTo(boxX + boxR, affirmY - 20)
-  ctx.lineTo(boxX + boxW - boxR, affirmY - 20)
-  ctx.quadraticCurveTo(boxX + boxW, affirmY - 20, boxX + boxW, affirmY - 20 + boxR)
-  ctx.lineTo(boxX + boxW, affirmY - 20 + boxH - boxR)
-  ctx.quadraticCurveTo(boxX + boxW, affirmY - 20 + boxH, boxX + boxW - boxR, affirmY - 20 + boxH)
-  ctx.lineTo(boxX + boxR, affirmY - 20 + boxH)
-  ctx.quadraticCurveTo(boxX, affirmY - 20 + boxH, boxX, affirmY - 20 + boxH - boxR)
-  ctx.lineTo(boxX, affirmY - 20 + boxR)
-  ctx.quadraticCurveTo(boxX, affirmY - 20, boxX + boxR, affirmY - 20)
-  ctx.closePath()
-  ctx.fillStyle = 'rgba(140, 110, 255, 0.06)'
-  ctx.fill()
-  ctx.strokeStyle = 'rgba(140, 110, 255, 0.15)'
-  ctx.lineWidth = 1
-  ctx.stroke()
-
-  ctx.font = '400 24px Inter'
-  ctx.fillStyle = 'rgba(140, 110, 255, 0.5)'
-  ctx.textAlign = 'center'
-  ctx.fillText('YOUR POWER STATEMENT', width / 2, affirmY + 30)
-
-  ctx.font = 'italic 400 36px Inter'
-  ctx.fillStyle = 'rgba(200, 180, 255, 0.85)'
-  ctx.textAlign = 'center'
-
-  function wrapText(
-    context: any,
-    text: string,
-    x: number,
-    y: number,
-    maxWidth: number,
-    lineHeight: number
-  ) {
-    const words = text.split(' ')
-    let line = ''
-    let currentY = y
-
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + ' '
-      const metrics = context.measureText(testLine)
-      if (metrics.width > maxWidth && n > 0) {
-        context.fillText(line.trim(), x, currentY)
-        line = words[n] + ' '
-        currentY += lineHeight
-      } else {
-        line = testLine
-      }
-    }
-    context.fillText(line.trim(), x, currentY)
-  }
 
   const affirmText = affirmation || 'I transform pressure into precision.'
-  wrapText(ctx, `"${affirmText}"`, width / 2, affirmY + 100, 880, 52)
+  ctx.font      = 'italic 300 32px Cormorant'
+  ctx.fillStyle = INK
+  drawWrappedText(ctx, `"${affirmText}"`, cx, boxTop + 98, 640, 44)
 
-  // --- BOTTOM SECTION ---
-  ctx.font = '400 28px Inter'
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'
-  ctx.textAlign = 'center'
-  ctx.fillText('2026 DESTINY REVEALED', width / 2, 1500)
-
-  const bottomGlow = ctx.createRadialGradient(width / 2, height, 0, width / 2, height, 500)
-  bottomGlow.addColorStop(0, 'rgba(140, 110, 255, 0.1)')
-  bottomGlow.addColorStop(1, 'rgba(140, 110, 255, 0)')
-  ctx.fillStyle = bottomGlow
-  ctx.fillRect(0, height - 500, width, 500)
-
-  // --- BOTTOM BRANDING ---
+  // ── 11. FOOTER ────────────────────────────────────────────────────────────
+  ctx.strokeStyle = INK_GHOST
+  ctx.lineWidth   = 0.5
   ctx.beginPath()
-  ctx.moveTo(width / 2 - 40, 1780)
-  ctx.lineTo(width / 2 + 40, 1780)
-  ctx.strokeStyle = 'rgba(140, 110, 255, 0.15)'
-  ctx.lineWidth = 0.5
+  ctx.moveTo(100, 1782)
+  ctx.lineTo(980, 1782)
   ctx.stroke()
 
-  ctx.font = '400 28px Inter'
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'
+  ctx.font      = '500 20px Inter'
+  ctx.fillStyle = INK_FAINT
   ctx.textAlign = 'center'
-  ctx.fillText('omenora.com', width / 2, 1840)
+  ctx.fillText('O M E N O R A', cx, 1822)
 
-  ctx.font = '400 22px Inter'
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-  ctx.fillText('Discover yours', width / 2, 1878)
+  ctx.font      = '400 18px Inter'
+  ctx.fillStyle = 'rgba(26,22,18,0.3)'
+  ctx.fillText('omenora.com', cx, 1860)
 
-  // --- RETURN IMAGE ---
+  // ── RETURN IMAGE ──────────────────────────────────────────────────────────
   const buffer = canvas.toBuffer('image/png')
 
   setHeader(event, 'Content-Type', 'image/png')
   setHeader(
     event,
     'Content-Disposition',
-    `attachment; filename="omenora-destiny-${firstName || 'report'}.png"`
+    `attachment; filename="omenora-destiny-${firstName || 'report'}.png"`,
   )
 
   return buffer
