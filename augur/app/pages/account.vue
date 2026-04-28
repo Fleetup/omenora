@@ -88,7 +88,7 @@
             :key="section.id"
             class="account-nav__item label-caps"
             :class="{ 'account-nav__item--active': activeSection === section.id }"
-            @click="activeSection = section.id as 'profile' | 'plan' | 'purchases'"
+            @click="activeSection = section.id as 'profile' | 'plan' | 'history'"
           >
             {{ section.label }}
           </button>
@@ -160,7 +160,7 @@
             </div>
             <div class="data-row">
               <span class="data-row__label">Plan</span>
-              <span class="data-row__value">{{ subscriptionPlanName || 'Daily Personal Horoscope' }}</span>
+              <span class="data-row__value">{{ subscriptionPlanName || (subscriptionPlanType === 'compatibility_plus' ? 'Compatibility Plus' : 'Daily Personal Horoscope') }}</span>
             </div>
             <div class="data-row">
               <span class="data-row__label">Billing</span>
@@ -249,96 +249,68 @@
           </template>
         </section>
 
-        <!-- ── PURCHASES ── -->
-        <section v-else-if="activeSection === 'purchases'">
-          <h2 class="account-section__headline font-display-italic">Purchases</h2>
-          <p class="account-section__desc">Your one-time purchases and reports.</p>
+        <!-- ── HISTORY ── -->
+        <section v-else-if="activeSection === 'history'">
+          <h2 class="account-section__headline font-display-italic">History</h2>
+          <p class="account-section__desc">Your natal readings and compatibility reports.</p>
           <div class="editorial-rule" />
 
-          <div v-if="hasPurchases">
-            <div v-if="store.paymentComplete" class="data-row">
-              <span class="data-row__label">Natal Report</span>
-              <div class="data-row__actions">
-                <span class="status-badge status-badge--active">Purchased</span>
-                <CTAButton to="/report" variant="outline">View report</CTAButton>
-              </div>
-            </div>
-            <div v-if="store.calendarPurchased" class="data-row">
-              <span class="data-row__label">Cosmic Calendar</span>
-              <div class="data-row__actions">
-                <span class="status-badge status-badge--active">Purchased</span>
-                <CTAButton to="/calendar" variant="outline">View calendar</CTAButton>
-              </div>
-            </div>
-            <div v-if="store.birthChartPurchased" class="data-row">
-              <span class="data-row__label">Birth Chart</span>
-              <span class="status-badge status-badge--active">Purchased</span>
-            </div>
-            <div v-if="store.compatibilityData" class="data-row">
-              <span class="data-row__label">Compatibility Reading</span>
-              <div class="data-row__actions">
-                <span class="status-badge status-badge--active">Purchased</span>
-                <CTAButton to="/compatibility" variant="outline">View reading</CTAButton>
-              </div>
-            </div>
-          </div>
-
-          <div v-else>
-            <p class="account-section__empty annotation">No purchases yet.</p>
-            <CTAButton to="/analysis" :arrow="true">Begin your reading</CTAButton>
-          </div>
-
-          <!-- Reading history -->
+          <!-- Natal / Archetype readings -->
           <template v-if="reports.length > 0">
-            <div class="editorial-rule" style="margin-top: 40px;" />
-            <p class="label-caps" style="color: var(--color-ink-faint); margin-bottom: 16px;">Reading History</p>
-            <div class="reading-list">
-              <div
-                v-for="report in reports"
-                :key="report.id"
-                class="reading-card"
-              >
-                <div class="reading-card__info">
-                  <p class="reading-card__title">
-                    {{ report.type === 'compatibility'
-                      ? `Compatibility — ${report.partner_name || 'Unknown'}`
-                      : 'Archetype Reading' }}
-                  </p>
-                  <p class="reading-card__date annotation">{{ formatDate(report.created_at) }}</p>
-                </div>
-                <button
-                  class="reading-card__view label-caps"
-                  @click="navigateTo(report.type === 'compatibility' ? `/compatibility?session_id=${report.session_id}&from=history` : `/report?session_id=${report.session_id}`)"
-                >
-                  View
-                </button>
+            <p class="label-caps" style="color: var(--color-ink-faint); margin-bottom: 16px;">Natal Readings</p>
+            <div
+              v-for="report in reports.filter((r: any) => r.type !== 'compatibility')"
+              :key="report.id"
+              class="data-row"
+            >
+              <div>
+                <span class="data-row__value font-serif">{{ report.archetype || report.first_name || 'Reading' }}</span>
+                <span class="data-row__label" style="display: block; margin-top: 2px;">{{ formatDate(report.created_at) }}</span>
+              </div>
+              <button class="reading-card__view label-caps" @click="viewReport(report)">View</button>
+            </div>
+          </template>
+
+          <!-- Daily insights (subscribers only) -->
+          <template v-if="subscriptionActive && dailyInsights.length > 0">
+            <p class="label-caps" style="color: var(--color-ink-faint); margin-top: 32px; margin-bottom: 16px;">Recent Daily Readings</p>
+            <div
+              v-for="insight in dailyInsights"
+              :key="insight.sent_date"
+              class="data-row"
+            >
+              <div>
+                <span class="data-row__value font-serif">{{ insight.theme_used || 'Daily Reading' }}</span>
+                <span class="data-row__label" style="display: block; margin-top: 2px;">{{ formatDate(insight.sent_date) }}</span>
               </div>
             </div>
           </template>
 
           <!-- Compatibility readings -->
           <template v-if="compatibilityReadings.length > 0">
-            <div class="editorial-rule" style="margin-top: 40px;" />
-            <p class="label-caps" style="color: var(--color-ink-faint); margin-bottom: 16px;">Compatibility Readings</p>
-            <div class="reading-list">
-              <div
-                v-for="reading in compatibilityReadings"
-                :key="reading.id"
-                class="reading-card"
-              >
-                <div class="reading-card__info">
-                  <p class="reading-card__title">{{ reading.partnerName || 'Unknown partner' }}</p>
-                  <p class="reading-card__date annotation">{{ formatDate(reading.createdAt) }}</p>
-                </div>
-                <button
-                  class="reading-card__view label-caps"
-                  @click="navigateTo('/compatibility?session_id=' + reading.sessionId)"
-                >
-                  View
-                </button>
+            <p class="label-caps" style="color: var(--color-ink-faint); margin-top: 32px; margin-bottom: 16px;">Compatibility Readings</p>
+            <div
+              v-for="reading in compatibilityReadings"
+              :key="reading.id"
+              class="data-row"
+            >
+              <div>
+                <span class="data-row__value font-serif">{{ reading.partnerName ? `With ${reading.partnerName}` : 'Compatibility Reading' }}</span>
+                <span class="data-row__label" style="display: block; margin-top: 2px;">{{ formatDate(reading.createdAt) }}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <span v-if="reading.score" class="data-row__value font-serif">{{ reading.score }}/100</span>
+                <button class="reading-card__view label-caps" @click="navigateTo('/compatibility?session_id=' + reading.sessionId)">View</button>
               </div>
             </div>
           </template>
+
+          <!-- Empty state -->
+          <div v-if="reports.length === 0 && compatibilityReadings.length === 0 && dailyInsights.length === 0">
+            <p class="account-section__empty annotation">No readings yet.</p>
+            <CTAButton to="/analysis" :arrow="true">Begin your reading</CTAButton>
+          </div>
+
         </section>
 
       </main>
@@ -363,12 +335,12 @@ const { isAuthenticated, userEmail, session, restoreSession, confirmMagicLink, g
 const isLoading = ref(true)
 
 // ── Sidebar navigation ─────────────────────────────────────────────────────────
-const activeSection = ref<'profile' | 'plan' | 'purchases'>('profile')
+const activeSection = ref<'profile' | 'plan' | 'history'>('profile')
 
 const sections = [
-  { id: 'profile',   label: 'Profile'   },
-  { id: 'plan',      label: 'Plan'      },
-  { id: 'purchases', label: 'Purchases' },
+  { id: 'profile', label: 'Profile' },
+  { id: 'plan',    label: 'Plan'    },
+  { id: 'history', label: 'History' },
 ]
 
 // ── Cancel flow ────────────────────────────────────────────────────────────────
@@ -426,12 +398,15 @@ function showToast(msg: string) {
 }
 
 // ── Computed ───────────────────────────────────────────────────────────────────
-const hasPurchases = computed(() =>
-  store.paymentComplete ||
-  store.calendarPurchased ||
-  store.birthChartPurchased ||
-  !!store.compatibilityData
-)
+function viewReport(report: any) {
+  const sessionId = report.session_id || report.sessionId
+  if (!sessionId) return
+  if (report.type === 'compatibility') {
+    navigateTo(`/compatibility?session_id=${sessionId}&from=history`)
+  } else {
+    navigateTo(`/report?session_id=${sessionId}`)
+  }
+}
 
 // ── onMounted ──────────────────────────────────────────────────────────────────
 onMounted(async () => {
@@ -695,17 +670,22 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   background: var(--color-bone);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 0;
 }
 
 /* ── Auth card ── */
 .auth-card {
   width: 100%;
   max-width: 480px;
+  margin: 0 auto;
   padding: clamp(32px, 5vw, 56px) clamp(24px, 4vw, 40px);
   background: var(--color-bone);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .auth-card__eyebrow {
@@ -888,6 +868,23 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   .account-nav {
     flex-direction: row;
     gap: 4px;
+  }
+
+  .account-main {
+    padding: 28px 20px 48px;
+  }
+
+  .account-nav__item {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  .auth-submit {
+    min-height: 48px;
+  }
+
+  .account-state-page {
+    justify-content: flex-start;
   }
 }
 

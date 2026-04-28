@@ -14,11 +14,30 @@
       <div class="editorial-rule" />
       <div class="app-shell__footer-inner">
         <span class="annotation">© {{ year }} Omenora</span>
+
         <nav class="app-shell__footer-nav">
+          <NuxtLink
+            v-if="isAuthenticated"
+            to="/account"
+            class="annotation footer-link"
+          >
+            My Account
+          </NuxtLink>
+          <NuxtLink
+            v-else
+            to="/account"
+            class="annotation footer-link"
+          >
+            Sign in
+          </NuxtLink>
+          <span class="annotation" style="opacity:0.3">·</span>
+          <NuxtLink to="/daily" class="annotation footer-link">Daily</NuxtLink>
+          <span class="annotation" style="opacity:0.3">·</span>
           <NuxtLink to="/privacy" class="annotation footer-link">Privacy</NuxtLink>
           <span class="annotation" style="opacity:0.3">·</span>
           <NuxtLink to="/terms" class="annotation footer-link">Terms</NuxtLink>
         </nav>
+
         <span class="annotation">All rights reserved</span>
       </div>
     </footer>
@@ -26,11 +45,14 @@
 </template>
 
 <script setup lang="ts">
+import { useAuth } from '~/composables/useAuth'
+
 defineProps<{
   dark?: boolean
 }>()
 
 const year = new Date().getFullYear()
+const { isAuthenticated } = useAuth()
 </script>
 
 <style scoped>
