@@ -169,12 +169,13 @@ export default defineEventHandler(async (event) => {
 
   const symbolImg = await loadImage(resolveSymbolPath(archetypeId))
 
-  // Draw symbol on offscreen canvas for multiply blend
+  // Draw symbol with source-in tint: preserves PNG transparency, no dark rectangle
   const offCanvas = createCanvas(symbolSize, symbolSize)
   const offCtx    = offCanvas.getContext('2d')
+  offCtx.clearRect(0, 0, symbolSize, symbolSize)
   offCtx.drawImage(symbolImg, 0, 0, symbolSize, symbolSize)
-  // Multiply blend: overlay ink-mid to tint the gold symbol toward ink tones on bone
-  offCtx.globalCompositeOperation = 'multiply'
+  // source-in: new fill is clipped to the existing non-transparent pixels only
+  offCtx.globalCompositeOperation = 'source-in'
   offCtx.fillStyle = INK_MID
   offCtx.fillRect(0, 0, symbolSize, symbolSize)
 
@@ -209,14 +210,14 @@ export default defineEventHandler(async (event) => {
   // ── 8. META ROW ───────────────────────────────────────────────────────────
   ctx.font = '400 24px Inter'
   ctx.fillStyle = INK_FAINT
-  ctx.fillText(`${element || 'Fire'}  ·  Life Path ${lifePathNumber || 7}`, cx, 1010)
+  ctx.fillText(`${element || 'Fire'}  ·  Life Path ${lifePathNumber || 7}`, cx, 900)
 
   // ── 9. POWER TRAITS (editorial annotation style) ─────────────────────────
   const displayTraits = (powerTraits.length ? powerTraits : ['Resilient', 'Visionary', 'Grounded'])
     .slice(0, 3)
     .map((t: string) => t.length > 48 ? t.slice(0, 47).trimEnd() + '…' : t)
 
-  let traitY = 1090
+  let traitY = 980
   displayTraits.forEach((trait: string, i: number) => {
     const numLabel = `[0${i + 1}]`
     ctx.font = '400 20px Inter'
@@ -230,7 +231,7 @@ export default defineEventHandler(async (event) => {
   })
 
   // ── 10. AFFIRMATION BOX ───────────────────────────────────────────────────
-  const boxTop = 1340
+  const boxTop = 1240
   const boxH   = 200
 
   ctx.strokeStyle = INK_GHOST

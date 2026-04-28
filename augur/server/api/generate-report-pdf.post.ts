@@ -159,14 +159,24 @@ export default defineEventHandler(async (event) => {
     const isAffirmation = key === 'affirmation'
 
     if (isAffirmation) {
-      const textHeight = doc.heightOfString(`"${section.content}"`, { width: 415 })
-      // Light tinted box
-      doc.rect(ML, y - 6, CW, textHeight + 20)
-         .fillAndStroke('rgba(201,169,97,0.06)', GOLD)
+      const affirmContent = section.content || ''
+      const textHeight = doc.heightOfString(`"${affirmContent}"`, { width: CW - 48 })
+      const boxHeight = textHeight + 52
 
+      // Thin gold border only — no fill (PDFKit rgba fills render opaque)
+      doc.rect(ML, y, CW, boxHeight)
+         .strokeColor(GOLD)
+         .lineWidth(0.5)
+         .stroke()
+
+      // Label inside box
+      doc.font('Inter-Medium').fontSize(8).fillColor(GOLD)
+         .text('YOUR POWER STATEMENT', ML, y + 16, { align: 'center', width: CW })
+
+      // Affirmation text
       doc.font('Cormorant-Italic').fontSize(13).fillColor(INK_MID)
-         .text(`"${section.content}"`, ML + 20, y, { width: CW - 40, align: 'center' })
-      y += textHeight + 28
+         .text(`"${affirmContent}"`, ML + 24, y + 36, { width: CW - 48, align: 'center' })
+      y += boxHeight + 16
     } else {
       doc.font('Inter').fontSize(11).fillColor(INK_MID)
          .text(section.content || '', ML, y, { width: CW, align: 'left', lineGap: 3 })
