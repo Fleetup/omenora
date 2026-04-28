@@ -96,173 +96,187 @@ export default defineEventHandler(async (event) => {
   doc.on('pageAdded', fillPageBone)
   fillPageBone()
 
-  const drawRule = (yPos: number, x1 = ML, x2 = ML + CW) =>
+  const drawRule = (x1 = ML, x2 = ML + CW) => {
+    const yPos = (doc as any).y
     doc.moveTo(x1, yPos).lineTo(x2, yPos).strokeColor(INK_GHOST).lineWidth(0.5).stroke()
+  }
 
-  const drawGoldLabel = (text: string, x: number, yPos: number, opts?: object) =>
-    doc.font('Inter-Medium').fontSize(8).fillColor(GOLD).text(text, x, yPos, opts)
+  const drawGoldLabel = (text: string, opts?: object) =>
+    doc.font('Inter-Medium').fontSize(8).fillColor(GOLD).text(text, ML, (doc as any).y, { width: CW, ...opts })
 
-  // ── COVER ─────────────────────────────────────────────────────────────────
-  let y = 52
+  // Ensure at least `needed` points remain on the page before drawing a block.
+  const ensureSpace = (needed: number) => {
+    if ((doc as any).y + needed > H - 52) {
+      doc.addPage({ size: 'A4', margin: 0 })
+    }
+  }
+
+  // ── COVER (page 1) ─────────────────────────────────────────────────────────
+  doc.y = 52
 
   // Wordmark
   doc.font('Inter-Medium').fontSize(9).fillColor(INK_FAINT)
-     .text('O M E N O R A', ML, y, { width: CW, align: 'center' })
-  y += 14
-  drawRule(y, ML + 160, ML + CW - 160)
-  y += 20
+     .text('O M E N O R A', ML, doc.y, { width: CW, align: 'center' })
+  doc.moveDown(0.5)
+  drawRule(ML + 160, ML + CW - 160)
+  doc.moveDown(1)
 
-  // Archetype name in Cormorant italic
+  // Archetype name
   const archetypeName = report.archetypeName || ''
   doc.font('Cormorant-Italic').fontSize(32).fillColor(INK)
-     .text(archetypeName, ML, y, { width: CW, align: 'center' })
-  y += doc.heightOfString(archetypeName, { width: CW, font: 'Cormorant-Italic', fontSize: 32 } as any) + 10
+     .text(archetypeName, ML, doc.y, { width: CW, align: 'center' })
+  doc.moveDown(0.5)
 
   // Symbol image
   const symbolPngPath = resolveSymbolPath(report.archetypeSymbol || '◆')
   const symbolPdfSize = 52
   if (symbolPngPath) {
-    doc.image(symbolPngPath, W / 2 - symbolPdfSize / 2, y, { width: symbolPdfSize, height: symbolPdfSize })
+    const imgX = W / 2 - symbolPdfSize / 2
+    const imgY = (doc as any).y
+    doc.image(symbolPngPath, imgX, imgY, { width: symbolPdfSize, height: symbolPdfSize })
+    doc.y = imgY + symbolPdfSize + 8
   }
-  y += symbolPdfSize + 10
 
   // Element · Life Path
   doc.font('Inter').fontSize(11).fillColor(INK_FAINT)
-     .text(`${report.element || ''}  ·  Life Path ${lifePathNumber || ''}`, ML, y, { width: CW, align: 'center' })
-  y += 18
+     .text(`${report.element || ''}  ·  Life Path ${lifePathNumber || ''}`, ML, doc.y, { width: CW, align: 'center' })
+  doc.moveDown(0.4)
 
   // Power traits
   const traits = (report.powerTraits || []).join('  ·  ')
   doc.font('Inter').fontSize(10).fillColor(INK_MID)
-     .text(traits, ML, y, { width: CW, align: 'center' })
-  y += 28
+     .text(traits, ML, doc.y, { width: CW, align: 'center' })
+  doc.moveDown(1)
 
-  drawRule(y)
-  y += 28
+  drawRule()
+
+  // Cover ends here — sections always start on a fresh page
+  doc.addPage({ size: 'A4', margin: 0 })
 
   // ── CORE SECTIONS ─────────────────────────────────────────────────────────
   const sectionOrder = ['identity', 'science', 'forecast', 'love', 'purpose', 'gift', 'affirmation']
   const sections = report.sections || {}
 
-  sectionOrder.forEach((key) => {
+  for (const key of sectionOrder) {
     const section = sections[key]
-    if (!section) return
-
-    if (y > 720) {
-      doc.addPage({ size: 'A4', margin: 0 })
-      y = 52
-    }
-
-    drawGoldLabel(section.title?.toUpperCase() || '', ML, y)
-    y += 14
+    if (!section) continue
 
     const isAffirmation = key === 'affirmation'
 
     if (isAffirmation) {
-      const affirmContent = section.content || ''
-      const textHeight = doc.heightOfString(`"${affirmContent}"`, { width: CW - 48 })
-      const boxHeight = textHeight + 52
+      // Affirmation box needs more space
+      ensureSpace(180)
 
-      // Thin gold border only — no fill (PDFKit rgba fills render opaque)
-      doc.rect(ML, y, CW, boxHeight)
+      const affirmText = `"${section.content || ''}"`
+      const textH = doc.heightOfString(affirmText, { width: CW - 48 })
+      const boxH  = textH + 72
+      const boxY  = (doc as any).y + 8
+
+      // Border only — no fill
+      doc.rect(ML, boxY, CW, boxH)
          .strokeColor(GOLD)
          .lineWidth(0.5)
          .stroke()
 
-      // Label inside box
+      // Label inside box (no drawGoldLabel — box already contains the label)
       doc.font('Inter-Medium').fontSize(8).fillColor(GOLD)
-         .text('YOUR POWER STATEMENT', ML, y + 16, { align: 'center', width: CW })
+         .text('YOUR POWER STATEMENT', ML, boxY + 16, { width: CW, align: 'center' })
 
       // Affirmation text
       doc.font('Cormorant-Italic').fontSize(13).fillColor(INK_MID)
-         .text(`"${affirmContent}"`, ML + 24, y + 36, { width: CW - 48, align: 'center' })
-      y += boxHeight + 16
-    } else {
-      doc.font('Inter').fontSize(11).fillColor(INK_MID)
-         .text(section.content || '', ML, y, { width: CW, align: 'left', lineGap: 3 })
-      y += doc.heightOfString(section.content || '', { width: CW }) + 28
-    }
+         .text(affirmText, ML + 24, boxY + 36, { width: CW - 48, align: 'center' })
 
-    if (y < 760) drawRule(y - 14)
-  })
+      doc.y = boxY + boxH + 16
+
+    } else {
+      ensureSpace(120)
+
+      drawGoldLabel(section.title?.toUpperCase() || '')
+      doc.moveDown(0.4)
+
+      doc.font('Inter').fontSize(11).fillColor(INK_MID)
+         .text(section.content || '', ML, doc.y, { width: CW, align: 'left', lineGap: 3 })
+      doc.moveDown(1.5)
+
+      drawRule()
+      doc.moveDown(1)
+    }
+  }
 
   // ── TRADITION SECTION (Vedic / BaZi / Tarot) ──────────────────────────────
   if (region === 'india' && vedicData) {
-    if (y > H - 250) { doc.addPage({ size: 'A4', margin: 0 }); y = 52 }
-    drawRule(y); y += 14
-    drawGoldLabel(L['vedic'] || 'VEDIC DESTINY READING', ML, y); y += 14
+    ensureSpace(250)
+    drawRule(); doc.moveDown(0.6)
+    drawGoldLabel(L['vedic'] || 'VEDIC DESTINY READING'); doc.moveDown(0.5)
     doc.font('Cormorant-Italic').fontSize(14).fillColor(INK)
-       .text(vedicData.vedicTitle || '', ML, y); y += 20
+       .text(vedicData.vedicTitle || '', ML, doc.y); doc.moveDown(0.6)
     doc.font('Inter-Medium').fontSize(9).fillColor(GOLD)
-       .text(`Nakshatra: ${vedicData.nakshatraName || ''}  ·  Ruling Planet: ${vedicData.rulingPlanet || ''}`, ML, y)
-    y += 16
+       .text(`Nakshatra: ${vedicData.nakshatraName || ''}  ·  Ruling Planet: ${vedicData.rulingPlanet || ''}`, ML, doc.y)
+    doc.moveDown(0.5)
     doc.font('Inter').fontSize(11).fillColor(INK_MID)
-    const vReadingH = doc.heightOfString(vedicData.reading || '', { width: CW })
-    doc.text(vedicData.reading || '', ML, y, { width: CW, lineGap: 3 })
-    y += vReadingH + 10
-    drawGoldLabel(L['karmicMission'] || 'KARMIC MISSION', ML, y); y += 12
+       .text(vedicData.reading || '', ML, doc.y, { width: CW, lineGap: 3 })
+    doc.moveDown(1)
+    drawGoldLabel(L['karmicMission'] || 'KARMIC MISSION'); doc.moveDown(0.4)
     doc.font('Cormorant-Italic').fontSize(12).fillColor(INK_MID)
-       .text(vedicData.karmicMission || '', ML, y, { width: CW })
-    y += doc.heightOfString(vedicData.karmicMission || '', { width: CW }) + 10
+       .text(vedicData.karmicMission || '', ML, doc.y, { width: CW })
+    doc.moveDown(0.5)
     doc.font('Inter').fontSize(10).fillColor(INK_FAINT)
-       .text(`${L['practice'] || '2026 Practice:'} ${vedicData.remedy || ''}`, ML, y, { width: CW })
-    y += 22
+       .text(`${L['practice'] || '2026 Practice:'} ${vedicData.remedy || ''}`, ML, doc.y, { width: CW })
+    doc.moveDown(1)
 
   } else if (region === 'china' && baziData) {
-    if (y > H - 250) { doc.addPage({ size: 'A4', margin: 0 }); y = 52 }
-    drawRule(y); y += 14
-    drawGoldLabel(L['bazi'] || 'BAZI FOUR PILLARS READING', ML, y); y += 14
+    ensureSpace(250)
+    drawRule(); doc.moveDown(0.6)
+    drawGoldLabel(L['bazi'] || 'BAZI FOUR PILLARS READING'); doc.moveDown(0.5)
     doc.font('Cormorant-Italic').fontSize(14).fillColor(INK)
-       .text(baziData.baziTitle || '', ML, y); y += 20
+       .text(baziData.baziTitle || '', ML, doc.y); doc.moveDown(0.6)
     doc.font('Inter-Medium').fontSize(9).fillColor(GOLD)
-       .text(`Day Master: ${baziData.dayMaster || ''}  ·  Dominant Element: ${baziData.dominantElement || ''}`, ML, y)
-    y += 16
+       .text(`Day Master: ${baziData.dayMaster || ''}  ·  Dominant Element: ${baziData.dominantElement || ''}`, ML, doc.y)
+    doc.moveDown(0.5)
     doc.font('Inter').fontSize(11).fillColor(INK_MID)
-    const bReadingH = doc.heightOfString(baziData.reading || '', { width: CW })
-    doc.text(baziData.reading || '', ML, y, { width: CW, lineGap: 3 })
-    y += bReadingH + 10
-    drawGoldLabel(L['wealthLuck'] || '2026 WEALTH LUCK', ML, y); y += 12
+       .text(baziData.reading || '', ML, doc.y, { width: CW, lineGap: 3 })
+    doc.moveDown(1)
+    drawGoldLabel(L['wealthLuck'] || '2026 WEALTH LUCK'); doc.moveDown(0.4)
     doc.font('Cormorant-Italic').fontSize(12).fillColor(INK_MID)
-       .text(baziData.wealthLuck2026 || '', ML, y, { width: CW })
-    y += doc.heightOfString(baziData.wealthLuck2026 || '', { width: CW }) + 10
+       .text(baziData.wealthLuck2026 || '', ML, doc.y, { width: CW })
+    doc.moveDown(0.5)
     doc.font('Inter').fontSize(10).fillColor(INK_FAINT)
-       .text(`${L['luckyDirections'] || 'Lucky directions:'} ${(baziData.luckyDirections || []).join(', ')}`, ML, y)
-    y += 22
+       .text(`${L['luckyDirections'] || 'Lucky directions:'} ${(baziData.luckyDirections || []).join(', ')}`, ML, doc.y)
+    doc.moveDown(1)
 
   } else if ((region === 'latam' || region === 'tarot') && tarotData) {
-    if (y > H - 250) { doc.addPage({ size: 'A4', margin: 0 }); y = 52 }
-    drawRule(y); y += 14
-    drawGoldLabel(L['spiritual'] || 'SPIRITUAL DESTINY READING', ML, y); y += 14
+    ensureSpace(250)
+    drawRule(); doc.moveDown(0.6)
+    drawGoldLabel(L['spiritual'] || 'SPIRITUAL DESTINY READING'); doc.moveDown(0.5)
     doc.font('Cormorant-Italic').fontSize(14).fillColor(INK)
-       .text(tarotData.soulCard || '', ML, y); y += 14
+       .text(tarotData.soulCard || '', ML, doc.y); doc.moveDown(0.4)
     doc.font('Cormorant-Italic').fontSize(12).fillColor(INK_MID)
-       .text(tarotData.soulCardMeaning || '', ML, y, { width: CW, align: 'center' })
-    y += doc.heightOfString(tarotData.soulCardMeaning || '', { width: CW }) + 14
+       .text(tarotData.soulCardMeaning || '', ML, doc.y, { width: CW, align: 'center' })
+    doc.moveDown(0.6)
     doc.font('Inter').fontSize(11).fillColor(INK_MID)
-    const tReadingH = doc.heightOfString(tarotData.reading || '', { width: CW })
-    doc.text(tarotData.reading || '', ML, y, { width: CW, lineGap: 3 })
-    y += tReadingH + 10
-    drawGoldLabel(L['loveDestiny'] || 'LOVE DESTINY', ML, y); y += 12
+       .text(tarotData.reading || '', ML, doc.y, { width: CW, lineGap: 3 })
+    doc.moveDown(1)
+    drawGoldLabel(L['loveDestiny'] || 'LOVE DESTINY'); doc.moveDown(0.4)
     doc.font('Cormorant-Italic').fontSize(12).fillColor(INK_MID)
-       .text(tarotData.loveMessage || '', ML, y, { width: CW })
-    y += doc.heightOfString(tarotData.loveMessage || '', { width: CW }) + 10
-    drawGoldLabel(L['blessing'] || 'A BLESSING FOR YOU', ML, y); y += 12
+       .text(tarotData.loveMessage || '', ML, doc.y, { width: CW })
+    doc.moveDown(0.6)
+    drawGoldLabel(L['blessing'] || 'A BLESSING FOR YOU'); doc.moveDown(0.4)
     doc.font('Cormorant-Italic').fontSize(11).fillColor(INK_FAINT)
-       .text(tarotData.blessing || '', ML, y, { width: CW })
-    y += doc.heightOfString(tarotData.blessing || '', { width: CW }) + 10
+       .text(tarotData.blessing || '', ML, doc.y, { width: CW })
+    doc.moveDown(0.5)
     doc.font('Inter').fontSize(10).fillColor(INK_FAINT)
-       .text(`${L['protectiveCharm'] || 'Protective charm:'} ${tarotData.luckyCharm || ''}`, ML, y)
-    y += 22
+       .text(`${L['protectiveCharm'] || 'Protective charm:'} ${tarotData.luckyCharm || ''}`, ML, doc.y)
+    doc.moveDown(1)
   }
 
   // ── BIRTH CHART ───────────────────────────────────────────────────────────
   if (birthChartData) {
-    if (y > H - 250) { doc.addPage({ size: 'A4', margin: 0 }); y = 52 }
-    drawRule(y); y += 14
-    drawGoldLabel('YOUR NATAL CHART', ML, y, { width: CW, align: 'center' }); y += 14
+    ensureSpace(250)
+    drawRule(); doc.moveDown(0.6)
+    drawGoldLabel('YOUR NATAL CHART', { width: CW, align: 'center' }); doc.moveDown(0.5)
     doc.font('Cormorant-Italic').fontSize(16).fillColor(INK)
-       .text(birthChartData.chartTitle || 'Your Birth Chart', ML, y, { width: CW, align: 'center' })
-    y += 20
+       .text(birthChartData.chartTitle || 'Your Birth Chart', ML, doc.y, { width: CW, align: 'center' })
+    doc.moveDown(0.5)
     const placements = [
       `Rising: ${birthChartData.risingSign || ''}`,
       `Sun: ${birthChartData.sunSign || ''}`,
@@ -271,16 +285,15 @@ export default defineEventHandler(async (event) => {
       `Power House: ${birthChartData.powerHouse || ''}`,
     ].join('   ·   ')
     doc.font('Inter').fontSize(9).fillColor(GOLD)
-       .text(placements, ML, y, { width: CW, align: 'center' })
-    y += 16
+       .text(placements, ML, doc.y, { width: CW, align: 'center' })
+    doc.moveDown(0.5)
     doc.font('Inter').fontSize(11).fillColor(INK_MID)
-    const bcReadingH = doc.heightOfString(birthChartData.reading || '', { width: CW })
-    doc.text(birthChartData.reading || '', ML, y, { width: CW, lineGap: 3 })
-    y += bcReadingH + 10
-    drawGoldLabel('2026 PLANETARY FORECAST', ML, y); y += 12
+       .text(birthChartData.reading || '', ML, doc.y, { width: CW, lineGap: 3 })
+    doc.moveDown(1)
+    drawGoldLabel('2026 PLANETARY FORECAST'); doc.moveDown(0.4)
     doc.font('Cormorant-Italic').fontSize(12).fillColor(INK_MID)
-       .text(birthChartData.forecast2026 || '', ML, y, { width: CW, lineGap: 3 })
-    y += doc.heightOfString(birthChartData.forecast2026 || '', { width: CW }) + 22
+       .text(birthChartData.forecast2026 || '', ML, doc.y, { width: CW, lineGap: 3 })
+    doc.moveDown(1)
   }
 
   // ── CALENDAR ──────────────────────────────────────────────────────────────
@@ -297,43 +310,35 @@ export default defineEventHandler(async (event) => {
 
     if (months.length > 0) {
       doc.addPage({ size: 'A4', margin: 0 })
-      let cy = 52
 
-      drawGoldLabel(L['calendarLabel'] || 'YOUR 2026 DESTINY CALENDAR', ML, cy, { width: CW, align: 'center' })
-      cy += 18
+      drawGoldLabel(L['calendarLabel'] || 'YOUR 2026 DESTINY CALENDAR', { width: CW, align: 'center' })
+      doc.moveDown(0.6)
 
       if (calendarData.overallTheme) {
         doc.font('Cormorant-Italic').fontSize(11).fillColor(INK_MID)
-           .text(calendarData.overallTheme, ML, cy, { width: CW, align: 'center', lineGap: 2 })
-        cy += doc.heightOfString(calendarData.overallTheme, { width: CW }) + 18
+           .text(calendarData.overallTheme, ML, doc.y, { width: CW, align: 'center', lineGap: 2 })
+        doc.moveDown(1)
       }
 
-      drawRule(cy); cy += 14
+      drawRule(); doc.moveDown(0.6)
 
       for (const m of months) {
-        if (cy > H - 120) {
-          doc.addPage({ size: 'A4', margin: 0 })
-          cy = 52
-        }
+        ensureSpace(120)
         doc.font('Inter-Medium').fontSize(10).fillColor(INK)
-           .text(`${m.month}  —  ${m.theme || ''}`, ML, cy)
-        cy += 13
+           .text(`${m.month}  —  ${m.theme || ''}`, ML, doc.y)
+        doc.moveDown(0.3)
         doc.font('Inter').fontSize(9).fillColor(INK_MID)
-           .text(`Love: ${m.love || ''}`, ML, cy, { width: CW, lineGap: 1 })
-        cy += doc.heightOfString(m.love || '', { width: CW }) + 2
-        doc.text(`Money: ${m.money || ''}`, ML, cy, { width: CW, lineGap: 1 })
-        cy += doc.heightOfString(m.money || '', { width: CW }) + 2
-        doc.text(`Career: ${m.career || ''}`, ML, cy, { width: CW, lineGap: 1 })
-        cy += doc.heightOfString(m.career || '', { width: CW }) + 2
+           .text(`Love: ${m.love || ''}`, ML, doc.y, { width: CW, lineGap: 1 })
+        doc.text(`Money: ${m.money || ''}`, ML, doc.y, { width: CW, lineGap: 1 })
+        doc.text(`Career: ${m.career || ''}`, ML, doc.y, { width: CW, lineGap: 1 })
         if (m.warning) {
           doc.font('Inter').fontSize(8).fillColor(INK_FAINT)
-             .text(`Caution: ${m.warning}`, ML, cy, { width: CW })
-          cy += doc.heightOfString(m.warning, { width: CW }) + 2
+             .text(`Caution: ${m.warning}`, ML, doc.y, { width: CW })
         }
         doc.font('Inter').fontSize(8).fillColor(GOLD)
-           .text(`${L['luckyDays'] || 'Lucky days:'} ${(m.luckyDays || []).join(', ')}`, ML, cy)
-        cy += 13
-        drawRule(cy); cy += 10
+           .text(`${L['luckyDays'] || 'Lucky days:'} ${(m.luckyDays || []).join(', ')}`, ML, doc.y)
+        doc.moveDown(0.5)
+        drawRule(); doc.moveDown(0.4)
       }
     }
   }
@@ -341,50 +346,47 @@ export default defineEventHandler(async (event) => {
   // ── COMPATIBILITY ─────────────────────────────────────────────────────────
   if (compatibilityData && compatibilityData.compatibilityScore !== undefined) {
     doc.addPage({ size: 'A4', margin: 0 })
-    let ky = 52
 
-    drawGoldLabel(L['compatLabel'] || 'COMPATIBILITY READING', ML, ky, { width: CW, align: 'center' })
-    ky += 16
+    drawGoldLabel(L['compatLabel'] || 'COMPATIBILITY READING', { width: CW, align: 'center' })
+    doc.moveDown(0.6)
 
     const compatNames = partnerName
       ? `${firstName} ${L['compatWith'] || 'with'} ${partnerName}`
       : firstName
     doc.font('Cormorant-Italic').fontSize(14).fillColor(INK_MID)
-       .text(compatNames, ML, ky, { width: CW, align: 'center' })
-    ky += 20
+       .text(compatNames, ML, doc.y, { width: CW, align: 'center' })
+    doc.moveDown(0.5)
 
     doc.font('Cormorant-Italic').fontSize(40).fillColor(GOLD)
-       .text(`${compatibilityData.compatibilityScore}%`, ML, ky, { width: CW, align: 'center' })
-    ky += 48
+       .text(`${compatibilityData.compatibilityScore}%`, ML, doc.y, { width: CW, align: 'center' })
+    doc.moveDown(0.6)
 
     if (compatibilityData.compatibilityTitle) {
       doc.font('Cormorant-Italic').fontSize(12).fillColor(INK_MID)
-         .text(compatibilityData.compatibilityTitle, ML, ky, { width: CW, align: 'center' })
-      ky += doc.heightOfString(compatibilityData.compatibilityTitle, { width: CW }) + 18
+         .text(compatibilityData.compatibilityTitle, ML, doc.y, { width: CW, align: 'center' })
+      doc.moveDown(1)
     }
 
-    drawRule(ky); ky += 14
+    drawRule(); doc.moveDown(0.6)
 
     const compatSectionOrder = ['bond', 'strength', 'challenge', 'forecast', 'advice']
     const compatSections = compatibilityData.sections || {}
     for (const key of compatSectionOrder) {
       const sec = compatSections[key]
       if (!sec) continue
-      if (ky > H - 120) {
-        doc.addPage({ size: 'A4', margin: 0 }); ky = 52
-      }
-      drawGoldLabel((sec.title || key).toUpperCase(), ML, ky); ky += 13
+      ensureSpace(120)
+      drawGoldLabel((sec.title || key).toUpperCase()); doc.moveDown(0.4)
       doc.font('Inter').fontSize(11).fillColor(INK_MID)
-         .text(sec.content || '', ML, ky, { width: CW, lineGap: 3 })
-      ky += doc.heightOfString(sec.content || '', { width: CW }) + 14
-      drawRule(ky - 6)
+         .text(sec.content || '', ML, doc.y, { width: CW, lineGap: 3 })
+      doc.moveDown(1)
+      drawRule(); doc.moveDown(0.4)
     }
   }
 
-  // ── FOOTER ────────────────────────────────────────────────────────────────
-  const footerY = Math.min((doc as any).y + 20, H - 20)
+  // ── FOOTER — drawn once on the last page ──────────────────────────────────
+  ensureSpace(40)
   doc.font('Inter').fontSize(8).fillColor(INK_FAINT)
-     .text('omenora.com — Your destiny, decoded', ML, footerY, { width: CW, align: 'center' })
+     .text('omenora.com — Your destiny, decoded', ML, doc.y, { width: CW, align: 'center' })
 
   doc.end()
 
