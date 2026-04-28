@@ -168,13 +168,17 @@ export default defineEventHandler(async (event) => {
     ? (report.powerTraits as string[]).slice(0, 3)
     : []
   let traitY = 395
-  const traitLabelX = ML + 40
+  const traitNumX  = ML + 60   // gold [01] label
+  const traitTxtX  = ML + 96   // trait text starts here
+  const traitTxtW  = CW - 100  // remaining width for text
 
   coverTraits.forEach((trait: string, i: number) => {
+    // Gold index label — absolute position, no continuation
     doc.font('Inter-Medium').fontSize(8).fillColor(GOLD)
-       .text(`[0${i + 1}]`, traitLabelX, traitY, { continued: true, width: 28 })
+       .text(`[0${i + 1}]`, traitNumX, traitY, { width: 28, lineBreak: false })
+    // Trait text — absolute position on same Y
     doc.font('Inter').fontSize(10).fillColor(INK_MID)
-       .text(`  ${trait}`, { width: CW - 80 })
+       .text(trait, traitTxtX, traitY, { width: traitTxtW, lineBreak: false })
     traitY += 26
   })
 
