@@ -1,204 +1,211 @@
 <template>
-  <div v-if="currentStep === 4" class="center-page" aria-live="polite">
-    <!-- ── STATE 4: Loading ── -->
-    <div class="center-content">
+  <!-- ── Loading state (step 4) ── -->
+  <div v-if="currentStep === 4" class="compat-loading" aria-live="polite">
+    <div class="compat-loading__inner">
       <OrbitalMark />
-      <p class="brand-text">OMENORA</p>
-      <p :key="loadingMsgIdx" class="loading-message">{{ loadingMessages[loadingMsgIdx] }}</p>
+      <p class="label-caps compat-loading__brand">Omenora</p>
+      <p :key="loadingMsgIdx" class="compat-loading__msg font-display-italic">
+        {{ loadingMessages[loadingMsgIdx] }}
+      </p>
       <div class="progress-track">
-        <div class="loading-fill" />
+        <div class="compat-loading__fill" />
       </div>
-      <p v-if="apiError" class="submit-error">
-        Something went wrong. <button class="retry-link" @click="runApiCall">Try again</button>
+      <p v-if="apiError" class="compat-loading__error annotation">
+        Something went wrong.
+        <button class="compat-loading__retry" @click="runApiCall">Try again</button>
       </p>
     </div>
   </div>
 
-  <div v-else class="page">
+  <!-- ── Quiz steps (1–3) ── -->
+  <div v-else class="analysis-page">
 
-    <!-- Top bar -->
-    <div class="top-bar">
-      <button
-        class="back-btn"
-        aria-label="Go back"
-        @click="goBack"
-      >←</button>
-      <span class="brand">OMENORA</span>
-      <span class="step-indicator">{{ currentStep }} of 3</span>
-    </div>
+    <AppHeader>
+      <template #action>
+        <span class="label-caps analysis-header__step">
+          {{ currentStep }} / 3
+        </span>
+      </template>
+    </AppHeader>
 
     <!-- Progress bar -->
-    <div class="progress-bar" role="progressbar" :aria-valuenow="currentStep" aria-valuemin="1" aria-valuemax="3">
+    <div class="progress-track">
       <div class="progress-fill" :style="{ width: (currentStep / 3 * 100) + '%' }" />
     </div>
 
-    <!-- ── STATE 1 ── -->
-    <template v-if="currentStep === 1">
-      <h1 class="heading">Whose chart are<br>we comparing?</h1>
-      <p class="subheading">Enter your birth details to start</p>
+    <!-- Step container -->
+    <div class="analysis-steps">
+      <Transition :name="transitionDir" mode="out-in">
+        <div :key="currentStep" class="analysis-step">
 
-      <!-- Birth date -->
-      <div class="field-wrapper" :class="{ focused: focusedField === 'myDob' }">
-        <label class="field-label" for="compat-my-dob">Your birth date</label>
-        <input
-          id="compat-my-dob"
-          v-model="myDob"
-          type="date"
-          class="field-input native-date"
-          min="1924-01-01"
-          :max="todayMax"
-          required
-          @focus="focusedField = 'myDob'"
-          @blur="focusedField = null"
-        >
-      </div>
+          <p class="label-caps analysis-step__label">Step {{ currentStep }}</p>
 
-      <!-- Birth city -->
-      <div class="field-wrapper" :class="{ focused: focusedField === 'myCity' }">
-        <label class="field-label" for="myCity">Your birth city</label>
-        <input
-          id="myCity"
-          v-model="myCity"
-          type="text"
-          placeholder="City, Country"
-          autocomplete="address-level2"
-          class="field-input"
-          @focus="focusedField = 'myCity'"
-          @blur="focusedField = null"
-        >
-      </div>
+          <h1 class="analysis-step__headline font-display-italic">
+            {{ stepConfig[currentStep - 1]?.headline }}
+          </h1>
 
-      <!-- Birth time (optional) -->
-      <div class="field-wrapper" :class="{ focused: focusedField === 'myTime' }">
-        <div class="field-header-row">
-          <label class="field-label" for="compat-my-time">Your birth time</label>
-          <button type="button" class="skip-time-btn" @click="myTime = ''">Skip</button>
+          <div class="analysis-step__rule" />
+
+          <div class="analysis-step__content">
+
+            <!-- ── Step 1: Your birth details ── -->
+            <template v-if="currentStep === 1">
+              <label class="field-label label-caps" for="compat-my-dob">Your birth date</label>
+              <input
+                id="compat-my-dob"
+                v-model="myDob"
+                type="date"
+                class="editorial-input"
+                min="1924-01-01"
+                :max="todayMax"
+                required
+              />
+
+              <div style="margin-top: 32px;">
+                <PlacesAutocomplete
+                  v-model="myCity"
+                  label="Your birth city"
+                  placeholder="City, Country"
+                  input-id="myCity"
+                  @place-selected="onMyCitySelected"
+                />
+              </div>
+
+              <div class="compat-time-row">
+                <label class="field-label label-caps" for="compat-my-time">Birth time</label>
+                <button type="button" class="compat-skip-time label-caps" @click="myTime = ''">Skip</button>
+              </div>
+              <input
+                id="compat-my-time"
+                v-model="myTime"
+                type="time"
+                class="editorial-input"
+              />
+              <p class="field-hint annotation">More accurate Rising sign — leave blank if unknown</p>
+            </template>
+
+            <!-- ── Step 2: Their birth details ── -->
+            <template v-else-if="currentStep === 2">
+
+              <!-- Your sign reveal card -->
+              <div class="compat-reveal" :class="{ 'compat-reveal--visible': revealVisible }">
+                <p class="label-caps compat-reveal__label">You</p>
+                <p class="compat-reveal__sign font-serif">
+                  <ZodiacSymbol v-if="mySunSign" :sign="mySunSign.name" :size="22" />
+                  {{ mySunSign?.name }}
+                </p>
+                <p class="compat-reveal__path annotation">Life Path {{ myLifePath }}</p>
+              </div>
+
+              <label class="field-label label-caps" for="compat-their-dob">Their birth date</label>
+              <input
+                id="compat-their-dob"
+                v-model="theirDob"
+                type="date"
+                class="editorial-input"
+                min="1924-01-01"
+                :max="todayMax"
+                required
+              />
+
+              <div style="margin-top: 32px;">
+                <PlacesAutocomplete
+                  v-model="theirCity"
+                  label="Their birth city"
+                  placeholder="City, Country"
+                  input-id="theirCity"
+                  @place-selected="onTheirCitySelected"
+                />
+              </div>
+
+              <div class="compat-time-row">
+                <label class="field-label label-caps" for="compat-their-time">Birth time</label>
+                <button type="button" class="compat-skip-time label-caps" @click="theirTime = ''">Skip</button>
+              </div>
+              <input
+                id="compat-their-time"
+                v-model="theirTime"
+                type="time"
+                class="editorial-input"
+              />
+              <p class="field-hint annotation">More accurate Rising sign — leave blank if unknown</p>
+            </template>
+
+            <!-- ── Step 3: Confirm & calculate ── -->
+            <template v-else-if="currentStep === 3">
+              <div class="compat-dual-reveal" :class="{ 'compat-dual-reveal--visible': revealVisible }">
+                <div class="compat-dual-reveal__card">
+                  <p class="label-caps compat-reveal__label">You</p>
+                  <p class="compat-reveal__sign font-serif">
+                    <ZodiacSymbol v-if="mySunSign" :sign="mySunSign.name" :size="20" />
+                    {{ mySunSign?.name }}
+                  </p>
+                  <p class="compat-reveal__path annotation">Life Path {{ myLifePath }}</p>
+                </div>
+                <div class="compat-dual-reveal__sep font-display">×</div>
+                <div class="compat-dual-reveal__card">
+                  <p class="label-caps compat-reveal__label">Them</p>
+                  <p class="compat-reveal__sign font-serif">
+                    <ZodiacSymbol v-if="theirSunSign" :sign="theirSunSign.name" :size="20" />
+                    {{ theirSunSign?.name }}
+                  </p>
+                  <p class="compat-reveal__path annotation">Life Path {{ theirLifePath }}</p>
+                </div>
+              </div>
+
+              <p class="field-hint annotation" style="margin-top: 0;">
+                We'll map the synastry between your two birth charts — communication, conflict, attraction, and what's coming next.
+              </p>
+            </template>
+
+          </div>
+
+          <!-- Navigation -->
+          <div class="analysis-step__nav">
+            <button
+              v-if="currentStep > 1"
+              class="back-link label-caps"
+              @click="goBack"
+            >
+              ← Back
+            </button>
+
+            <CTAButton
+              v-if="currentStep === 3"
+              :arrow="true"
+              class="advance-btn"
+              @click="advanceStep3"
+            >
+              Calculate compatibility
+            </CTAButton>
+
+            <CTAButton
+              v-else-if="currentStep === 1"
+              :arrow="true"
+              :disabled="!step1Valid"
+              class="advance-btn"
+              @click="advanceStep1"
+            >
+              Continue
+            </CTAButton>
+
+            <CTAButton
+              v-else-if="currentStep === 2"
+              :arrow="true"
+              :disabled="!step2Valid"
+              class="advance-btn"
+              @click="advanceStep2"
+            >
+              Continue
+            </CTAButton>
+          </div>
+
         </div>
-        <input
-          id="compat-my-time"
-          v-model="myTime"
-          type="time"
-          class="field-input native-date"
-          @focus="focusedField = 'myTime'"
-          @blur="focusedField = null"
-        >
-        <p class="time-hint">More accurate Rising sign — leave blank if unknown</p>
-      </div>
+      </Transition>
+    </div>
 
-      <p class="privacy-note">Used only to calculate your planetary positions. Never sold.</p>
+    <p class="trust-footer annotation">🔒 Your birth data is used only to generate your reading. Never sold.</p>
 
-      <button
-        class="cta-button"
-        :class="{ disabled: !step1Valid }"
-        :disabled="!step1Valid"
-        aria-label="Continue to step 2"
-        @click="advanceStep1"
-      >
-        Continue →
-      </button>
-    </template>
-
-    <!-- ── STATE 2 ── -->
-    <template v-else-if="currentStep === 2">
-      <div class="micro-reveal" :class="{ visible: revealVisible }">
-        <p class="reveal-label">YOU</p>
-        <p class="reveal-sign">{{ mySunSign?.symbol }} {{ mySunSign?.name }}</p>
-        <p class="reveal-lifepath">Life Path {{ myLifePath }}</p>
-      </div>
-
-      <h1 class="heading">Now their<br>birth details</h1>
-      <p class="subheading">We'll compare your charts</p>
-
-      <!-- Their birth date -->
-      <div class="field-wrapper" :class="{ focused: focusedField === 'theirDob' }">
-        <label class="field-label" for="compat-their-dob">Their birth date</label>
-        <input
-          id="compat-their-dob"
-          v-model="theirDob"
-          type="date"
-          class="field-input native-date"
-          min="1924-01-01"
-          :max="todayMax"
-          required
-          @focus="focusedField = 'theirDob'"
-          @blur="focusedField = null"
-        >
-      </div>
-
-      <!-- Their birth city -->
-      <div class="field-wrapper" :class="{ focused: focusedField === 'theirCity' }">
-        <label class="field-label" for="theirCity">Their birth city</label>
-        <input
-          id="theirCity"
-          v-model="theirCity"
-          type="text"
-          placeholder="City, Country"
-          autocomplete="off"
-          class="field-input"
-          @focus="focusedField = 'theirCity'"
-          @blur="focusedField = null"
-        >
-      </div>
-
-      <!-- Their birth time (optional) -->
-      <div class="field-wrapper" :class="{ focused: focusedField === 'theirTime' }">
-        <div class="field-header-row">
-          <label class="field-label" for="compat-their-time">Their birth time</label>
-          <button type="button" class="skip-time-btn" @click="theirTime = ''">Skip</button>
-        </div>
-        <input
-          id="compat-their-time"
-          v-model="theirTime"
-          type="time"
-          class="field-input native-date"
-          @focus="focusedField = 'theirTime'"
-          @blur="focusedField = null"
-        >
-        <p class="time-hint">More accurate Rising sign — leave blank if unknown</p>
-      </div>
-
-      <p class="privacy-note">Used only to calculate chart positions. Never sold.</p>
-
-      <button
-        class="cta-button"
-        :class="{ disabled: !step2Valid }"
-        :disabled="!step2Valid"
-        aria-label="Continue to step 3"
-        @click="advanceStep2"
-      >
-        Continue →
-      </button>
-    </template>
-
-    <!-- ── STATE 3 ── -->
-    <template v-else-if="currentStep === 3">
-      <div class="dual-reveal" :class="{ visible: revealVisible }">
-        <div class="reveal-card">
-          <p class="reveal-label">YOU</p>
-          <p class="reveal-sign">{{ mySunSign?.symbol }} {{ mySunSign?.name }}</p>
-          <p class="reveal-lifepath">Life Path {{ myLifePath }}</p>
-        </div>
-        <div class="reveal-divider">×</div>
-        <div class="reveal-card">
-          <p class="reveal-label">THEM</p>
-          <p class="reveal-sign">{{ theirSunSign?.symbol }} {{ theirSunSign?.name }}</p>
-          <p class="reveal-lifepath">Life Path {{ theirLifePath }}</p>
-        </div>
-      </div>
-
-      <h1 class="heading">Ready to see what your charts say?</h1>
-      <p class="subheading">We'll map the synastry between your two birth charts — communication, conflict, attraction, and what's coming next.</p>
-
-      <button
-        class="cta-button submit-btn"
-        aria-label="Reveal compatibility reading"
-        @click="advanceStep3"
-      >
-        Reveal compatibility →
-      </button>
-    </template>
-
-    <p class="trust-footer">&#128274; Your birth data is used only to generate your reading. Never sold.</p>
   </div>
 </template>
 
@@ -231,7 +238,33 @@ const todayMax = computed(() => {
 // ── Other form state ──────────────────────────────────────────────────────
 const myCity    = ref('')
 const theirCity = ref('')
+const myCityLat    = ref<number | null>(null)
+const myCityLng    = ref<number | null>(null)
+const theirCityLat = ref<number | null>(null)
+const theirCityLng = ref<number | null>(null)
 const focusedField = ref<string | null>(null)
+
+function onMyCitySelected(place: { name: string; lat: number; lng: number; placeId: string }) {
+  myCity.value    = place.name
+  myCityLat.value = place.lat
+  myCityLng.value = place.lng
+}
+
+function onTheirCitySelected(place: { name: string; lat: number; lng: number; placeId: string }) {
+  theirCity.value    = place.name
+  theirCityLat.value = place.lat
+  theirCityLng.value = place.lng
+}
+
+// ── Step config ─────────────────────────────────────────────────────
+const stepConfig = [
+  { headline: 'Whose chart are we comparing?' },
+  { headline: 'Now their birth details.' },
+  { headline: 'Ready to see what your charts say?' },
+]
+
+// ── Transition direction ─────────────────────────────────────────────
+const transitionDir = ref('slide-left')
 
 // ── Step state ──────────────────────────────────────────────────────
 const currentStep   = ref(1)
@@ -263,8 +296,13 @@ function triggerReveal() {
 }
 
 function goBack() {
-  if (currentStep.value > 1) { currentStep.value--; triggerReveal() }
-  else { navigateTo('/') }
+  if (currentStep.value > 1) {
+    transitionDir.value = 'slide-right'
+    currentStep.value--
+    triggerReveal()
+  } else {
+    navigateTo('/')
+  }
 }
 
 function advanceStep1() {
@@ -273,6 +311,7 @@ function advanceStep1() {
     mySunSign.value  = getSunSign(myDob.value)
     myLifePath.value = getLifePathNumber(myDob.value).number
   } catch { return }
+  transitionDir.value = 'slide-left'
   currentStep.value = 2
   triggerReveal()
   trackEvent('compatibility_quiz_step_1_complete', { sun_sign: mySunSign.value?.name, life_path: myLifePath.value })
@@ -284,6 +323,7 @@ function advanceStep2() {
     theirSunSign.value  = getSunSign(theirDob.value)
     theirLifePath.value = getLifePathNumber(theirDob.value).number
   } catch { return }
+  transitionDir.value = 'slide-left'
   currentStep.value = 3
   triggerReveal()
   trackEvent('compatibility_quiz_step_2_complete', { their_sun_sign: theirSunSign.value?.name, their_life_path: theirLifePath.value })
@@ -325,7 +365,11 @@ async function runApiCall() {
     })
     stopLoadingCycle()
     store.setPersonalInfo('', myDob.value, myCity.value)
+    store.cityLat = myCityLat.value
+    store.cityLng = myCityLng.value
     store.setPartnerData({ name: '', dob: theirDob.value, city: theirCity.value })
+    store.partnerCityLat = theirCityLat.value
+    store.partnerCityLng = theirCityLng.value
     store.setCompatibilityData(result.compatibility)
     trackEvent('compatibility_preview_loaded', { score: result.compatibility?.compatibilityScore, sun_sign: mySunSign.value?.name })
     navigateTo('/compatibility?preview=1')
@@ -363,405 +407,277 @@ onUnmounted(() => {
 
 <style scoped>
 /* ── Page shell ── */
-.page {
-  position: relative;
+.analysis-page {
   min-height: 100vh;
-  background: #07070D;
-  color: rgba(255, 255, 255, 0.94);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: column;
-  padding: 28px 24px calc(52px + env(safe-area-inset-bottom, 0px));
-  max-width: 480px;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-
-.page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 55% at 50% 0%, rgba(75, 45, 155, 0.18) 0%, transparent 68%),
-    radial-gradient(ellipse 50% 40% at 15% 55%, rgba(50, 25, 110, 0.10) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.page > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* ── Top bar ── */
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.38);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 8px;
-  margin: -8px;
-  line-height: 1;
-  transition: color 0.18s ease;
-  -webkit-tap-highlight-color: transparent;
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-}
-
-.back-btn:hover { color: rgba(255, 255, 255, 0.75); }
-
-.brand {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 13px;
-  letter-spacing: 0.20em;
-  color: rgba(255, 255, 255, 0.28);
-}
-
-.step-indicator {
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.22);
+  background: var(--color-bone);
 }
 
 /* ── Progress bar ── */
-.progress-bar {
+.progress-track {
   height: 2px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 1px;
-  margin-bottom: 36px;
-  overflow: hidden;
+  background: var(--color-ink-ghost);
+  flex-shrink: 0;
 }
 
 .progress-fill {
   height: 100%;
-  background: rgba(201, 168, 76, 0.60);
-  border-radius: 1px;
-  transition: width 0.3s ease;
+  background: var(--color-ink);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Headings ── */
-.heading {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 38px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.94);
-  margin: 0 0 8px;
-  line-height: 1.12;
-  letter-spacing: 0.01em;
+/* ── Step container ── */
+.analysis-steps {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  padding: clamp(48px, 10vw, 96px) clamp(20px, 5vw, 80px) 80px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-.subheading {
-  font-size: 14px;
+.analysis-step {
+  width: 100%;
+}
+
+/* ── Step label ── */
+.analysis-step__label {
+  color: var(--color-ink-faint);
+  margin-bottom: 20px;
+}
+
+/* ── Step headline ── */
+.analysis-step__headline {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.38);
-  margin: 0 0 24px;
-  line-height: 1.55;
+  font-size: clamp(36px, 8vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 32px;
+  color: var(--color-ink);
 }
 
-/* ── Field wrappers (city input) ── */
-.field-wrapper {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-  transition: border-color 0.22s ease, background 0.22s ease;
+/* ── Decorative rule ── */
+.analysis-step__rule {
+  width: 48px;
+  height: 1px;
+  background: var(--color-ink-mid);
+  margin-bottom: 36px;
 }
 
-.field-wrapper.focused {
-  border-color: rgba(201, 168, 76, 0.42);
-  background: rgba(201, 168, 76, 0.03);
+.analysis-step__content {
+  margin-bottom: 40px;
 }
 
+/* ── Field label ── */
 .field-label {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.28);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  margin-bottom: 5px;
+  display: block;
+  color: var(--color-ink-faint);
+  margin-bottom: 12px;
 }
 
-.field-input {
+/* ── Editorial inputs ── */
+.editorial-input {
+  width: 100%;
+  max-width: 480px;
+  padding: 14px 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--color-ink);
   background: transparent;
   border: none;
+  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
   outline: none;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 15px;
-  width: 100%;
-  font-family: inherit;
+  border-radius: 0;
+  transition: border-color 0.2s;
+  display: block;
+  margin-bottom: 28px;
 }
 
-.field-input::placeholder { color: rgba(255, 255, 255, 0.18); }
-
-.field-input:-webkit-autofill,
-.field-input:-webkit-autofill:hover,
-.field-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #0d0b1e inset !important;
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
-  caret-color: rgba(255, 255, 255, 0.88);
-  transition: background-color 9999s ease-in-out 0s;
+.editorial-input:focus {
+  border-bottom-color: var(--color-ink);
 }
 
-/* ── Field header row (label + skip button) ── */
-.field-header-row {
+.editorial-input::placeholder {
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  color-scheme: light;
+}
+
+/* ── Field hint ── */
+.field-hint {
+  margin-top: 10px;
+  color: var(--color-ink-faint);
+}
+
+/* ── Time row (label + skip) ── */
+.compat-time-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px;
+  max-width: 480px;
+  margin-bottom: 12px;
 }
 
-/* ── Native date / time inputs ── */
-.native-date {
-  appearance: none;
-  -webkit-appearance: none;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: max(16px, 1em);
-  font-family: inherit;
-  width: 100%;
-  min-height: 28px;
-  padding: 0;
-  cursor: pointer;
-  caret-color: rgba(201, 168, 76, 0.85);
+.compat-time-row .field-label {
+  margin-bottom: 0;
 }
 
-.native-date::-webkit-calendar-picker-indicator {
-  filter: invert(1) opacity(0.45);
-  cursor: pointer;
-  margin-left: 4px;
-  flex-shrink: 0;
-}
-
-.native-date::-webkit-datetime-edit-fields-wrapper { padding: 0; }
-.native-date::-webkit-datetime-edit             { padding: 0; color: rgba(255, 255, 255, 0.88); }
-.native-date::-webkit-datetime-edit-text         { color: rgba(255, 255, 255, 0.30); }
-.native-date::-webkit-datetime-edit-year-field,
-.native-date::-webkit-datetime-edit-month-field,
-.native-date::-webkit-datetime-edit-day-field,
-.native-date::-webkit-datetime-edit-hour-field,
-.native-date::-webkit-datetime-edit-minute-field,
-.native-date::-webkit-datetime-edit-ampm-field  { color: rgba(255, 255, 255, 0.88); }
-
-.native-date:focus::-webkit-datetime-edit-year-field,
-.native-date:focus::-webkit-datetime-edit-month-field,
-.native-date:focus::-webkit-datetime-edit-day-field,
-.native-date:focus::-webkit-datetime-edit-hour-field,
-.native-date:focus::-webkit-datetime-edit-minute-field,
-.native-date:focus::-webkit-datetime-edit-ampm-field {
-  background: rgba(140, 110, 255, 0.18);
-  color: #ffffff;
-  border-radius: 3px;
-}
-
-/* ── Skip time button ── */
-.skip-time-btn {
+.compat-skip-time {
   background: none;
   border: none;
-  font-size: 10px;
-  color: rgba(107, 72, 224, 0.65);
-  letter-spacing: 0.06em;
+  color: var(--color-ink-faint);
+  font-size: 9px;
   cursor: pointer;
   padding: 0;
-  font-family: inherit;
-  -webkit-tap-highlight-color: transparent;
-  transition: color 0.15s ease;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  transition: color 0.15s;
 }
 
-.skip-time-btn:hover { color: rgba(140, 110, 255, 0.90); }
+.compat-skip-time:hover { color: var(--color-ink); }
 
-/* ── Time hint ── */
-.time-hint {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.20);
-  margin: 8px 0 0;
-  line-height: 1.6;
-  letter-spacing: 0.01em;
-  padding: 0 4px;
-}
-
-/* ── Privacy note ── */
-.privacy-note {
-  font-size: 11px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.28);
-  text-align: center;
-  margin: 0 0 20px;
-  letter-spacing: 0.01em;
-}
-
-/* ── CTA button ── */
-.cta-button {
+/* ── Reveal card (step 2 — your sign) ── */
+.compat-reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: #6B48E0;
-  border: none;
-  border-radius: 14px;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 500;
-  font-family: inherit;
-  letter-spacing: 0.01em;
-  padding: 17px 24px;
-  min-height: 54px;
-  width: 100%;
-  cursor: pointer;
-  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
-  box-shadow:
-    0 0 0 1px rgba(107, 72, 224, 0.55),
-    0 8px 32px rgba(107, 72, 224, 0.28),
-    0 2px 8px rgba(0, 0, 0, 0.35);
-  margin-top: 32px;
-  -webkit-tap-highlight-color: transparent;
+  gap: 20px;
+  padding: 16px 0 20px;
+  border-bottom: 1px solid var(--color-ink-ghost);
+  margin-bottom: 36px;
 }
 
-.cta-button:hover:not(.disabled) {
-  background: #7B5AF2;
-  box-shadow:
-    0 0 0 1px rgba(123, 90, 242, 0.65),
-    0 12px 44px rgba(107, 72, 224, 0.44),
-    0 4px 12px rgba(0, 0, 0, 0.40);
-  transform: translateY(-1px);
+.compat-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.cta-button:active:not(.disabled) {
-  transform: translateY(0) scale(0.985);
-  background: #5B38D0;
-  box-shadow: 0 0 0 1px rgba(107, 72, 224, 0.45), 0 4px 16px rgba(107, 72, 224, 0.22);
-}
-
-.cta-button.disabled {
-  opacity: 0.30;
-  cursor: default;
-  transform: none;
-}
-
-/* ── Final step gold ghost button ── */
-.submit-btn {
-  margin-top: 44px;
-  background: rgba(201, 168, 76, 0.10);
-  border: 1px solid rgba(201, 168, 76, 0.45);
-  border-radius: 14px;
-  box-shadow: none;
-  color: rgba(201, 168, 76, 0.92);
-  font-size: 14px;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-}
-
-.submit-btn:hover:not(.disabled) {
-  background: rgba(201, 168, 76, 0.18);
-  border-color: rgba(201, 168, 76, 0.70);
-  color: rgba(201, 168, 76, 1);
-  box-shadow: 0 0 28px rgba(201, 168, 76, 0.12);
-  transform: translateY(-1px);
-}
-
-.submit-btn:active:not(.disabled) { transform: translateY(0) scale(0.985); }
-
-/* ── Micro-reveal (STATE 2) ── */
-.micro-reveal {
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  background: rgba(201, 168, 76, 0.05);
-  border: 1px solid rgba(201, 168, 76, 0.18);
-  border-radius: 16px;
-  padding: 20px 24px;
-  margin-bottom: 28px;
-  text-align: center;
-}
-
-.micro-reveal.visible { opacity: 1; transform: translateY(0); }
-
-/* ── Dual reveal (STATE 3) ── */
-.dual-reveal {
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 28px;
-}
-
-.dual-reveal.visible { opacity: 1; transform: translateY(0); }
-
-.reveal-card {
-  flex: 1;
-  background: rgba(201, 168, 76, 0.05);
-  border: 1px solid rgba(201, 168, 76, 0.18);
-  border-radius: 16px;
-  padding: 16px;
-  text-align: center;
-}
-
-.reveal-divider {
-  font-size: 18px;
-  color: rgba(201, 168, 76, 0.30);
+.compat-reveal__label {
+  color: var(--color-ink-faint);
   flex-shrink: 0;
 }
 
-.reveal-label {
-  font-size: 9px;
-  font-weight: 500;
-  color: rgba(201, 168, 76, 0.55);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  margin: 0 0 6px;
-}
-
-.reveal-sign {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 22px;
+.compat-reveal__sign {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.88);
-  margin: 0 0 4px;
-  letter-spacing: 0.02em;
+  color: var(--color-ink);
+  margin: 0;
+  flex: 1;
 }
 
-.reveal-lifepath {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.28);
+.compat-reveal__path {
+  color: var(--color-ink-faint);
   margin: 0;
-  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ── Dual reveal (step 3) ── */
+.compat-dual-reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 36px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--color-ink-ghost);
+}
+
+.compat-dual-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.compat-dual-reveal__card {
+  padding: 20px;
+  border: 1px solid var(--color-ink-ghost);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.compat-dual-reveal__sep {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--color-ink-faint);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ── Navigation ── */
+.analysis-step__nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-ink-faint);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 600;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover { color: var(--color-ink); }
+
+/* ── Header step counter ── */
+.analysis-header__step {
+  color: var(--color-ink-faint);
+  font-size: 10px;
 }
 
 /* ── Trust footer ── */
 .trust-footer {
-  font-size: 10px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.22);
   text-align: center;
-  margin: 40px 0 0;
-  letter-spacing: 0.02em;
+  color: var(--color-ink-faint);
+  padding: 20px clamp(20px, 5vw, 80px) clamp(32px, 6vw, 48px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── CTAButton disabled ── */
+.advance-btn:disabled,
+.advance-btn[disabled] {
+  opacity: 0.35;
+  pointer-events: none;
 }
 
 /* ── Loading state ── */
-.center-page {
-  background: #07070D;
+.compat-loading {
   min-height: 100vh;
+  background: var(--color-bone);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.center-content {
+.compat-loading__inner {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -770,38 +686,32 @@ onUnmounted(() => {
   padding: 0 24px;
 }
 
-.brand-text {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 13px;
-  letter-spacing: 0.20em;
-  color: rgba(255, 255, 255, 0.28);
-  margin: 0;
+.compat-loading__brand {
+  color: var(--color-ink-faint);
 }
 
 @keyframes fadeInMsg {
-  from { opacity: 0; transform: translateY(5px); }
+  from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.loading-message {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+.compat-loading__msg {
+  font-family: 'Fraunces', serif;
   font-style: italic;
-  font-size: 16px;
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.48);
-  min-height: 28px;
-  max-width: 280px;
-  line-height: 1.5;
+  font-size: clamp(18px, 4vw, 26px);
+  color: var(--color-ink-mid);
+  min-height: 36px;
+  max-width: 320px;
+  line-height: 1.4;
   margin: 0;
   animation: fadeInMsg 0.45s ease;
 }
 
-.progress-track {
+.compat-loading .progress-track {
   width: 160px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  border-radius: 1px;
+  background: var(--color-ink-ghost);
 }
 
 @keyframes fillProgress {
@@ -809,52 +719,56 @@ onUnmounted(() => {
   to   { width: 95%; }
 }
 
-.loading-fill {
+.compat-loading__fill {
   height: 100%;
-  background: linear-gradient(90deg, rgba(107, 72, 224, 0.65), rgba(201, 168, 76, 0.55));
+  background: var(--color-ink);
   animation: fillProgress 8s ease-out forwards;
-  border-radius: 1px;
 }
 
-.submit-error {
-  margin: 0;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid rgba(220, 80, 80, 0.35);
-  background: rgba(220, 80, 80, 0.07);
-  color: rgba(255, 160, 160, 0.9);
-  font-size: 12px;
-  line-height: 1.55;
+.compat-loading__error {
+  color: var(--color-ink-faint);
+  max-width: 280px;
   text-align: center;
 }
 
-.retry-link {
+.compat-loading__retry {
   background: none;
   border: none;
-  color: rgba(201, 168, 76, 0.8);
-  font-size: 12px;
+  color: var(--color-gold);
   cursor: pointer;
   font-family: inherit;
+  font-size: inherit;
   padding: 0;
   text-decoration: underline;
-  -webkit-tap-highlight-color: transparent;
 }
+
+/* ── Step transitions ── */
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-left-enter-from  { opacity: 0; transform: translateX(32px); }
+.slide-left-leave-to    { opacity: 0; transform: translateX(-32px); }
+.slide-right-enter-from { opacity: 0; transform: translateX(-32px); }
+.slide-right-leave-to   { opacity: 0; transform: translateX(32px); }
 
 /* ── Responsive ── */
-@media (max-width: 400px) {
-  .page { padding: 24px 20px calc(48px + env(safe-area-inset-bottom, 0px)); }
-  .heading { font-size: 34px; }
-}
-
-@media (max-width: 360px) {
-  .page { padding: 20px 16px calc(44px + env(safe-area-inset-bottom, 0px)); }
-  .heading { font-size: 30px; }
-  .dual-reveal { flex-direction: column; }
-  .reveal-divider { transform: rotate(90deg); }
+@media (max-width: 480px) {
+  .analysis-step__headline { font-size: clamp(30px, 9vw, 42px); }
+  .compat-dual-reveal { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cta-button:hover:not(.disabled),
-  .submit-btn:hover:not(.disabled) { transform: none; }
+  .slide-left-enter-active,
+  .slide-left-leave-active,
+  .slide-right-enter-active,
+  .slide-right-leave-active { transition: opacity 0.15s; }
+  .slide-left-enter-from,
+  .slide-right-enter-from { transform: none; }
+  .slide-left-leave-to,
+  .slide-right-leave-to   { transform: none; }
 }
 </style>

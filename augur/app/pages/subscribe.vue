@@ -1,35 +1,37 @@
 <template>
   <div class="page">
-    <!-- Ambient background -->
-    <div class="bg-ambient" aria-hidden="true" />
-
     <!-- Header -->
-    <header class="top-bar">
-      <NuxtLink to="/" class="brand" aria-label="OMENORA home">OMENORA</NuxtLink>
-    </header>
+    <AppHeader />
+
+    <!-- Masthead -->
+    <div class="subscribe-masthead">
+      <p class="label-caps subscribe-masthead__eyebrow">Subscribe</p>
+      <h1 class="subscribe-masthead__headline font-display-italic">Your daily reading,<br>written for you alone.</h1>
+      <div class="editorial-rule" />
+    </div>
 
     <!-- Price banner -->
     <div class="price-banner">
-      <span class="price-label">Personal Daily Horoscope</span>
-      <span class="price-amount">$4.99<span class="price-period">/month</span></span>
+      <span class="price-label label-caps">Personal Daily Horoscope</span>
+      <span class="price-amount font-serif">$4.99<span class="price-period">/month</span></span>
     </div>
 
     <!-- Feature list -->
-    <div>
+    <div class="feature-list">
       <div class="birth-unlock-row">
-        <span class="birth-unlock-icon">◆</span>
+        <span class="birth-unlock-icon">✦</span>
         <span class="birth-unlock-text">Daily horoscope — love, work &amp; health</span>
       </div>
       <div class="birth-unlock-row">
-        <span class="birth-unlock-icon">◆</span>
+        <span class="birth-unlock-icon">✦</span>
         <span class="birth-unlock-text">Personalized to your exact birth chart — not your sun sign</span>
       </div>
       <div class="birth-unlock-row">
-        <span class="birth-unlock-icon">◆</span>
+        <span class="birth-unlock-icon">✦</span>
         <span class="birth-unlock-text">Delivered to your inbox every morning</span>
       </div>
       <div class="birth-unlock-row">
-        <span class="birth-unlock-icon">◆</span>
+        <span class="birth-unlock-icon">✦</span>
         <span class="birth-unlock-text">Real planetary transits calculated daily with Swiss Ephemeris</span>
       </div>
     </div>
@@ -603,66 +605,46 @@ async function handleSubmit() {
    PAGE SHELL
 ───────────────────────────────────────────── */
 .page {
-  position: relative;
   min-height: 100vh;
-  background: #07070D;
-  color: rgba(255, 255, 255, 0.94);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
-               'Helvetica Neue', sans-serif;
+  background: var(--color-bone);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: column;
-  padding: 28px 24px calc(52px + env(safe-area-inset-bottom, 0px));
-  max-width: 480px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
-}
-
-.bg-ambient {
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 80% 55% at 50% 0%,
-      rgba(75, 45, 155, 0.18) 0%,
-      transparent 68%
-    ),
-    radial-gradient(
-      ellipse 50% 40% at 15% 55%,
-      rgba(50, 25, 110, 0.10) 0%,
-      transparent 60%
-    );
-  pointer-events: none;
-  z-index: 0;
-}
-
-.page > * {
-  position: relative;
-  z-index: 1;
 }
 
 
 /* ─────────────────────────────────────────────
-   HEADER
+   MASTHEAD
 ───────────────────────────────────────────── */
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 32px;
+.subscribe-masthead {
+  padding: clamp(40px, 8vw, 72px) clamp(24px, 5vw, 48px) 0;
 }
 
-.brand {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 15px;
-  letter-spacing: 0.22em;
-  color: rgba(255, 255, 255, 0.38);
-  text-decoration: none;
-  transition: color 0.18s ease;
+.subscribe-masthead__eyebrow {
+  color: var(--color-ink-faint);
+  margin-bottom: 20px;
 }
 
-.brand:hover {
-  color: rgba(255, 255, 255, 0.65);
+.subscribe-masthead__headline {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(36px, 9vw, 64px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  margin: 0 0 28px;
+}
+
+/* form content indented to match masthead padding */
+.page > *:not(.page):not(.subscribe-masthead) {
+  padding-left: clamp(24px, 5vw, 48px);
+  padding-right: clamp(24px, 5vw, 48px);
 }
 
 
@@ -673,31 +655,37 @@ async function handleSubmit() {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  background: rgba(201, 168, 76, 0.06);
-  border: 1px solid rgba(201, 168, 76, 0.22);
-  border-radius: 12px;
+  border: 1px solid var(--color-gold);
   padding: 14px 18px;
-  margin-bottom: 28px;
+  margin-top: 32px;
+  margin-bottom: 24px;
 }
 
 .price-label {
-  font-size: 13px;
-  color: rgba(201, 168, 76, 0.80);
-  letter-spacing: 0.02em;
+  font-size: 10px;
+  color: var(--color-gold);
 }
 
 .price-amount {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  font-family: 'Cormorant Garamond', serif;
   font-size: 22px;
   font-weight: 400;
-  color: rgba(201, 168, 76, 0.95);
+  color: var(--color-gold);
   letter-spacing: 0.03em;
 }
 
 .price-period {
   font-size: 13px;
-  color: rgba(201, 168, 76, 0.55);
+  color: var(--color-gold-dim);
   letter-spacing: 0.01em;
+}
+
+
+/* ─────────────────────────────────────────────
+   FEATURE LIST
+───────────────────────────────────────────── */
+.feature-list {
+  margin-bottom: 24px;
 }
 
 
@@ -711,27 +699,27 @@ async function handleSubmit() {
 
 
 /* ─────────────────────────────────────────────
-   FIELD WRAPPERS — matches analysis.vue exactly
+   FIELD WRAPPERS
 ───────────────────────────────────────────── */
 .field-wrapper {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
+  background: rgba(26, 22, 18, 0.03);
+  border: 1px solid var(--color-ink-ghost);
   padding: 14px 16px;
   margin-bottom: 12px;
   transition: border-color 0.22s ease, background 0.22s ease;
 }
 
 .field-wrapper.focused {
-  border-color: rgba(201, 168, 76, 0.42);
-  background: rgba(201, 168, 76, 0.03);
+  border-color: var(--color-gold);
+  background: rgba(201, 169, 97, 0.04);
 }
 
 .field-label {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.28);
+  color: var(--color-ink-faint);
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.2em;
   margin-bottom: 5px;
 }
 
@@ -744,32 +732,33 @@ async function handleSubmit() {
 
 .field-optional-badge {
   font-size: 10px;
-  color: rgba(107, 72, 224, 0.65);
+  color: var(--color-gold);
   letter-spacing: 0.02em;
+  font-family: 'Hanken Grotesk', sans-serif;
 }
 
 .field-input {
   background: transparent;
   border: none;
   outline: none;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 15px;
+  color: var(--color-ink);
+  font-size: 16px;
+  font-family: 'Cormorant Garamond', serif;
   width: 100%;
-  font-family: inherit;
 }
 
 .field-input::placeholder {
-  color: rgba(255, 255, 255, 0.18);
+  color: var(--color-ink-ghost);
 }
 
 .field-input:-webkit-autofill,
 .field-input:-webkit-autofill:hover,
 .field-input:-webkit-autofill:focus,
 .field-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #0d0b1e inset !important;
-  box-shadow: 0 0 0 1000px #0d0b1e inset !important;
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
-  caret-color: rgba(255, 255, 255, 0.88);
+  -webkit-box-shadow: 0 0 0 1000px #F2EBDD inset !important;
+  box-shadow: 0 0 0 1000px #F2EBDD inset !important;
+  -webkit-text-fill-color: #1A1612 !important;
+  caret-color: #1A1612;
   transition: background-color 9999s ease-in-out 0s;
 }
 
@@ -779,9 +768,8 @@ async function handleSubmit() {
 ───────────────────────────────────────────── */
 .date-group,
 .time-group {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
+  background: rgba(26, 22, 18, 0.03);
+  border: 1px solid var(--color-ink-ghost);
   padding: 16px 16px 14px;
   margin-bottom: 12px;
 }
@@ -818,8 +806,9 @@ async function handleSubmit() {
 }
 
 .wheel-label {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.22);
+  color: var(--color-ink-faint);
   letter-spacing: 0.10em;
   text-transform: uppercase;
 }
@@ -828,9 +817,8 @@ async function handleSubmit() {
   width: 100%;
   height: 132px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  background: rgba(26, 22, 18, 0.03);
+  border: 1px solid var(--color-ink-ghost);
   position: relative;
   touch-action: none;
   user-select: none;
@@ -866,10 +854,9 @@ async function handleSubmit() {
   right: 10%;
   top: calc(50% - 22px);
   height: 44px;
-  border-top: 1px solid rgba(201, 168, 76, 0.18);
-  border-bottom: 1px solid rgba(201, 168, 76, 0.18);
+  border-top: 1px solid var(--color-gold-dim);
+  border-bottom: 1px solid var(--color-gold-dim);
   pointer-events: none;
-  border-radius: 2px;
 }
 
 .wheel-track {
@@ -889,21 +876,20 @@ async function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  font-family: 'Cormorant Garamond', serif;
   font-size: 18px;
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.22);
+  color: var(--color-ink-faint);
   cursor: pointer;
   user-select: none;
   transition: color 0.18s ease, background 0.18s ease;
-  border-radius: 4px;
   letter-spacing: 0.04em;
   contain: layout style;
 }
 
 .wheel-item.selected {
-  color: rgba(201, 168, 76, 0.95);
-  background: rgba(201, 168, 76, 0.07);
+  color: var(--color-gold);
+  background: rgba(201, 169, 97, 0.08);
 }
 
 
@@ -913,20 +899,22 @@ async function handleSubmit() {
 .birth-unlock-row {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-ink-ghost);
 }
 
 .birth-unlock-icon {
   font-size: 10px;
-  color: rgba(107, 72, 224, 0.70);
+  color: var(--color-gold);
+  flex-shrink: 0;
 }
 
 .birth-unlock-text {
-  font-size: 11px;
-  color: rgba(107, 72, 224, 0.70);
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 12px;
+  color: var(--color-ink-mid);
   letter-spacing: 0.02em;
 }
 
@@ -937,10 +925,9 @@ async function handleSubmit() {
 .submit-error {
   margin: 4px 0 12px;
   padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid rgba(220, 80, 80, 0.35);
-  background: rgba(220, 80, 80, 0.07);
-  color: rgba(255, 160, 160, 0.9);
+  border: 1px solid rgba(139, 37, 0, 0.25);
+  background: rgba(139, 37, 0, 0.04);
+  color: #8B2500;
   font-size: 12px;
   line-height: 1.55;
   text-align: center;
@@ -948,41 +935,34 @@ async function handleSubmit() {
 
 
 /* ─────────────────────────────────────────────
-   CTA BUTTON — matches analysis.vue .submit-btn
+   CTA BUTTON
 ───────────────────────────────────────────── */
 .cta-button {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: rgba(201, 168, 76, 0.10);
-  border: 1px solid rgba(201, 168, 76, 0.45);
-  border-radius: 14px;
-  color: rgba(201, 168, 76, 0.92);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: inherit;
-  letter-spacing: 0.10em;
+  background: var(--color-ink);
+  border: none;
+  color: var(--color-bone);
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
   padding: 17px 24px;
   min-height: 54px;
   width: 100%;
   cursor: pointer;
-  box-shadow: none;
   transition:
-    background  0.18s ease,
-    border-color 0.18s ease,
-    color       0.18s ease,
-    transform   0.12s ease;
+    opacity 0.18s ease,
+    transform 0.12s ease;
   margin-top: 20px;
   -webkit-tap-highlight-color: transparent;
 }
 
 .cta-button:hover:not(.disabled) {
-  background: rgba(201, 168, 76, 0.18);
-  border-color: rgba(201, 168, 76, 0.70);
-  color: rgba(201, 168, 76, 1);
-  box-shadow: 0 0 28px rgba(201, 168, 76, 0.12);
+  opacity: 0.85;
   transform: translateY(-1px);
 }
 
@@ -1003,8 +983,8 @@ async function handleSubmit() {
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(201, 168, 76, 0.25);
-  border-top-color: rgba(201, 168, 76, 0.85);
+  border: 2px solid rgba(242, 235, 221, 0.30);
+  border-top-color: rgba(242, 235, 221, 0.90);
   border-radius: 50%;
   animation: spin 0.72s linear infinite;
   flex-shrink: 0;
@@ -1019,28 +999,14 @@ async function handleSubmit() {
    SUB NOTE
 ───────────────────────────────────────────── */
 .sub-note {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.18);
+  color: var(--color-ink-faint);
   text-align: center;
   margin: 16px 0 0;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
 }
 
-
-/* ─────────────────────────────────────────────
-   RESPONSIVE
-───────────────────────────────────────────── */
-@media (max-width: 400px) {
-  .page {
-    padding: 24px 20px calc(48px + env(safe-area-inset-bottom, 0px));
-  }
-}
-
-@media (max-width: 360px) {
-  .page {
-    padding: 20px 16px calc(44px + env(safe-area-inset-bottom, 0px));
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .cta-button:hover:not(.disabled) {

@@ -1,405 +1,302 @@
 <template>
-  <div class="daily-root">
+  <AppShell :dark="true">
 
-    <!-- ── Ambient layers ──────────────────── -->
-    <div class="bg-deep"   aria-hidden="true" />
-    <div class="bg-nebula" aria-hidden="true" />
+    <!-- Tab switcher in header action slot -->
+    <template #headerAction>
+      <div class="daily-tabs">
+        <button
+          class="daily-tab label-caps"
+          :class="{ 'daily-tab--active': activeTab === 'horoscope' }"
+          @click="activeTab = 'horoscope'"
+        >
+          Daily
+        </button>
+        <span class="daily-tab-sep">·</span>
+        <button
+          class="daily-tab label-caps"
+          :class="{ 'daily-tab--active': activeTab === 'archetype' }"
+          @click="activeTab = 'archetype'"
+        >
+          Archetype
+        </button>
+      </div>
+    </template>
 
+    <!-- ── TAB: DAILY HOROSCOPE ── -->
+    <div v-if="activeTab === 'horoscope'" class="daily-horoscope">
 
-    <!-- ═══════════════════════════════════════
-         HEADER
-    ═══════════════════════════════════════════ -->
-    <header class="site-header" :class="{ 'site-header--scrolled': headerScrolled }" role="banner">
-      <div class="header-inner">
+      <!-- Section header -->
+      <div class="daily-header">
+        <p class="label-caps daily-header__eyebrow">{{ todayFormatted }}</p>
+        <h1 class="daily-header__headline font-display-italic">Daily Horoscope</h1>
+        <div class="daily-header__rule" />
+      </div>
 
-        <NuxtLink to="/" class="header-logo" aria-label="OMENORA — home">OMENORA</NuxtLink>
+      <!-- Loading -->
+      <div v-if="loading" class="daily-loading">
+        <div class="daily-loading__bar"><div class="daily-loading__fill" /></div>
+        <p class="annotation">Loading today's readings…</p>
+      </div>
 
-        <nav class="header-nav" aria-label="Main navigation">
-          <NuxtLink to="/daily" class="header-nav-link header-nav-link--active">
-            <span class="header-nav-glyph" aria-hidden="true">☽</span>
-            Daily Horoscope
-          </NuxtLink>
-          <span class="header-nav-sep" aria-hidden="true" />
-          <NuxtLink to="/compatibility-quiz" class="header-nav-link">
-            <span class="header-nav-glyph" aria-hidden="true">✦</span>
-            Compatibility
-          </NuxtLink>
-        </nav>
+      <!-- No data -->
+      <div v-else-if="!zodiacData" class="daily-empty">
+        <p class="annotation">Today's horoscopes are being prepared. Check back shortly.</p>
+      </div>
 
-        <div class="header-actions">
-          <button
-            class="header-cta"
-            @click="navigateTo('/analysis')"
-            aria-label="Get your free reading"
-          >
-            Get My Reading
-            <span class="header-cta-arr" aria-hidden="true">→</span>
-          </button>
+      <!-- Featured sign view (deep link ?sign=) -->
+      <template v-else-if="featuredSign && featuredSignReading">
+        <div class="reading-view">
+          <button class="back-link label-caps" @click="navigateTo('/daily')">← All signs</button>
 
-          <button
-            class="header-hamburger"
-            :class="{ 'header-hamburger--open': navOpen }"
-            :aria-expanded="navOpen"
-            aria-controls="mobile-nav-daily"
-            aria-label="Toggle navigation"
-            @click="navOpen = !navOpen"
-          >
-            <span /><span /><span />
-          </button>
+          <div class="reading-sign-header">
+            <div class="reading-sign-header__sign">
+              <img
+                v-if="featuredSign"
+                :src="`/symbols/${zodiacSignFile(featuredSign)}`"
+                :alt="currentSignName"
+                class="reading-sign-img"
+              />
+              <div>
+                <h2 class="font-serif reading-sign-name">{{ currentSignName }}</h2>
+                <span class="annotation">{{ currentSignDates }}</span>
+              </div>
+            </div>
+          </div>
+
+          <EditorialRule />
+
+          <div class="reading-content">
+            <div class="reading-content__theme">
+              <span class="label-caps reading-content__theme-label">Today's theme</span>
+              <p class="pull-quote reading-content__theme-text">{{ featuredSignReading.theme }}</p>
+            </div>
+
+            <EditorialRule />
+
+            <p class="annotation reading-moon-line">
+              ☽ Moon in {{ featuredSignReading.moon_sign }} · {{ featuredSignReading.moon_phase }}
+            </p>
+
+            <div class="sign-sections">
+              <div class="sign-section-row">
+                <HoroscopeSymbol type="love" :size="18" class="section-icon" />
+                <span class="section-label label-caps">Love</span>
+                <span class="section-text">{{ featuredSignReading.love }}</span>
+              </div>
+              <div class="sign-section-row">
+                <HoroscopeSymbol type="work" :size="18" class="section-icon" />
+                <span class="section-label label-caps">Work</span>
+                <span class="section-text">{{ featuredSignReading.job }}</span>
+              </div>
+              <div class="sign-section-row">
+                <HoroscopeSymbol type="health" :size="18" class="section-icon" />
+                <span class="section-label label-caps">Health</span>
+                <span class="section-text">{{ featuredSignReading.health }}</span>
+              </div>
+            </div>
+
+            <div v-if="featuredSignReading.planetary_weather" class="reading-weather">
+              <EditorialRule />
+              <p class="annotation reading-weather__text">{{ featuredSignReading.planetary_weather }}</p>
+            </div>
+
+            <div class="reading-cta">
+              <EditorialRule ornament="◇" />
+              <p class="pull-quote reading-cta__pull">
+                This is your sun sign forecast. Your natal chart gives the full picture.
+              </p>
+              <CTAButton to="/analysis" :arrow="true">Get your natal reading</CTAButton>
+            </div>
+          </div>
         </div>
 
-      </div>
+        <!-- Other signs grid -->
+        <div class="others-section">
+          <p class="label-caps others-section__label">All Signs</p>
+          <div class="sign-grid sign-grid--mini">
+            <template v-for="sign in otherSigns" :key="sign">
+              <NuxtLink
+                v-if="zodiacData?.[sign]"
+                :to="`/daily?sign=${sign}`"
+                class="sign-mini-card"
+              >
+                <img :src="`/symbols/${zodiacSignFile(sign)}`" :alt="signDisplayName(sign)" class="sign-mini-card__img" />
+                <span class="label-caps sign-mini-card__name">{{ signDisplayName(sign) }}</span>
+                <p class="annotation sign-mini-card__theme">{{ zodiacData[sign]?.theme }}</p>
+                <p class="annotation sign-mini-card__preview">{{ firstSentence(zodiacData[sign]?.love ?? '') }}</p>
+              </NuxtLink>
+            </template>
+          </div>
+        </div>
+      </template>
 
-      <div
-        id="mobile-nav-daily"
-        class="mobile-drawer"
-        :class="{ 'mobile-drawer--open': navOpen }"
-        role="dialog"
-        :inert="!navOpen"
-        aria-label="Mobile navigation"
-      >
-        <nav class="mobile-drawer-nav">
-          <NuxtLink
-            to="/daily"
-            class="mobile-nav-link mobile-nav-link--active"
-            @click="navOpen = false"
-          >
-            <span class="mobile-nav-glyph" aria-hidden="true">☽</span>
-            Daily Horoscope
-          </NuxtLink>
-          <NuxtLink
-            to="/compatibility-quiz"
-            class="mobile-nav-link mobile-nav-link--compat"
-            @click="navOpen = false"
-          >
-            <span class="mobile-nav-glyph" aria-hidden="true">✦</span>
-            Compatibility Reading
-            <span class="mobile-nav-badge">Free Preview</span>
-          </NuxtLink>
-        </nav>
-        <button
-          class="mobile-drawer-cta"
-          @click="navigateTo('/analysis'); navOpen = false"
-        >
-          Get My Free Reading →
-        </button>
-        <p class="mobile-drawer-sub">No account · Results in 60 seconds</p>
-      </div>
+      <!-- All 12 signs selector grid -->
+      <template v-else>
+        <div class="sign-selector">
+          <p class="annotation sign-selector__prompt">Select your sun sign</p>
+          <div class="sign-grid">
+            <button
+              v-for="sign in zodiacSigns"
+              :key="sign.key"
+              class="sign-tile"
+              @click="selectSign(sign.key)"
+            >
+              <img :src="`/symbols/${sign.file}`" :alt="sign.name" class="sign-tile__img" />
+              <span class="label-caps sign-tile__name">{{ sign.name }}</span>
+              <span class="annotation sign-tile__dates">{{ sign.dates }}</span>
+            </button>
+          </div>
+        </div>
+      </template>
 
-      <div
-        v-if="navOpen"
-        class="drawer-backdrop"
-        aria-hidden="true"
-        @click="navOpen = false"
-      />
-    </header>
-
-
-    <!-- ═══════════════════════════════════════
-         HERO
-    ═══════════════════════════════════════════ -->
-    <section class="hero" aria-label="Daily readings">
-      <p class="hero-eyebrow">DAILY READINGS</p>
-      <h1 class="hero-title">Your Daily Horoscope &amp; Archetype Reading</h1>
-      <p class="hero-date">{{ formattedDate }}<span v-if="moonPhase" class="hero-moon"> · {{ moonPhase }}</span></p>
-    </section>
-
-
-    <!-- ═══════════════════════════════════════
-         TAB SWITCHER
-    ═══════════════════════════════════════════ -->
-    <div class="tab-bar" role="tablist" aria-label="Reading type">
-      <button
-        class="tab-btn"
-        :class="{ 'tab-btn--active': activeTab === 'horoscope' }"
-        role="tab"
-        :aria-selected="activeTab === 'horoscope'"
-        @click="activeTab = 'horoscope'"
-      >
-        Daily Horoscope
-      </button>
-      <button
-        class="tab-btn"
-        :class="{ 'tab-btn--active': activeTab === 'archetype' }"
-        role="tab"
-        :aria-selected="activeTab === 'archetype'"
-        @click="activeTab = 'archetype'"
-      >
-        Archetype Reading
-      </button>
     </div>
 
+    <!-- ── TAB: ARCHETYPE READING ── -->
+    <div v-if="activeTab === 'archetype'" class="daily-archetype">
 
-    <!-- ═══════════════════════════════════════
-         MAIN CONTENT
-    ═══════════════════════════════════════════ -->
-    <main class="main-content">
-
-      <!-- Loading state -->
-      <div v-if="loading" class="state-message" role="status" aria-live="polite">
-        <div class="spinner" aria-hidden="true" />
-        <p class="state-text">Loading today's readings…</p>
+      <div class="daily-header">
+        <p class="label-caps daily-header__eyebrow">{{ todayFormatted }}</p>
+        <h1 class="daily-header__headline font-display-italic">Archetype Reading</h1>
+        <div class="daily-header__rule" />
       </div>
 
-      <!-- ── HOROSCOPE TAB ─────────────────── -->
-      <template v-else-if="activeTab === 'horoscope'">
+      <!-- Loading -->
+      <div v-if="loading" class="daily-loading">
+        <div class="daily-loading__bar"><div class="daily-loading__fill" /></div>
+        <p class="annotation">Loading today's readings…</p>
+      </div>
 
-        <!-- No zodiac data -->
-        <div v-if="!zodiacData" class="state-message">
-          <p class="state-text">Today's horoscopes are being prepared. Check back shortly.</p>
+      <!-- No data -->
+      <div v-else-if="!archetypeData" class="daily-empty">
+        <p class="annotation">Today's archetype readings are being prepared. Check back shortly.</p>
+      </div>
+
+      <!-- Featured archetype view (deep link ?archetype=) -->
+      <template v-else-if="featuredArchetype && featuredReading">
+        <div class="reading-view">
+          <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')">← All archetypes</button>
+
+          <div class="reading-sign-header">
+            <div class="reading-sign-header__sign">
+              <img
+                :src="`/symbols/${selectedArchetypeFile}`"
+                :alt="featuredDisplayName"
+                class="reading-archetype-symbol symbol-editorial"
+              />
+              <div>
+                <h2 class="font-serif reading-sign-name">{{ featuredDisplayName }}</h2>
+                <span class="annotation">Archetype Reading</span>
+              </div>
+            </div>
+          </div>
+
+          <EditorialRule />
+
+          <div class="reading-content">
+            <div class="reading-content__theme">
+              <span class="label-caps reading-content__theme-label">Today's focus</span>
+              <p class="pull-quote reading-content__theme-text">{{ featuredReading.theme }}</p>
+            </div>
+
+            <EditorialRule />
+
+            <div class="reading-content__body">
+              <p class="reading-content__para">{{ featuredReading.insight }}</p>
+            </div>
+
+            <div v-if="featuredReading.reflection" class="reading-reflection">
+              <p class="label-caps reading-reflection__label">Reflection</p>
+              <p class="reading-reflection__text font-serif-italic">{{ featuredReading.reflection }}</p>
+            </div>
+
+            <div class="reading-cta">
+              <EditorialRule ornament="◇" />
+              <p class="pull-quote reading-cta__pull">Don't know your archetype yet?</p>
+              <CTAButton to="/analysis" :arrow="true">Discover yours</CTAButton>
+            </div>
+          </div>
         </div>
 
-        <!-- Featured sign view -->
-        <template v-else-if="featuredSign && featuredSignReading">
-          <section class="featured-section" aria-label="Your horoscope">
-            <NuxtLink to="/daily" class="back-link">← All signs</NuxtLink>
-            <p class="sect-label">YOUR HOROSCOPE</p>
-            <article class="featured-card" :aria-label="signDisplayName(featuredSign) + ' horoscope'">
-              <p class="featured-archetype-name">{{ signDisplayName(featuredSign) }}</p>
-              <p class="card-date">{{ cardDate }}</p>
-              <p class="featured-theme">{{ featuredSignReading.theme }}</p>
-              <p class="featured-moon-line">☽ Moon in {{ featuredSignReading.moon_sign }} · {{ featuredSignReading.moon_phase }}</p>
-              <div class="featured-divider" aria-hidden="true" />
-              <div class="sign-sections">
-                <div class="sign-section-row">
-                  <span class="section-icon" aria-hidden="true">♥</span>
-                  <span class="section-label">LOVE</span>
-                  <span class="section-text">{{ featuredSignReading.love }}</span>
-                </div>
-                <div class="sign-section-row">
-                  <span class="section-icon" aria-hidden="true">✦</span>
-                  <span class="section-label">WORK</span>
-                  <span class="section-text">{{ featuredSignReading.job }}</span>
-                </div>
-                <div class="sign-section-row">
-                  <span class="section-icon" aria-hidden="true">✿</span>
-                  <span class="section-label">HEALTH</span>
-                  <span class="section-text">{{ featuredSignReading.health }}</span>
-                </div>
-              </div>
-              <div v-if="featuredSignReading.planetary_weather" class="featured-weather">
-                <div class="weather-divider" aria-hidden="true" />
-                <p class="weather-text">{{ featuredSignReading.planetary_weather }}</p>
-              </div>
-            </article>
-          </section>
-
-          <section class="others-section" aria-label="Other sign horoscopes">
-            <p class="sect-label">ALL SIGNS</p>
-            <div class="grid-3col">
-              <template
-                v-for="sign in otherSigns"
-                :key="sign"
-              >
-                <article
-                  v-if="zodiacData?.[sign]"
-                  class="mini-card"
-                  :aria-label="signDisplayName(sign) + ' horoscope'"
-                >
-                  <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
-                    <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
-                    <p class="card-date">{{ cardDate }}</p>
-                    <p class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
-                    <div class="sign-sections sign-sections--mini">
-                      <div class="sign-section-row">
-                        <span class="section-icon" aria-hidden="true">♥</span>
-                        <span class="section-label">LOVE</span>
-                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.love ?? '') }}</span>
-                      </div>
-                      <div class="sign-section-row">
-                        <span class="section-icon" aria-hidden="true">✦</span>
-                        <span class="section-label">WORK</span>
-                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.job ?? '') }}</span>
-                      </div>
-                      <div class="sign-section-row">
-                        <span class="section-icon" aria-hidden="true">✿</span>
-                        <span class="section-label">HEALTH</span>
-                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.health ?? '') }}</span>
-                      </div>
-                    </div>
-                  </NuxtLink>
-                </article>
-              </template>
-            </div>
-          </section>
-        </template>
-
-        <!-- All 12 signs grid -->
-        <template v-else>
-          <section aria-label="All sign horoscopes">
-            <p class="sect-label">ALL SIGNS</p>
-            <div class="grid-3col">
-              <template
-                v-for="sign in ALL_SIGNS"
-                :key="sign"
-              >
-                <article
-                  v-if="zodiacData?.[sign]"
-                  class="mini-card"
-                  :aria-label="signDisplayName(sign) + ' horoscope'"
-                >
-                  <NuxtLink :to="`/daily?sign=${sign}`" class="mini-card-link">
-                    <p class="mini-archetype-name">{{ signDisplayName(sign) }}</p>
-                    <p class="card-date">{{ cardDate }}</p>
-                    <p class="mini-theme">{{ zodiacData[sign]?.theme }}</p>
-                    <div class="sign-sections sign-sections--mini">
-                      <div class="sign-section-row">
-                        <span class="section-icon" aria-hidden="true">♥</span>
-                        <span class="section-label">LOVE</span>
-                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.love ?? '') }}</span>
-                      </div>
-                      <div class="sign-section-row">
-                        <span class="section-icon" aria-hidden="true">✦</span>
-                        <span class="section-label">WORK</span>
-                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.job ?? '') }}</span>
-                      </div>
-                      <div class="sign-section-row">
-                        <span class="section-icon" aria-hidden="true">✿</span>
-                        <span class="section-label">HEALTH</span>
-                        <span class="section-text">{{ firstSentence(zodiacData[sign]?.health ?? '') }}</span>
-                      </div>
-                    </div>
-                  </NuxtLink>
-                </article>
-              </template>
-            </div>
-          </section>
-        </template>
-
-      </template>
-
-      <!-- ── ARCHETYPE TAB ─────────────────── -->
-      <template v-else-if="activeTab === 'archetype'">
-
-        <!-- No archetype data -->
-        <div v-if="!archetypeData" class="state-message">
-          <p class="state-text">Today's archetype readings are being prepared. Check back shortly.</p>
+        <!-- Other archetypes grid -->
+        <div class="others-section">
+          <p class="label-caps others-section__label">All Archetypes</p>
+          <div class="archetype-grid archetype-grid--mini">
+            <NuxtLink
+              v-for="slug in otherArchetypes"
+              :key="slug"
+              :to="`/daily?archetype=${slug}`"
+              class="archetype-mini-card"
+            >
+              <img
+                :src="`/symbols/${archetypeFile(slug)}`"
+                :alt="archetypeDisplayName(slug)"
+                class="archetype-mini-card__img symbol-editorial"
+              />
+              <span class="label-caps archetype-mini-card__name">{{ archetypeDisplayName(slug) }}</span>
+              <p v-if="archetypeData[slug]" class="annotation archetype-mini-card__theme">{{ archetypeData[slug]?.theme }}</p>
+            </NuxtLink>
+          </div>
         </div>
-
-        <!-- Featured archetype view -->
-        <template v-else-if="featuredArchetype && featuredReading">
-          <section class="featured-section" aria-label="Your archetype reading">
-            <NuxtLink to="/daily?tab=archetype" class="back-link">← All archetypes</NuxtLink>
-            <p class="sect-label">YOUR ARCHETYPE</p>
-            <article class="featured-card" :aria-label="featuredDisplayName + ' reading'">
-              <p class="featured-archetype-name">{{ featuredDisplayName }}</p>
-              <p class="featured-theme">{{ featuredReading.theme }}</p>
-              <div class="featured-divider" aria-hidden="true" />
-              <p class="featured-insight">{{ featuredReading.insight }}</p>
-              <div v-if="featuredReading.reflection" class="featured-reflection">
-                <p class="reflection-label">REFLECTION</p>
-                <p class="reflection-text">{{ featuredReading.reflection }}</p>
-              </div>
-            </article>
-          </section>
-
-          <section class="others-section" aria-label="Other archetype readings">
-            <p class="sect-label">ALL ARCHETYPES</p>
-            <div class="grid-3col">
-              <article
-                v-for="slug in otherArchetypes"
-                :key="slug"
-                class="mini-card"
-                :aria-label="archetypeDisplayName(slug) + ' reading'"
-              >
-                <NuxtLink :to="`/daily?archetype=${slug}`" class="mini-card-link">
-                  <p class="mini-archetype-name">{{ archetypeDisplayName(slug) }}</p>
-                  <p v-if="archetypeData[slug]" class="mini-theme">{{ archetypeData[slug]?.theme }}</p>
-                  <p v-if="archetypeData[slug]" class="mini-insight">{{ firstSentence(archetypeData[slug]?.insight ?? '') }}</p>
-                </NuxtLink>
-              </article>
-            </div>
-          </section>
-        </template>
-
-        <!-- All 12 archetypes grid -->
-        <template v-else>
-          <section aria-label="All archetype readings">
-            <p class="sect-label">ALL ARCHETYPES</p>
-            <div class="grid-3col">
-              <article
-                v-for="slug in ALL_ARCHETYPES"
-                :key="slug"
-                class="mini-card"
-                :aria-label="archetypeDisplayName(slug) + ' reading'"
-              >
-                <NuxtLink :to="`/daily?archetype=${slug}`" class="mini-card-link">
-                  <p class="mini-archetype-name">{{ archetypeDisplayName(slug) }}</p>
-                  <p v-if="archetypeData[slug]" class="mini-theme">{{ archetypeData[slug]?.theme }}</p>
-                  <p v-if="archetypeData[slug]" class="mini-insight">{{ firstSentence(archetypeData[slug]?.insight ?? '') }}</p>
-                </NuxtLink>
-              </article>
-            </div>
-          </section>
-        </template>
-
       </template>
 
-    </main>
+      <!-- All archetypes selector grid -->
+      <template v-else>
+        <div class="archetype-selector">
+          <p class="annotation archetype-selector__prompt">Select your archetype</p>
+          <div class="archetype-grid">
+            <button
+              v-for="a in archetypeList"
+              :key="a.key"
+              class="archetype-tile"
+              @click="selectArchetype(a.key)"
+            >
+              <img
+                :src="`/symbols/${a.file}`"
+                :alt="a.name"
+                class="archetype-tile__img symbol-editorial"
+              />
+              <span class="label-caps archetype-tile__name">{{ a.name }}</span>
+            </button>
+          </div>
+        </div>
+      </template>
 
+    </div>
 
+    <!-- ── CTA STRIP ── -->
+    <div class="daily-cta-strip">
+      <EditorialRule />
+      <div class="daily-cta-strip__inner">
+        <p class="pull-quote daily-cta-strip__pull">
+          <template v-if="featuredSign">See what YOUR chart says beyond {{ signDisplayName(featuredSign) }}</template>
+          <template v-else-if="featuredArchetype">Get your full {{ archetypeDisplayName(featuredArchetype) }} reading</template>
+          <template v-else>Your horoscope is the general reading. Get the full picture.</template>
+        </p>
+        <CTAButton to="/analysis" :arrow="true">Get my natal reading</CTAButton>
+      </div>
+    </div>
 
-    <!-- ═══════════════════════════════════════
-         CTA SECTION
-    ═══════════════════════════════════════════ -->
-    <section class="cta-section" aria-label="Personal report call to action">
-      <p class="cta-eyebrow">WANT MORE THAN THE GENERAL READING?</p>
-      <p class="cta-copy">
-        Your horoscope is the general reading. Get a full personal report built from your exact birth date, time, and city.
-      </p>
-      <button class="cta-primary" @click="navigateTo('/analysis')">
-        <template v-if="featuredSign">See What YOUR Chart Says Beyond {{ signDisplayName(featuredSign) }}</template>
-        <template v-else-if="featuredArchetype">Get Your Full {{ archetypeDisplayName(featuredArchetype) }} Reading</template>
-        <template v-else>Get My Personal Reading</template>
-        <span class="cta-arr" aria-hidden="true">→</span>
-      </button>
-    </section>
-
-
-    <!-- ═══════════════════════════════════════
-         PERSONAL SUBSCRIPTION CTA
-    ═══════════════════════════════════════════ -->
+    <!-- ── SUBSCRIPTION CARD ── -->
     <div class="daily-sub-wrap">
       <div class="daily-sub-card">
         <div class="daily-sub-top">
-          <span class="daily-sub-badge">PERSONAL</span>
-          <span class="daily-sub-price">$4.99<span class="daily-sub-price-period">/mo</span></span>
+          <span class="label-caps daily-sub-badge">Personal</span>
+          <span class="daily-sub-price font-serif">$4.99<span class="daily-sub-price-period">/mo</span></span>
         </div>
-        <h2 class="daily-sub-headline">Get YOUR personal horoscope every morning</h2>
-        <p class="daily-sub-copy">Based on your exact birth chart — not just your sun sign. Love, Work &amp; Health, personalized to you.</p>
-        <NuxtLink to="/subscribe" class="daily-sub-btn">
-          Start Personal Horoscope →
-        </NuxtLink>
-        <p class="daily-sub-note">Cancel anytime · No commitment</p>
+        <h2 class="font-serif-italic daily-sub-headline">Get YOUR personal horoscope every morning</h2>
+        <p class="annotation daily-sub-copy">Based on your exact birth chart — not just your sun sign. Love, Work &amp; Health, personalized to you.</p>
+        <NuxtLink to="/subscribe" class="daily-sub-btn label-caps">Start Personal Horoscope →</NuxtLink>
+        <p class="annotation daily-sub-note">Cancel anytime · No commitment</p>
       </div>
     </div>
 
-
-    <!-- ═══════════════════════════════════════
-         FOOTER
-    ═══════════════════════════════════════════ -->
-    <footer class="site-footer">
-      <nav class="footer-nav" aria-label="Footer links">
-        <NuxtLink to="/privacy" class="footer-link">Privacy</NuxtLink>
-        <span class="footer-dot" aria-hidden="true">·</span>
-        <NuxtLink to="/terms" class="footer-link">Terms</NuxtLink>
-      </nav>
-      <p class="footer-copy">© 2026 OMENORA</p>
-      <p class="footer-disc">For entertainment and personal enrichment only. Not a substitute for professional advice.</p>
-    </footer>
-
-  </div>
+  </AppShell>
 </template>
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-
-// ── Header state ─────────────────────────────
-const navOpen        = ref(false)
-const headerScrolled = ref(false)
-const onScroll = () => { headerScrolled.value = window.scrollY > 24 }
 
 // ── SEO ───────────────────────────────────────
 useSeoMeta({
@@ -495,7 +392,69 @@ const formattedDate = computed(() =>
   today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 )
 
+const todayFormatted = formattedDate
+
 const cardDate = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+
+// ── Zodiac signs array (for selector grid) ────
+const zodiacSigns = [
+  { key: 'aries',       name: 'Aries',       file: 'Aries.svg',       dates: 'Mar 21 – Apr 19' },
+  { key: 'taurus',      name: 'Taurus',      file: 'Taurus.png',      dates: 'Apr 20 – May 20' },
+  { key: 'gemini',      name: 'Gemini',      file: 'Gemini.svg',      dates: 'May 21 – Jun 20' },
+  { key: 'cancer',      name: 'Cancer',      file: 'Cancer.svg',      dates: 'Jun 21 – Jul 22' },
+  { key: 'leo',         name: 'Leo',         file: 'Leo.svg',         dates: 'Jul 23 – Aug 22' },
+  { key: 'virgo',       name: 'Virgo',       file: 'Virgo.svg',       dates: 'Aug 23 – Sep 22' },
+  { key: 'libra',       name: 'Libra',       file: 'Libra.svg',       dates: 'Sep 23 – Oct 22' },
+  { key: 'scorpio',     name: 'Scorpio',     file: 'Scorpio.svg',     dates: 'Oct 23 – Nov 21' },
+  { key: 'sagittarius', name: 'Sagittarius', file: 'Sagittarius.svg', dates: 'Nov 22 – Dec 21' },
+  { key: 'capricorn',   name: 'Capricorn',   file: 'Capricorn.svg',   dates: 'Dec 22 – Jan 19' },
+  { key: 'aquarius',    name: 'Aquarius',    file: 'Aquarius.svg',    dates: 'Jan 20 – Feb 18' },
+  { key: 'pisces',      name: 'Pisces',      file: 'Pisces.svg',      dates: 'Feb 19 – Mar 20' },
+]
+
+function zodiacSignFile(key: string): string {
+  return zodiacSigns.find(s => s.key === key)?.file ?? `${key}.svg`
+}
+
+const currentSignName = computed(() =>
+  featuredSign.value ? signDisplayName(featuredSign.value) : ''
+)
+
+const currentSignDates = computed(() =>
+  zodiacSigns.find(s => s.key === featuredSign.value)?.dates ?? ''
+)
+
+function selectSign(key: string): void {
+  navigateTo(`/daily?sign=${key}`)
+}
+
+// ── Archetype list (for selector grid) ────────
+const archetypeList = [
+  { key: 'phoenix',    name: 'The Phoenix',          file: 'phoenix@2x.png'    },
+  { key: 'architect',  name: 'The Silent Architect',  file: 'architect@2x.png'  },
+  { key: 'storm',      name: 'The Storm Caller',      file: 'storm@2x.png'      },
+  { key: 'lighthouse', name: 'The Lighthouse',        file: 'lighthouse@2x.png' },
+  { key: 'wanderer',   name: 'The Wanderer',          file: 'wanderer@2x.png'   },
+  { key: 'alchemist',  name: 'The Alchemist',         file: 'alchemist@2x.png'  },
+  { key: 'guardian',   name: 'The Guardian',          file: 'guardian@2x.png'   },
+  { key: 'visionary',  name: 'The Visionary',         file: 'visionary@2x.png'  },
+  { key: 'mirror',     name: 'The Mirror',            file: 'mirror@2x.png'     },
+  { key: 'catalyst',   name: 'The Catalyst',          file: 'catalyst@2x.png'   },
+  { key: 'sage',       name: 'The Sage',              file: 'sage@2x.png'       },
+  { key: 'wildfire',   name: 'The Wildfire',          file: 'wildfire@2x.png'   },
+]
+
+function archetypeFile(key: string): string {
+  return archetypeList.find(a => a.key === key)?.file ?? `${key}@2x.png`
+}
+
+const selectedArchetypeFile = computed(() =>
+  featuredArchetype.value ? archetypeFile(featuredArchetype.value) : ''
+)
+
+function selectArchetype(key: string): void {
+  navigateTo(`/daily?archetype=${key}`)
+}
 
 const moonPhase = ref<string | null>(null)
 
@@ -558,7 +517,6 @@ function firstSentence(text: string): string {
 // ── Fetch on mount ─────────────────────────────
 onMounted(async () => {
   moonPhase.value = computeMoonPhase(today)
-  window.addEventListener('scroll', onScroll, { passive: true })
 
   const tabParam = route.query.tab
   if (tabParam === 'archetype' || (route.query.archetype && typeof route.query.archetype === 'string')) {
@@ -585,732 +543,445 @@ onMounted(async () => {
   }
 })
 
-onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
-})
 </script>
 
-
 <style scoped>
-
 /* ─────────────────────────────────────────────
-   ROOT & BACKGROUND
+   TAB SWITCHER
 ───────────────────────────────────────────── */
-.daily-root {
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--white-94);
-  font-family: var(--sans);
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-
-.bg-deep {
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 80% 55% at 50% 0%,
-      rgba(75,45,155,0.22) 0%,
-      transparent 68%
-    ),
-    radial-gradient(
-      ellipse 55% 45% at 15% 55%,
-      rgba(50,25,110,0.12) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 45% 40% at 88% 75%,
-      rgba(30,15,85,0.10) 0%,
-      transparent 58%
-    );
-  pointer-events: none;
-  z-index: 0;
-}
-
-.bg-nebula {
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 40% 30% at 50% 20%,
-      rgba(100,65,200,0.07) 0%,
-      transparent 55%
-    );
-  pointer-events: none;
-  z-index: 0;
-}
-
-
-/* ─────────────────────────────────────────────
-   HEADER
-───────────────────────────────────────────── */
-.site-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 200;
-  transition: background 0.28s ease, border-color 0.28s ease;
-  border-bottom: 1px solid transparent;
-}
-
-.site-header--scrolled {
-  background: rgba(7, 7, 13, 0.82);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border-color: rgba(255, 255, 255, 0.07);
-}
-
-.header-inner {
+.daily-tabs {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 32px;
-  height: 64px;
-  gap: 24px;
+  gap: 10px;
 }
 
-.header-logo {
-  font-family: var(--serif);
-  font-size: 15px;
-  letter-spacing: 0.22em;
-  color: var(--white-94);
-  text-decoration: none;
-  flex-shrink: 0;
-  transition: opacity 0.15s ease;
+.daily-tab {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--color-ink-faint);
+  transition: color 0.2s;
 }
 
-.header-logo:hover { opacity: 0.75; }
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-  justify-content: center;
+.daily-tab--active {
+  color: var(--color-ink);
 }
 
-.header-nav-link {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  color: var(--white-55);
-  text-decoration: none;
-  letter-spacing: 0.03em;
-  padding: 8px 14px;
-  border-radius: 8px;
-  transition: color 0.18s ease, background 0.18s ease;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.header-nav-link:hover,
-.header-nav-link--active {
-  color: var(--white-94);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.header-nav-glyph {
+.daily-tab-sep {
+  color: var(--color-ink-faint);
+  opacity: 0.5;
   font-size: 12px;
-  opacity: 0.65;
 }
-
-.header-nav-sep {
-  display: block;
-  width: 1px;
-  height: 16px;
-  background: rgba(255, 255, 255, 0.12);
-  flex-shrink: 0;
-  margin: 0 4px;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.header-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--purple);
-  border: none;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: var(--sans);
-  letter-spacing: 0.02em;
-  padding: 10px 20px;
-  min-height: 40px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
-  box-shadow:
-    0 0 0 1px rgba(107, 72, 224, 0.50),
-    0 4px 16px rgba(107, 72, 224, 0.28);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.header-cta:hover {
-  background: var(--purple-hi);
-  box-shadow:
-    0 0 0 1px rgba(123, 90, 242, 0.60),
-    0 8px 28px rgba(107, 72, 224, 0.40);
-  transform: translateY(-1px);
-}
-
-.header-cta:active {
-  transform: translateY(0) scale(0.97);
-  background: #5B38D0;
-}
-
-.header-cta-arr {
-  font-size: 14px;
-  transition: transform 0.15s ease;
-}
-
-.header-cta:hover .header-cta-arr { transform: translateX(3px); }
-
-.header-hamburger {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  width: 44px;
-  height: 44px;
-  padding: 10px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.header-hamburger:hover { background: rgba(255, 255, 255, 0.06); }
-
-.header-hamburger span {
-  display: block;
-  height: 1.5px;
-  background: var(--white-70);
-  border-radius: 2px;
-  transform-origin: center;
-  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease, width 0.22s ease;
-}
-
-.header-hamburger span:nth-child(1) { width: 100%; }
-.header-hamburger span:nth-child(2) { width: 75%; }
-.header-hamburger span:nth-child(3) { width: 100%; }
-
-.header-hamburger--open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); width: 100%; }
-.header-hamburger--open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-.header-hamburger--open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); width: 100%; }
-
-.mobile-drawer {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  z-index: 190;
-  background: rgba(9, 8, 18, 0.97);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  padding: 0 24px 28px;
-  transform: translateY(-100%);
-  opacity: 0;
-  pointer-events: none;
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
-}
-
-.mobile-drawer--open {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.mobile-drawer-nav {
-  display: flex;
-  flex-direction: column;
-  padding: 8px 0 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  margin-bottom: 20px;
-  gap: 2px;
-}
-
-.mobile-nav-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 4px;
-  font-size: 16px;
-  color: var(--white-70);
-  text-decoration: none;
-  letter-spacing: 0.02em;
-  border-radius: 10px;
-  transition: color 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.mobile-nav-link--active,
-.mobile-nav-link:hover { color: var(--white-94); }
-
-.mobile-nav-link--compat { color: rgba(201, 168, 76, 0.85); }
-.mobile-nav-link--compat:hover { color: var(--gold); }
-
-.mobile-nav-glyph {
-  font-size: 16px;
-  width: 20px;
-  text-align: center;
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-
-.mobile-nav-badge {
-  margin-left: auto;
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.65);
-  border: 1px solid rgba(201, 168, 76, 0.22);
-  border-radius: 3px;
-  padding: 3px 8px;
-  flex-shrink: 0;
-}
-
-.mobile-drawer-cta {
-  width: 100%;
-  background: var(--purple);
-  border: none;
-  border-radius: 14px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 500;
-  font-family: var(--sans);
-  letter-spacing: 0.01em;
-  padding: 16px 24px;
-  min-height: 52px;
-  cursor: pointer;
-  transition: background 0.18s ease;
-  box-shadow: 0 0 0 1px rgba(107, 72, 224, 0.55), 0 6px 24px rgba(107, 72, 224, 0.30);
-  -webkit-tap-highlight-color: transparent;
-  margin-bottom: 12px;
-}
-
-.mobile-drawer-cta:hover  { background: var(--purple-hi); }
-.mobile-drawer-cta:active { background: #5B38D0; }
-
-.mobile-drawer-sub {
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  color: var(--white-38);
-  margin: 0;
-  text-align: center;
-}
-
-.drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 180;
-  background: rgba(0, 0, 0, 0.55);
-}
-
-@media (max-width: 768px) {
-  .header-inner     { padding: 0 20px; height: 58px; }
-  .header-nav       { display: none; }
-  .header-cta       { display: none; }
-  .header-hamburger { display: flex; }
-  .mobile-drawer    { top: 58px; }
-}
-
-@media (min-width: 769px) {
-  .mobile-drawer    { display: none; }
-  .drawer-backdrop  { display: none; }
-}
-
-
 
 /* ─────────────────────────────────────────────
-   HERO
+   SECTION HEADER
 ───────────────────────────────────────────── */
-.hero {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 120px 24px 32px; /* 64px content + 56px fixed header clearance */
-}
-
-@media (max-width: 768px) {
-  .hero { padding-top: 100px; }
-}
-
-.hero-eyebrow {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  color: rgba(201,168,76,0.55);
-  text-transform: uppercase;
-  margin: 0 0 16px;
-}
-
-.hero-title {
-  font-family: var(--serif);
-  font-size: 40px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  color: var(--white-94);
-  margin: 0 0 16px;
-  line-height: 1.2;
-}
-
-.hero-date {
-  font-size: 14px;
-  color: var(--white-55);
-  margin: 0;
-  letter-spacing: 0.02em;
-}
-
-.hero-moon {
-  color: var(--white-38);
-}
-
-
-/* ─────────────────────────────────────────────
-   TAB BAR
-───────────────────────────────────────────── */
-.tab-bar {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: center;
-  gap: 0;
-  border-bottom: 1px solid var(--white-09);
-  margin-bottom: 40px;
-  padding: 0 24px;
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 14px 24px;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: var(--sans);
-  letter-spacing: 0.04em;
-  color: var(--white-38);
-  cursor: pointer;
-  transition:
-    color        0.15s ease,
-    border-color 0.15s ease;
-  margin-bottom: -1px;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tab-btn--active {
-  color: var(--white-94);
-  border-bottom-color: var(--gold);
-}
-
-.tab-btn:not(.tab-btn--active):hover {
-  color: var(--white-70);
-}
-
-
-/* ─────────────────────────────────────────────
-   SECTION LABEL (shared)
-───────────────────────────────────────────── */
-.sect-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  color: rgba(201,168,76,0.45);
-  text-transform: uppercase;
-  text-align: center;
-  margin: 0 0 28px;
-}
-
-
-/* ─────────────────────────────────────────────
-   MAIN CONTENT
-───────────────────────────────────────────── */
-.main-content {
-  position: relative;
-  z-index: 1;
-  max-width: 900px;
+.daily-header {
+  padding: clamp(48px, 8vw, 80px) clamp(20px, 5vw, 80px) 0;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px 40px;
 }
 
-
-/* ─────────────────────────────────────────────
-   STATE MESSAGES (loading / empty)
-───────────────────────────────────────────── */
-.state-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding: 80px 24px;
-  text-align: center;
-}
-
-.state-text {
-  font-size: 16px;
-  color: var(--white-55);
-  margin: 0;
-  line-height: 1.6;
-}
-
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--white-09);
-  border-top-color: var(--purple);
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-
-/* ─────────────────────────────────────────────
-   FEATURED SECTION
-───────────────────────────────────────────── */
-.featured-section {
-  margin-bottom: 56px;
-  text-align: center;
-}
-
-.featured-card {
-  background: var(--white-05);
-  border: 1px solid var(--white-09);
-  border-radius: 24px;
-  padding: 40px 36px;
-  text-align: left;
-  transition:
-    background   0.18s ease,
-    border-color 0.18s ease;
-}
-
-.featured-card:hover {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.13);
-}
-
-.featured-archetype-name {
-  font-family: var(--serif);
-  font-size: 32px;
-  font-weight: 400;
-  color: var(--gold);
-  margin: 0 0 10px;
-  letter-spacing: 0.03em;
-}
-
-.featured-theme {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--white-55);
-  margin: 0 0 12px;
-}
-
-.featured-moon-line {
-  font-size: 13px;
-  color: var(--white-38);
-  margin: 0 0 24px;
-  letter-spacing: 0.02em;
-}
-
-.featured-divider {
-  width: 48px;
-  height: 1px;
-  background: linear-gradient(90deg, var(--gold), transparent);
-  margin-bottom: 24px;
-  opacity: 0.4;
-}
-
-.featured-insight {
-  font-size: 17px;
-  line-height: 1.75;
-  color: var(--white-94);
-  margin: 0 0 28px;
-}
-
-.featured-reflection {
-  background: rgba(107,72,224,0.10);
-  border: 1px solid rgba(107,72,224,0.22);
-  border-radius: 14px;
-  padding: 20px 24px;
-}
-
-.reflection-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  color: var(--purple-hi);
-  text-transform: uppercase;
-  margin: 0 0 10px;
-}
-
-.reflection-text {
-  font-family: var(--serif);
-  font-size: 18px;
-  font-weight: 300;
-  color: var(--white-70);
-  margin: 0;
-  line-height: 1.6;
-  font-style: italic;
-}
-
-.featured-weather {
-  margin-top: 4px;
-}
-
-.weather-divider {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(201,168,76,0.25), transparent);
+.daily-header__eyebrow {
+  color: var(--color-ink-faint);
   margin-bottom: 16px;
 }
 
-.weather-text {
-  font-size: 14px;
-  line-height: 1.65;
-  color: var(--white-55);
-  margin: 0;
+.daily-header__headline {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
   font-style: italic;
+  font-size: clamp(40px, 9vw, 80px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  margin: 0 0 32px;
+  color: var(--color-ink);
 }
 
+.daily-header__rule {
+  width: 48px;
+  height: 1px;
+  background: var(--color-ink-ghost);
+  margin-bottom: 40px;
+}
 
 /* ─────────────────────────────────────────────
-   BACK LINK
+   LOADING / EMPTY
 ───────────────────────────────────────────── */
-.back-link {
-  font-size: 13px;
-  color: var(--white-55);
-  text-decoration: none;
-  display: inline-block;
-  margin-bottom: 24px;
-  transition: color 0.15s ease;
+.daily-loading {
+  padding: clamp(20px, 5vw, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 240px;
 }
 
-.back-link:hover {
-  color: var(--white-94);
+.daily-loading__bar {
+  width: 160px;
+  height: 1px;
+  background: var(--color-ink-ghost);
+  overflow: hidden;
 }
 
+.daily-loading__fill {
+  height: 100%;
+  background: var(--color-gold);
+  width: 0;
+  animation: load-sweep 1.8s ease-in-out infinite;
+}
+
+@keyframes load-sweep {
+  0%   { width: 0%;  margin-left: 0%; }
+  50%  { width: 60%; margin-left: 20%; }
+  100% { width: 0%;  margin-left: 100%; }
+}
+
+.daily-empty {
+  padding: clamp(20px, 5vw, 48px);
+  color: var(--color-ink-faint);
+}
 
 /* ─────────────────────────────────────────────
-   OTHERS / ALL GRID
+   SIGN SELECTOR GRID
 ───────────────────────────────────────────── */
-.others-section {
+.sign-selector {
+  padding: 0 clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sign-selector__prompt {
+  color: var(--color-ink-faint);
+  margin-bottom: 28px;
+}
+
+.sign-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--color-ink-ghost);
+  border: 1px solid var(--color-ink-ghost);
+  max-width: 680px;
+}
+
+@media (min-width: 640px) {
+  .sign-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (min-width: 900px) {
+  .sign-grid { grid-template-columns: repeat(6, 1fr); }
+}
+
+.sign-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 12px 20px;
+  background: var(--color-bone);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
   text-align: center;
 }
 
-.grid-3col {
+.sign-tile:hover {
+  background: var(--color-bone-dim);
+}
+
+.sign-tile__img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  /* Darken the gold fill to ink color for strong contrast on bone */
+  filter: brightness(0) saturate(0);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.sign-tile:hover .sign-tile__img {
+  opacity: 1;
+}
+
+.sign-tile__name {
+  color: var(--color-ink);
+}
+
+.sign-tile__dates {
+  color: var(--color-ink-faint);
+}
+
+/* ─────────────────────────────────────────────
+   SIGN MINI CARDS (others grid after featured)
+───────────────────────────────────────────── */
+.sign-grid--mini {
+  gap: 1px;
+}
+
+.sign-mini-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 12px;
+  background: var(--color-bone);
+  text-decoration: none;
+  transition: background 0.15s;
+  text-align: center;
+}
+
+.sign-mini-card:hover {
+  background: var(--color-bone-dim);
+}
+
+.sign-mini-card__img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: brightness(0) saturate(0);
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+
+.sign-mini-card:hover .sign-mini-card__img {
+  opacity: 0.75;
+}
+
+.sign-mini-card__name {
+  color: var(--color-ink);
+}
+
+.sign-mini-card__theme {
+  color: var(--color-ink-faint);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.sign-mini-card__preview {
+  display: none;
+}
+
+/* ─────────────────────────────────────────────
+   ARCHETYPE SELECTOR GRID
+───────────────────────────────────────────── */
+.archetype-selector {
+  padding: 0 clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.archetype-selector__prompt {
+  color: var(--color-ink-faint);
+  margin-bottom: 28px;
+}
+
+.archetype-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 1px;
+  background: var(--color-ink-ghost);
+  border: 1px solid var(--color-ink-ghost);
+  max-width: 680px;
 }
 
-.mini-card {
-  background: var(--white-05);
-  border: 1px solid var(--white-09);
-  border-radius: 18px;
-  overflow: hidden;
-  transition:
-    background   0.18s ease,
-    border-color 0.18s ease,
-    transform    0.18s ease;
+@media (min-width: 640px) {
+  .archetype-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
-.mini-card:hover {
-  background: rgba(255,255,255,0.075);
-  border-color: rgba(255,255,255,0.13);
-  transform: translateY(-2px);
+.archetype-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 12px;
+  background: var(--color-bone);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-.mini-card-link {
-  display: block;
-  padding: 22px 18px;
+.archetype-tile:hover {
+  background: var(--color-bone-dim);
+}
+
+.archetype-tile__img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+
+.archetype-tile:hover .archetype-tile__img {
+  opacity: 1;
+}
+
+.archetype-tile__name {
+  color: var(--color-ink);
+}
+
+/* ─────────────────────────────────────────────
+   ARCHETYPE MINI CARDS
+───────────────────────────────────────────── */
+.archetype-grid--mini {
+  gap: 1px;
+}
+
+.archetype-mini-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  background: var(--color-bone);
   text-decoration: none;
+  transition: background 0.15s;
+  text-align: center;
 }
 
-.mini-archetype-name {
-  font-family: var(--serif);
-  font-size: 17px;
-  font-weight: 400;
-  color: var(--gold);
-  margin: 0 0 6px;
-  letter-spacing: 0.02em;
+.archetype-mini-card:hover {
+  background: var(--color-bone-dim);
 }
 
-.mini-theme {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--white-55);
-  margin: 0 0 10px;
+.archetype-mini-card__img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  opacity: 0.75;
+  transition: opacity 0.15s;
 }
 
-.mini-insight {
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--white-70);
+.archetype-mini-card:hover .archetype-mini-card__img {
+  opacity: 1;
+}
+
+.archetype-mini-card__name {
+  color: var(--color-ink);
+}
+
+.archetype-mini-card__theme {
+  color: var(--color-ink-faint);
   margin: 0;
+  line-height: 1.4;
 }
 
-
 /* ─────────────────────────────────────────────
-   CARD DATE
+   READING VIEW
 ───────────────────────────────────────────── */
-.card-date {
-  font-size: 11px;
-  color: var(--white-38);
-  margin: 0 0 8px;
-  letter-spacing: 0.02em;
+.reading-view {
+  padding: 0 clamp(20px, 5vw, 80px);
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
+/* ── Back link ── */
+.back-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-ink-faint);
+  padding: 0;
+  margin-bottom: 28px;
+  display: inline-block;
+  transition: color 0.2s;
+}
 
-/* ─────────────────────────────────────────────
-   SIGN SECTIONS (love / work / health)
-───────────────────────────────────────────── */
+.back-link:hover {
+  color: var(--color-ink);
+}
+
+/* ── Reading sign header ── */
+.reading-sign-header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+
+.reading-sign-header__sign {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.reading-sign-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: brightness(0) saturate(0);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.reading-archetype-symbol {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.reading-sign-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 28px;
+  font-weight: 400;
+  margin: 0 0 4px;
+  color: var(--color-ink);
+}
+
+/* ── Reading content ── */
+.reading-content {
+  padding: 0 0 clamp(40px, 6vw, 80px);
+}
+
+.reading-content__theme {
+  margin-bottom: 8px;
+}
+
+.reading-content__theme-label {
+  color: var(--color-gold);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.reading-content__theme-text {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--color-ink);
+}
+
+.reading-moon-line {
+  color: var(--color-ink-faint);
+  margin-bottom: 20px;
+  display: block;
+}
+
+.reading-content__body {
+  padding: 8px 0;
+}
+
+.reading-content__para {
+  font-size: var(--text-body, 17px);
+  line-height: 1.8;
+  color: var(--color-ink-mid);
+  margin-bottom: 20px;
+}
+
+/* ── Sign sections (love / work / health) ── */
 .sign-sections {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  margin-top: 4px;
-}
-
-.sign-sections--mini {
-  margin-top: 10px;
+  margin: 16px 0;
 }
 
 .sign-section-row {
   display: grid;
-  grid-template-columns: 14px 44px 1fr;
+  grid-template-columns: 16px 52px 1fr;
   align-items: baseline;
-  gap: 6px;
-  padding: 10px 0;
-  border-top: 1px solid var(--white-09);
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-ink-ghost);
 }
 
 .sign-section-row:first-child {
@@ -1318,315 +989,201 @@ onUnmounted(() => {
   padding-top: 0;
 }
 
-.sign-sections--mini .sign-section-row {
-  padding: 8px 0;
-}
-
 .section-icon {
   font-size: 11px;
-  color: var(--gold);
+  color: var(--color-gold);
   line-height: 1;
 }
 
 .section-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--white-38);
-  line-height: 1.4;
+  color: var(--color-ink-faint);
 }
 
 .section-text {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--white-70);
+  font-size: var(--text-caption, 13px);
+  line-height: 1.65;
+  color: var(--color-ink-mid);
 }
 
+/* ── Planetary weather ── */
+.reading-weather__text {
+  color: var(--color-ink-faint);
+  font-style: italic;
+  font-size: var(--text-caption, 13px);
+}
 
-/* ─────────────────────────────────────────────
-   CTA SECTION
-───────────────────────────────────────────── */
-.cta-section {
-  position: relative;
-  z-index: 1;
+/* ── Reflection block ── */
+.reading-reflection {
+  padding: 20px 0;
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.reading-reflection__label {
+  color: var(--color-gold);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.reading-reflection__text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--color-ink-mid);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Reading CTA ── */
+.reading-cta {
+  padding-top: 8px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 56px 24px 80px;
-  max-width: 560px;
-  margin: 0 auto;
-  border-top: 1px solid var(--white-09);
+  gap: 20px;
 }
 
-.cta-eyebrow {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  color: rgba(201,168,76,0.45);
-  text-transform: uppercase;
-  margin: 0 0 16px;
+.reading-cta__pull {
+  max-width: 36ch;
+  margin: 0;
+  color: var(--color-ink-mid);
 }
-
-.cta-copy {
-  font-size: 17px;
-  line-height: 1.7;
-  color: var(--white-70);
-  margin: 0 0 32px;
-  max-width: 440px;
-}
-
-.cta-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--purple);
-  border: none;
-  border-radius: 14px;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 500;
-  font-family: var(--sans);
-  letter-spacing: 0.01em;
-  padding: 17px 40px;
-  min-height: 54px;
-  cursor: pointer;
-  transition:
-    background  0.18s ease,
-    box-shadow  0.18s ease,
-    transform   0.12s ease;
-  box-shadow:
-    0 0 0 1px rgba(107,72,224,0.55),
-    0 8px 32px rgba(107,72,224,0.32),
-    0 2px 8px  rgba(0,0,0,0.35);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.cta-primary:hover {
-  background: var(--purple-hi);
-  box-shadow:
-    0 0 0 1px rgba(123,90,242,0.65),
-    0 12px 44px rgba(107,72,224,0.48),
-    0 4px 12px rgba(0,0,0,0.40);
-  transform: translateY(-1px);
-}
-
-.cta-primary:active {
-  transform: translateY(0) scale(0.985);
-  background: #5B38D0;
-  box-shadow:
-    0 0 0 1px rgba(107,72,224,0.45),
-    0 4px 16px rgba(107,72,224,0.25);
-}
-
-.cta-arr {
-  font-size: 18px;
-  transition: transform 0.15s ease;
-}
-
-.cta-primary:hover .cta-arr {
-  transform: translateX(3px);
-}
-
 
 /* ─────────────────────────────────────────────
-   PERSONAL SUBSCRIPTION CARD
+   OTHERS SECTION
+───────────────────────────────────────────── */
+.others-section {
+  padding: 0 clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.others-section__label {
+  color: var(--color-ink-faint);
+  margin-bottom: 20px;
+}
+
+/* ─────────────────────────────────────────────
+   CTA STRIP
+───────────────────────────────────────────── */
+.daily-cta-strip {
+  padding: 0 clamp(20px, 5vw, 80px) clamp(32px, 5vw, 48px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.daily-cta-strip__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px 0;
+}
+
+.daily-cta-strip__pull {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--color-ink-mid);
+}
+
+/* ─────────────────────────────────────────────
+   SUBSCRIPTION CARD
 ───────────────────────────────────────────── */
 .daily-sub-wrap {
-  position: relative;
-  z-index: 1;
-  max-width: 560px;
+  padding: 0 clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px 72px;
 }
 
 .daily-sub-card {
-  padding: 28px 24px;
-  background: linear-gradient(135deg, rgba(201, 168, 76, 0.06) 0%, rgba(107, 72, 224, 0.04) 100%);
-  border: 1px solid rgba(201, 168, 76, 0.28);
-  border-radius: 16px;
+  padding: 24px 20px;
+  background: rgba(201, 169, 97, 0.06);
+  border: 1px solid var(--rule-gold, rgba(201, 169, 97, 0.4));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 480px;
 }
 
 .daily-sub-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  width: 100%;
 }
 
 .daily-sub-badge {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.75);
+  color: var(--color-gold);
 }
 
 .daily-sub-price {
+  font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 22px;
-  font-weight: 600;
-  color: rgba(201, 168, 76, 0.95);
+  font-weight: 400;
+  color: var(--color-gold);
   line-height: 1;
 }
 
 .daily-sub-price-period {
   font-size: 13px;
-  font-weight: 400;
-  color: rgba(201, 168, 76, 0.55);
+  color: var(--color-gold-dim);
 }
 
 .daily-sub-headline {
-  font-family: var(--serif);
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--white-94);
-  margin: 0 0 10px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--color-ink);
+  margin: 0;
   line-height: 1.35;
-  letter-spacing: 0.01em;
 }
 
 .daily-sub-copy {
-  font-size: 14px;
-  line-height: 1.65;
-  color: var(--white-55);
-  margin: 0 0 24px;
+  color: var(--color-ink-faint);
+  margin: 0;
 }
 
 .daily-sub-btn {
-  display: block;
-  width: 100%;
-  padding: 16px;
-  background: rgba(201, 168, 76, 0.12);
-  border: 1px solid rgba(201, 168, 76, 0.42);
-  border-radius: 10px;
-  color: rgba(201, 168, 76, 0.95);
-  font-size: 15px;
-  font-weight: 500;
-  font-family: var(--sans);
-  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(201, 169, 97, 0.1);
+  border: 1px solid var(--rule-gold, rgba(201, 169, 97, 0.4));
+  color: var(--color-gold);
   text-decoration: none;
   text-align: center;
   cursor: pointer;
-  transition: all 0.22s ease;
-  box-sizing: border-box;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .daily-sub-btn:hover {
-  background: rgba(201, 168, 76, 0.20);
-  border-color: rgba(201, 168, 76, 0.65);
-  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
+  background: rgba(201, 169, 97, 0.18);
+  border-color: var(--color-gold);
 }
 
 .daily-sub-note {
-  text-align: center;
-  font-size: 11px;
-  color: var(--white-22);
-  margin: 10px 0 0;
-  letter-spacing: 0.03em;
+  color: var(--color-ink-faint);
+  margin: 0;
+  text-align: left;
 }
-
 
 /* ─────────────────────────────────────────────
-   FOOTER
+   RESPONSIVE
 ───────────────────────────────────────────── */
-.site-footer {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 32px 24px 40px;
-  border-top: 1px solid var(--white-09);
-  text-align: center;
-}
-
-.footer-nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.footer-link {
-  font-size: 13px;
-  color: var(--white-38);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.footer-link:hover {
-  color: var(--white-70);
-}
-
-.footer-dot {
-  color: var(--white-22);
-  font-size: 14px;
-}
-
-.footer-copy {
-  font-size: 12px;
-  color: var(--white-22);
-  margin: 0;
-  letter-spacing: 0.04em;
-}
-
-.footer-disc {
-  font-size: 11px;
-  color: var(--white-22);
-  margin: 0;
-  max-width: 340px;
-  line-height: 1.5;
-}
-
-
-/* ─────────────────────────────────────────────
-   RESPONSIVE — MOBILE
-───────────────────────────────────────────── */
-@media (max-width: 720px) {
-  .hero-title {
-    font-size: 28px;
+@media (max-width: 480px) {
+  .reading-sign-name {
+    font-size: 22px;
   }
 
-  .tab-btn {
-    font-size: 13px;
-    padding: 12px 16px;
-  }
-
-  .featured-card {
-    padding: 28px 20px;
-  }
-
-  .featured-archetype-name {
-    font-size: 26px;
-  }
-
-  .featured-insight {
-    font-size: 15px;
-  }
-
-  .grid-3col {
-    grid-template-columns: 1fr;
-  }
-
-  .cta-primary {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .daily-sub-card {
-    padding: 20px 16px;
-  }
-
-  .daily-sub-btn {
-    font-size: 14px;
+  .daily-sub-headline {
+    font-size: 18px;
   }
 }
 
-@media (min-width: 721px) and (max-width: 960px) {
-  .grid-3col {
-    grid-template-columns: repeat(2, 1fr);
+@media (prefers-reduced-motion: reduce) {
+  .daily-loading__fill {
+    animation: none;
   }
 }
-
 </style>

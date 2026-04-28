@@ -1,326 +1,336 @@
 <template>
-  <!-- STATE A: Loading -->
-  <div v-if="isLoading" class="loading-page">
-    <div class="loading-content">
-      <OrbitalMark />
-      <p class="brand-text">OMENORA</p>
+  <div class="preview-page">
 
-      <!-- Stage 0: personalized opener -->
-      <p v-if="loadingStage === 0" key="ls0" class="loading-message">
-        Mapping your natal chart, {{ store.firstName }}...
-      </p>
-
-      <!-- Stage 1: testimonial slot (renders nothing if REAL_TESTIMONIALS is empty) -->
-      <template v-else-if="loadingStage === 1">
-        <div v-if="showTestimonialSlot" key="ls1" class="loading-testimonial">
-          <div class="loading-stars">★★★★★</div>
-          <p class="loading-quote">"{{ currentTestimonial.quote }}"</p>
-          <p class="loading-attribution">— {{ currentTestimonial.author }}</p>
-        </div>
-      </template>
-
-      <!-- Stage 2: archetype mapping -->
-      <p v-else-if="loadingStage === 2" key="ls2" class="loading-message">
-        Your {{ loadingArchetypeLabel }} archetype is being mapped...
-      </p>
-
-      <!-- Stage 3: ready -->
-      <p v-else key="ls3" class="loading-message">
-        Your reading is ready.
-      </p>
-
-      <div class="progress-track">
-        <div class="progress-fill" />
-      </div>
-    </div>
-  </div>
-
-  <!-- STATE: Error -->
-  <div v-else-if="hasError" class="error-page">
-    <div class="error-content">
-      <p class="error-text">Something went wrong. Please try again.</p>
-      <button class="retry-btn" @click="retryApiCall">Try Again</button>
-    </div>
-  </div>
-
-  <!-- STATE B: Free preview + paywall -->
-  <div v-else class="preview-page">
-    <!-- Top bar -->
-    <div class="top-bar">
-      <span class="brand-text">OMENORA</span>
-    </div>
-
-    <!-- Archetype reveal block -->
-    <div class="archetype-block">
-      <div class="archetype-glow" aria-hidden="true" />
-      <p class="archetype-label">{{ t('yourArchetype') }}</p>
-      <ArchetypeSymbol :symbol="report.archetypeSymbol" :size="44" class="archetype-symbol" />
-      <h2 class="archetype-name">{{ report.archetypeName }}</h2>
-      <p class="archetype-meta">{{ report.element }} · Life Path {{ store.lifePathNumber }}</p>
-      <div class="traits-row">
-        <span v-for="trait in report.powerTraits" :key="trait" class="trait-pill">
-          {{ trait }}
-        </span>
-      </div>
-    </div>
-
-    <!-- Free preview: identity section only -->
-    <p class="preview-text">{{ report.sections.identity.content }}</p>
-
-    <!-- Blurred content hook -->
-    <div class="blurred-preview">
-      <p>The window ahead carries a specific quality of momentum — not the loud kind of progress, but the kind that compounds quietly until it cannot be ignored. You have been building something in a register most people around you cannot yet read.</p>
-    </div>
-
-    <!-- Unlock progress meter (C-4) -->
-    <div class="unlock-progress-block">
-      <p class="unlock-label">YOUR READING IS 14% REVEALED</p>
-      <div class="unlock-bar-track">
-        <div class="unlock-bar-fill"></div>
-      </div>
-    </div>
-
-    <!-- T-2: Reading receipt trust line (B4-4) -->
-    <p class="reading-receipt">
-      Built from: your birth date · your natal chart ·
-      your {{ archetypeShortName }} archetype
-      (Life Path {{ store.lifePathNumber }}) ·
-      {{ traditionLabel }} tradition
-    </p>
-
-    <!-- Urgency: real-time transit anchor -->
-    <p class="urgency-line">Your chart is calculated against today's planetary transits — this interpretation is specific to this window.</p>
-
-    <!-- Locked sections strip -->
-    <div class="locked-sections-strip">
-      <div class="locked-header">
-        <span class="lock-icon">🔒</span>
-        <span class="locked-strip-label">Still locked in your {{ archetypeShortName }} reading:</span>
-      </div>
-      <ul class="locked-section-list">
-        <li>◆ Your 2026 Destiny Forecast</li>
-        <li>◆ Love &amp; Relationship Patterns</li>
-        <li>◆ Your Hidden Gift</li>
-        <li>◆ Career &amp; Purpose</li>
-        <li>◆ Your Power Statement</li>
-        <li>◆ {{ traditionSectionLabel }}</li>
-      </ul>
-    </div>
-
-    <!-- Social proof: renders only when REAL_TESTIMONIALS array is populated -->
-    <div v-if="showTestimonialSlot" class="social-proof-line">
-      <div class="stars">★★★★★</div>
-      <p class="proof-quote">"{{ currentTestimonial.quote }}"</p>
-      <p class="proof-attribution">— {{ currentTestimonial.author }}</p>
-    </div>
-
-    <!-- 3-tier pricing selector (hidden when full access code applied) -->
-    <div v-if="!appliedPromo || appliedPromo.codeType !== 'full_access'" class="pricing-section">
-      <div class="paywall-header">
-        <p class="paywall-personal-line">{{ store.firstName }}, your {{ archetypeShortName }} reading is 85% complete.</p>
-        <p class="paywall-sub-line">What you just read is the surface. The sections below go into the patterns that actually run your life.</p>
-      </div>
-
-      <div class="tier-list">
-
-        <!-- Tier 1: Basic (Decoy) -->
-        <div
-          class="tier-card tier-basic"
-          :class="{ 'tier-selected-basic': selectedTier === 1, 'tier-deprioritized': isPriceTest }"
-          @click="selectedTier = 1"
-        >
-          <div
-            v-if="isPriceTest"
-            class="debug-variant-label"
-          >variant: deprioritize-1</div>
-          <div class="tier-info">
-            <p class="tier-name">{{ t('basicReport') }}</p>
-            <p class="tier-desc">Full 7-section {{ archetypeShortName }} reading revealing why you operate the way you do</p>
-          </div>
-          <p class="tier-price">$2.99</p>
+    <!-- ── STATE A: LOADING ── -->
+    <div v-if="isLoading" class="preview-loading">
+      <div class="preview-loading__inner">
+        <div class="loading-ornament">
+          <PhoenixLoader :size="96" />
         </div>
 
-        <!-- Tier 2: Most Popular (Target) -->
-        <div
-          class="tier-card tier-popular"
-          :class="{ 'tier-selected-popular': selectedTier === 2 }"
-          @click="selectedTier = 2"
-        >
-          <div class="tier-badge">★ MOST POPULAR</div>
-          <div class="tier-popular-inner">
-            <div class="tier-info">
-              <p class="tier-name tier-name-popular">{{ t('popularBundle') }}</p>
-              <p class="tier-features">❆ Full {{ archetypeShortName }} reading + your 2026 destiny windows + compatibility with one person</p>
-            </div>
-            <div class="tier-price-block">
-              <p class="tier-price tier-price-popular">$4.99</p>
-              <p class="tier-price-note">one-time payment, no subscription</p>
-            </div>
-          </div>
+        <p class="loading-status label-caps">
+          <template v-if="loadingStage === 0">Mapping your natal chart, {{ store.firstName }}…</template>
+          <template v-else-if="loadingStage === 1">
+            <template v-if="showTestimonialSlot">"{{ currentTestimonial.quote }}"</template>
+            <template v-else>Computing across four traditions…</template>
+          </template>
+          <template v-else-if="loadingStage === 2">Your {{ loadingArchetypeLabel }} archetype is being mapped…</template>
+          <template v-else>Your reading is ready.</template>
+        </p>
+
+        <div class="loading-progress">
+          <div class="loading-progress__fill" />
         </div>
 
-        <!-- Tier 3: Full Oracle (Anchor) — hidden in 2-tier canary -->
-        <template v-if="!isTwoTierVariant">
-        <div
-          class="tier-card tier-oracle"
-          :class="{ 'tier-selected-oracle': selectedTier === 3 }"
-          @click="selectedTier = 3"
-        >
-          <div class="tier-oracle-inner">
-            <div class="tier-info">
-              <p class="tier-name tier-name-oracle">{{ t('fullOracle') }}</p>
-              <p class="tier-features tier-features-oracle">✦ Complete {{ archetypeShortName }} map — all 7 sections, your Life Path {{ store.lifePathNumber }} calendar, birth chart &amp; all traditions</p>
-            </div>
-            <div class="tier-price-block">
-              <p class="tier-price tier-price-oracle">$12.99</p>
-              <p class="tier-price-note tier-price-note-oracle">save $8</p>
-            </div>
-          </div>
+        <p class="loading-subtext annotation">Computing across four traditions</p>
+      </div>
+    </div>
+
+    <!-- ── STATE C: ERROR ── -->
+    <div v-else-if="hasError" class="preview-error">
+      <div class="preview-error__inner">
+        <p class="label-caps" style="color: var(--color-ink-faint)">Something went wrong</p>
+        <h2 class="font-display-italic preview-error__msg">We couldn't generate your reading.</h2>
+        <div class="preview-error__actions">
+          <CTAButton :arrow="true" @click="retryApiCall">Try again</CTAButton>
+          <CTAButton variant="outline" to="/analysis" :arrow="true">Start over</CTAButton>
         </div>
+      </div>
+    </div>
+
+    <!-- ── STATE B: PREVIEW ── -->
+    <template v-else-if="report">
+
+      <AppHeader>
+        <template #action>
+          <span class="label-caps preview-header__meta">Your Reading</span>
         </template>
-        <div
-          v-if="isTwoTierVariant"
-          class="debug-variant-label"
-        >variant: 2-tier</div>
+      </AppHeader>
 
+      <!-- Report header -->
+      <section class="report-header">
+        <p class="label-caps report-header__eyebrow">Natal Reading · {{ store.firstName }}</p>
+        <h1 class="report-header__title font-display-italic">{{ report.archetypeName }}</h1>
+        <div v-if="archetypeFile" class="report-header__symbol">
+          <img
+            :src="`/symbols/${archetypeFile}`"
+            :alt="report.archetypeName"
+            class="report-header__symbol-img"
+          />
+        </div>
+        <div class="editorial-rule" />
+        <div class="report-header__meta">
+          <span class="annotation">☉ Sun in {{ sunSign }}</span>
+          <span class="annotation report-header__sep">·</span>
+          <span class="annotation">☽ Moon in {{ moonSign }}</span>
+          <template v-if="risingSign">
+            <span class="annotation report-header__sep">·</span>
+            <span class="annotation">↑ Rising {{ risingSign }}</span>
+          </template>
+        </div>
+        <p class="annotation report-header__element">
+          {{ report.element }} · Life Path {{ store.lifePathNumber }}
+        </p>
+        <div class="report-header__traits">
+          <span v-for="trait in report.powerTraits" :key="trait" class="report-trait label-caps">{{ trait }}</span>
+        </div>
+      </section>
+
+      <!-- Free preview: identity section -->
+      <section class="report-preview">
+        <p class="report-preview__text">{{ report.sections?.identity?.content }}</p>
+
+        <!-- Blurred hook -->
+        <div class="report-preview__blurred" aria-hidden="true">
+          <p>The window ahead carries a specific quality of momentum — not the loud kind of progress, but the kind that compounds quietly until it cannot be ignored. You have been building something in a register most people around you cannot yet read.</p>
+        </div>
+
+        <!-- Unlock progress meter -->
+        <div class="unlock-meter">
+          <p class="label-caps unlock-meter__label">Your reading is 14% revealed</p>
+          <div class="unlock-meter__track">
+            <div class="unlock-meter__fill" />
+          </div>
+        </div>
+
+        <!-- Reading receipt -->
+        <p class="annotation report-receipt">
+          Built from: your birth date · your natal chart ·
+          your {{ archetypeShortName }} archetype (Life Path {{ store.lifePathNumber }}) ·
+          {{ traditionLabel }} tradition
+        </p>
+
+        <!-- Urgency -->
+        <p class="annotation report-urgency">Your chart is calculated against today's planetary transits — this interpretation is specific to this window.</p>
+      </section>
+
+      <!-- Locked sections strip -->
+      <section class="locked-sections">
+        <div class="locked-sections__header">
+          <span class="label-caps locked-sections__label">Still locked in your {{ archetypeShortName }} reading</span>
+        </div>
+        <ul class="locked-sections__list">
+          <li class="annotation locked-sections__item">◆ Your 2026 Destiny Forecast</li>
+          <li class="annotation locked-sections__item">◆ Love &amp; Relationship Patterns</li>
+          <li class="annotation locked-sections__item">◆ Your Hidden Gift</li>
+          <li class="annotation locked-sections__item">◆ Career &amp; Purpose</li>
+          <li class="annotation locked-sections__item">◆ Your Power Statement</li>
+          <li class="annotation locked-sections__item">◆ {{ traditionSectionLabel }}</li>
+        </ul>
+      </section>
+
+      <!-- Social proof (only when REAL_TESTIMONIALS populated) -->
+      <div v-if="showTestimonialSlot" class="testimonial">
+        <div class="testimonial__stars annotation">★★★★★</div>
+        <p class="testimonial__quote font-serif">"{{ currentTestimonial.quote }}"</p>
+        <p class="annotation testimonial__attr">— {{ currentTestimonial.author }}</p>
       </div>
 
-      <!--
-        PRICE VERIFICATION — last checked 2026-04-17
-        Basic:  display $2.99 = Stripe 299 ✓
-        Middle: display $4.99 = Stripe 499 ✓
-        Oracle: display $12.99 = Stripe 1299 ✓
+      <!-- ── PAYWALL (standard pricing) ── -->
+      <section v-if="!appliedPromo || appliedPromo.codeType !== 'full_access'" class="paywall">
+        <div class="editorial-rule" />
 
-        If display prices change, update corresponding Stripe unit_amount in:
-          server/api/create-payment.post.ts (basic)
-          server/api/create-bundle-payment.post.ts (middle)
-          server/api/create-oracle-payment.post.ts (oracle)
-        Never change display without updating Stripe.
-      -->
+        <div class="paywall__header">
+          <p class="paywall__personal font-serif">{{ store.firstName }}, your {{ archetypeShortName }} reading is 85% complete.</p>
+          <p class="annotation paywall__sub">What you just read is the surface. The sections below go into the patterns that actually run your life.</p>
+        </div>
 
-      <!-- Promo code section -->
-      <div class="promo-section">
-        <!-- STATE A: collapsed link -->
+        <!-- Tier cards -->
+        <div class="paywall__tiers">
+
+          <!-- Tier 1: Basic (decoy) -->
+          <div
+            class="tier tier--basic"
+            :class="{ 'tier--selected': selectedTier === 1, 'tier--deprioritized': isPriceTest }"
+            @click="selectedTier = 1"
+          >
+            <div v-if="isPriceTest" class="tier__debug">variant: deprioritize-1</div>
+            <div class="tier__info">
+              <p class="tier__name label-caps">{{ t('basicReport') }}</p>
+              <p class="annotation tier__desc">Full 7-section {{ archetypeShortName }} reading revealing why you operate the way you do</p>
+            </div>
+            <p class="tier__price font-serif">$2.99</p>
+          </div>
+
+          <!-- Tier 2: Most Popular (target) -->
+          <div
+            class="tier tier--popular"
+            :class="{ 'tier--selected-popular': selectedTier === 2 }"
+            @click="selectedTier = 2"
+          >
+            <div class="tier__badge label-caps">★ Most Popular</div>
+            <div class="tier__popular-inner">
+              <div class="tier__info">
+                <p class="tier__name tier__name--popular label-caps">{{ t('popularBundle') }}</p>
+                <p class="annotation tier__desc tier__desc--popular">❆ Full {{ archetypeShortName }} reading + your 2026 destiny windows + compatibility with one person</p>
+              </div>
+              <div class="tier__price-block">
+                <p class="tier__price tier__price--popular font-serif">$4.99</p>
+                <p class="annotation tier__price-note">one-time payment</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tier 3: Oracle (anchor) — hidden in 2-tier canary -->
+          <template v-if="!isTwoTierVariant">
+            <div
+              class="tier tier--oracle"
+              :class="{ 'tier--selected-oracle': selectedTier === 3 }"
+              @click="selectedTier = 3"
+            >
+              <div class="tier__oracle-inner">
+                <div class="tier__info">
+                  <p class="tier__name tier__name--oracle label-caps">{{ t('fullOracle') }}</p>
+                  <p class="annotation tier__desc tier__desc--oracle">✦ Complete {{ archetypeShortName }} map — all 7 sections, your Life Path {{ store.lifePathNumber }} calendar, birth chart &amp; all traditions</p>
+                </div>
+                <div class="tier__price-block">
+                  <p class="tier__price tier__price--oracle font-serif">$12.99</p>
+                  <p class="annotation tier__price-note tier__price-note--oracle">save $8</p>
+                </div>
+              </div>
+            </div>
+          </template>
+          <div v-if="isTwoTierVariant" class="tier__debug">variant: 2-tier</div>
+
+        </div>
+
+        <!--
+          PRICE VERIFICATION — last checked 2026-04-17
+          Basic:  display $2.99 = Stripe 299 ✓
+          Middle: display $4.99 = Stripe 499 ✓
+          Oracle: display $12.99 = Stripe 1299 ✓
+
+          If display prices change, update corresponding Stripe unit_amount in:
+            server/api/create-payment.post.ts (basic)
+            server/api/create-bundle-payment.post.ts (middle)
+            server/api/create-oracle-payment.post.ts (oracle)
+          Never change display without updating Stripe.
+        -->
+
+        <!-- Promo code -->
+        <div class="paywall__promo">
+          <button
+            v-if="!promoInputVisible && !appliedPromo"
+            class="paywall__promo-toggle annotation"
+            @click="promoInputVisible = true"
+          >
+            Have a promo code?
+          </button>
+          <template v-else-if="!appliedPromo || appliedPromo.codeType === 'discount_percent'">
+            <div class="paywall__promo-row">
+              <input
+                id="promo-code"
+                v-model="promoCodeInput"
+                type="text"
+                name="promo-code"
+                class="paywall__promo-input editorial-input"
+                placeholder="Enter code"
+                autocomplete="off"
+                :disabled="isValidatingPromo || (appliedPromo?.codeType === 'discount_percent')"
+                @input="promoCodeInput = promoCodeInput.toUpperCase()"
+                @keydown.enter="validatePromoCode"
+              />
+              <button
+                v-if="!appliedPromo"
+                class="paywall__promo-apply label-caps"
+                :disabled="isValidatingPromo || !promoCodeInput.trim()"
+                @click="validatePromoCode"
+              >
+                {{ isValidatingPromo ? '…' : 'Apply' }}
+              </button>
+            </div>
+            <p v-if="promoValidationResult && !promoValidationResult.valid" class="paywall__promo-msg paywall__promo-msg--error annotation">
+              {{ promoValidationResult.message }}
+            </p>
+            <p v-if="appliedPromo?.codeType === 'discount_percent'" class="paywall__promo-msg paywall__promo-msg--success annotation">
+              ✦ {{ appliedPromo.message }}
+            </p>
+          </template>
+        </div>
+
+        <!-- Email -->
+        <div class="paywall__email">
+          <label class="label-caps paywall__email-label" for="email-address">Where should we send your full reading?</label>
+          <input
+            id="email-address"
+            v-model="email"
+            type="email"
+            name="email"
+            class="editorial-input"
+            :placeholder="t('emailPlaceholder')"
+            autocomplete="email"
+            @blur="onEmailBlur"
+          />
+        </div>
+
+        <!-- CTA -->
         <button
-          v-if="!promoInputVisible && !appliedPromo"
-          class="promo-toggle-link"
-          @click="promoInputVisible = true"
+          class="paywall__cta"
+          :class="{
+            'paywall__cta--processing': isProcessingPayment || isApplyingFreeAccess,
+            'paywall__cta--basic': selectedTier === 1 && !appliedPromo,
+            'paywall__cta--oracle': selectedTier === 3 && !appliedPromo,
+          }"
+          :disabled="isProcessingPayment || isApplyingFreeAccess || !email"
+          @click="appliedPromo?.codeType === 'full_access' ? applyFreeAccess() : handlePayment()"
         >
-          Have a promo code?
+          <span v-if="isProcessingPayment || isApplyingFreeAccess">Processing…</span>
+          <span v-else-if="appliedPromo?.codeType === 'full_access'">Get My Complete Reading →</span>
+          <span v-else-if="selectedTier === 1">{{ t('unlockBasic') }}</span>
+          <span v-else-if="selectedTier === 2">{{ t('unlockPopular') }}</span>
+          <span v-else>{{ t('unlockOracle') }}</span>
         </button>
 
-        <!-- STATE B/C/D: expanded -->
-        <template v-else-if="!appliedPromo || appliedPromo.codeType === 'discount_percent'">
-          <div class="promo-input-row">
-            <input
-              id="promo-code"
-              v-model="promoCodeInput"
-              type="text"
-              name="promo-code"
-              class="promo-input"
-              placeholder="Enter code"
-              autocomplete="off"
-              :disabled="isValidatingPromo || (appliedPromo?.codeType === 'discount_percent')"
-              @input="promoCodeInput = promoCodeInput.toUpperCase()"
-              @keydown.enter="validatePromoCode"
-            />
-            <button
-              v-if="!appliedPromo"
-              class="promo-apply-btn"
-              :disabled="isValidatingPromo || !promoCodeInput.trim()"
-              @click="validatePromoCode"
-            >
-              {{ isValidatingPromo ? '...' : 'Apply' }}
-            </button>
-          </div>
-          <p v-if="promoValidationResult && !promoValidationResult.valid" class="promo-msg promo-msg-error">
-            {{ promoValidationResult.message }}
-          </p>
-          <p v-if="appliedPromo?.codeType === 'discount_percent'" class="promo-msg promo-msg-success">
-            ✦ {{ appliedPromo.message }}
-          </p>
-        </template>
+        <!-- Guarantee & trust -->
+        <div class="paywall__guarantee annotation">
+          <span class="paywall__guarantee-check">✦</span>
+          <span>If it doesn't feel like it was written for you — full refund, same day, no form to fill.</span>
+        </div>
+        <p class="annotation paywall__trust-onetime">One-time payment. Nothing recurring. Your reading arrives by email within seconds.</p>
+        <p class="annotation paywall__trust-secure">{{ t('securedStripe') }}</p>
+      </section>
 
-      </div>
-
-      <!-- Email input -->
-      <div class="email-field-wrapper">
-        <label class="email-label" for="email-address">Where should we send your full reading?</label>
-        <input
-          id="email-address"
-          v-model="email"
-          type="email"
-          name="email"
-          :placeholder="t('emailPlaceholder')"
-          class="email-input"
-          autocomplete="email"
-          @blur="onEmailBlur"
-        >
-      </div>
-
-      <!-- CTA Button -->
-      <button
-        class="unlock-btn"
-        :class="{
-          'unlock-btn-processing': isProcessingPayment || isApplyingFreeAccess,
-          'unlock-btn-basic': selectedTier === 1 && !appliedPromo,
-          'unlock-btn-oracle': selectedTier === 3 && !appliedPromo,
-        }"
-        :disabled="isProcessingPayment || isApplyingFreeAccess || !email"
-        @click="appliedPromo?.codeType === 'full_access' ? applyFreeAccess() : handlePayment()"
-      >
-        <span v-if="isProcessingPayment || isApplyingFreeAccess">Processing...</span>
-        <span v-else-if="appliedPromo?.codeType === 'full_access'">Get My Complete Reading →</span>
-        <span v-else-if="selectedTier === 1">{{ t('unlockBasic') }}</span>
-        <span v-else-if="selectedTier === 2">{{ t('unlockPopular') }}</span>
-        <span v-else>{{ t('unlockOracle') }}</span>
-      </button>
-
-      <div class="guarantee-line">
-        <span class="guarantee-check">✦</span>
-        <span class="guarantee-text">If it doesn't feel like it was written for you — full refund, same day, no form to fill.</span>
-      </div>
-      <p class="trust-onetime">One-time payment. Nothing recurring. Your reading arrives by email within seconds.</p>
-      <p class="trust-secure">{{ t('securedStripe') }}</p>
-      </div><!-- end pricing-section -->
-
-      <!-- Full access promo: shown when full_access code applied (replaces pricing section) -->
-      <div v-if="appliedPromo?.codeType === 'full_access'" class="pricing-section">
-        <div class="email-field-wrapper">
-          <label class="email-label" for="email-address-promo">Where should we send your full reading?</label>
+      <!-- Full-access promo section (replaces pricing when full_access code applied) -->
+      <section v-if="appliedPromo?.codeType === 'full_access'" class="paywall paywall--free">
+        <div class="editorial-rule" />
+        <div class="paywall__email">
+          <label class="label-caps paywall__email-label" for="email-address-promo">Where should we send your full reading?</label>
           <input
             id="email-address-promo"
             v-model="email"
             type="email"
             name="email"
+            class="editorial-input"
             :placeholder="t('emailPlaceholder')"
-            class="email-input"
             autocomplete="email"
             @blur="onEmailBlur"
           />
         </div>
         <button
-          class="unlock-btn"
-          :class="{ 'unlock-btn-processing': isApplyingFreeAccess }"
+          class="paywall__cta"
+          :class="{ 'paywall__cta--processing': isApplyingFreeAccess }"
           :disabled="isApplyingFreeAccess || !email"
           @click="applyFreeAccess"
         >
-          <span v-if="isApplyingFreeAccess">Processing...</span>
+          <span v-if="isApplyingFreeAccess">Processing…</span>
           <span v-else>Get My Complete Reading →</span>
         </button>
-        <p v-if="promoErrorMessage" class="promo-msg promo-msg-error promo-msg-block">{{ promoErrorMessage }}</p>
-      </div>
-  </div>
+        <p v-if="promoErrorMessage" class="paywall__promo-msg paywall__promo-msg--error annotation">{{ promoErrorMessage }}</p>
+      </section>
 
-  <!-- Crisis signpost footer -->
-  <footer class="preview-footer" role="contentinfo">
-    <nav aria-label="Legal">
-      <NuxtLink to="/privacy" class="preview-footer-link">Privacy Policy</NuxtLink>
-      <span class="preview-footer-sep" aria-hidden="true">·</span>
-      <NuxtLink to="/terms" class="preview-footer-link">Terms of Service</NuxtLink>
-    </nav>
-    <p class="preview-footer-crisis">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
-  </footer>
+      <!-- Footer -->
+      <footer class="preview-footer" role="contentinfo">
+        <nav aria-label="Legal">
+          <NuxtLink to="/privacy" class="preview-footer__link annotation">Privacy Policy</NuxtLink>
+          <span class="annotation preview-footer__sep" aria-hidden="true">·</span>
+          <NuxtLink to="/terms" class="preview-footer__link annotation">Terms of Service</NuxtLink>
+        </nav>
+        <p class="preview-footer__crisis annotation">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
+      </footer>
+
+    </template>
+
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -359,6 +369,19 @@ const archetypeShortName: ComputedRef<string> = computed(() =>
 const loadingArchetypeLabel = computed(() =>
   store.archetype ? archetypeShortName.value : 'Your destiny archetype'
 )
+
+// Map archetype name → @2x.png filename in /public/symbols/
+// e.g. "The Alchemist" → "alchemist@2x.png"
+const archetypeFile = computed(() => {
+  const name = (store.report?.archetypeName || store.archetype || '').trim()
+  if (!name) return ''
+  return name.toLowerCase().replace(/^the\s+/i, '').replace(/\s+/g, '-') + '@2x.png'
+})
+
+// Sun / Moon / Rising derived from natalChart
+const sunSign = computed(() => store.natalChart?.sun?.sign ?? '')
+const moonSign = computed(() => store.natalChart?.moon?.sign ?? '')
+const risingSign = computed(() => store.natalChart?.ascendant?.sign ?? '')
 
 const traditionSectionLabel: ComputedRef<string> = computed(() => {
   const labels: Record<string, string> = {
@@ -727,1212 +750,669 @@ async function handlePayment() {
 </script>
 
 <style scoped>
-
-/* ─────────────────────────────────────────────
-   SHARED BG LAYER — same ambient gradient
-   language as landing and analysis pages
-───────────────────────────────────────────── */
-.loading-page,
-.error-page,
+/* ── Page shell ── */
 .preview-page {
-  background: #07070D;
-  color: rgba(255, 255, 255, 0.94);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
-               'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  box-sizing: border-box;
-}
-
-/* Shared fixed ambient gradient for all three states */
-.loading-page::before,
-.error-page::before,
-.preview-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 80% 55% at 50% 0%,
-      rgba(75, 45, 155, 0.18) 0%,
-      transparent 68%
-    ),
-    radial-gradient(
-      ellipse 50% 40% at 15% 55%,
-      rgba(50, 25, 110, 0.10) 0%,
-      transparent 60%
-    );
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* All direct children sit above the gradient */
-.loading-page > *,
-.error-page > *,
-.preview-page > * {
-  position: relative;
-  z-index: 1;
-}
-
-
-/* ─────────────────────────────────────────────
-   LOADING STATE
-───────────────────────────────────────────── */
-.loading-page {
   min-height: 100vh;
+  background: var(--color-bone);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header meta ── */
+.preview-header__meta {
+  color: var(--color-ink-faint);
+  font-size: 10px;
+}
+
+/* ── LOADING STATE ── */
+.preview-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(48px, 10vw, 96px) clamp(20px, 5vw, 48px);
+}
+
+.preview-loading__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 360px;
+  text-align: center;
+}
+
+.loading-ornament {
+  width: 96px;
+  height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.loading-testimonial {
-  text-align: center;
-  max-width: 280px;
-  animation: fadeInMsg 0.45s ease;
-}
-
-.loading-stars {
-  color: rgba(201, 168, 76, 0.85);
-  font-size: 12px;
-  letter-spacing: 2px;
-  margin-bottom: 8px;
-}
-
-.loading-quote {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-style: italic;
-  font-size: 15px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.45);
-  line-height: 1.55;
-  margin: 0 0 6px;
-}
-
-.loading-attribution {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.22);
-  margin: 0;
-}
-
-.brand-text {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 13px;
-  letter-spacing: 0.20em;
-  color: rgba(255, 255, 255, 0.28);
-  margin: 0;
-}
-
-@keyframes fadeInMsg {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.loading-message {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-style: italic;
-  font-size: 16px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.48);
-  min-height: 28px;
-  text-align: center;
-  margin: 0;
-  animation: fadeInMsg 0.45s ease;
-  max-width: 280px;
-  line-height: 1.5;
-}
-
-.progress-track {
-  width: 160px;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  border-radius: 1px;
-}
-
-@keyframes fillProgress {
-  from { width: 0%; }
-  to   { width: 95%; }
-}
-
-.progress-fill {
+.loading-ornament__img {
+  width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, rgba(107, 72, 224, 0.65), rgba(201, 168, 76, 0.55));
-  animation: fillProgress 8s ease-out forwards;
-  border-radius: 1px;
+  object-fit: contain;
+  opacity: 0.7;
+}
+
+.loading-ornament__placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 1px solid var(--color-ink-ghost);
 }
 
 
-/* ─────────────────────────────────────────────
-   ERROR STATE
-───────────────────────────────────────────── */
-.error-page {
+.loading-status {
+  color: var(--color-ink);
+  font-size: 11px;
+  min-height: 1.4em;
+}
+
+.loading-progress {
+  width: 200px;
+  height: 1px;
+  background: var(--color-ink-ghost);
+}
+
+.loading-progress__fill {
+  height: 100%;
+  background: var(--color-ink);
+  width: 0%;
+  animation: loading-fill 8s ease forwards;
+}
+
+@keyframes loading-fill {
+  0%   { width: 0%; }
+  30%  { width: 35%; }
+  60%  { width: 65%; }
+  90%  { width: 90%; }
+  100% { width: 95%; }
+}
+
+.loading-subtext {
+  color: var(--color-ink-faint);
+}
+
+/* ── ERROR STATE ── */
+.preview-error {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: clamp(48px, 10vw, 96px) clamp(20px, 5vw, 48px);
 }
 
-.error-content {
+.preview-error__inner {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
-  padding: 0 24px;
+  gap: 24px;
+  max-width: 480px;
 }
 
-.error-text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.40);
-  margin: 0;
-}
-
-.retry-btn {
-  background: transparent;
-  border: 1px solid rgba(107, 72, 224, 0.40);
-  border-radius: 12px;
-  padding: 14px 36px;
-  min-height: 50px;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  color: rgba(200, 180, 255, 0.78);
-  cursor: pointer;
-  font-family: inherit;
-  transition:
-    background   0.18s ease,
-    border-color 0.18s ease,
-    color        0.18s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.retry-btn:hover {
-  background: rgba(107, 72, 224, 0.10);
-  border-color: rgba(107, 72, 224, 0.65);
-  color: rgba(200, 180, 255, 0.95);
-}
-
-
-/* ─────────────────────────────────────────────
-   PREVIEW PAGE SHELL
-───────────────────────────────────────────── */
-.preview-page {
-  position: relative;
-  min-height: 100vh;
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 28px 24px calc(72px + env(safe-area-inset-bottom, 0px));
-}
-
-
-/* ─────────────────────────────────────────────
-   TOP BAR
-───────────────────────────────────────────── */
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 28px;
-}
-
-.top-bar .brand-text {
-  font-size: 13px;
-  letter-spacing: 0.20em;
-  color: rgba(255, 255, 255, 0.28);
-  margin: 0;
-}
-
-.report-badge {
-  font-size: 9px;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.60);
-  border: 1px solid rgba(201, 168, 76, 0.22);
-  border-radius: 3px;
-  padding: 3px 10px;
-}
-
-
-/* ─────────────────────────────────────────────
-   ARCHETYPE REVEAL BLOCK
-───────────────────────────────────────────── */
-@keyframes archetypeReveal {
-  from { opacity: 0; transform: scale(0.94) translateY(6px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.archetype-block {
-  position: relative;
-  border-left: 2px solid rgba(201, 168, 76, 0.38);
-  padding: 24px 24px 28px 28px;
-  margin-bottom: 28px;
-  overflow: hidden;
-}
-
-.archetype-glow {
-  position: absolute;
-  top: 50%;
-  left: -80px;
-  transform: translateY(-50%);
-  width: 280px;
-  height: 200px;
-  background: radial-gradient(
-    ellipse at left center,
-    rgba(201, 168, 76, 0.07) 0%,
-    transparent 65%
-  );
-  pointer-events: none;
-}
-
-.archetype-label {
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: rgba(201, 168, 76, 0.62);
-  margin: 0 0 12px;
-  text-transform: uppercase;
-  animation: archetypeReveal 0.9s ease-out forwards;
-  animation-delay: 0.1s;
-  opacity: 0;
-}
-
-.archetype-symbol {
-  display: block;
-  margin-bottom: 8px;
-  animation: archetypeReveal 0.9s ease-out forwards;
-  animation-delay: 0.3s;
-  opacity: 0;
-}
-
-.archetype-name {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 48px;
+.preview-error__msg {
+  font-family: 'Fraunces', serif;
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.95);
+  font-style: italic;
+  font-size: clamp(28px, 6vw, 44px);
   line-height: 1.1;
   margin: 0;
-  letter-spacing: -0.01em;
-  animation: archetypeReveal 0.9s ease-out forwards;
-  animation-delay: 0.5s;
-  opacity: 0;
+  color: var(--color-ink);
 }
 
-.archetype-meta {
-  font-size: 12px;
-  color: rgba(107, 72, 224, 0.70);
-  margin: 8px 0 0;
-  letter-spacing: 0.04em;
-  animation: archetypeReveal 0.9s ease-out forwards;
-  animation-delay: 0.7s;
-  opacity: 0;
-}
-
-.traits-row {
+.preview-error__actions {
   display: flex;
+  gap: 16px;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 16px;
-  animation: archetypeReveal 0.9s ease-out forwards;
-  animation-delay: 0.9s;
-  opacity: 0;
 }
 
-.trait-pill {
-  font-size: 9px;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 3px;
-  padding: 4px 10px;
-  background: transparent;
+/* ── REPORT HEADER ── */
+.report-header {
+  padding: clamp(48px, 8vw, 80px) clamp(20px, 5vw, 80px) 0;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-
-/* ─────────────────────────────────────────────
-   FREE PREVIEW TEXT
-───────────────────────────────────────────── */
-.preview-text {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.58);
-  line-height: 1.82;
-  padding: 0;
-  margin: 0 0 20px;
+.report-header__eyebrow {
+  color: var(--color-ink-faint);
+  margin-bottom: 16px;
 }
 
-
-/* ─────────────────────────────────────────────
-   BLURRED CONTENT HOOK
-───────────────────────────────────────────── */
-.blurred-preview {
-  filter: blur(5px);
-  opacity: 0.5;
-  pointer-events: none;
-  user-select: none;
-  margin: 24px 0 0;
-  font-size: 15px;
-  line-height: 1.8;
-  color: rgba(255, 255, 255, 0.7);
-  overflow: hidden;
-  max-height: 60px;
-}
-
-.blurred-preview p {
-  margin: 0;
-}
-
-
-/* ─────────────────────────────────────────────
-   READING RECEIPT TRUST LINE (T-2)
-───────────────────────────────────────────── */
-.reading-receipt {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.20);
-  text-align: center;
-  line-height: 1.7;
-  margin: 12px auto 0;
-  max-width: 380px;
-  padding: 0 20px;
-}
-
-
-/* ─────────────────────────────────────────────
-   UNLOCK PROGRESS METER (C-4)
-───────────────────────────────────────────── */
-.unlock-progress-block {
-  width: 100%;
-  margin: 28px 0 0;
-  text-align: center;
-}
-
-.unlock-label {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: rgba(201, 168, 76, 0.55);
-  margin: 0 0 10px;
-}
-
-.unlock-bar-track {
-  width: 100%;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 1px;
-}
-
-.unlock-bar-fill {
-  width: 14%;
-  height: 100%;
-  background: rgba(201, 168, 76, 0.55);
-  border-radius: 1px;
-}
-
-
-/* ─────────────────────────────────────────────
-   LOCKED SECTIONS STRIP
-───────────────────────────────────────────── */
-.locked-sections-strip {
-  background: rgba(107, 72, 224, 0.06);
-  border: 1px solid rgba(107, 72, 224, 0.15);
-  border-radius: 14px;
-  padding: 20px 22px;
-  margin: 28px 0;
-}
-
-.locked-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.lock-icon {
-  font-size: 11px;
-}
-
-.locked-strip-label {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.40);
-  text-transform: uppercase;
-}
-
-.locked-section-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.locked-section-list li {
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 14px;
-  line-height: 2.0;
-  letter-spacing: 0.01em;
-}
-
-
-/* ─────────────────────────────────────────────
-   SOCIAL PROOF
-───────────────────────────────────────────── */
-.social-proof-line {
-  text-align: center;
-  margin: 0 0 24px;
-}
-
-.stars {
-  color: rgba(201, 168, 76, 0.85);
-  font-size: 14px;
-  margin-bottom: 8px;
-  letter-spacing: 2px;
-}
-
-.proof-quote {
-  color: rgba(255, 255, 255, 0.60);
-  font-size: 14px;
+.report-header__title {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
   font-style: italic;
-  line-height: 1.6;
-  margin: 0 0 4px;
+  font-size: clamp(48px, 10vw, 96px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  margin: 0 0 40px;
+  color: var(--color-ink);
 }
 
-.proof-attribution {
-  color: rgba(255, 255, 255, 0.25);
-  font-size: 12px;
-  margin: 0;
+.report-header__symbol {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 32px;
 }
 
-
-/* ─────────────────────────────────────────────
-   PRICING SECTION
-───────────────────────────────────────────── */
-.pricing-section {
-  margin-top: 0;
-}
-
-.paywall-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.paywall-personal-line {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 22px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.92);
-  margin: 0 0 8px;
-}
-
-.paywall-sub-line {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 0 0 20px;
-  line-height: 1.55;
-}
-
-
-/* ─────────────────────────────────────────────
-   TIER LIST
-───────────────────────────────────────────── */
-.tier-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.tier-card {
-  border-radius: 12px;
-  padding: 16px;
-  min-height: 64px;
-  cursor: pointer;
-  transition:
-    box-shadow    0.18s ease,
-    border-color  0.18s ease,
-    opacity       0.18s ease,
-    transform     0.18s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Tier 1: Basic (decoy) */
-.tier-basic {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  opacity: 0.62;
-}
-
-.tier-basic:hover {
+.report-header__symbol-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   opacity: 0.85;
 }
 
-.tier-info {
-  flex: 1;
+.report-header__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 20px 0;
 }
 
-.tier-name {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.60);
-  font-weight: 500;
-  margin: 0 0 2px;
+.report-header__sep { opacity: 0.3; }
+
+.report-header__element {
+  color: var(--color-ink-mid);
+  margin: 4px 0 16px;
 }
 
-.tier-desc {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.22);
+.report-header__traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.report-trait {
+  padding: 5px 12px;
+  border: 1px solid var(--color-ink-ghost);
+  font-size: 9px;
+  color: var(--color-ink-mid);
+  letter-spacing: 0.2em;
+}
+
+/* ── PREVIEW SECTION ── */
+.report-preview {
+  padding: clamp(32px, 6vw, 64px) clamp(20px, 5vw, 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.report-preview__text {
+  font-size: var(--text-body, 16px);
+  line-height: 1.75;
+  color: var(--color-ink-mid);
+  margin-bottom: 28px;
+}
+
+.report-preview__blurred {
+  position: relative;
+  overflow: hidden;
+  max-height: 80px;
+  margin-bottom: 32px;
+}
+
+.report-preview__blurred::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 0%, var(--color-bone) 70%);
+}
+
+.report-preview__blurred p {
+  font-size: var(--text-body, 16px);
+  line-height: 1.75;
+  color: var(--color-ink-mid);
   margin: 0;
+  filter: blur(3px);
+  user-select: none;
+}
+
+/* ── Unlock meter ── */
+.unlock-meter { margin-bottom: 24px; }
+
+.unlock-meter__label {
+  color: var(--color-ink-faint);
+  margin-bottom: 10px;
+}
+
+.unlock-meter__track {
+  width: 100%;
+  max-width: 320px;
+  height: 1px;
+  background: var(--color-ink-ghost);
+}
+
+.unlock-meter__fill {
+  height: 100%;
+  width: 14%;
+  background: var(--color-ink);
+}
+
+.report-receipt {
+  color: var(--color-ink-faint);
+  margin-bottom: 12px;
+}
+
+.report-urgency { color: var(--color-ink-faint); }
+
+/* ── Locked sections ── */
+.locked-sections {
+  padding: 0 clamp(20px, 5vw, 80px) clamp(32px, 6vw, 48px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.locked-sections__header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-ink-ghost);
+  margin-bottom: 16px;
+}
+
+.locked-sections__label { color: var(--color-ink-faint); }
+
+.locked-sections__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.locked-sections__item {
+  color: var(--color-ink-mid);
+  opacity: 0.5;
+}
+
+/* ── Testimonial ── */
+.testimonial {
+  padding: clamp(24px, 4vw, 40px) clamp(20px, 5vw, 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.testimonial__stars {
+  color: var(--color-ink-mid);
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+
+.testimonial__quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: 400;
   line-height: 1.5;
+  color: var(--color-ink);
+  margin: 0 0 12px;
+  font-style: italic;
 }
 
-.tier-price {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 22px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.42);
-  margin: 0;
+.testimonial__attr { color: var(--color-ink-faint); }
+
+/* ── PAYWALL ── */
+.paywall {
+  padding: clamp(32px, 6vw, 56px) clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.paywall__header { margin-bottom: 32px; }
+
+.paywall__personal {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--color-ink);
+  margin: 0 0 12px;
+}
+
+.paywall__sub { color: var(--color-ink-mid); }
+
+/* ── Tier cards ── */
+.paywall__tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+  max-width: 560px;
+}
+
+.tier {
+  padding: 18px 20px;
+  border: 1px solid var(--color-ink-ghost);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tier:hover {
+  border-color: rgba(26, 22, 18, 0.3);
+  background: rgba(26, 22, 18, 0.02);
+}
+
+.tier--selected {
+  border-color: var(--color-ink);
+  background: rgba(26, 22, 18, 0.04);
+}
+
+.tier--deprioritized { opacity: 0.55; }
+
+.tier__info { flex: 1; }
+
+.tier__name {
+  color: var(--color-ink);
+  margin-bottom: 4px;
+}
+
+.tier__desc {
+  color: var(--color-ink-faint);
+  line-height: 1.4;
+}
+
+.tier__price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--color-ink);
   flex-shrink: 0;
 }
 
-/* Tier 1 de-emphasis canary (B6-3) */
-.tier-deprioritized {
-  opacity: 0.55;
-  transform: scale(0.97);
+/* Popular tier */
+.tier--popular {
+  border-color: var(--color-ink-mid);
+  padding: 0;
+  overflow: hidden;
 }
 
-/* Tier 2: Most Popular (target) */
-.tier-popular {
-  background: rgba(107, 72, 224, 0.08);
-  border: 1px solid rgba(107, 72, 224, 0.20);
-  border-left: 2px solid rgba(201, 168, 76, 0.65);
-  position: relative;
-  padding: 20px 18px;
-  padding-top: 22px;
-  box-shadow:
-    0 0 0 1px rgba(201, 168, 76, 0.55),
-    0 8px 32px rgba(107, 72, 224, 0.16);
+.tier--selected-popular {
+  border-color: var(--color-ink);
+  background: rgba(26, 22, 18, 0.04);
 }
 
-.tier-popular:hover {
-  transform: scale(1.015);
-  box-shadow:
-    0 0 0 1px rgba(201, 168, 76, 0.70),
-    0 12px 44px rgba(107, 72, 224, 0.24);
-}
-
-.tier-badge {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(201, 168, 76, 0.92);
-  color: #07070D;
+.tier__badge {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  padding: 6px 16px;
   font-size: 9px;
-  font-weight: 600;
-  padding: 3px 14px;
-  border-radius: 3px;
-  letter-spacing: 0.12em;
-  white-space: nowrap;
+  letter-spacing: 0.2em;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 700;
 }
 
-.tier-popular-inner {
+.tier__popular-inner,
+.tier__oracle-inner {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
 }
 
-.tier-name-popular {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.92);
-  margin: 0 0 8px;
+.tier__name--popular,
+.tier__name--oracle {
+  color: var(--color-ink);
+  margin-bottom: 4px;
 }
 
-.tier-features {
-  font-size: 11px;
-  color: rgba(200, 180, 255, 0.60);
-  line-height: 1.72;
-  margin: 0;
+.tier__desc--popular,
+.tier__desc--oracle {
+  color: var(--color-ink-faint);
+  line-height: 1.4;
 }
 
-.tier-price-block {
+.tier__price-block {
   text-align: right;
   flex-shrink: 0;
 }
 
-.tier-price-popular {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 34px;
-  font-weight: 300;
-  color: rgba(200, 180, 255, 0.95);
-  margin: 0;
+.tier__price--popular,
+.tier__price--oracle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--color-ink);
 }
 
-.tier-price-note {
+.tier__price-note {
+  color: var(--color-ink-faint);
   font-size: 10px;
-  color: rgba(107, 72, 224, 0.50);
-  margin: 2px 0 0;
+  white-space: nowrap;
 }
 
-/* Tier 3: Full Oracle (anchor) */
-.tier-oracle {
-  background: rgba(201, 168, 76, 0.04);
-  border: 1px solid rgba(201, 168, 76, 0.18);
-  border-radius: 12px;
+.tier__price-note--oracle { color: var(--color-ink-mid); }
+
+/* Oracle tier */
+.tier--oracle { border-color: var(--color-ink-ghost); }
+
+.tier--selected-oracle {
+  border-color: var(--color-ink);
+  background: rgba(26, 22, 18, 0.04);
 }
 
-.tier-oracle-inner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.tier__debug {
+  font-size: 9px;
+  color: var(--color-ink-faint);
+  padding: 4px 8px;
+  background: rgba(26, 22, 18, 0.05);
+  font-family: monospace;
 }
 
-.tier-name-oracle {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 215, 130, 0.78);
-  margin: 0 0 8px;
+/* ── Promo code ── */
+.paywall__promo {
+  margin-bottom: 24px;
+  max-width: 400px;
 }
 
-.tier-features-oracle {
-  font-size: 11px;
-  color: rgba(201, 168, 76, 0.42);
-  line-height: 1.72;
-  margin: 0;
-}
-
-.tier-price-oracle {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 26px;
-  font-weight: 300;
-  color: rgba(201, 168, 76, 0.62);
-  margin: 0;
-}
-
-.tier-price-note-oracle {
-  font-size: 10px;
-  color: rgba(201, 168, 76, 0.38);
-  margin: 2px 0 0;
-}
-
-/* Selected states */
-.tier-selected-basic {
-  opacity: 1;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
-}
-
-.tier-selected-popular {
-  box-shadow:
-    0 0 28px rgba(107, 72, 224, 0.22),
-    0 0 0 1px rgba(201, 168, 76, 0.55);
-  border-left-color: rgba(201, 168, 76, 0.95);
-}
-
-.tier-selected-oracle {
-  box-shadow:
-    0 0 20px rgba(201, 168, 76, 0.14),
-    0 0 0 1px rgba(201, 168, 76, 0.35);
-}
-
-/* A/B test debug label — internal only, never shown in production UI */
-.debug-variant-label {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.15);
-  text-align: center;
-  padding: 2px 0 4px;
-}
-
-
-/* ─────────────────────────────────────────────
-   PROMO CODE
-───────────────────────────────────────────── */
-.promo-section {
-  margin-top: 14px;
-  margin-bottom: 2px;
-}
-
-.promo-toggle-link {
-  background: transparent;
+.paywall__promo-toggle {
+  background: none;
   border: none;
-  padding: 0;
-  font-family: inherit;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.28);
   cursor: pointer;
-  letter-spacing: 0.02em;
+  color: var(--color-ink-faint);
+  padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
-  display: block;
-  text-align: center;
-  width: 100%;
-  margin-bottom: 4px;
-  transition: color 0.18s ease;
-  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
 }
 
-.promo-toggle-link:hover {
-  color: rgba(255, 255, 255, 0.50);
-}
+.paywall__promo-toggle:hover { color: var(--color-ink); }
 
-.promo-input-row {
+.paywall__promo-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
 }
 
-.promo-input {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 10px 12px;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 13px;
-  font-family: 'Courier New', Courier, monospace;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+.paywall__promo-input {
   flex: 1;
-  outline: none;
-  box-sizing: border-box;
-  text-transform: uppercase;
-  transition: border-color 0.18s ease;
-}
-
-.promo-input:focus {
-  border-color: rgba(201, 168, 76, 0.38);
-}
-
-.promo-input::placeholder {
-  color: rgba(255, 255, 255, 0.18);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  text-transform: none;
-}
-
-.promo-input:disabled {
-  opacity: 0.5;
-}
-
-.promo-apply-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.50);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  padding: 10px 16px;
-  transition:
-    background    0.18s ease,
-    border-color  0.18s ease,
-    color         0.18s ease;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.promo-apply-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.20);
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.promo-apply-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.promo-msg {
-  font-size: 12px;
-  margin: 8px 0 0;
-  padding: 0;
-  text-align: center;
-}
-
-.promo-msg-block {
-  margin-top: 10px;
-  text-align: center;
-}
-
-.promo-msg-error {
-  color: rgba(255, 110, 110, 0.85);
-}
-
-.promo-msg-success {
-  color: rgba(100, 210, 130, 0.85);
-  letter-spacing: 0.02em;
-}
-
-.promo-full-access-block {
-  background: rgba(100, 210, 130, 0.05);
-  border: 1px solid rgba(100, 210, 130, 0.20);
-  border-radius: 10px;
-  padding: 16px 20px;
-  text-align: center;
-}
-
-.promo-full-access-title {
+  max-width: none;
   font-size: 14px;
-  font-weight: 500;
-  color: rgba(100, 210, 130, 0.90);
-  margin: 0 0 6px;
-  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
-.promo-full-access-sub {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 0;
-  line-height: 1.6;
-}
-
-
-/* ─────────────────────────────────────────────
-   EMAIL INPUT
-───────────────────────────────────────────── */
-.email-field-wrapper {
-  margin-top: 16px;
-  margin-bottom: 0;
-  text-align: left;
-}
-
-.email-label {
+.paywall__promo-apply {
+  background: none;
+  border: 1px solid var(--color-ink-ghost);
+  cursor: pointer;
+  color: var(--color-ink);
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 700;
   font-size: 9px;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.22);
-  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding: 10px 16px;
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.paywall__promo-apply:hover:not(:disabled) {
+  border-color: var(--color-ink);
+  background: rgba(26, 22, 18, 0.04);
+}
+
+.paywall__promo-apply:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.paywall__promo-msg { margin-top: 8px; }
+.paywall__promo-msg--error  { color: #8B4513; }
+.paywall__promo-msg--success { color: #3A6B4A; }
+
+/* ── Email ── */
+.paywall__email {
+  margin-bottom: 24px;
+  max-width: 480px;
+}
+
+.paywall__email-label {
   display: block;
-  margin-bottom: 8px;
+  color: var(--color-ink-faint);
+  margin-bottom: 12px;
 }
 
-.email-input {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 12px;
-  padding: 14px 16px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 14px;
+/* ── Editorial input (shared) ── */
+.editorial-input {
   width: 100%;
-  outline: none;
-  box-sizing: border-box;
-  font-family: inherit;
-  transition: border-color 0.22s ease, background 0.22s ease;
-}
-
-.email-input:focus {
-  border-color: rgba(201, 168, 76, 0.42);
-  background: rgba(201, 168, 76, 0.025);
-}
-
-.email-input::placeholder {
-  color: rgba(255, 255, 255, 0.18);
-}
-
-
-/* ─────────────────────────────────────────────
-   PRIMARY UNLOCK CTA — solid purple,
-   matching landing/analysis CTA system
-   Apple HIG: 44pt minimum touch target
-───────────────────────────────────────────── */
-.unlock-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #6B48E0;
-  border: none;
-  border-radius: 14px;
-  padding: 17px 24px;
-  min-height: 54px;
-  width: 100%;
-  font-size: 16px;
-  font-weight: 500;
-  color: #ffffff;
-  cursor: pointer;
-  font-family: inherit;
-  letter-spacing: 0.01em;
-  transition:
-    background  0.18s ease,
-    box-shadow  0.18s ease,
-    transform   0.12s ease;
-  box-shadow:
-    0 0 0 1px rgba(107, 72, 224, 0.55),
-    0 8px 32px rgba(107, 72, 224, 0.28),
-    0 2px 8px  rgba(0, 0, 0, 0.35);
-  margin-top: 14px;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.unlock-btn:hover:not(:disabled) {
-  background: #7B5AF2;
-  box-shadow:
-    0 0 0 1px rgba(123, 90, 242, 0.65),
-    0 12px 44px rgba(107, 72, 224, 0.44),
-    0 4px 12px rgba(0, 0, 0, 0.40);
-  transform: translateY(-1px);
-}
-
-.unlock-btn:active:not(:disabled) {
-  transform: translateY(0) scale(0.985);
-  background: #5B38D0;
-  box-shadow:
-    0 0 0 1px rgba(107, 72, 224, 0.45),
-    0 4px 16px rgba(107, 72, 224, 0.22);
-}
-
-/* Tier variants override the base purple */
-.unlock-btn-basic {
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.50);
-  box-shadow: none;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-}
-
-.unlock-btn-basic:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.11);
-  box-shadow: none;
-  transform: none;
-}
-
-.unlock-btn-oracle {
+  padding: 14px 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--color-ink);
   background: transparent;
-  border: 1px solid rgba(201, 168, 76, 0.50);
-  color: rgba(201, 168, 76, 0.88);
-  box-shadow: none;
+  border: none;
+  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
+  outline: none;
+  border-radius: 0;
+  transition: border-color 0.2s;
+  display: block;
 }
 
-.unlock-btn-oracle:hover:not(:disabled) {
-  background: rgba(201, 168, 76, 0.10);
-  border-color: rgba(201, 168, 76, 0.75);
-  box-shadow: 0 4px 20px rgba(201, 168, 76, 0.10);
+.editorial-input:focus { border-bottom-color: var(--color-ink); }
+
+.editorial-input::placeholder {
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+/* ── CTA button ── */
+.paywall__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 18px 24px;
+  background: var(--color-ink);
+  color: var(--color-bone);
+  border: none;
+  cursor: pointer;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: opacity 0.15s, transform 0.12s;
+  margin-bottom: 20px;
+}
+
+.paywall__cta:hover:not(:disabled) {
+  opacity: 0.85;
   transform: translateY(-1px);
 }
 
-.unlock-btn-processing {
-  opacity: 0.62;
-  cursor: default;
-  transform: none !important;
-}
-
-.unlock-btn:disabled {
+.paywall__cta:disabled {
   opacity: 0.35;
-  cursor: default;
-  transform: none;
-  pointer-events: none;
+  cursor: not-allowed;
 }
 
+.paywall__cta--processing {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
 
-/* ─────────────────────────────────────────────
-   GUARANTEE & TRUST SIGNALS
-───────────────────────────────────────────── */
-.urgency-line {
+.paywall__cta--basic {
+  background: transparent;
+  color: var(--color-ink);
+  border: 1px solid var(--color-ink-mid);
+}
+
+.paywall__cta--basic:hover:not(:disabled) {
+  background: rgba(26, 22, 18, 0.06);
+}
+
+/* ── Guarantee & trust ── */
+.paywall__guarantee {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
   gap: 8px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.32);
-  text-align: center;
-  margin: 20px 0 10px;
+  color: var(--color-ink-mid);
+  margin-bottom: 12px;
+  max-width: 480px;
 }
 
-.urgency-icon {
-  font-size: 12px;
-}
-
-.guarantee-line {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.30);
-  text-align: center;
-  margin: 16px 0 24px;
-}
-
-.guarantee-check {
-  color: rgba(107, 72, 224, 0.65);
+.paywall__guarantee-check {
+  color: var(--color-ink-mid);
+  flex-shrink: 0;
   font-size: 10px;
+  margin-top: 1px;
 }
 
-.guarantee-text {
-  color: rgba(255, 255, 255, 0.30);
+.paywall__trust-onetime,
+.paywall__trust-secure {
+  color: var(--color-ink-faint);
+  margin-bottom: 6px;
 }
 
-.trust-note {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.22);
-  text-align: center;
-  margin: 12px 0 0;
-  line-height: 1.6;
-}
-
-.trust-onetime {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.22);
-  text-align: center;
-  margin: 0 0 8px;
-  line-height: 1.6;
-}
-
-.trust-secure {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.14);
-  text-align: center;
-  margin: 4px 0 0;
-}
-
-
-/* ─────────────────────────────────────────────
-   FOOTER
-───────────────────────────────────────────── */
+/* ── Footer ── */
 .preview-footer {
-  width: 100%;
+  padding: clamp(24px, 4vw, 40px) clamp(20px, 5vw, 80px);
+  border-top: 1px solid var(--color-ink-ghost);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 20px 20px 28px;
-  box-sizing: border-box;
-  margin-top: 8px;
+  gap: 12px;
+  margin-top: auto;
 }
 
 .preview-footer nav {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.preview-footer-link {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.18);
+.preview-footer__link {
+  color: var(--color-ink-faint);
   text-decoration: none;
-  letter-spacing: 0.06em;
+  transition: color 0.15s;
 }
 
-.preview-footer-sep {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.10);
+.preview-footer__link:hover { color: var(--color-ink); }
+
+.preview-footer__sep { color: var(--color-ink-ghost); }
+
+.preview-footer__crisis { color: var(--color-ink-faint); }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .report-header__title { font-size: clamp(36px, 12vw, 64px); }
+  .tier__popular-inner,
+  .tier__oracle-inner { flex-direction: column; align-items: flex-start; }
+  .tier__price-block { text-align: left; }
 }
 
-.preview-footer-crisis {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.10);
-  margin: 0;
-  letter-spacing: 0.02em;
-  text-align: center;
-  line-height: 1.5;
-  max-width: 320px;
-}
-
-
-/* ─────────────────────────────────────────────
-   RESPONSIVE
-───────────────────────────────────────────── */
-@media (max-width: 400px) {
-  .preview-page {
-    padding: 20px 16px 60px;
-  }
-
-  .archetype-block {
-    padding: 20px 16px 20px 22px;
-  }
-
-  .archetype-name {
-    font-size: 40px;
-  }
-
-  .locked-sections-strip {
-    padding: 16px;
-  }
-
-  .tier-popular-inner,
-  .tier-oracle-inner {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .tier-price-block {
-    text-align: left;
-    width: 100%;
-  }
-
-  .tier-price-popular {
-    font-size: 28px;
-  }
-
-  .tier-price-oracle {
-    font-size: 22px;
-  }
-
-  .tier-basic {
-    flex-wrap: wrap;
-  }
-
-  .tier-price {
-    font-size: 18px;
-    width: 100%;
-    text-align: left;
-  }
-
-  .paywall-personal-line {
-    font-size: 19px;
-  }
-
-  .paywall-sub-line {
-    font-size: 13px;
-    margin-bottom: 20px;
-  }
-}
-
-@media (max-width: 360px) {
-  .preview-page {
-    padding: 16px 12px 60px;
-  }
-
-  .archetype-block {
-    padding: 16px 12px 16px 18px;
-  }
-
-  .archetype-name {
-    font-size: 34px;
-  }
-}
-
-
-/* ─────────────────────────────────────────────
-   REDUCED MOTION
-───────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .archetype-label,
-  .archetype-symbol,
-  .archetype-name,
-  .archetype-meta,
-  .traits-row {
-    animation: none;
-    opacity: 1;
-  }
-
-  .loading-message,
-  .loading-testimonial {
-    animation: none;
-  }
-
-  .progress-fill {
-    animation: none;
-    width: 60%;
-  }
-
-  .unlock-btn:hover:not(:disabled),
-  .unlock-btn-oracle:hover:not(:disabled) {
-    transform: none;
-  }
-
-  .tier-popular:hover {
-    transform: none;
-  }
+  .loading-ornament { animation: none; opacity: 1; }
+  .loading-progress__fill { animation: none; width: 80%; }
+  .paywall__cta:hover:not(:disabled) { transform: none; }
 }
+
 
 </style>

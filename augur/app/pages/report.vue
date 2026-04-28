@@ -1,22 +1,23 @@
 <template>
-  <!-- Loading report with impulse upsell -->
+  <!-- ── Loading state ── -->
   <div v-if="isLoadingReport" class="report-loading-page">
     <div class="report-loading-content">
-      <OrbitalMark />
-      <p class="rload-brand">OMENORA</p>
-      <p class="rload-msg">{{ t('craftingReport') }}</p>
+      <p class="rload-eyebrow label-caps">Omenora</p>
+      <p class="rload-msg font-serif-italic">{{ t('craftingReport') }}</p>
       <div class="rload-track">
         <div class="rload-fill" />
       </div>
     </div>
+
+    <!-- Impulse upsell during load -->
     <div v-if="showAddon" class="addon-offer-box">
-      <span class="addon-badge">{{ t('oneTimeOffer') }}</span>
-      <p class="addon-title">{{ t('addCompatibility') }}</p>
-      <p class="addon-desc">{{ t('onlyWhileLoading') }}</p>
+      <span class="addon-badge label-caps">{{ t('oneTimeOffer') }}</span>
+      <p class="addon-title font-serif-italic">{{ t('addCompatibility') }}</p>
+      <p class="addon-desc annotation">{{ t('onlyWhileLoading') }}</p>
       <div class="addon-price-row">
         <span class="addon-original">$2.99</span>
         <span class="addon-price">$0.99</span>
-        <span class="addon-note">{{ t('todayOnly') }}</span>
+        <span class="addon-note annotation">{{ t('todayOnly') }}</span>
       </div>
       <input
         id="addon-partner-name"
@@ -24,13 +25,13 @@
         type="text"
         name="addon-partner-name"
         :placeholder="t('addonPartnerPlaceholder')"
-        class="addon-input"
+        class="addon-input editorial-input"
         autocomplete="off"
       >
       <div class="addon-dob-row">
-        <input id="addon-birth-day" v-model="addonBirthDay" type="number" name="addon-birth-day" placeholder="DD" min="1" max="31" class="addon-input addon-dob addon-day" autocomplete="off">
-        <input id="addon-birth-month" v-model="addonBirthMonth" type="number" name="addon-birth-month" placeholder="MM" min="1" max="12" class="addon-input addon-dob addon-day" autocomplete="off">
-        <input id="addon-birth-year" v-model="addonBirthYear" type="number" name="addon-birth-year" placeholder="YYYY" min="1924" max="2010" class="addon-input addon-dob addon-year" autocomplete="off">
+        <input id="addon-birth-day" v-model="addonBirthDay" type="number" name="addon-birth-day" placeholder="DD" min="1" max="31" class="addon-input editorial-input addon-dob addon-day" autocomplete="off">
+        <input id="addon-birth-month" v-model="addonBirthMonth" type="number" name="addon-birth-month" placeholder="MM" min="1" max="12" class="addon-input editorial-input addon-dob addon-day" autocomplete="off">
+        <input id="addon-birth-year" v-model="addonBirthYear" type="number" name="addon-birth-year" placeholder="YYYY" min="1924" max="2010" class="addon-input editorial-input addon-dob addon-year" autocomplete="off">
       </div>
       <button
         :disabled="!addonPartnerName || !addonBirthYear || isProcessingAddon"
@@ -39,299 +40,348 @@
       >
         {{ isProcessingAddon ? t('processingPayment') : t('yesAdd') }}
       </button>
-      <p class="addon-no-link" @click="showAddon = false">{{ t('noThanks') }}</p>
+      <p class="addon-no-link annotation" @click="showAddon = false">{{ t('noThanks') }}</p>
     </div>
   </div>
 
-  <!-- Error state -->
-  <div v-else-if="hasError" class="center-page">
-    <div class="center-content">
-      <OrbitalMark />
-      <p class="rload-brand">OMENORA</p>
-      <p class="status-text">{{ t('reportErrorMsg') }}</p>
-      <p style="font-size:13px;color:rgba(255,255,255,0.4);margin:8px 0 20px;">{{ t('reportErrorEmail') }}</p>
-      <button
-        style="background:rgba(140,110,255,0.15);border:1px solid rgba(140,110,255,0.3);color:rgba(200,180,255,0.9);padding:12px 28px;border-radius:8px;font-size:14px;cursor:pointer;margin-bottom:12px;"
-        @click="reloadPage"
-      >
-        {{ t('tryAgain') }}
-      </button>
-      <p style="font-size:12px;color:rgba(255,255,255,0.25);">
-        {{ t('needHelp') }} <a href="mailto:support@omenora.com" style="color:rgba(140,110,255,0.7);text-decoration:none;">support@omenora.com</a>
-      </p>
+  <!-- ── Error state ── -->
+  <div v-else-if="hasError" class="report-state-page">
+    <div class="report-state-inner">
+      <p class="label-caps report-state__eyebrow">Something went wrong</p>
+      <h2 class="report-state__heading font-display-italic">{{ t('reportErrorMsg') }}</h2>
+      <p class="annotation report-state__sub">{{ t('reportErrorEmail') }}</p>
+      <div class="report-state__actions">
+        <button class="report-state-btn" @click="reloadPage">{{ t('tryAgain') }}</button>
+        <p class="annotation">
+          {{ t('needHelp') }}
+          <a href="mailto:support@omenora.com" class="report-state-link">support@omenora.com</a>
+        </p>
+      </div>
     </div>
   </div>
 
-  <!-- Report could not be recovered -->
-  <div v-else-if="!store.report" class="center-page">
-    <div class="center-content">
-      <OrbitalMark />
-      <p class="rload-brand">OMENORA</p>
-      <h2 class="fallback-title">{{ t('reportReady') }}</h2>
-      <p class="fallback-text">{{ t('checkEmail') }}</p>
+  <!-- ── No report recovered ── -->
+  <div v-else-if="!store.report" class="report-state-page">
+    <div class="report-state-inner">
+      <PhoenixLoader :size="88" class="report-state__phoenix" />
+      <p class="label-caps report-state__eyebrow">Reading complete</p>
+      <h2 class="report-state__heading font-display-italic">{{ t('reportReady') }}</h2>
+      <p class="annotation report-state__sub">{{ t('checkEmail') }}</p>
     </div>
   </div>
 
-  <!-- Full report -->
+  <!-- ── Full report ── -->
   <div v-else class="report-page">
-    <!-- Payment confirmation banner (U-4) -->
+
+    <!-- Payment confirmation banner -->
     <Transition name="banner-fade">
-      <div
-        v-if="showPaymentBanner"
-        class="payment-confirmation-banner"
-      >
-        <span class="banner-text">
-          ❆ Your complete reading has been sent to
-          {{ store.email }}
+      <div v-if="showPaymentBanner" class="payment-banner">
+        <span class="payment-banner__text annotation">
+          ❆ Your complete reading has been sent to {{ store.email }}
         </span>
-        <button
-          class="banner-dismiss"
-          aria-label="Dismiss"
-          @click="showPaymentBanner = false"
-        >×</button>
+        <button class="payment-banner__dismiss" aria-label="Dismiss" @click="showPaymentBanner = false">×</button>
       </div>
     </Transition>
 
-    <!-- Top bar -->
-    <div class="top-bar">
-      <span class="brand-text top-brand">OMENORA</span>
-      <span class="report-label">{{ t('completeReport') }}</span>
-      <NuxtLink to="/account" class="top-account-link">My Account</NuxtLink>
-    </div>
+    <!-- App header with PDF export -->
+    <AppHeader>
+      <template #action>
+        <div class="report-header-actions">
+          <NuxtLink to="/account" class="report-account-link label-caps">My Account</NuxtLink>
+          <button
+            v-if="canExport"
+            class="label-caps report-export-btn"
+            :disabled="isDownloadingPDF"
+            @click="downloadReportPDF"
+          >
+            {{ isDownloadingPDF ? 'Generating…' : '↓ Save PDF' }}
+          </button>
+        </div>
+      </template>
+    </AppHeader>
 
-    <!-- Hero block -->
-    <div class="hero-block">
-      <p class="archetype-label">{{ t('yourDestinyArchetype') }}</p>
-      <ArchetypeSymbol :symbol="store.report.archetypeSymbol" :size="48" class="archetype-symbol" />
-      <h1 class="archetype-name">{{ store.report.archetypeName }}</h1>
-      <p class="archetype-meta">{{ store.report.element }} · {{ t('lifePathLabel') }} {{ store.lifePathNumber }}</p>
-      <div class="traits-row">
-        <span v-for="trait in store.report.powerTraits" :key="trait" class="trait-pill">
-          {{ trait }}
-        </span>
+    <!-- ── MASTHEAD ── -->
+    <section class="report-masthead">
+      <div class="report-masthead__inner">
+
+        <p class="label-caps report-masthead__eyebrow">
+          Complete Natal Reading · {{ store.firstName }}
+        </p>
+
+        <h1 class="report-masthead__name font-display-italic">
+          {{ store.report.archetypeName }}
+        </h1>
+
+        <div v-if="archetypeFile" class="report-masthead__symbol">
+          <img
+            :src="`/symbols/${archetypeFile}`"
+            :alt="store.report.archetypeName"
+            class="symbol-editorial"
+          >
+        </div>
+
+        <!-- Planet cells row -->
+        <div class="report-masthead__planets">
+          <div v-for="p in keyPlanets" :key="p.label" class="planet-cell">
+            <span class="planet-cell__glyph">{{ p.glyph }}</span>
+            <span class="planet-cell__sign annotation">{{ p.sign }}</span>
+            <span class="planet-cell__label annotation">{{ p.label }}</span>
+          </div>
+        </div>
+
+        <div class="editorial-rule" />
+
+        <!-- Meta strip -->
+        <div class="report-masthead__meta">
+          <span class="annotation">{{ store.dateOfBirth }}</span>
+          <span class="annotation" style="opacity:0.3">·</span>
+          <span class="annotation">{{ store.city }}</span>
+          <span class="annotation" style="opacity:0.3">·</span>
+          <span class="annotation">Life Path {{ store.lifePathNumber }}</span>
+          <span class="annotation" style="opacity:0.3">·</span>
+          <span class="annotation">{{ store.report.element }}</span>
+        </div>
+
+        <!-- Power traits -->
+        <div class="report-masthead__traits">
+          <span v-for="trait in store.report.powerTraits" :key="trait" class="report-trait">
+            {{ trait }}
+          </span>
+        </div>
+
       </div>
-    </div>
+    </section>
 
-    <!-- Bundle/Oracle congratulations banner -->
-    <div v-if="store.bundlePurchased || store.oraclePurchased" class="unlock-banner">
-      <span class="unlock-banner-icon">✦</span>
+    <!-- Bundle/Oracle unlock confirmation -->
+    <div v-if="store.bundlePurchased || store.oraclePurchased" class="unlock-notice">
+      <span class="unlock-notice__icon">✦</span>
       <div>
-        <p class="unlock-banner-title">{{ store.oraclePurchased ? t('oracleUnlocked') : t('bundleUnlocked') }}</p>
-        <p class="unlock-banner-desc">
+        <p class="label-caps unlock-notice__title">
+          {{ store.oraclePurchased ? t('oracleUnlocked') : t('bundleUnlocked') }}
+        </p>
+        <p class="annotation unlock-notice__desc">
           {{ store.oraclePurchased ? t('oracleDesc') : t('bundleDesc') }}
         </p>
       </div>
     </div>
 
-    <!-- Birth chart: generated data display -->
-    <div v-if="store.birthChartData" class="birth-chart-section">
-      <div class="birth-chart-section-header">
-        <p class="birth-chart-eyebrow">{{ t('fullBirthChart') }}</p>
-        <p class="birth-chart-section-title">{{ store.birthChartData.chartTitle }}</p>
-      </div>
-      <div class="birth-chart-signs-row">
-        <div class="birth-chart-sign-cell">
-          <p class="birth-chart-sign-label">{{ t('risingLabel') }}</p>
-          <p class="birth-chart-sign-value">{{ store.birthChartData.risingSign }}</p>
-        </div>
-        <div class="birth-chart-sign-cell">
-          <p class="birth-chart-sign-label">{{ t('sunLabel') }}</p>
-          <p class="birth-chart-sign-value">{{ store.birthChartData.sunSign }}</p>
-        </div>
-        <div class="birth-chart-sign-cell">
-          <p class="birth-chart-sign-label">{{ t('moonLabel') }}</p>
-          <p class="birth-chart-sign-value">{{ store.birthChartData.moonSign }}</p>
-        </div>
-        <div class="birth-chart-sign-cell">
-          <p class="birth-chart-sign-label">{{ t('planetLabel') }}</p>
-          <p class="birth-chart-sign-value">{{ store.birthChartData.dominantPlanet }}</p>
-        </div>
-        <div class="birth-chart-sign-cell">
-          <p class="birth-chart-sign-label">POWER HOUSE — your strongest life area</p>
-          <p class="birth-chart-sign-value">{{ store.birthChartData.powerHouse }}</p>
+    <!-- ── BIRTH CHART (oracle/purchased buyers) ── -->
+    <!-- Generated data display -->
+    <section v-if="store.birthChartData" class="report-section birth-chart-section">
+      <div class="report-section__header">
+        <span class="annotation report-section__num">✦</span>
+        <div>
+          <p class="label-caps report-section__tradition">{{ t('fullBirthChart') }}</p>
+          <h2 class="report-section__heading font-serif">{{ store.birthChartData.chartTitle }}</h2>
         </div>
       </div>
-      <p class="birth-chart-reading">{{ store.birthChartData.reading }}</p>
-      <div class="birth-chart-forecast-box">
-        <p class="birth-chart-forecast-label">{{ t('planetaryForecast') }}</p>
-        <p class="birth-chart-forecast-text">{{ store.birthChartData.forecast2026 }}</p>
+      <div class="editorial-rule" />
+      <div class="report-section__body">
+        <div class="birth-chart-signs-grid">
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">{{ t('risingLabel') }}</p>
+            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.risingSign }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">{{ t('sunLabel') }}</p>
+            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.sunSign }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">{{ t('moonLabel') }}</p>
+            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.moonSign }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">{{ t('planetLabel') }}</p>
+            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.dominantPlanet }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Power House</p>
+            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.powerHouse }}</p>
+          </div>
+        </div>
+        <p class="report-section__para">{{ store.birthChartData.reading }}</p>
+        <div class="bc-forecast-box">
+          <p class="label-caps bc-forecast-box__label">{{ t('planetaryForecast') }}</p>
+          <p class="bc-forecast-box__text font-serif-italic">{{ store.birthChartData.forecast2026 }}</p>
+        </div>
       </div>
-    </div>
+    </section>
 
     <!-- Birth chart: oracle/purchased — generate button -->
-    <div v-else-if="(store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth" class="birth-chart-banner birth-chart-banner--active">
-      <div class="birth-chart-info">
-        <p class="birth-chart-title">✦ {{ store.oraclePurchased ? t('birthChartIncluded') : t('birthChartUnlockedLabel') }}</p>
-        <p class="birth-chart-desc">{{ store.oraclePurchased ? t('birthChartPositionsIncluded') : t('birthChartPositionsUnlocked') }}</p>
+    <div v-else-if="(store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth" class="upsell-inline upsell-inline--active">
+      <div class="upsell-inline__info">
+        <p class="label-caps upsell-inline__title">✦ {{ store.oraclePurchased ? t('birthChartIncluded') : t('birthChartUnlockedLabel') }}</p>
+        <p class="annotation upsell-inline__desc">{{ store.oraclePurchased ? t('birthChartPositionsIncluded') : t('birthChartPositionsUnlocked') }}</p>
       </div>
-      <button class="birth-chart-btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
+      <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
         {{ isLoadingBirthChart ? t('generatingBirthChart') : t('generateBirthChart') }}
       </button>
     </div>
 
     <!-- Birth chart: has time of birth, not yet purchased -->
-    <div v-else-if="store.timeOfBirth" class="birth-chart-banner birth-chart-banner--active">
-      <div class="birth-chart-info">
-        <p class="birth-chart-title">{{ t('birthChartReady') }}</p>
-        <p class="birth-chart-desc">{{ t('birthChartPrice') }}</p>
+    <div v-else-if="store.timeOfBirth" class="upsell-inline upsell-inline--active">
+      <div class="upsell-inline__info">
+        <p class="label-caps upsell-inline__title">{{ t('birthChartReady') }}</p>
+        <p class="annotation upsell-inline__desc">{{ t('birthChartPrice') }}</p>
       </div>
-      <button class="birth-chart-btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
+      <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
         {{ isLoadingBirthChart ? t('loadingBirthChart') : t('unlockBirthChart') }}
       </button>
     </div>
 
     <!-- Birth chart: no time of birth -->
-    <div v-else class="birth-chart-banner">
-      <div class="birth-chart-info">
-        <p class="birth-chart-title birth-chart-title--dim">{{ t('birthChartUnlockedLabel') }}</p>
-        <p class="birth-chart-desc">{{ t('birthChartRequiresTime') }}</p>
+    <div v-else class="upsell-inline">
+      <div class="upsell-inline__info">
+        <p class="label-caps upsell-inline__title upsell-inline__title--dim">{{ t('birthChartUnlockedLabel') }}</p>
+        <p class="annotation upsell-inline__desc">{{ t('birthChartRequiresTime') }}</p>
       </div>
-      <span class="birth-chart-locked-badge">{{ t('requiresTimeOfBirth') }}</span>
+      <span class="upsell-inline__locked-badge annotation">{{ t('requiresTimeOfBirth') }}</span>
     </div>
 
-    <!-- Report sections -->
-    <div
-      v-for="(key, idx) in SECTION_ORDER"
-      :key="key"
-      class="section-wrapper"
-      :class="{ 'no-border': idx === SECTION_ORDER.length - 1 }"
-    >
-      <h3 class="section-title">{{ store.report.sections[key].title }}</h3>
-      <div v-if="key === 'affirmation'" class="affirmation-box">
-        {{ store.report.sections[key].content }}
-      </div>
-      <p v-else class="section-content">{{ store.report.sections[key].content }}</p>
+    <!-- ── CORE REPORT SECTIONS ── -->
+    <div class="report-body">
+      <article
+        v-for="(key, idx) in SECTION_ORDER"
+        :key="key"
+        class="report-section"
+        :id="`section-${key}`"
+      >
+        <div class="report-section__header">
+          <span class="annotation report-section__num">{{ String(idx + 1).padStart(2, '0') }}</span>
+          <div>
+            <p class="label-caps report-section__tradition">
+              {{ sectionTraditionLabel(key) }}
+            </p>
+            <h2 class="report-section__heading font-serif">
+              {{ store.report.sections[key].title }}
+            </h2>
+          </div>
+        </div>
+        <div class="editorial-rule" />
+        <div class="report-section__body">
+          <div v-if="key === 'affirmation'" class="affirmation-block">
+            <p class="affirmation-block__text font-serif-italic">
+              {{ store.report.sections[key].content }}
+            </p>
+          </div>
+          <p v-else class="report-section__para">{{ store.report.sections[key].content }}</p>
+        </div>
+      </article>
     </div>
 
-    <!-- Vedic regional section -->
-    <div
-      v-if="store.region === 'india' && vedicData"
-      style="margin-bottom: 40px; padding: 28px 24px;
-        background: linear-gradient(135deg, rgba(255,140,50,0.05) 0%, rgba(200,100,50,0.03) 100%);
-        border: 1px solid rgba(255,140,50,0.15);
-        border-radius: 16px;"
-    >
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-        <span style="font-size: 24px;">🕉</span>
+    <!-- ── REGIONAL SECTIONS ── -->
+
+    <!-- Vedic (India) -->
+    <section v-if="store.region === 'india' && vedicData" class="report-section regional-section">
+      <div class="report-section__header">
+        <span class="annotation report-section__num">🕉</span>
         <div>
-          <p style="font-size: 11px; font-weight: 500; color: rgba(255,160,80,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">{{ t('vedicReadingLabel') }}</p>
-          <p style="font-size: 16px; font-weight: 500; color: white; margin: 0;">{{ vedicData.vedicTitle }}</p>
+          <p class="label-caps report-section__tradition">{{ t('vedicReadingLabel') }}</p>
+          <h2 class="report-section__heading font-serif">{{ vedicData.vedicTitle }}</h2>
         </div>
       </div>
-      <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
-        <div style="padding: 8px 14px; background: rgba(255,140,50,0.08); border: 1px solid rgba(255,140,50,0.2); border-radius: 10px;">
-          <p style="font-size: 9px; color: rgba(255,160,80,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">{{ t('nakshatraLabel') }}</p>
-          <p style="font-size: 13px; font-weight: 500; color: rgba(255,200,150,0.9); margin: 0;">{{ vedicData.nakshatraName }}</p>
+      <div class="editorial-rule" />
+      <div class="report-section__body">
+        <div class="regional-pills">
+          <div class="regional-pill">
+            <p class="label-caps regional-pill__label">{{ t('nakshatraLabel') }}</p>
+            <p class="regional-pill__value font-serif">{{ vedicData.nakshatraName }}</p>
+          </div>
+          <div class="regional-pill">
+            <p class="label-caps regional-pill__label">{{ t('rulingPlanetLabel') }}</p>
+            <p class="regional-pill__value font-serif">{{ vedicData.rulingPlanet }}</p>
+          </div>
         </div>
-        <div style="padding: 8px 14px; background: rgba(255,140,50,0.08); border: 1px solid rgba(255,140,50,0.2); border-radius: 10px;">
-          <p style="font-size: 9px; color: rgba(255,160,80,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">{{ t('rulingPlanetLabel') }}</p>
-          <p style="font-size: 13px; font-weight: 500; color: rgba(255,200,150,0.9); margin: 0;">{{ vedicData.rulingPlanet }}</p>
+        <p class="report-section__para">{{ vedicData.reading }}</p>
+        <div class="regional-highlight">
+          <p class="label-caps regional-highlight__label">{{ t('karmicMissionLabel') }}</p>
+          <p class="regional-highlight__text font-serif-italic">{{ vedicData.karmicMission }}</p>
+        </div>
+        <div class="regional-tags">
+          <span class="annotation regional-tags__label">{{ t('practice2026') }}</span>
+          <span class="regional-tag">{{ vedicData.remedy }}</span>
         </div>
       </div>
-      <p style="font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.8; margin-bottom: 16px;">{{ vedicData.reading }}</p>
-      <div style="padding: 14px 16px; background: rgba(255,140,50,0.06); border-left: 2px solid rgba(255,160,80,0.4); border-radius: 0 8px 8px 0; margin-bottom: 12px;">
-        <p style="font-size: 10px; color: rgba(255,160,80,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px;">{{ t('karmicMissionLabel') }}</p>
-        <p style="font-size: 13px; color: rgba(255,200,150,0.8); font-style: italic; margin: 0;">{{ vedicData.karmicMission }}</p>
-      </div>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-        <span style="font-size: 11px; color: rgba(255,255,255,0.25);">{{ t('practice2026') }}</span>
-        <span style="font-size: 12px; color: rgba(255,200,150,0.7); background: rgba(255,140,50,0.08); border: 1px solid rgba(255,140,50,0.15); border-radius: 20px; padding: 3px 12px;">{{ vedicData.remedy }}</span>
-      </div>
-    </div>
+    </section>
 
-    <!-- BaZi regional section -->
-    <div
-      v-if="store.region === 'china' && baziData"
-      style="margin-bottom: 40px; padding: 28px 24px;
-        background: linear-gradient(135deg, rgba(200,50,50,0.05) 0%, rgba(200,150,50,0.03) 100%);
-        border: 1px solid rgba(200,80,50,0.15);
-        border-radius: 16px;"
-    >
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-        <span style="font-size: 24px;">☯</span>
+    <!-- BaZi (China) -->
+    <section v-if="store.region === 'china' && baziData" class="report-section regional-section">
+      <div class="report-section__header">
+        <span class="annotation report-section__num">☯</span>
         <div>
-          <p style="font-size: 11px; font-weight: 500; color: rgba(220,100,80,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">{{ t('baziReadingLabel') }}</p>
-          <p style="font-size: 16px; font-weight: 500; color: white; margin: 0;">{{ baziData.baziTitle }}</p>
+          <p class="label-caps report-section__tradition">{{ t('baziReadingLabel') }}</p>
+          <h2 class="report-section__heading font-serif">{{ baziData.baziTitle }}</h2>
         </div>
       </div>
-      <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
-        <div style="padding: 8px 14px; background: rgba(200,80,50,0.08); border: 1px solid rgba(200,80,50,0.2); border-radius: 10px;">
-          <p style="font-size: 9px; color: rgba(220,120,100,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">{{ t('dayMasterLabel') }}</p>
-          <p style="font-size: 13px; font-weight: 500; color: rgba(255,180,160,0.9); margin: 0;">{{ baziData.dayMaster }}</p>
+      <div class="editorial-rule" />
+      <div class="report-section__body">
+        <div class="regional-pills">
+          <div class="regional-pill">
+            <p class="label-caps regional-pill__label">{{ t('dayMasterLabel') }}</p>
+            <p class="regional-pill__value font-serif">{{ baziData.dayMaster }}</p>
+          </div>
+          <div class="regional-pill">
+            <p class="label-caps regional-pill__label">{{ t('dominantElementLabel') }}</p>
+            <p class="regional-pill__value font-serif">{{ baziData.dominantElement }}</p>
+          </div>
         </div>
-        <div style="padding: 8px 14px; background: rgba(200,80,50,0.08); border: 1px solid rgba(200,80,50,0.2); border-radius: 10px;">
-          <p style="font-size: 9px; color: rgba(220,120,100,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 2px;">{{ t('dominantElementLabel') }}</p>
-          <p style="font-size: 13px; font-weight: 500; color: rgba(255,180,160,0.9); margin: 0;">{{ baziData.dominantElement }}</p>
+        <p class="report-section__para">{{ baziData.reading }}</p>
+        <div class="regional-highlight">
+          <p class="label-caps regional-highlight__label">{{ t('wealthLuck2026') }}</p>
+          <p class="regional-highlight__text font-serif-italic">{{ baziData.wealthLuck2026 }}</p>
+        </div>
+        <div class="regional-tags">
+          <span class="annotation regional-tags__label">{{ t('luckyDirections') }}</span>
+          <span v-for="dir in baziData.luckyDirections" :key="dir" class="regional-tag">{{ dir }}</span>
         </div>
       </div>
-      <p style="font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.8; margin-bottom: 16px;">{{ baziData.reading }}</p>
-      <div style="padding: 14px 16px; background: rgba(200,80,50,0.06); border-left: 2px solid rgba(220,100,80,0.4); border-radius: 0 8px 8px 0; margin-bottom: 12px;">
-        <p style="font-size: 10px; color: rgba(220,120,100,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px;">{{ t('wealthLuck2026') }}</p>
-        <p style="font-size: 13px; color: rgba(255,180,160,0.8); font-style: italic; margin: 0;">{{ baziData.wealthLuck2026 }}</p>
-      </div>
-      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <span style="font-size: 11px; color: rgba(255,255,255,0.25);">{{ t('luckyDirections') }}</span>
-        <span
-          v-for="dir in baziData.luckyDirections"
-          :key="dir"
-          style="font-size: 12px; color: rgba(255,180,160,0.7); background: rgba(200,80,50,0.08); border: 1px solid rgba(200,80,50,0.15); border-radius: 20px; padding: 3px 12px;"
-        >{{ dir }}</span>
-      </div>
-    </div>
+    </section>
 
-    <!-- Tarot / LatAm regional section -->
-    <div
-      v-if="(store.region === 'latam' || store.region === 'tarot') && tarotData"
-      style="margin-bottom: 40px; padding: 28px 24px;
-        background: linear-gradient(135deg, rgba(180,60,180,0.05) 0%, rgba(120,40,160,0.03) 100%);
-        border: 1px solid rgba(160,80,200,0.2);
-        border-radius: 16px;"
-    >
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-        <span style="font-size: 24px;">🔮</span>
+    <!-- Tarot / LatAm -->
+    <section v-if="(store.region === 'latam' || store.region === 'tarot') && tarotData" class="report-section regional-section">
+      <div class="report-section__header">
+        <span class="annotation report-section__num">🔮</span>
         <div>
-          <p style="font-size: 11px; font-weight: 500; color: rgba(180,120,220,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">{{ t('tarotReadingLabel') }}</p>
-          <p style="font-size: 16px; font-weight: 500; color: white; margin: 0;">{{ tarotData.soulCard }}</p>
+          <p class="label-caps report-section__tradition">{{ t('tarotReadingLabel') }}</p>
+          <h2 class="report-section__heading font-serif">{{ tarotData.soulCard }}</h2>
         </div>
       </div>
-      <div style="padding: 12px 16px; background: rgba(160,80,200,0.08); border: 1px solid rgba(160,80,200,0.2); border-radius: 10px; margin-bottom: 16px; text-align: center;">
-        <p style="font-size: 13px; color: rgba(210,170,255,0.8); font-style: italic; margin: 0;">{{ tarotData.soulCardMeaning }}</p>
+      <div class="editorial-rule" />
+      <div class="report-section__body">
+        <div class="regional-highlight regional-highlight--center">
+          <p class="regional-highlight__text font-serif-italic">{{ tarotData.soulCardMeaning }}</p>
+        </div>
+        <p class="report-section__para">{{ tarotData.reading }}</p>
+        <div class="regional-highlight">
+          <p class="label-caps regional-highlight__label">{{ t('loveDstiny') }}</p>
+          <p class="regional-highlight__text font-serif-italic">{{ tarotData.loveMessage }}</p>
+        </div>
+        <div class="regional-highlight regional-highlight--center">
+          <p class="label-caps regional-highlight__label">{{ t('blessingLabel') }}</p>
+          <p class="regional-highlight__text font-serif-italic">{{ tarotData.blessing }}</p>
+        </div>
+        <div class="regional-tags">
+          <span class="annotation regional-tags__label">{{ t('protectiveCharm') }}</span>
+          <span class="regional-tag">{{ tarotData.luckyCharm }}</span>
+        </div>
       </div>
-      <p style="font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.8; margin-bottom: 16px;">{{ tarotData.reading }}</p>
-      <div style="padding: 14px 16px; background: rgba(160,80,200,0.06); border-left: 2px solid rgba(180,120,220,0.4); border-radius: 0 8px 8px 0; margin-bottom: 16px;">
-        <p style="font-size: 10px; color: rgba(180,120,220,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px;">{{ t('loveDstiny') }}</p>
-        <p style="font-size: 13px; color: rgba(210,170,255,0.85); font-style: italic; margin: 0;">{{ tarotData.loveMessage }}</p>
-      </div>
-      <div style="padding: 16px 20px; background: rgba(160,80,200,0.04); border: 1px solid rgba(160,80,200,0.12); border-radius: 12px; margin-bottom: 12px; text-align: center;">
-        <p style="font-size: 10px; color: rgba(180,120,220,0.4); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 6px;">{{ t('blessingLabel') }}</p>
-        <p style="font-size: 13px; color: rgba(210,170,255,0.7); font-style: italic; line-height: 1.6; margin: 0;">{{ tarotData.blessing }}</p>
-      </div>
-      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <span style="font-size: 11px; color: rgba(255,255,255,0.25);">{{ t('protectiveCharm') }}</span>
-        <span style="font-size: 12px; color: rgba(210,170,255,0.7); background: rgba(160,80,200,0.08); border: 1px solid rgba(160,80,200,0.15); border-radius: 20px; padding: 3px 12px;">{{ tarotData.luckyCharm }}</span>
-      </div>
-    </div>
+    </section>
 
-    <!-- Regional section loading state -->
-    <div
-      v-if="isLoadingRegional"
-      style="margin-bottom: 40px; padding: 24px; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; text-align: center;"
-    >
-      <p style="font-size: 13px; color: rgba(255,255,255,0.3); margin: 0;">
-        {{ store.region === 'india'
-            ? t('loadingVedic')
-            : store.region === 'china'
-              ? t('loadingBazi')
-              : t('loadingSpiritual') }}
+    <!-- Regional loading -->
+    <div v-if="isLoadingRegional" class="regional-loading">
+      <p class="annotation regional-loading__text">
+        {{ store.region === 'india' ? t('loadingVedic') : store.region === 'china' ? t('loadingBazi') : t('loadingSpiritual') }}
       </p>
     </div>
 
-    <!-- Tradition Switcher -->
-    <div v-if="store.report && !isSwitchingTradition && !isSwitchComplete" class="tradition-switcher">
-      <p class="tradition-switcher-label">{{ t('traditionSwitcherLabel') }}</p>
-      <p class="tradition-switcher-sub">
-        {{ store.oraclePurchased ? t('traditionSwitcherSubOracle') : t('traditionSwitcherSubPaid') }}
-      </p>
+    <!-- ── TRADITION SWITCHER ── -->
+    <section v-if="store.report && !isSwitchingTradition && !isSwitchComplete" class="tradition-switcher">
+      <div class="tradition-switcher__header">
+        <p class="label-caps tradition-switcher__label">{{ t('traditionSwitcherLabel') }}</p>
+        <p class="annotation tradition-switcher__sub">
+          {{ store.oraclePurchased ? t('traditionSwitcherSubOracle') : t('traditionSwitcherSubPaid') }}
+        </p>
+      </div>
       <div class="tradition-options">
         <button
           v-for="opt in TRADITION_OPTIONS"
@@ -347,362 +397,343 @@
           <span class="tradition-opt-icon">{{ opt.icon }}</span>
           <span class="tradition-opt-text">
             <span class="tradition-opt-name">{{ opt.label }}</span>
-            <span class="tradition-opt-sub">{{ opt.sub }}</span>
+            <span class="annotation tradition-opt-sub">{{ opt.sub }}</span>
           </span>
-          <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active">{{ t('currentLabel') }}</span>
-          <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free">{{ t('freeLabel') }}</span>
+          <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active label-caps">{{ t('currentLabel') }}</span>
+          <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free label-caps">{{ t('freeLabel') }}</span>
           <span v-else class="tradition-opt-tag tradition-opt-tag--paid">$2.99</span>
         </button>
       </div>
-    </div>
+    </section>
 
-    <!-- Tradition switching loading state -->
+    <!-- Tradition switching state -->
     <div v-if="isSwitchingTradition" class="tradition-loading">
-      <div class="tradition-loading-ring" />
-      <p class="tradition-loading-text">{{ t('traditionGenerating').replace('{tradition}', switchingTraditionLabel) }}</p>
+      <div class="tradition-loading__ring" />
+      <p class="annotation tradition-loading__text">{{ t('traditionGenerating').replace('{tradition}', switchingTraditionLabel) }}</p>
     </div>
 
-    <!-- Tradition switch success banner -->
-    <div v-if="isSwitchComplete" class="tradition-success-banner">
-      <span class="tradition-success-icon">✦</span>
-      <p class="tradition-success-text">{{ t('traditionUnlocked').replace('{tradition}', switchedTraditionLabel) }}</p>
+    <!-- Tradition switch success -->
+    <div v-if="isSwitchComplete" class="tradition-success">
+      <span class="tradition-success__icon">✦</span>
+      <p class="label-caps tradition-success__text">{{ t('traditionUnlocked').replace('{tradition}', switchedTraditionLabel) }}</p>
     </div>
 
-    <!-- Calendar display for bundle/oracle buyers -->
-    <div v-if="(store.bundlePurchased || store.oraclePurchased) && store.calendarData" class="report-cal-section">
-      <div class="report-cal-header">
-        <p class="report-cal-eyebrow">YOUR 2026 DESTINY CALENDAR</p>
-        <p class="report-cal-theme">{{ store.calendarData.overallTheme }}</p>
+    <!-- ── DESTINY CALENDAR (bundle/oracle) ── -->
+    <section v-if="(store.bundlePurchased || store.oraclePurchased) && store.calendarData" class="report-section calendar-section">
+      <div class="report-section__header">
+        <span class="annotation report-section__num">◈</span>
+        <div>
+          <p class="label-caps report-section__tradition">YOUR 2026 DESTINY CALENDAR</p>
+          <h2 class="report-section__heading font-serif">{{ store.calendarData.overallTheme }}</h2>
+        </div>
       </div>
-      <div class="report-cal-peaks">
-        <span v-for="m in store.calendarData.peakMonths" :key="m" class="cal-peak-chip">{{ m }} ★</span>
-        <span v-for="m in store.calendarData.cautionMonths" :key="m" class="cal-caution-chip">{{ m }} ⚠</span>
-      </div>
-      <div class="report-cal-months">
-        <div
-          v-for="month in visibleCalendarMonths"
-          :key="month.month"
-          class="report-month-card"
-          :style="{ borderLeftColor: month.color || 'rgba(201,168,76,0.4)' }"
-        >
-          <div class="rmc-header">
-            <div>
-              <p class="rmc-name">{{ month.month }}</p>
-              <p class="rmc-theme">{{ month.theme }}</p>
-            </div>
-            <div class="rmc-energy-block">
-              <span class="rmc-energy-label">Energy</span>
-              <div class="rmc-energy-track">
-                <div class="rmc-energy-fill" :style="{ width: month.energyLevel + '%', background: month.color || 'rgba(201,168,76,0.6)' }" />
+      <div class="editorial-rule" />
+      <div class="report-section__body">
+        <div class="calendar-peaks">
+          <span v-for="m in store.calendarData.peakMonths" :key="m" class="cal-peak-chip label-caps">{{ m }} ★</span>
+          <span v-for="m in store.calendarData.cautionMonths" :key="m" class="cal-caution-chip label-caps">{{ m }} ⚠</span>
+        </div>
+        <div class="calendar-months">
+          <div
+            v-for="month in visibleCalendarMonths"
+            :key="month.month"
+            class="month-card"
+            :style="{ borderLeftColor: month.color || 'var(--color-gold)' }"
+          >
+            <div class="month-card__header">
+              <div>
+                <p class="month-card__name">{{ month.month }}</p>
+                <p class="annotation month-card__theme">{{ month.theme }}</p>
+              </div>
+              <div class="month-card__energy">
+                <span class="annotation month-card__energy-label">Energy</span>
+                <div class="month-card__energy-track">
+                  <div class="month-card__energy-fill" :style="{ width: month.energyLevel + '%', background: month.color || 'var(--color-gold)' }" />
+                </div>
               </div>
             </div>
+            <div class="month-card__insights">
+              <p class="month-card__insight annotation"><HoroscopeSymbol type="love" :size="14" class="month-card__icon" /> {{ month.love }}</p>
+              <p class="month-card__insight annotation"><HoroscopeSymbol type="work" :size="14" class="month-card__icon" /> {{ month.money }}</p>
+              <p class="month-card__insight annotation"><HoroscopeSymbol type="health" :size="14" class="month-card__icon" /> {{ month.career }}</p>
+              <p v-if="month.warning" class="month-card__warning annotation">⚠ {{ month.warning }}</p>
+            </div>
+            <p class="annotation month-card__lucky">{{ t('luckyDays') }} {{ month.luckyDays?.join(', ') }}</p>
           </div>
-          <div class="rmc-insights">
-            <p class="rmc-insight"><span class="rmc-icon" style="color:rgba(255,200,100,0.5);">♥</span> {{ month.love }}</p>
-            <p class="rmc-insight"><span class="rmc-icon" style="color:rgba(100,220,100,0.5);">$</span> {{ month.money }}</p>
-            <p class="rmc-insight"><span class="rmc-icon" style="color:rgba(100,150,255,0.5);">⚡</span> {{ month.career }}</p>
-            <p v-if="month.warning" class="rmc-warning">⚠ {{ month.warning }}</p>
-          </div>
-          <p class="rmc-lucky">{{ t('luckyDays') }} {{ month.luckyDays?.join(', ') }}</p>
         </div>
       </div>
+    </section>
+
+    <!-- Calendar generating -->
+    <div v-if="(store.bundlePurchased || store.oraclePurchased) && !store.calendarData && isGeneratingCalendar" class="regional-loading">
+      <p class="annotation regional-loading__text">{{ t('generatingCalendar') }}</p>
     </div>
 
-    <!-- Calendar generating state for bundle buyers -->
-    <div
-      v-if="(store.bundlePurchased || store.oraclePurchased) && !store.calendarData && isGeneratingCalendar"
-      style="margin-bottom: 40px; padding: 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;"
-    >
-      <p style="font-size: 13px; color: rgba(255,255,255,0.3); margin: 0;">{{ t('generatingCalendar') }}</p>
-    </div>
-
-    <!-- Free compatibility section for bundle/oracle buyers -->
-    <div
-      v-if="store.bundlePurchased || store.oraclePurchased"
-      style="margin-bottom: 40px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.05);"
-    >
-      <p style="font-size: 9px; color: #c9a84c; text-transform: uppercase; letter-spacing: 0.18em; margin: 0 0 8px;">{{ t('compatReadingLabel') }}</p>
-      <p style="font-size: 16px; font-weight: 400; color: white; margin: 0 0 4px; font-family: 'Playfair Display', serif;">{{ t('compatIncluded') }}</p>
-      <p style="font-size: 13px; color: rgba(255,255,255,0.35); margin: 0 0 20px;">{{ t('compatEnterDetails') }}</p>
-
-      <!-- Result -->
-      <div v-if="bundleCompatibilityResult" style="margin-top: 8px;">
-        <div style="padding: 16px; background: rgba(140,110,255,0.06); border: 1px solid rgba(140,110,255,0.15); border-radius: 8px; margin-bottom: 16px;">
-          <p style="font-size: 9px; color: rgba(140,110,255,0.6); text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 4px;">{{ t('compatScore') }}</p>
-          <p style="font-size: 28px; font-weight: 400; color: white; font-family: 'Playfair Display', serif; margin: 0;">{{ bundleCompatibilityResult.compatibilityScore }}%</p>
-          <p style="font-size: 13px; color: rgba(200,180,255,0.7); margin: 4px 0 0;">{{ bundleCompatibilityResult.compatibilityTitle }}</p>
-        </div>
-        <div v-for="(section, key) in bundleCompatibilityResult.sections" :key="key" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-          <p style="font-size: 9px; color: #c9a84c; text-transform: uppercase; letter-spacing: 0.18em; margin: 0 0 8px;">{{ section.title }}</p>
-          <p style="font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.8; font-weight: 300; margin: 0;">{{ section.content }}</p>
+    <!-- ── COMPATIBILITY (bundle/oracle) ── -->
+    <section v-if="store.bundlePurchased || store.oraclePurchased" class="report-section compat-free-section">
+      <div class="report-section__header">
+        <span class="annotation report-section__num">◎</span>
+        <div>
+          <p class="label-caps report-section__tradition">{{ t('compatReadingLabel') }}</p>
+          <h2 class="report-section__heading font-serif">{{ t('compatIncluded') }}</h2>
         </div>
       </div>
+      <div class="editorial-rule" />
+      <div class="report-section__body">
+        <p class="annotation report-section__para">{{ t('compatEnterDetails') }}</p>
 
-      <!-- Form -->
-      <div v-else>
-        <input id="compat-partner-name" v-model="partnerName" type="text" name="compat-partner-name" :placeholder="t('addonPartnerPlaceholder')" class="compat-input" style="margin-bottom: 10px;" autocomplete="off">
-        <input id="compat-partner-dob" v-model="partnerDob" type="date" name="compat-partner-dob" class="compat-input compat-input--date" style="margin-bottom: 10px;" autocomplete="off">
-        <input id="compat-partner-city" v-model="partnerCity" type="text" name="compat-partner-city" :placeholder="t('partnerCityPlaceholder')" class="compat-input" style="margin-bottom: 16px;" autocomplete="off">
-        <button
-          class="compat-unlock-btn"
-          :disabled="!partnerName || !partnerDob || isGeneratingCompatibility"
-          @click="generateCompatibilityFree"
-        >
-          {{ isGeneratingCompatibility ? t('generating') : t('generateCompatFree') }}
+        <!-- Result -->
+        <div v-if="bundleCompatibilityResult" class="compat-result">
+          <div class="compat-result__score-block">
+            <p class="label-caps compat-result__score-label">{{ t('compatScore') }}</p>
+            <p class="compat-result__score font-serif">{{ bundleCompatibilityResult.compatibilityScore }}%</p>
+            <p class="annotation compat-result__title">{{ bundleCompatibilityResult.compatibilityTitle }}</p>
+          </div>
+          <div v-for="(section, key) in bundleCompatibilityResult.sections" :key="key" class="compat-result__section">
+            <p class="label-caps compat-result__section-title">{{ section.title }}</p>
+            <p class="report-section__para">{{ section.content }}</p>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <div v-else class="compat-form">
+          <input id="compat-partner-name" v-model="partnerName" type="text" name="compat-partner-name" :placeholder="t('addonPartnerPlaceholder')" class="editorial-input compat-input" autocomplete="off">
+          <input id="compat-partner-dob" v-model="partnerDob" type="date" name="compat-partner-dob" class="editorial-input compat-input compat-input--date" autocomplete="off">
+          <input id="compat-partner-city" v-model="partnerCity" type="text" name="compat-partner-city" :placeholder="t('partnerCityPlaceholder')" class="editorial-input compat-input" autocomplete="off">
+          <button
+            class="compat-submit-btn"
+            :disabled="!partnerName || !partnerDob || isGeneratingCompatibility"
+            @click="generateCompatibilityFree"
+          >
+            {{ isGeneratingCompatibility ? t('generating') : t('generateCompatFree') }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── UPSELLS (basic report buyers only) ── -->
+
+    <!-- Bundle upsell -->
+    <section v-if="!store.bundlePurchased && !store.oraclePurchased" class="upsell-section">
+      <div class="editorial-rule" />
+      <div class="upsell-section__inner">
+        <p class="label-caps upsell-section__eyebrow">Go deeper</p>
+        <h3 class="upsell-section__heading font-serif-italic">{{ t('wantDeeper') }}</h3>
+        <p class="annotation upsell-section__sub">{{ t('unlockComplete') }}</p>
+        <div class="upsell-items">
+          <div class="upsell-item">
+            <div class="upsell-item__info">
+              <p class="upsell-item__name">2026 Lucky Calendar</p>
+              <p class="annotation upsell-item__desc">Month-by-month lucky timing</p>
+            </div>
+            <span class="upsell-item__price font-serif">$2.99</span>
+          </div>
+          <div class="upsell-item">
+            <div class="upsell-item__info">
+              <p class="upsell-item__name">Compatibility Reading</p>
+              <p class="annotation upsell-item__desc">Discover your destiny match</p>
+            </div>
+            <span class="upsell-item__price font-serif">$2.99</span>
+          </div>
+          <div class="upsell-item">
+            <div class="upsell-item__info">
+              <p class="upsell-item__name">Full Birth Chart</p>
+              <p class="annotation upsell-item__desc">Sun, Moon + Rising sign analysis</p>
+            </div>
+            <span class="upsell-item__price font-serif">$3.99</span>
+          </div>
+        </div>
+        <div class="upsell-section__rule" />
+        <div class="upsell-section__total-row">
+          <span class="annotation">{{ t('individualTotal') }}</span>
+          <span class="annotation upsell-section__strike">$9.97</span>
+        </div>
+        <div class="upsell-section__price-row">
+          <span class="annotation">{{ t('yourBundlePrice') }}</span>
+          <span class="upsell-section__price font-serif">$5.99</span>
+        </div>
+        <button class="upsell-cta-btn" :disabled="isLoadingBundle" @click="buyBundle">
+          {{ isLoadingBundle ? 'Loading...' : t('unlockBundle') }}
         </button>
+        <p class="annotation upsell-section__note">{{ t('oneTimePurchase') }}</p>
       </div>
-    </div>
+      <div class="editorial-rule" />
+    </section>
 
-    <!-- Bundle upsell for Basic report buyers -->
-    <div
-      v-if="!store.bundlePurchased && !store.oraclePurchased"
-      class="bundle-upsell-box"
-    >
-      <p class="bundle-headline">{{ t('wantDeeper') }}</p>
-      <p class="bundle-subline">{{ t('unlockComplete') }}</p>
-
-      <div class="bundle-items">
-        <div class="bundle-item">
-          <div style="flex: 1; text-align: left;">
-            <p class="bundle-item-name">📅 2026 Lucky Calendar</p>
-            <p class="bundle-item-desc">Month-by-month lucky timing</p>
+    <!-- Calendar upsell -->
+    <section v-if="!store.calendarPurchased && !store.bundlePurchased && !store.oraclePurchased" class="upsell-section">
+      <div class="upsell-section__inner">
+        <div class="upsell-section__header-row">
+          <div>
+            <p class="label-caps upsell-section__eyebrow">Timing</p>
+            <h3 class="upsell-section__heading font-serif-italic">Your 2026 Lucky Timing Calendar</h3>
+            <p class="annotation upsell-section__sub">Month-by-month destiny forecast</p>
           </div>
-          <span class="bundle-item-price">$2.99</span>
+          <span class="upsell-section__price font-serif">$2.99</span>
         </div>
-        <div class="bundle-item">
-          <div style="flex: 1; text-align: left;">
-            <p class="bundle-item-name">💞 Compatibility Reading</p>
-            <p class="bundle-item-desc">Discover your destiny match</p>
+        <div class="upsell-features">
+          <p class="annotation upsell-feature">Peak months for love &amp; money</p>
+          <p class="annotation upsell-feature">Monthly lucky days highlighted</p>
+          <p class="annotation upsell-feature">Career &amp; purpose windows</p>
+          <p class="annotation upsell-feature">Caution periods to navigate</p>
+        </div>
+        <div class="cal-preview">
+          <div class="cal-bar-row">
+            <span class="annotation cal-bar-label">January</span>
+            <div class="cal-bar-track"><div class="cal-bar-fill" style="width:65%" /></div>
           </div>
-          <span class="bundle-item-price">$2.99</span>
-        </div>
-        <div class="bundle-item">
-          <div style="flex: 1; text-align: left;">
-            <p class="bundle-item-name">⭐ Full Birth Chart</p>
-            <p class="bundle-item-desc">Sun, Moon + Rising sign analysis</p>
+          <div class="cal-bar-row">
+            <span class="annotation cal-bar-label">April</span>
+            <div class="cal-bar-track"><div class="cal-bar-fill" style="width:90%;opacity:0.9" /></div>
           </div>
-          <span class="bundle-item-price">$3.99</span>
-        </div>
-      </div>
-
-      <div class="bundle-divider" />
-
-      <div class="bundle-total-row">
-        <span style="font-size: 12px; color: rgba(255,255,255,0.25);">{{ t('individualTotal') }}</span>
-        <span style="font-size: 14px; color: rgba(255,255,255,0.25); text-decoration: line-through;">$9.97</span>
-      </div>
-      <div class="bundle-price-row">
-        <span style="font-size: 14px; font-weight: 500; color: white;">{{ t('yourBundlePrice') }}</span>
-        <span style="font-size: 24px; font-weight: 600; color: rgba(200,180,255,0.95);">$5.99</span>
-      </div>
-
-      <span class="bundle-savings-badge">{{ t('youSave') }}</span>
-
-      <button
-        class="bundle-cta-btn"
-        :disabled="isLoadingBundle"
-        @click="buyBundle"
-      >
-        {{ isLoadingBundle ? 'Loading...' : t('unlockBundle') }}
-      </button>
-      <p class="bundle-cta-note">{{ t('oneTimePurchase') }}</p>
-    </div>
-
-    <!-- Lucky Timing Calendar upsell -->
-    <div v-if="!store.calendarPurchased && !store.bundlePurchased && !store.oraclePurchased" class="cal-upsell">
-      <div class="cal-upsell-header">
-        <span class="cal-upsell-icon">📅</span>
-        <div class="cal-upsell-info">
-          <p class="cal-upsell-title">Your 2026 Lucky Timing Calendar</p>
-          <p class="cal-upsell-desc">Month-by-month destiny forecast</p>
-        </div>
-        <span class="cal-upsell-price">$2.99</span>
-      </div>
-
-      <div class="cal-features">
-        <div class="cal-feat">
-          <span class="cal-feat-dot" />
-          <span class="cal-feat-text">Peak months for love &amp; money</span>
-        </div>
-        <div class="cal-feat">
-          <span class="cal-feat-dot" />
-          <span class="cal-feat-text">Monthly lucky days highlighted</span>
-        </div>
-        <div class="cal-feat">
-          <span class="cal-feat-dot" />
-          <span class="cal-feat-text">Career &amp; purpose windows</span>
-        </div>
-        <div class="cal-feat">
-          <span class="cal-feat-dot" />
-          <span class="cal-feat-text">Caution periods to navigate</span>
-        </div>
-      </div>
-
-      <div class="cal-preview">
-        <div class="cal-bar-row">
-          <span class="cal-bar-label">January</span>
-          <div class="cal-bar-track">
-            <div class="cal-bar-fill" style="width: 65%; background: rgba(140,110,255,0.3);" />
+          <div class="cal-bar-row">
+            <span class="annotation cal-bar-label">July</span>
+            <div class="cal-bar-track"><div class="cal-bar-fill" style="width:45%;opacity:0.5" /></div>
           </div>
         </div>
-        <div class="cal-bar-row">
-          <span class="cal-bar-label">April</span>
-          <div class="cal-bar-track">
-            <div class="cal-bar-fill" style="width: 90%; background: rgba(140,110,255,0.7);" />
-          </div>
-        </div>
-        <div class="cal-bar-row">
-          <span class="cal-bar-label">July</span>
-          <div class="cal-bar-track">
-            <div class="cal-bar-fill" style="width: 45%; background: rgba(140,110,255,0.2);" />
-          </div>
-        </div>
+        <button class="upsell-cta-btn" :disabled="isLoadingCalendar" @click="buyCalendar">
+          {{ isLoadingCalendar ? 'Processing...' : 'Unlock My 2026 Calendar →' }}
+        </button>
+        <p class="annotation upsell-section__note">One-time purchase · Instant access</p>
       </div>
+    </section>
 
-      <button
-        class="cal-upsell-btn"
-        :disabled="isLoadingCalendar"
-        @click="buyCalendar"
-      >
-        {{ isLoadingCalendar ? 'Processing...' : 'Unlock My 2026 Calendar →' }}
-      </button>
-      <p class="cal-upsell-note">One-time purchase · Instant access</p>
-    </div>
-
-    <!-- Daily insights subscription upsell -->
-    <div v-if="store.report && !store.subscriptionActive && !store.oraclePurchased" class="sub-upsell-card">
-      <div class="sub-upsell-card-top">
-        <span class="sub-upsell-badge">MOST POPULAR</span>
-        <span class="sub-upsell-price">$4.99<span class="sub-upsell-price-period">/mo</span></span>
+    <!-- Subscription upsell -->
+    <section v-if="store.report && !store.subscriptionActive && !store.oraclePurchased" class="upsell-section upsell-section--sub">
+      <div class="editorial-rule" />
+      <div class="upsell-section__inner">
+        <div class="upsell-section__header-row">
+          <div>
+            <p class="label-caps upsell-section__eyebrow">Daily</p>
+            <h3 class="upsell-section__heading font-serif-italic">Personal Daily Horoscope</h3>
+            <p class="annotation upsell-section__sub">Your natal chart read every morning</p>
+          </div>
+          <span class="upsell-section__price font-serif">$4.99<span class="upsell-section__price-period">/mo</span></span>
+        </div>
+        <p class="upsell-section__hook font-serif-italic">Everything in your report — delivered fresh every single day, tailored to your chart.</p>
+        <div class="upsell-features">
+          <p class="annotation upsell-feature">✦ Personal daily horoscope — Love, Work &amp; Health</p>
+          <p class="annotation upsell-feature">✦ Based on real planetary positions through your natal chart</p>
+          <p class="annotation upsell-feature">✦ Delivered to your inbox every morning — no app needed</p>
+          <p class="annotation upsell-feature">✦ Delivered every morning at 7am</p>
+        </div>
+        <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription">
+          {{ isStartingSub ? 'Loading...' : 'Start My Personal Horoscope →' }}
+        </button>
+        <p class="annotation upsell-section__note">Cancel anytime · No commitment</p>
       </div>
-      <p class="sub-upsell-name">Personal Daily Horoscope</p>
-      <p class="sub-upsell-sub">Your natal chart read every morning</p>
-      <p class="sub-upsell-hook"><em>Everything in your report — delivered fresh every single day, tailored to your chart.</em></p>
-      <ul class="sub-upsell-features">
-        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Personal daily horoscope — Love, Work &amp; Health</li>
-        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Based on real planetary positions through your natal chart</li>
-        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Delivered to your inbox every morning — no app needed</li>
-        <li class="sub-upsell-feat"><span class="sub-upsell-check">✦</span>Delivered every morning at 7am</li>
-      </ul>
-      <button class="sub-upsell-cta" :disabled="isStartingSub" @click="startSubscription">
-        {{ isStartingSub ? 'Loading...' : 'Start My Personal Horoscope →' }}
-      </button>
-      <p class="sub-upsell-note">Cancel anytime · No commitment</p>
-    </div>
+      <div class="editorial-rule" />
+    </section>
 
-    <!-- Compatibility upsell -->
-    <div v-if="!store.bundlePurchased && !store.oraclePurchased" class="compat-section">
-
-      <!-- Teaser -->
-      <div v-if="!showCompatibilityForm" class="compat-teaser">
-        <p class="compat-title">{{ t('howCompatible') }}</p>
-        <p class="compat-subtitle">{{ t('enterDetails') }}</p>
+    <!-- Compatibility upsell (paid) -->
+    <section v-if="!store.bundlePurchased && !store.oraclePurchased" class="upsell-section compat-upsell-section">
+      <div class="upsell-section__inner">
+        <p class="label-caps upsell-section__eyebrow">Compatibility</p>
+        <h3 class="upsell-section__heading font-serif-italic">{{ t('howCompatible') }}</h3>
+        <p class="annotation upsell-section__sub">{{ t('enterDetails') }}</p>
         <div class="compat-tags">
-          <span class="compat-tag">{{ t('romanticPartners') }}</span>
-          <span class="compat-tag">{{ t('bestFriends') }}</span>
-          <span class="compat-tag">{{ t('businessPartners') }}</span>
+          <span class="annotation compat-tag">{{ t('romanticPartners') }}</span>
+          <span class="annotation compat-tag">{{ t('bestFriends') }}</span>
+          <span class="annotation compat-tag">{{ t('businessPartners') }}</span>
         </div>
-        <button class="compat-cta-btn" @click="showCompatibilityForm = true">
-          {{ t('discoverCompat') }}
-        </button>
-      </div>
 
-      <!-- Form -->
-      <div v-else class="compat-form">
-        <p class="compat-form-title">{{ t('compatFormTitle') }}</p>
-        <p class="compat-form-subtitle">
-          {{ t('compatFormSubtitle') }}
+        <div v-if="!showCompatibilityForm">
+          <button class="upsell-cta-btn upsell-cta-btn--secondary" @click="showCompatibilityForm = true">
+            {{ t('discoverCompat') }}
+          </button>
+        </div>
+        <div v-else class="compat-form">
+          <p class="annotation compat-form__title">{{ t('compatFormTitle') }}</p>
+          <p class="annotation compat-form__sub">{{ t('compatFormSubtitle') }}</p>
+          <input id="compat-paid-partner-name" v-model="partnerName" type="text" name="compat-paid-partner-name" :placeholder="t('addonPartnerPlaceholder')" class="editorial-input compat-input" autocomplete="off">
+          <input id="compat-paid-partner-dob" v-model="partnerDob" type="date" name="compat-paid-partner-dob" class="editorial-input compat-input compat-input--date" autocomplete="off">
+          <input id="compat-paid-partner-city" v-model="partnerCity" type="text" name="compat-paid-partner-city" :placeholder="t('partnerCityPlaceholder')" class="editorial-input compat-input" autocomplete="off">
+          <div class="compat-form__actions">
+            <button class="upsell-cta-btn" :disabled="!partnerName || !partnerDob || isProcessingCompatibility" @click="buyCompatibilityReading">
+              {{ isProcessingCompatibility ? t('processingCompatibility') : t('getCompatReading') }}
+            </button>
+            <button class="upsell-cta-btn upsell-cta-btn--ghost" @click="showCompatibilityForm = false">{{ t('cancelLabel') }}</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SHARE & EXPORT ── -->
+    <section class="report-section share-section">
+      <div class="report-section__header">
+        <span class="annotation report-section__num">◇</span>
+        <div>
+          <p class="label-caps report-section__tradition">Export</p>
+          <h2 class="report-section__heading font-serif">{{ t('shareDestiny') }}</h2>
+        </div>
+      </div>
+      <div class="editorial-rule" />
+      <div class="report-section__body">
+        <p class="annotation report-section__para">{{ t('shareDesc') }}</p>
+
+        <!-- Share card preview -->
+        <div class="share-card">
+          <p class="label-caps share-card__archetype">{{ store.report.archetypeName }}</p>
+          <div class="share-card__traits">
+            <span v-for="trait in store.report.powerTraits" :key="trait" class="share-card__trait annotation">{{ trait }}</span>
+          </div>
+          <p class="annotation share-card__domain">omenora.com</p>
+        </div>
+
+        <div class="share-actions">
+          <button class="share-btn" :disabled="isDownloading" @click="downloadCard">
+            {{ isDownloading ? 'Downloading...' : t('downloadCard') }}
+          </button>
+          <button class="share-btn share-btn--primary" :disabled="isDownloadingPDF" @click="downloadReportPDF">
+            {{ isDownloadingPDF ? 'Generating...' : t('downloadPDF') }}
+          </button>
+        </div>
+        <p v-if="cardDownloadError" class="share-error annotation">{{ cardDownloadError }}</p>
+
+        <div v-if="store.email" class="share-email-row">
+          <button
+            class="share-btn share-btn--email"
+            :disabled="isSendingEmail || emailSentToUser"
+            @click="sendReportEmailManual"
+          >
+            <span v-if="isSendingEmail">Sending…</span>
+            <span v-else-if="emailSentToUser">✓ Report sent to {{ store.email }}</span>
+            <span v-else>✉ Send Full Report to {{ store.email }}</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FOOTER CTA ── -->
+    <section class="report-footer-cta">
+      <div class="editorial-rule" />
+      <div class="report-footer-cta__inner">
+        <h2 class="font-display-italic report-footer-cta__headline">
+          Your reading is complete.
+        </h2>
+        <p class="report-footer-cta__body">
+          Return tomorrow for your daily reading,
+          tailored to your {{ store.report.archetypeName }} archetype.
         </p>
-        <div class="compat-fields">
-          <input
-            id="compat-paid-partner-name"
-            v-model="partnerName"
-            type="text"
-            name="compat-paid-partner-name"
-            :placeholder="t('addonPartnerPlaceholder')"
-            class="compat-input"
-            autocomplete="off"
-          >
-          <input
-            id="compat-paid-partner-dob"
-            v-model="partnerDob"
-            type="date"
-            name="compat-paid-partner-dob"
-            class="compat-input compat-input--date"
-            autocomplete="off"
-          >
-          <input
-            id="compat-paid-partner-city"
-            v-model="partnerCity"
-            type="text"
-            name="compat-paid-partner-city"
-            :placeholder="t('partnerCityPlaceholder')"
-            class="compat-input"
-            autocomplete="off"
-          >
+        <div class="report-footer-cta__actions">
+          <NuxtLink to="/" class="footer-cta-link">
+            Back to Omenora →
+          </NuxtLink>
         </div>
-        <button
-          class="compat-unlock-btn"
-          :disabled="!partnerName || !partnerDob || isProcessingCompatibility"
-          @click="buyCompatibilityReading"
-        >
-          {{ isProcessingCompatibility ? t('processingCompatibility') : t('getCompatReading') }}
-        </button>
-        <button class="compat-cancel-btn" @click="showCompatibilityForm = false">
-          {{ t('cancelLabel') }}
-        </button>
       </div>
-    </div>
-
-    <!-- Share card section -->
-    <div class="share-section">
-      <h3 class="share-title">{{ t('shareDestiny') }}</h3>
-      <p class="share-subtitle">{{ t('shareDesc') }}</p>
-
-      <div class="share-card">
-        <ArchetypeSymbol :symbol="store.report.archetypeSymbol" :size="32" class="card-symbol" />
-        <p class="card-name">{{ store.report.archetypeName }}</p>
-        <div class="card-traits">
-          <span v-for="trait in store.report.powerTraits" :key="trait" class="card-trait-pill">
-            {{ trait }}
-          </span>
-        </div>
-        <p class="card-domain">omenora.com</p>
-      </div>
-
-      <div class="download-row">
-        <button class="download-btn" :disabled="isDownloading" @click="downloadCard">
-          {{ isDownloading ? 'Downloading...' : t('downloadCard') }}
-        </button>
-        <button class="download-btn download-btn--primary" :disabled="isDownloadingPDF" @click="downloadReportPDF">
-          {{ isDownloadingPDF ? 'Generating...' : t('downloadPDF') }}
-        </button>
-      </div>
-      <p v-if="cardDownloadError" style="font-size: 12px; color: rgba(255,100,100,0.7); text-align: center; margin: 8px 0 0;">{{ cardDownloadError }}</p>
-      <div v-if="store.email" class="download-row" style="margin-top: 10px;">
-        <button
-          class="download-btn download-btn--email"
-          :disabled="isSendingEmail || emailSentToUser"
-          @click="sendReportEmailManual"
-          style="width: 100%;"
-        >
-          <span v-if="isSendingEmail">Sending…</span>
-          <span v-else-if="emailSentToUser">✓ Report sent to {{ store.email }}</span>
-          <span v-else>✉ Send Full Report to {{ store.email }}</span>
-        </button>
-      </div>
-    </div>
+      <div class="editorial-rule" />
+    </section>
 
   </div>
 
-  <!-- Crisis signpost footer -->
+  <!-- ── Crisis / legal footer ── -->
   <footer class="report-footer" role="contentinfo">
     <nav aria-label="Legal">
       <NuxtLink to="/privacy" class="report-footer-link">Privacy Policy</NuxtLink>
       <span class="report-footer-sep" aria-hidden="true">·</span>
       <NuxtLink to="/terms" class="report-footer-link">Terms of Service</NuxtLink>
     </nav>
-    <p class="report-footer-crisis">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
+    <p class="report-footer-crisis annotation">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
   </footer>
 </template>
 
@@ -761,6 +792,41 @@ const SECTION_ORDER: SectionKey[] = [
   'gift',
   'affirmation',
 ]
+
+const archetypeFile = computed(() => {
+  const name = store.report?.archetypeName || store.archetype || ''
+  if (!name) return ''
+  return name.toLowerCase().replace(/^the\s+/i, '').replace(/\s+/g, '-') + '@2x.png'
+})
+
+const keyPlanets = computed(() => {
+  const chart = store.natalChart
+  if (!chart) return []
+  return [
+    { label: 'Sun',     glyph: '☉', sign: chart.sun?.sign     ?? '' },
+    { label: 'Moon',    glyph: '☽', sign: chart.moon?.sign    ?? '' },
+    { label: 'Mercury', glyph: '☿', sign: chart.mercury?.sign ?? '' },
+    { label: 'Venus',   glyph: '♀', sign: chart.venus?.sign   ?? '' },
+    { label: 'Mars',    glyph: '♂', sign: chart.mars?.sign    ?? '' },
+    { label: 'Rising',  glyph: '↑', sign: chart.ascendant?.sign ?? '' },
+  ].filter(p => p.sign)
+})
+
+const canExport = computed(() => !!store.report && !isLoadingReport.value)
+
+const SECTION_TRADITIONS: Record<SectionKey, string> = {
+  identity:    'Identity',
+  science:     'Character',
+  forecast:    'Forecast',
+  love:        'Love & Relationships',
+  purpose:     'Purpose',
+  gift:        'Gifts & Strengths',
+  affirmation: 'Affirmation',
+}
+
+function sectionTraditionLabel(key: SectionKey): string {
+  return SECTION_TRADITIONS[key] ?? key
+}
 
 async function loadRegionalSection() {
   const region = store.region
@@ -1799,12 +1865,311 @@ async function downloadReportPDF() {
 </script>
 
 <style scoped>
-/* ── Payment confirmation banner (U-4) ── */
-.payment-confirmation-banner {
+/* ─────────────────────────────────────────────
+   REPORT PAGE — EDITORIAL DESIGN SYSTEM
+   ───────────────────────────────────────────── */
+
+/* ── Report-local design tokens — dark pages only ── */
+.report-page,
+.report-loading-page {
+  --color-paper:      #0d0c18;
+  --color-text:       rgba(255,255,255,0.78);
+  --color-text-dim:   rgba(255,255,255,0.42);
+  --color-ink-faint:  rgba(255,255,255,0.18);
+  --color-gold:       rgba(201,168,76,0.75);
+  --color-gold-dim:   rgba(201,168,76,0.35);
+  --font-display:     'Fraunces', 'Cormorant Garamond', serif;
+  --font-serif:       'Cormorant Garamond', Georgia, serif;
+  --font-sans:        'Inter', system-ui, sans-serif;
+}
+
+/* ── report-state-page uses global Editorial (bone) tokens ── */
+.report-state-page {
+  --font-display:     'Fraunces', 'Cormorant Garamond', serif;
+  --font-serif:       'Cormorant Garamond', Georgia, serif;
+  --font-sans:        'Inter', system-ui, sans-serif;
+}
+
+/* ── Type helpers ── */
+.label-caps {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.annotation {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--color-text-dim);
+  line-height: 1.5;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
+
+.font-serif-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+}
+
+.font-display-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ── Editorial rule ── */
+.editorial-rule {
   width: 100%;
-  background: rgba(201, 168, 76, 0.08);
-  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
-  padding: 12px 20px;
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 20px 0;
+}
+
+/* ─────────────────────────────────────────────
+   LOADING / STATE PAGES
+   ───────────────────────────────────────────── */
+
+.report-loading-page {
+  background: var(--color-paper);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  box-sizing: border-box;
+  gap: 40px;
+}
+
+.report-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.rload-eyebrow {
+  margin: 0;
+  color: rgba(255,255,255,0.2);
+}
+
+.rload-msg {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.45);
+  margin: 0;
+  text-align: center;
+}
+
+.rload-track {
+  width: 120px;
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+
+@keyframes fillProgress {
+  from { width: 0 }
+  to   { width: 90% }
+}
+
+.rload-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(140,110,255,0.45), rgba(201,168,76,0.45));
+  animation: fillProgress 8s ease-out forwards;
+}
+
+.report-state-page {
+  background: var(--color-bone, #F2EBDD);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  box-sizing: border-box;
+}
+
+.report-state-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  max-width: 360px;
+}
+
+.report-state__phoenix {
+  margin-bottom: 8px;
+}
+
+.report-state__eyebrow {
+  margin: 0;
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+}
+
+.report-state__heading {
+  margin: 0;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: clamp(28px, 6vw, 44px);
+  font-weight: 300;
+  color: var(--color-ink, #1A1612);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.report-state__sub {
+  margin: 0;
+  color: var(--color-ink-mid, #3D3530);
+}
+
+.report-state__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.report-state-btn {
+  background: var(--color-ink, #1A1612);
+  border: none;
+  color: var(--color-bone, #F2EBDD);
+  padding: 12px 28px;
+  font-size: 11px;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.report-state-btn:hover {
+  opacity: 0.85;
+}
+
+.report-state-link {
+  color: var(--color-ink-mid, #3D3530);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ─────────────────────────────────────────────
+   ADDON OFFER (impulse upsell during load)
+   ───────────────────────────────────────────── */
+
+.addon-offer-box {
+  max-width: 340px;
+  width: 100%;
+  padding: 24px 20px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.addon-badge {
+  color: var(--color-gold);
+  font-size: 9px;
+}
+
+.addon-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.88);
+  margin: 0;
+}
+
+.addon-desc {
+  margin: 0;
+}
+
+.addon-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.addon-original {
+  font-size: 12px;
+  color: rgba(255,255,255,0.2);
+  text-decoration: line-through;
+}
+
+.addon-price {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 300;
+  color: rgba(200,180,255,0.95);
+}
+
+.addon-note {
+  margin: 0;
+}
+
+.addon-dob-row {
+  display: flex;
+  gap: 8px;
+}
+
+.addon-day  { flex: 1; text-align: center; }
+.addon-year { flex: 1.5; }
+
+.addon-yes-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(140,110,255,0.14);
+  border: 1px solid rgba(140,110,255,0.3);
+  color: rgba(200,180,255,0.9);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+
+.addon-yes-btn:hover:not(:disabled) {
+  background: rgba(140,110,255,0.22);
+}
+
+.addon-yes-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.addon-no-link {
+  text-align: center;
+  cursor: pointer;
+  margin: 0;
+  color: rgba(255,255,255,0.25);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ─────────────────────────────────────────────
+   PAYMENT CONFIRMATION BANNER
+   ───────────────────────────────────────────── */
+
+.payment-banner {
+  width: 100%;
+  background: rgba(201,168,76,0.06);
+  border-bottom: 1px solid rgba(201,168,76,0.16);
+  padding: 10px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1812,25 +2177,19 @@ async function downloadReportPDF() {
   box-sizing: border-box;
 }
 
-.banner-text {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.4;
+.payment-banner__text {
+  color: rgba(201,168,76,0.7);
 }
 
-.banner-dismiss {
+.payment-banner__dismiss {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255,255,255,0.25);
   font-size: 18px;
   cursor: pointer;
   padding: 0;
   line-height: 1;
   flex-shrink: 0;
-}
-
-.banner-dismiss:hover {
-  color: rgba(255, 255, 255, 0.6);
 }
 
 .banner-fade-enter-active,
@@ -1843,1513 +2202,561 @@ async function downloadReportPDF() {
   opacity: 0;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.95); }
-}
+/* ─────────────────────────────────────────────
+   REPORT PAGE WRAPPER
+   ───────────────────────────────────────────── */
 
-/* ── Loading page ── */
-.report-loading-page {
-  background: #050410;
+.report-page {
+  background: var(--color-paper);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
-  box-sizing: border-box;
+  color: var(--color-text);
+  font-family: var(--font-sans);
 }
 
-.report-loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 0;
-}
-
-/* Orbital mark — rendered by OrbitalMark component */
-
-.rload-brand {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.22);
-  margin: 0;
-}
-
-.rload-msg {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 16px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 0;
-  text-align: center;
-}
-
-.rload-track {
-  width: 160px;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-
-@keyframes fillProgress {
-  from { width: 0%; }
-  to { width: 90%; }
-}
-
-.rload-fill {
-  height: 100%;
-  background: linear-gradient(90deg, rgba(140,110,255,0.55), rgba(201,168,76,0.55));
-  animation: fillProgress 8s ease-out forwards;
-}
-
-/* Addon offer box */
-.addon-price-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.addon-original {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.2);
-  text-decoration: line-through;
-}
-
-.addon-price {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 28px;
-  font-weight: 300;
-  color: rgba(200, 180, 255, 0.95);
-}
-
-.addon-note {
-  font-size: 11px;
-  color: rgba(140, 110, 255, 0.5);
-}
-
-.addon-dob-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.addon-day {
-  flex: 1;
-  text-align: center;
-  padding: 10px 6px;
-}
-
-.addon-year {
-  flex: 1.5;
-}
-
-/* ── Unlock banner ── */
-.unlock-banner {
-  margin-bottom: 24px;
-  padding: 14px 20px;
-  background: rgba(80, 200, 120, 0.05);
-  border: 1px solid rgba(80, 200, 120, 0.18);
-  border-radius: 6px;
+/* ── Header action area ── */
+.report-header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.unlock-banner-icon {
-  font-size: 16px;
-  color: rgba(120, 230, 160, 0.7);
+.report-account-link {
+  color: var(--color-ink-faint);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.report-account-link:hover {
+  color: rgba(255,255,255,0.5);
+}
+
+.report-export-btn {
+  background: none;
+  border: 1px solid var(--color-gold-dim);
+  color: var(--color-gold);
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.report-export-btn:hover:not(:disabled) {
+  background: rgba(201,168,76,0.07);
+}
+
+.report-export-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────
+   MASTHEAD
+   ───────────────────────────────────────────── */
+
+.report-masthead {
+  padding: 48px 0 0;
+  text-align: center;
+}
+
+.report-masthead__inner {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.report-masthead__eyebrow {
+  margin: 0 0 20px;
+  color: var(--color-gold);
+}
+
+.report-masthead__name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: rgba(255,255,255,0.92);
+  margin: 0 0 24px;
+}
+
+.report-masthead__symbol {
+  margin-bottom: 24px;
+}
+
+.symbol-editorial {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  opacity: 0.75;
+  filter: drop-shadow(0 0 20px rgba(140,110,255,0.2));
+}
+
+/* Planet cells */
+.report-masthead__planets {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-bottom: 24px;
+}
+
+.planet-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 14px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+.planet-cell:last-child {
+  border-right: none;
+}
+
+.planet-cell__glyph {
+  font-size: 14px;
+  color: var(--color-gold);
+  line-height: 1;
+}
+
+.planet-cell__sign {
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+}
+
+.planet-cell__label {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: rgba(255,255,255,0.22);
+  text-transform: uppercase;
+}
+
+/* Meta strip & traits */
+.report-masthead__meta {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 20px;
+}
+
+.report-masthead__traits {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 32px;
+}
+
+.report-trait {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(201,168,76,0.55);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 1px;
+  padding: 4px 10px;
+}
+
+/* ─────────────────────────────────────────────
+   UNLOCK NOTICE
+   ───────────────────────────────────────────── */
+
+.unlock-notice {
+  max-width: 480px;
+  margin: 0 auto 32px;
+  padding: 12px 20px;
+  background: rgba(80,200,120,0.04);
+  border: 1px solid rgba(80,200,120,0.14);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.unlock-notice__icon {
+  font-size: 14px;
+  color: rgba(120,220,160,0.65);
   flex-shrink: 0;
 }
 
-.unlock-banner-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(120, 230, 160, 0.88);
+.unlock-notice__title {
   margin: 0 0 2px;
+  color: rgba(120,220,160,0.8);
 }
 
-.unlock-banner-desc {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.28);
+.unlock-notice__desc {
   margin: 0;
 }
 
-/* ── Birth chart banner ── */
-.birth-chart-banner {
-  margin-bottom: 24px;
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+/* ─────────────────────────────────────────────
+   INLINE UPSELL (birth chart)
+   ───────────────────────────────────────────── */
+
+.upsell-inline {
+  max-width: 480px;
+  margin: 0 auto 24px;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
   display: flex;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
 }
 
-.birth-chart-banner--active {
-  background: rgba(201, 168, 76, 0.04);
-  border-color: rgba(201, 168, 76, 0.18);
+.upsell-inline--active {
+  background: rgba(201,168,76,0.03);
+  border-color: rgba(201,168,76,0.15);
 }
 
-.birth-chart-info {
+.upsell-inline__info {
   flex: 1;
-  min-width: 180px;
+  min-width: 160px;
 }
 
-.birth-chart-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.88);
+.upsell-inline__title {
   margin: 0 0 3px;
+  color: rgba(255,255,255,0.75);
 }
 
-.birth-chart-title--dim {
-  color: rgba(255, 255, 255, 0.38);
+.upsell-inline__title--dim {
+  color: rgba(255,255,255,0.3);
 }
 
-.birth-chart-desc {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.28);
+.upsell-inline__desc {
   margin: 0;
 }
 
-.birth-chart-btn {
-  padding: 10px 20px;
-  background: rgba(201, 168, 76, 0.1);
-  border: 1px solid rgba(201, 168, 76, 0.35);
-  border-radius: 4px;
-  color: rgba(201, 168, 76, 0.88);
-  font-size: 12px;
+.upsell-inline__btn {
+  padding: 8px 18px;
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: rgba(201,168,76,0.85);
+  font-family: var(--font-sans);
+  font-size: 11px;
   letter-spacing: 0.06em;
-  font-family: inherit;
   cursor: pointer;
+  border-radius: 1px;
+  transition: background 0.2s;
   white-space: nowrap;
-  transition: all 0.2s;
 }
 
-.birth-chart-btn:hover:not(:disabled) {
-  background: rgba(201, 168, 76, 0.18);
-  border-color: rgba(201, 168, 76, 0.6);
+.upsell-inline__btn:hover:not(:disabled) {
+  background: rgba(201,168,76,0.15);
 }
 
-.birth-chart-locked-badge {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 2px;
-  padding: 4px 12px;
-  flex-shrink: 0;
-}
-
-/* ── Report calendar section ── */
-.report-cal-section {
-  margin-bottom: 40px;
-  padding-top: 32px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.report-cal-header {
-  margin-bottom: 16px;
-}
-
-.report-cal-eyebrow {
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: rgba(201, 168, 76, 0.6);
-  text-transform: uppercase;
-  margin: 0 0 6px;
-}
-
-.report-cal-theme {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  font-style: italic;
-}
-
-.report-cal-peaks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.cal-peak-chip {
-  font-size: 10px;
-  color: rgba(201, 168, 76, 0.8);
-  background: rgba(201, 168, 76, 0.08);
-  border: 1px solid rgba(201, 168, 76, 0.2);
-  border-radius: 2px;
-  padding: 3px 10px;
-  letter-spacing: 0.06em;
-}
-
-.cal-caution-chip {
-  font-size: 10px;
-  color: rgba(255, 110, 110, 0.6);
-  background: rgba(255, 100, 100, 0.05);
-  border: 1px solid rgba(255, 100, 100, 0.15);
-  border-radius: 2px;
-  padding: 3px 10px;
-  letter-spacing: 0.06em;
-}
-
-.report-cal-months {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.report-month-card {
-  padding: 13px 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-left: 2px solid;
-  border-radius: 4px;
-}
-
-.rmc-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.rmc-name {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 18px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.82);
-  margin: 0 0 2px;
-}
-
-.rmc-theme {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.25);
-  margin: 0;
-}
-
-.rmc-energy-block {
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.rmc-energy-label {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.22);
-  display: block;
-  margin-bottom: 3px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.rmc-energy-track {
-  width: 60px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.07);
-  overflow: hidden;
-}
-
-.rmc-energy-fill {
-  height: 100%;
-}
-
-.rmc-insights {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-bottom: 8px;
-}
-
-.rmc-insight {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.48);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.rmc-icon {
-  margin-right: 3px;
-}
-
-.rmc-warning {
-  font-size: 11px;
-  color: rgba(255, 120, 80, 0.5);
-  margin: 4px 0 0;
-}
-
-.rmc-lucky {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.18);
-  margin: 0;
-}
-
-/* ── Sub upsell card (premium) ── */
-.sub-upsell-card {
-  margin: 48px 0;
-  padding: 28px 24px;
-  background: linear-gradient(135deg, rgba(201, 168, 76, 0.06) 0%, rgba(107, 72, 224, 0.04) 100%);
-  border: 1px solid rgba(201, 168, 76, 0.28);
-  border-radius: 16px;
-}
-
-.sub-upsell-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.sub-upsell-badge {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.75);
-}
-
-.sub-upsell-price {
-  font-size: 22px;
-  font-weight: 600;
-  color: rgba(201, 168, 76, 0.95);
-  line-height: 1;
-}
-
-.sub-upsell-price-period {
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(201, 168, 76, 0.55);
-}
-
-.sub-upsell-name {
-  font-size: 18px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.92);
-  margin: 0 0 4px;
-}
-
-.sub-upsell-sub {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.38);
-  margin: 0 0 14px;
-}
-
-.sub-upsell-hook {
-  font-size: 13px;
-  line-height: 1.65;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 0 0 20px;
-  padding: 12px 16px;
-  background: rgba(201, 168, 76, 0.05);
-  border-left: 2px solid rgba(201, 168, 76, 0.35);
-  border-radius: 0 8px 8px 0;
-}
-
-.sub-upsell-features {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sub-upsell-feat {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.72);
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  line-height: 1.5;
-}
-
-.sub-upsell-check {
-  color: rgba(201, 168, 76, 0.75);
-  font-size: 10px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.sub-upsell-cta {
-  width: 100%;
-  padding: 16px;
-  background: rgba(201, 168, 76, 0.12);
-  border: 1px solid rgba(201, 168, 76, 0.42);
-  border-radius: 10px;
-  color: rgba(201, 168, 76, 0.95);
-  font-size: 15px;
-  font-weight: 500;
-  font-family: inherit;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: all 0.22s;
-}
-
-.sub-upsell-cta:not(:disabled):hover {
-  background: rgba(201, 168, 76, 0.20);
-  border-color: rgba(201, 168, 76, 0.65);
-  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
-}
-
-.sub-upsell-cta:disabled {
-  opacity: 0.38;
+.upsell-inline__btn:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.sub-upsell-note {
-  text-align: center;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.18);
-  margin: 10px 0 0;
-  letter-spacing: 0.03em;
+.upsell-inline__locked-badge {
+  border: 1px solid rgba(255,255,255,0.07);
+  padding: 4px 10px;
+  border-radius: 1px;
+  color: rgba(255,255,255,0.18);
+  flex-shrink: 0;
 }
 
-/* ── Shared centered states ── */
-.center-page {
-  background: #050410;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+/* ─────────────────────────────────────────────
+   REPORT BODY & SECTIONS
+   ───────────────────────────────────────────── */
 
-.center-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  text-align: center;
+.report-body {
+  max-width: 480px;
+  margin: 0 auto;
   padding: 0 24px;
 }
 
-.brand-text {
-  font-size: 13px;
-  letter-spacing: 0.15em;
-  color: rgba(255, 255, 255, 0.3);
-  margin: 0;
-}
-
-.status-text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 0;
-}
-
-.fallback-title {
-  font-size: 20px;
-  font-weight: 500;
-  color: white;
-  margin: 0;
-}
-
-.fallback-text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.4);
-  margin: 0;
-  max-width: 280px;
-  line-height: 1.6;
-}
-
-/* ── Report page ── */
-.report-page {
-  background: #050410;
-  min-height: 100vh;
-  color: white;
-  max-width: 520px;
+.report-section {
+  padding: 32px 0;
+  max-width: 480px;
   margin: 0 auto;
-  padding: 28px 24px calc(72px + env(safe-area-inset-bottom, 0px));
-  box-sizing: border-box;
 }
 
-/* Top bar */
-.top-bar {
+.report-section + .report-section {
+  border-top: none;
+}
+
+.report-section__header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 28px;
-}
-
-.top-brand {
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.2);
-  margin: 0;
-}
-
-.report-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.top-account-link {
-  font-size: 11px;
-  color: rgba(140, 110, 255, 0.55);
-  text-decoration: none;
-  letter-spacing: 0.04em;
-  transition: color 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.top-account-link:hover {
-  color: rgba(140, 110, 255, 0.85);
-}
-
-/* Hero block */
-.hero-block {
-  position: relative;
-  padding: 36px 0 32px;
-  background: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  margin-bottom: 32px;
-  overflow: hidden;
-}
-
-.archetype-label {
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: rgba(201, 168, 76, 0.65);
-  text-transform: uppercase;
-  margin: 0 0 12px;
-}
-
-.archetype-symbol {
-  display: block;
-  margin-bottom: 10px;
-  opacity: 0.85;
-}
-
-.archetype-name {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(44px, 10vw, 56px);
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.94);
-  line-height: 1.05;
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
-.archetype-meta {
-  font-size: 12px;
-  color: rgba(140, 110, 255, 0.5);
-  margin: 8px 0 0;
-  letter-spacing: 0.04em;
-}
-
-.traits-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.trait-pill {
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  padding: 4px 12px;
-  background: transparent;
-}
-
-/* Report sections */
-.section-wrapper {
-  padding: 36px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: none;
-}
-
-.section-wrapper.no-border {
-  border-bottom: none;
-}
-
-.section-title {
-  font-size: 9px;
-  font-weight: 400;
-  color: rgba(201, 168, 76, 0.65);
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  margin: 0 0 16px;
-}
-
-.section-content {
-  font-size: 15px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.68);
-  line-height: 1.9;
-  margin: 0;
-  letter-spacing: 0.01em;
-}
-
-.affirmation-box {
-  background: transparent;
-  border: none;
-  border-top: 1px solid rgba(201, 168, 76, 0.12);
-  border-bottom: 1px solid rgba(201, 168, 76, 0.12);
-  border-radius: 0;
-  padding: 36px 8px;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(20px, 5vw, 24px);
-  font-weight: 300;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.88);
-  line-height: 1.6;
-  text-align: center;
-}
-
-/* Share section */
-.share-section {
-  margin-top: 48px;
-}
-
-.share-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  margin: 0 0 4px;
-}
-
-.share-subtitle {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
-  margin: 0 0 16px;
-}
-
-.share-card {
-  width: min(280px, 100%);
-  min-height: 160px;
-  background: linear-gradient(140deg, #0d0b1e, #12101f);
-  border: 1px solid rgba(140, 110, 255, 0.25);
-  border-radius: 16px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 20px 16px;
-  box-sizing: border-box;
-}
-
-.card-symbol {
-  display: block;
-}
-
-.card-name {
-  font-size: 16px;
-  color: white;
-  font-weight: 500;
-  margin: 0;
-}
-
-.card-traits {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.card-trait-pill {
-  font-size: 9px;
-  color: rgba(200, 180, 255, 0.6);
-  border: 1px solid rgba(140, 110, 255, 0.2);
-  border-radius: 20px;
-  padding: 2px 8px;
-  background: rgba(140, 110, 255, 0.05);
-}
-
-.card-domain {
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.2);
-  letter-spacing: 0.05em;
-  margin: 0;
-}
-
-.download-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.42);
-  border-radius: 4px;
-  padding: 12px 24px;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  font-family: inherit;
-  display: block;
-  margin: 16px auto 0;
-  transition: all 0.22s;
-}
-
-.download-btn:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.download-row {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin: 16px auto 0;
-}
-
-.download-row .download-btn {
-  flex: 1;
-  margin: 0;
-  display: block;
-}
-
-.download-btn--primary {
-  background: rgba(201, 168, 76, 0.1);
-  border-color: rgba(201, 168, 76, 0.42);
-  color: rgba(201, 168, 76, 0.88);
-}
-
-.download-btn--primary:not(:disabled):hover {
-  background: rgba(201, 168, 76, 0.18);
-  border-color: rgba(201, 168, 76, 0.65);
-  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
-}
-
-.download-btn--email {
-  background: rgba(140, 110, 255, 0.08);
-  border-color: rgba(140, 110, 255, 0.3);
-  color: rgba(200, 180, 255, 0.85);
-}
-
-.download-btn--email:not(:disabled):hover {
-  background: rgba(140, 110, 255, 0.15);
-  border-color: rgba(140, 110, 255, 0.5);
-  box-shadow: 0 0 20px rgba(140, 110, 255, 0.07);
-}
-
-.download-btn--email:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-/* ── Compatibility upsell ── */
-.compat-section {
-  margin-top: 48px;
-  padding: 32px 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-}
-
-.compat-teaser {
-  text-align: center;
-}
-
-.compat-title {
-  font-size: 22px;
-  font-weight: 500;
-  color: white;
-  margin: 0 0 8px;
-}
-
-.compat-subtitle {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.35);
-  line-height: 1.6;
-  margin: 0 0 20px;
-  max-width: 320px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.compat-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.compat-tag {
-  font-size: 12px;
-  color: rgba(200, 180, 255, 0.7);
-  border: 1px solid rgba(140, 110, 255, 0.25);
-  border-radius: 20px;
-  padding: 4px 14px;
-  background: rgba(140, 110, 255, 0.06);
-}
-
-.compat-cta-btn {
-  width: 100%;
-  padding: 16px;
-  background: rgba(140, 110, 255, 0.15);
-  border: 1px solid rgba(140, 110, 255, 0.35);
-  border-radius: 12px;
-  color: rgba(200, 180, 255, 0.9);
-  font-size: 15px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.compat-cta-btn:hover {
-  background: rgba(140, 110, 255, 0.22);
-  border-color: rgba(140, 110, 255, 0.55);
-}
-
-.compat-form-title {
-  font-size: 16px;
-  font-weight: 500;
-  color: white;
-  margin: 0 0 4px;
-}
-
-.compat-form-subtitle {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.3);
-  margin: 0 0 20px;
-  line-height: 1.5;
-}
-
-.compat-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.compat-input {
-  width: 100%;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: white;
-  font-size: 15px;
-  font-family: inherit;
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-
-.compat-input::placeholder {
-  color: rgba(255, 255, 255, 0.25);
-}
-
-.compat-input:focus {
-  border-color: rgba(140, 110, 255, 0.5);
-}
-
-.compat-input--date {
-  color-scheme: dark;
-  -webkit-appearance: none;
-  appearance: none;
-  min-height: 52px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.compat-unlock-btn {
-  width: 100%;
-  padding: 16px;
-  background: rgba(140, 110, 255, 0.85);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 15px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
-}
-
-.compat-unlock-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.compat-unlock-btn:not(:disabled):hover {
-  background: rgba(140, 110, 255, 1);
-}
-
-.compat-cancel-btn {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.25);
-  font-size: 12px;
-  font-family: inherit;
-  cursor: pointer;
-  margin-top: 12px;
-  width: 100%;
-  padding: 8px;
-}
-
-/* ── Calendar upsell ── */
-.cal-upsell {
-  margin: 48px 0;
-  padding: 28px 24px;
-  background: linear-gradient(135deg, rgba(140, 110, 255, 0.06) 0%, rgba(80, 60, 180, 0.04) 100%);
-  border: 1px solid rgba(140, 110, 255, 0.2);
-  border-radius: 16px;
-}
-
-.cal-upsell-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.cal-upsell-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-}
-
-.cal-upsell-info {
-  flex: 1;
-}
-
-.cal-upsell-title {
-  font-size: 16px;
-  font-weight: 500;
-  color: white;
-  margin: 0;
-}
-
-.cal-upsell-desc {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
-  margin: 0;
-}
-
-.cal-upsell-price {
-  font-size: 20px;
-  font-weight: 500;
-  color: rgba(200, 180, 255, 0.9);
-  flex-shrink: 0;
-}
-
-.cal-features {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.cal-feat {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cal-feat-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(140, 110, 255, 0.6);
-  flex-shrink: 0;
-  display: inline-block;
-}
-
-.cal-feat-text {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.cal-preview {
+  align-items: flex-start;
+  gap: 14px;
   margin-bottom: 4px;
 }
 
-.cal-bar-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 6px 0;
-}
-
-.cal-bar-label {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.3);
-  width: 52px;
+.report-section__num {
+  margin: 0;
+  margin-top: 2px;
   flex-shrink: 0;
+  min-width: 20px;
+  color: var(--color-ink-faint);
 }
 
-.cal-bar-track {
-  flex: 1;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.cal-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-}
-
-.cal-upsell-btn {
-  width: 100%;
-  margin-top: 20px;
-  padding: 16px;
-  background: rgba(201, 168, 76, 0.1);
-  border: 1px solid rgba(201, 168, 76, 0.38);
-  border-radius: 4px;
-  color: rgba(201, 168, 76, 0.88);
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.22s;
-}
-
-.cal-upsell-btn:not(:disabled):hover {
-  background: rgba(201, 168, 76, 0.18);
-  border-color: rgba(201, 168, 76, 0.62);
-  box-shadow: 0 0 20px rgba(201, 168, 76, 0.07);
-}
-
-.cal-upsell-btn:disabled {
-  opacity: 0.38;
-  cursor: not-allowed;
-}
-
-.cal-upsell-note {
-  text-align: center;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.15);
-  margin-top: 8px;
-  margin-bottom: 0;
-}
-
-/* ── Loading upsell screen ── */
-.upsell-loading-page {
-  background: #0a0a0f;
-  min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 60px 20px 40px;
-  box-sizing: border-box;
-}
-
-.upsell-loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 360px;
-}
-
-.upsell-progress-track {
-  width: 200px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 40px;
-}
-
-@keyframes upsellProgress {
-  from { width: 0%; }
-  to { width: 90%; }
-}
-
-@keyframes fillProgress {
-  from { width: 0%; }
-  to { width: 90%; }
-}
-
-.upsell-progress-fill {
-  height: 100%;
-  background: rgba(140, 110, 255, 0.6);
-  border-radius: 2px;
-  animation: upsellProgress 8s ease-in-out forwards;
-}
-
-.addon-offer-box {
-  width: 100%;
-  margin-top: 32px;
-  background: rgba(140, 110, 255, 0.08);
-  border: 1px solid rgba(140, 110, 255, 0.3);
-  border-radius: 16px;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.addon-badge {
-  font-size: 9px;
-  font-weight: 600;
-  color: rgba(140, 110, 255, 0.8);
-  letter-spacing: 0.12em;
-  background: rgba(140, 110, 255, 0.15);
-  border-radius: 20px;
-  padding: 3px 10px;
-  display: inline-block;
-  margin-bottom: 12px;
-}
-
-.addon-title {
-  font-size: 16px;
-  font-weight: 500;
-  color: white;
+.report-section__tradition {
   margin: 0 0 4px;
+  color: var(--color-gold);
 }
 
-.addon-desc {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
-  margin: 0 0 16px;
-  line-height: 1.5;
-}
-
-.addon-input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 12px 14px;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 14px;
-  width: 100%;
-  outline: none;
-  box-sizing: border-box;
-  font-family: inherit;
-  margin-bottom: 8px;
-  transition: border-color 0.2s;
-}
-
-.addon-input:focus {
-  border-color: rgba(140, 110, 255, 0.5);
-}
-
-.addon-input::placeholder {
-  color: rgba(255, 255, 255, 0.2);
-}
-
-.addon-dob {
-  flex: 1;
-  width: auto;
-  margin-bottom: 0;
-  text-align: center;
-  padding: 12px 8px;
-}
-
-.addon-year {
-  flex: 1.4;
-}
-
-.addon-yes-btn {
-  width: 100%;
-  padding: 14px;
-  background: rgba(140, 110, 255, 0.85);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 15px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-bottom: 12px;
-}
-
-.addon-yes-btn:hover:not(:disabled) {
-  background: rgba(140, 110, 255, 1);
-}
-
-.addon-yes-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.addon-no-link {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  text-decoration: underline;
-  text-align: center;
-  margin: 0;
-}
-
-.fade-up-enter-active {
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.fade-up-enter-from {
-  opacity: 0;
-  transform: translateY(12px);
-}
-
-/* ── Bundle upsell ── */
-.bundle-upsell-box {
-  padding: 28px 24px;
-  background: rgba(201, 168, 76, 0.04);
-  border: 1px solid rgba(201, 168, 76, 0.18);
-  border-radius: 8px;
-  margin: 40px 0;
-  text-align: center;
-}
-
-.bundle-headline {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 30px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 6px;
-}
-
-.bundle-subline {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.3);
-  margin: 0 0 24px;
-}
-
-.bundle-items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.bundle-item {
-  display: flex;
-  align-items: center;
-}
-
-.bundle-item-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: white;
-  margin: 0 0 2px;
-}
-
-.bundle-item-desc {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
-  margin: 0;
-}
-
-.bundle-item-price {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.2);
-  text-decoration: line-through;
-  flex-shrink: 0;
-}
-
-.bundle-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.06);
-  margin: 16px 0 12px;
-}
-
-.bundle-total-row,
-.bundle-price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.bundle-savings-badge {
-  background: rgba(80, 200, 120, 0.07);
-  border: 1px solid rgba(80, 200, 120, 0.18);
-  border-radius: 2px;
-  padding: 4px 12px;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  color: rgba(120, 220, 150, 0.65);
-  display: inline-block;
-  margin: 12px 0;
-}
-
-.bundle-cta-btn {
-  width: 100%;
-  padding: 16px;
-  background: rgba(201, 168, 76, 0.12);
-  border: 1px solid rgba(201, 168, 76, 0.4);
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  color: rgba(201, 168, 76, 0.9);
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.22s;
-  margin-top: 4px;
-}
-
-.bundle-cta-btn:hover:not(:disabled) {
-  background: rgba(201, 168, 76, 0.2);
-  border-color: rgba(201, 168, 76, 0.65);
-  box-shadow: 0 0 24px rgba(201, 168, 76, 0.08);
-}
-
-.bundle-cta-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.bundle-cta-note {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.15);
-  margin-top: 8px;
-  margin-bottom: 0;
-}
-
-/* ── Birth Chart Display Section ── */
-.birth-chart-section {
-  margin-bottom: 28px;
-  padding: 24px;
-  background: rgba(201, 168, 76, 0.03);
-  border: 1px solid rgba(201, 168, 76, 0.15);
-  border-radius: 6px;
-  border-top: 2px solid rgba(201, 168, 76, 0.4);
-}
-
-.birth-chart-eyebrow {
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: rgba(201, 168, 76, 0.5);
-  margin: 0 0 6px;
-  text-transform: uppercase;
-}
-
-.birth-chart-section-title {
-  font-family: 'Cormorant Garamond', serif;
+.report-section__heading {
+  font-family: var(--font-serif);
   font-size: 22px;
-  font-weight: 300;
-  color: rgba(237, 232, 255, 0.92);
-  margin: 0 0 20px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.9);
+  margin: 0;
   line-height: 1.2;
 }
 
-.birth-chart-signs-row {
-  display: flex;
-  margin-bottom: 20px;
-  border: 1px solid rgba(201, 168, 76, 0.12);
-  border-radius: 4px;
-  overflow: hidden;
+.report-section__body {
+  padding-left: 34px;
 }
 
-.birth-chart-sign-cell {
-  flex: 1;
-  padding: 12px 10px;
-  text-align: center;
-  border-right: 1px solid rgba(201, 168, 76, 0.1);
-}
-
-.birth-chart-sign-cell:last-child {
-  border-right: none;
-}
-
-.birth-chart-sign-label {
-  font-size: 8px;
-  letter-spacing: 0.15em;
-  color: rgba(201, 168, 76, 0.45);
-  margin: 0 0 4px;
-  text-transform: uppercase;
-}
-
-.birth-chart-sign-value {
-  font-family: 'Cormorant Garamond', serif;
+.report-section__para {
   font-size: 15px;
-  font-weight: 400;
-  color: rgba(237, 232, 255, 0.85);
-  margin: 0;
-}
-
-.birth-chart-reading {
-  font-size: 14px;
-  line-height: 1.72;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 0 0 20px;
-}
-
-.birth-chart-forecast-box {
-  padding: 14px 16px;
-  background: rgba(201, 168, 76, 0.04);
-  border-left: 2px solid rgba(201, 168, 76, 0.3);
-}
-
-.birth-chart-forecast-label {
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  color: rgba(201, 168, 76, 0.5);
-  margin: 0 0 6px;
-  text-transform: uppercase;
-}
-
-.birth-chart-forecast-text {
-  font-size: 13px;
-  line-height: 1.65;
-  color: rgba(255, 255, 255, 0.5);
-  margin: 0;
-  font-style: italic;
-}
-
-/* ── Tradition Switcher ── */
-.tradition-switcher {
-  margin: 0 0 40px;
-  padding: 20px 20px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.015);
-}
-
-.tradition-switcher-label {
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: rgba(201, 168, 76, 0.55);
-  margin: 0 0 4px;
-  text-transform: uppercase;
-}
-
-.tradition-switcher-sub {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.3);
+  line-height: 1.85;
+  color: var(--color-text);
+  font-weight: 300;
   margin: 0 0 16px;
 }
 
-.tradition-options {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.report-section__para:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Affirmation block ── */
+.affirmation-block {
+  padding: 20px 0;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.affirmation-block__text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.65);
+  text-align: center;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ─────────────────────────────────────────────
+   BIRTH CHART SECTION
+   ───────────────────────────────────────────── */
+
+.birth-chart-section {
+  padding: 0 24px 32px;
+}
+
+.birth-chart-signs-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.04);
+}
+
+.bc-sign-cell {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 14px;
+  background: var(--color-paper);
+}
+
+.bc-sign-cell__label {
+  margin: 0 0 4px;
+  color: var(--color-gold-dim);
+}
+
+.bc-sign-cell__value {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: rgba(255,255,255,0.82);
+  margin: 0;
+}
+
+.bc-forecast-box {
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.02);
+  border-left: 2px solid var(--color-gold-dim);
+  margin-top: 16px;
+}
+
+.bc-forecast-box__label {
+  margin: 0 0 6px;
+  color: var(--color-gold);
+}
+
+.bc-forecast-box__text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  margin: 0;
+  line-height: 1.7;
+}
+
+/* ─────────────────────────────────────────────
+   REGIONAL SECTIONS
+   ───────────────────────────────────────────── */
+
+.regional-section {
+  padding: 0 24px 32px;
+}
+
+.regional-pills {
+  display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.regional-pill {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.regional-pill__label {
+  margin: 0 0 4px;
+  color: var(--color-gold-dim);
+}
+
+.regional-pill__value {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: rgba(255,255,255,0.82);
+  margin: 0;
+}
+
+.regional-highlight {
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.02);
+  border-left: 2px solid var(--color-gold-dim);
+  margin: 16px 0;
+}
+
+.regional-highlight--center {
+  text-align: center;
+  border-left: none;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.regional-highlight__label {
+  margin: 0 0 6px;
+  color: var(--color-gold);
+}
+
+.regional-highlight__text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(255,255,255,0.65);
+  margin: 0;
+  line-height: 1.7;
+}
+
+.regional-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.regional-tags__label {
+  margin: 0;
+  color: rgba(255,255,255,0.22);
+}
+
+.regional-tag {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(201,168,76,0.65);
+  background: rgba(201,168,76,0.06);
+  border: 1px solid rgba(201,168,76,0.15);
+  padding: 3px 10px;
+}
+
+.regional-loading {
+  max-width: 480px;
+  margin: 0 auto 24px;
+  padding: 20px 24px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.regional-loading__text {
+  margin: 0;
+}
+
+/* ─────────────────────────────────────────────
+   TRADITION SWITCHER
+   ───────────────────────────────────────────── */
+
+.tradition-switcher {
+  max-width: 480px;
+  margin: 0 auto 32px;
+  padding: 0 24px;
+}
+
+.tradition-switcher__header {
+  margin-bottom: 14px;
+}
+
+.tradition-switcher__label {
+  margin: 0 0 4px;
+  color: var(--color-gold);
+}
+
+.tradition-switcher__sub {
+  margin: 0;
+}
+
+.tradition-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .tradition-opt-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
   text-align: left;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255,255,255,0.65);
+  font-family: var(--font-sans);
+  transition: background 0.2s, border-color 0.2s;
+  border-radius: 1px;
 }
 
 .tradition-opt-btn:hover:not(:disabled) {
-  border-color: rgba(201, 168, 76, 0.3);
-  background: rgba(201, 168, 76, 0.04);
-  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.1);
 }
 
 .tradition-opt-btn:disabled {
-  cursor: default;
+  cursor: not-allowed;
 }
 
 .tradition-opt-active {
-  border-color: rgba(201, 168, 76, 0.4) !important;
-  background: rgba(201, 168, 76, 0.06) !important;
-  color: rgba(255, 255, 255, 0.85) !important;
+  background: rgba(201,168,76,0.05);
+  border-color: rgba(201,168,76,0.2);
 }
 
-.tradition-opt-unlocked:not(.tradition-opt-active) {
-  border-color: rgba(80, 200, 120, 0.2);
+.tradition-opt-unlocked {
+  border-color: rgba(80,200,120,0.15);
 }
 
 .tradition-opt-icon {
@@ -3358,297 +2765,755 @@ async function downloadReportPDF() {
 }
 
 .tradition-opt-text {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
 }
 
 .tradition-opt-name {
   font-size: 13px;
-  font-weight: 500;
+  color: rgba(255,255,255,0.75);
 }
 
 .tradition-opt-sub {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.28);
-  letter-spacing: 0.02em;
-}
-
-.tradition-opt-active .tradition-opt-sub {
-  color: rgba(201, 168, 76, 0.5);
+  margin: 0;
 }
 
 .tradition-opt-tag {
   font-size: 9px;
   letter-spacing: 0.1em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 1px;
   flex-shrink: 0;
-  text-transform: uppercase;
 }
 
 .tradition-opt-tag--active {
-  background: rgba(201, 168, 76, 0.12);
-  color: rgba(201, 168, 76, 0.8);
+  color: rgba(201,168,76,0.7);
+  border: 1px solid rgba(201,168,76,0.2);
 }
 
 .tradition-opt-tag--free {
-  background: rgba(80, 200, 120, 0.1);
-  color: rgba(80, 200, 120, 0.8);
+  color: rgba(120,220,160,0.7);
+  border: 1px solid rgba(120,220,160,0.2);
 }
 
 .tradition-opt-tag--paid {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .tradition-loading {
+  max-width: 480px;
+  margin: 0 auto 24px;
+  padding: 20px 24px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 20px 24px;
-  border: 1px solid rgba(201, 168, 76, 0.12);
-  border-radius: 16px;
-  margin: 0 0 40px;
-  background: rgba(201, 168, 76, 0.03);
+  gap: 12px;
+}
+
+.tradition-loading__ring {
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(201,168,76,0.2);
+  border-top-color: rgba(201,168,76,0.65);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to { transform: rotate(360deg) }
 }
 
-.tradition-loading-ring {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(201, 168, 76, 0.2);
-  border-top-color: rgba(201, 168, 76, 0.8);
-  border-radius: 50%;
-  flex-shrink: 0;
-  animation: spin 0.9s linear infinite;
-}
-
-.tradition-loading-text {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
+.tradition-loading__text {
   margin: 0;
 }
 
-.tradition-success-banner {
+.tradition-success {
+  max-width: 480px;
+  margin: 0 auto 24px;
+  padding: 12px 20px;
+  background: rgba(80,200,120,0.04);
+  border: 1px solid rgba(80,200,120,0.14);
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 20px;
-  border: 1px solid rgba(80, 200, 120, 0.2);
-  border-radius: 12px;
-  margin: 0 0 40px;
-  background: rgba(80, 200, 120, 0.04);
 }
 
-.tradition-success-icon {
-  font-size: 16px;
-  color: rgba(201, 168, 76, 0.8);
+.tradition-success__icon {
+  color: rgba(120,220,160,0.6);
+  font-size: 12px;
 }
 
-.tradition-success-text {
-  font-size: 13px;
-  color: rgba(80, 200, 120, 0.8);
+.tradition-success__text {
+  margin: 0;
+  color: rgba(120,220,160,0.75);
+}
+
+/* ─────────────────────────────────────────────
+   CALENDAR SECTION
+   ───────────────────────────────────────────── */
+
+.calendar-section {
+  padding: 0 24px 32px;
+}
+
+.calendar-peaks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.cal-peak-chip {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(201,168,76,0.75);
+  background: rgba(201,168,76,0.06);
+  border: 1px solid rgba(201,168,76,0.18);
+  padding: 3px 10px;
+}
+
+.cal-caution-chip {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(220,100,100,0.6);
+  background: rgba(220,100,100,0.04);
+  border: 1px solid rgba(220,100,100,0.14);
+  padding: 3px 10px;
+}
+
+.calendar-months {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.month-card {
+  padding: 16px 16px 12px;
+  background: rgba(255,255,255,0.015);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-left: 2px solid var(--color-gold);
+}
+
+.month-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.month-card__name {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: rgba(255,255,255,0.82);
+  margin: 0 0 2px;
+}
+
+.month-card__theme {
   margin: 0;
 }
 
-.report-footer {
+.month-card__energy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 90px;
+}
+
+.month-card__energy-label {
+  margin: 0;
+}
+
+.month-card__energy-track {
+  width: 90px;
+  height: 2px;
+  background: rgba(255,255,255,0.07);
+}
+
+.month-card__energy-fill {
+  height: 100%;
+  background: var(--color-gold);
+  transition: width 0.5s ease;
+}
+
+.month-card__insights {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.month-card__insight {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+}
+
+.month-card__icon {
+  font-size: 10px;
+}
+
+.month-card__warning {
+  margin: 0;
+  color: rgba(220,100,100,0.6);
+}
+
+.month-card__lucky {
+  margin: 0;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding-top: 8px;
+}
+
+/* ─────────────────────────────────────────────
+   COMPATIBILITY SECTION (free / bundle)
+   ───────────────────────────────────────────── */
+
+.compat-free-section {
+  padding: 0 24px 32px;
+}
+
+.compat-result__score-block {
+  padding: 16px;
+  background: rgba(140,110,255,0.04);
+  border: 1px solid rgba(140,110,255,0.12);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.compat-result__score-label {
+  margin: 0 0 4px;
+  color: rgba(140,110,255,0.6);
+}
+
+.compat-result__score {
+  font-family: var(--font-serif);
+  font-size: 36px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.88);
+  margin: 0;
+}
+
+.compat-result__title {
+  margin: 4px 0 0;
+  color: rgba(200,180,255,0.6);
+}
+
+.compat-result__section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.compat-result__section-title {
+  margin: 0 0 8px;
+  color: var(--color-gold);
+}
+
+/* Compat forms (shared) */
+.compat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compat-form__title,
+.compat-form__sub {
+  margin: 0;
+}
+
+.compat-form__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─────────────────────────────────────────────
+   UPSELL SECTIONS
+   ───────────────────────────────────────────── */
+
+.upsell-section {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 24px 32px;
+}
+
+.upsell-section__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.upsell-section__eyebrow {
+  margin: 0;
+  color: var(--color-gold);
+}
+
+.upsell-section__heading {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.88);
+  margin: 0;
+}
+
+.upsell-section__sub {
+  margin: 0;
+}
+
+.upsell-section__header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upsell-section__hook {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.upsell-section__price {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 400;
+  color: rgba(200,180,255,0.88);
+  white-space: nowrap;
+}
+
+.upsell-section__price-period {
+  font-size: 14px;
+  color: rgba(200,180,255,0.5);
+}
+
+.upsell-section__rule {
+  height: 1px;
+  background: rgba(255,255,255,0.05);
+}
+
+.upsell-section__total-row,
+.upsell-section__price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upsell-section__strike {
+  text-decoration: line-through;
+  color: rgba(255,255,255,0.22);
+}
+
+.upsell-section__note {
+  margin: 0;
+  text-align: center;
+}
+
+.upsell-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.upsell-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.upsell-item:last-child {
+  border-bottom: none;
+}
+
+.upsell-item__info {
+  flex: 1;
+}
+
+.upsell-item__name {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  margin: 0 0 2px;
+}
+
+.upsell-item__desc {
+  margin: 0;
+}
+
+.upsell-item__price {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+}
+
+.upsell-features {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upsell-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding-left: 4px;
+}
+
+/* ── CTAs ── */
+.upsell-cta-btn {
   width: 100%;
+  padding: 14px;
+  background: rgba(201,168,76,0.1);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: rgba(201,168,76,0.9);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: background 0.2s;
+}
+
+.upsell-cta-btn:hover:not(:disabled) {
+  background: rgba(201,168,76,0.18);
+}
+
+.upsell-cta-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.upsell-cta-btn--secondary {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+}
+
+.upsell-cta-btn--ghost {
+  background: none;
+  border-color: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── Calendar bar preview ── */
+.cal-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.cal-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cal-bar-label {
+  min-width: 52px;
+  margin: 0;
+}
+
+.cal-bar-track {
+  flex: 1;
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+}
+
+.cal-bar-fill {
+  height: 100%;
+  background: rgba(140,110,255,0.5);
+}
+
+/* ── Compat tags ── */
+.compat-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.compat-tag {
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 1px;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── Compat input ── */
+.editorial-input,
+.compat-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 1px;
+  color: rgba(255,255,255,0.78);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.editorial-input:focus,
+.compat-input:focus {
+  border-color: rgba(201,168,76,0.35);
+}
+
+.compat-input--date {
+  color-scheme: dark;
+}
+
+.compat-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(140,110,255,0.1);
+  border: 1px solid rgba(140,110,255,0.25);
+  color: rgba(200,180,255,0.85);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: background 0.2s;
+}
+
+.compat-submit-btn:hover:not(:disabled) {
+  background: rgba(140,110,255,0.18);
+}
+
+.compat-submit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────
+   SHARE SECTION
+   ───────────────────────────────────────────── */
+
+.share-section {
+  padding: 0 24px 32px;
+}
+
+.share-card {
+  padding: 20px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  text-align: center;
+  margin: 16px 0;
+}
+
+.share-card__archetype {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-style: normal;
+  color: rgba(255,255,255,0.75);
+  margin: 0 0 10px;
+}
+
+.share-card__traits {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.share-card__trait {
+  margin: 0;
+  padding: 3px 8px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.share-card__domain {
+  margin: 0;
+  color: rgba(255,255,255,0.2);
+}
+
+.share-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.share-btn {
+  flex: 1;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: rgba(255,255,255,0.55);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: background 0.2s;
+}
+
+.share-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.06);
+}
+
+.share-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.share-btn--primary {
+  background: rgba(201,168,76,0.07);
+  border-color: rgba(201,168,76,0.22);
+  color: rgba(201,168,76,0.8);
+}
+
+.share-btn--primary:hover:not(:disabled) {
+  background: rgba(201,168,76,0.13);
+}
+
+.share-btn--email {
+  flex: unset;
+  width: 100%;
+}
+
+.share-error {
+  margin: 6px 0 0;
+  color: rgba(220,100,100,0.65);
+  text-align: center;
+}
+
+.share-email-row {
+  margin-top: 10px;
+}
+
+/* ─────────────────────────────────────────────
+   FOOTER CTA
+   ───────────────────────────────────────────── */
+
+.report-footer-cta {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+.report-footer-cta__inner {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.report-footer-cta__headline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 32px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.82);
+  margin: 0 0 12px;
+}
+
+.report-footer-cta__body {
+  font-size: 13px;
+  color: rgba(255,255,255,0.38);
+  line-height: 1.7;
+  margin: 0 0 24px;
+}
+
+.report-footer-cta__actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.footer-cta-link {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(201,168,76,0.65);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+  padding-bottom: 2px;
+  transition: color 0.2s;
+}
+
+.footer-cta-link:hover {
+  color: rgba(201,168,76,0.9);
+}
+
+/* ─────────────────────────────────────────────
+   LEGAL FOOTER
+   ───────────────────────────────────────────── */
+
+.report-footer {
+  padding: 20px 24px calc(16px + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.04);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 24px 20px 36px;
-  box-sizing: border-box;
-}
-
-.report-footer nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .report-footer-link {
+  font-family: var(--font-sans);
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.18);
+  color: rgba(255,255,255,0.2);
   text-decoration: none;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.report-footer-link:hover {
+  color: rgba(255,255,255,0.4);
 }
 
 .report-footer-sep {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.1);
+  margin: 0 8px;
+  color: rgba(255,255,255,0.12);
 }
 
 .report-footer-crisis {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.1);
   margin: 0;
-  letter-spacing: 0.02em;
-  text-align: center;
-  line-height: 1.5;
-  max-width: 320px;
+  color: rgba(255,255,255,0.15);
+  font-size: 10px;
 }
 
-/* ── Mobile responsive fixes ── */
-@media (max-width: 400px) {
-  /* Report page padding */
-  .report-page {
-    padding: 24px 20px calc(60px + env(safe-area-inset-bottom, 0px));
-  }
+/* ─────────────────────────────────────────────
+   @MEDIA
+   ───────────────────────────────────────────── */
 
-  /* Archetype name – prevent overflow */
-  .archetype-name {
-    font-size: 44px;
-  }
-
-  /* Tradition options: single column on small screens */
-  .tradition-options {
-    grid-template-columns: 1fr;
-  }
-
-  /* Tradition option button: ensure tag doesn't clip */
-  .tradition-opt-btn {
-    padding: 10px 12px;
-  }
-
-  .tradition-opt-name {
-    font-size: 12px;
-  }
-
-  /* Birth chart banner: stack vertically */
-  .birth-chart-banner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .birth-chart-info {
-    min-width: unset;
-    width: 100%;
-  }
-
-  .birth-chart-btn {
-    width: 100%;
-    text-align: center;
-  }
-
-  .birth-chart-locked-badge {
-    align-self: flex-start;
-  }
-
-  /* Birth chart signs row: allow wrapping */
-  .birth-chart-signs-row {
-    flex-wrap: wrap;
-  }
-
-  .birth-chart-sign-cell {
-    min-width: 50%;
-    flex: none;
-    border-right: none;
-    border-bottom: 1px solid rgba(201, 168, 76, 0.1);
-  }
-
-  .birth-chart-sign-cell:nth-child(odd) {
-    border-right: 1px solid rgba(201, 168, 76, 0.1);
-  }
-
-  .birth-chart-sign-cell:last-child,
-  .birth-chart-sign-cell:nth-last-child(2):nth-child(odd) {
-    border-bottom: none;
-  }
-
-  /* Calendar peak/caution chips: smaller text */
-  .cal-peak-chip,
-  .cal-caution-chip {
-    font-size: 9px;
-    padding: 2px 8px;
-  }
-
-  /* Sub upsell card: tighten padding on mobile */
-  .sub-upsell-card {
-    padding: 20px 16px;
-  }
-
-  /* Download row: stack vertically */
-  .download-row {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .download-row .download-btn {
-    flex: unset;
-    width: 100%;
-    margin: 0;
-  }
-
-  /* Share card: full width on tiny screens */
-  .share-card {
-    width: 100%;
-    max-width: 280px;
-    height: auto;
-    min-height: 140px;
-    padding: 20px 16px;
-  }
-
-  /* Compat section inner padding */
-  .compat-section {
-    padding: 24px 16px;
-  }
-
-  /* Bundle upsell inner padding */
-  .bundle-upsell-box {
-    padding: 24px 16px;
-  }
-
-  /* Cal upsell inner padding */
-  .cal-upsell {
-    padding: 20px 16px;
-  }
-
-  /* Cal features: single column */
-  .cal-features {
-    grid-template-columns: 1fr;
-  }
-
-  /* Tradition switcher inner padding */
-  .tradition-switcher {
-    padding: 16px 16px 12px;
-  }
-
-  /* Report month card: ensure text wraps properly */
-  .rmc-header {
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .rmc-name {
-    font-size: 16px;
-  }
-
-  /* Payment confirmation banner text */
-  .banner-text {
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 360px) {
-  .report-page {
-    padding: 20px 16px calc(56px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .archetype-name {
+@media (max-width: 480px) {
+  .report-masthead__name {
     font-size: 38px;
   }
 
-  .tradition-opt-tag {
-    font-size: 8px;
-    padding: 2px 4px;
+  .planet-cell {
+    padding: 8px 10px;
+  }
+
+  .upsell-section__price {
+    font-size: 22px;
+  }
+
+  .share-actions {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rload-fill,
+  .tradition-loading__ring {
+    animation: none;
   }
 }
 </style>

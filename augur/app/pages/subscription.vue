@@ -1,68 +1,55 @@
 <template>
   <!-- Loading state -->
-  <div v-if="isLoading" class="center-page">
-    <div class="center-content">
-      <div class="logo-mark">
-        <div class="logo-ring">
-          <div class="logo-dot" />
-        </div>
-      </div>
-      <p class="brand-text">OMENORA</p>
-      <p class="status-text">Activating your daily insights...</p>
-    </div>
+  <div v-if="isLoading" class="sub-center-page">
+    <PhoenixLoader :size="72" />
+    <p class="annotation sub-center-page__text">Activating your daily insights…</p>
   </div>
 
   <!-- Error state -->
-  <div v-else-if="hasError" class="center-page">
-    <div class="center-content">
-      <div class="logo-mark">
-        <div class="logo-ring">
-          <div class="logo-dot" />
-        </div>
-      </div>
-      <p class="brand-text">OMENORA</p>
-      <p class="status-text">Something went wrong. Please contact support.</p>
-      <button class="return-btn" @click="navigateTo('/report')">
-        Return to Report
-      </button>
-    </div>
+  <div v-else-if="hasError" class="sub-center-page">
+    <p class="label-caps sub-center-page__text" style="color: #8B2500;">Something went wrong.</p>
+    <p class="sub-center-page__sub">Please contact support@omenora.com</p>
+    <button class="sub-return-btn label-caps" @click="navigateTo('/report')">
+      Return to Report
+    </button>
   </div>
 
   <!-- Success state -->
-  <div v-else class="sub-page-bg">
-  <div class="sub-page">
-    <!-- Check mark -->
-    <div class="check-circle">
-      <span class="check-symbol">✦</span>
+  <div v-else class="sub-success-page">
+    <AppHeader />
+
+    <div class="sub-success-body">
+      <p class="label-caps sub-success__eyebrow">Subscription confirmed</p>
+      <h1 class="sub-success__headline font-display-italic">You're subscribed.</h1>
+      <div class="editorial-rule" />
+      <p class="sub-success__sub">Your first personal daily horoscope arrives tomorrow morning.</p>
+
+      <div class="sub-expect-box">
+        <p class="label-caps sub-expect-box__label">What happens next</p>
+        <div class="sub-expect-item">
+          <span class="sub-expect-item__icon">✦</span>
+          <span class="sub-expect-item__text">Delivered to {{ store.email }} every morning at 7am</span>
+        </div>
+        <div class="sub-expect-item">
+          <span class="sub-expect-item__icon">✦</span>
+          <span class="sub-expect-item__text">Personalized to your exact natal chart</span>
+        </div>
+        <div class="sub-expect-item">
+          <span class="sub-expect-item__icon">✦</span>
+          <span class="sub-expect-item__text">Cancel anytime from your account</span>
+        </div>
+      </div>
+
+      <CTAButton v-if="store.reportSessionId" @click="returnToReport" :arrow="true">
+        Return to your report
+      </CTAButton>
+      <CTAButton v-else to="/" :arrow="true">Back to home</CTAButton>
+
+      <p class="sub-account-note">
+        Manage your subscription any time in
+        <NuxtLink to="/account">your account →</NuxtLink>
+      </p>
     </div>
-
-    <h1 class="success-title">You're Subscribed</h1>
-    <p class="success-sub">Your first personal daily horoscope arrives tomorrow morning.</p>
-
-    <!-- What to expect -->
-    <div class="expect-box">
-      <p class="expect-label">What happens next</p>
-      <div class="expect-item">
-        <span class="expect-dot" />
-        <span class="expect-text">Delivered to {{ store.email }} every morning at 7am</span>
-      </div>
-      <div class="expect-item">
-        <span class="expect-dot" />
-        <span class="expect-text">Personalized to your exact natal chart</span>
-      </div>
-      <div class="expect-item" style="margin-bottom: 0;">
-        <span class="expect-dot" />
-        <span class="expect-text">Cancel anytime from your email</span>
-      </div>
-    </div>
-
-    <button v-if="store.reportSessionId" class="return-btn" @click="returnToReport">
-      Return to Your Report
-    </button>
-    <button v-else class="return-btn" @click="navigateTo('/')">
-      Back to Home
-    </button>
-  </div>
   </div>
 </template>
 
@@ -130,227 +117,131 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.95); }
-}
-
-.center-page {
-  background: #0a0a0f;
+/* ── Loading / error centered states ── */
+.sub-center-page {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.center-content {
+  background: var(--color-bone);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  text-align: center;
-  padding: 0 24px;
-}
-
-.logo-mark {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(140, 110, 255, 0.15);
-  border: 1px solid rgba(140, 110, 255, 0.4);
-  display: flex;
-  align-items: center;
   justify-content: center;
-  animation: pulse 2s ease-in-out infinite;
+  gap: 20px;
+  padding: 40px 24px;
 }
 
-.logo-ring {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(180, 150, 255, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sub-center-page__text {
+  color: var(--color-ink-faint);
+  margin: 0;
 }
 
-.logo-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(200, 180, 255, 0.9);
-}
-
-.brand-text {
+.sub-center-page__sub {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 13px;
-  letter-spacing: 0.15em;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--color-ink-faint);
   margin: 0;
 }
 
-.status-text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 0;
+.sub-return-btn {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  border: none;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-top: 8px;
 }
 
-/* Success page */
-.sub-page-bg {
-  background: #0a0a0f;
+.sub-return-btn:hover {
+  opacity: 0.85;
+}
+
+/* ── Success page ── */
+.sub-success-page {
   min-height: 100vh;
-  width: 100%;
+  background: var(--color-bone);
 }
 
-.sub-page {
-  color: white;
-  max-width: 480px;
+.sub-success-body {
+  max-width: 560px;
   margin: 0 auto;
-  padding: 24px 20px 60px;
-  box-sizing: border-box;
+  padding: clamp(40px, 8vw, 72px) clamp(24px, 5vw, 48px) 80px;
 }
 
-.check-circle {
-  width: 64px;
-  height: 64px;
-  background: rgba(140, 110, 255, 0.15);
-  border: 1px solid rgba(140, 110, 255, 0.3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 40px auto 24px;
+.sub-success__eyebrow {
+  color: var(--color-ink-faint);
+  margin-bottom: 20px;
 }
 
-.check-symbol {
-  font-size: 24px;
-  color: rgba(200, 180, 255, 0.8);
+.sub-success__headline {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(40px, 10vw, 72px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  margin: 0 0 24px;
 }
 
-.success-title {
-  font-size: 22px;
-  font-weight: 500;
-  color: white;
-  text-align: center;
-  margin: 0 0 8px;
+.sub-success__sub {
+  font-size: 16px;
+  color: var(--color-ink-mid);
+  line-height: 1.65;
+  margin: 20px 0 32px;
 }
 
-.success-sub {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.35);
-  text-align: center;
-  margin: 0 0 32px;
-}
-
-/* Expect box */
-.expect-box {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
+/* ── Expect box ── */
+.sub-expect-box {
+  border: 1px solid var(--color-ink-ghost);
   padding: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
-.expect-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0 0 16px;
+.sub-expect-box__label {
+  color: var(--color-ink-faint);
+  display: block;
+  margin-bottom: 16px;
 }
 
-.expect-item {
+.sub-expect-item {
   display: flex;
   gap: 12px;
-  margin-bottom: 12px;
   align-items: flex-start;
+  padding: 8px 0;
+  border-top: 1px solid var(--color-ink-ghost);
 }
 
-.expect-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(140, 110, 255, 0.5);
-  flex-shrink: 0;
-  margin-top: 5px;
+.sub-expect-item:first-of-type {
+  border-top: none;
+  padding-top: 0;
 }
 
-.expect-text {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.45);
-  line-height: 1.5;
-}
-
-/* Insight preview */
-.insight-preview {
-  background: rgba(140, 110, 255, 0.05);
-  border: 1px solid rgba(140, 110, 255, 0.15);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-}
-
-.insight-meta {
+.sub-expect-item__icon {
   font-size: 10px;
-  color: rgba(140, 110, 255, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0 0 8px;
+  color: var(--color-gold);
+  flex-shrink: 0;
+  margin-top: 3px;
 }
 
-.insight-greeting {
-  font-size: 15px;
-  font-weight: 500;
-  color: rgba(230, 220, 255, 0.9);
-  margin: 0 0 10px;
-}
-
-.insight-body {
+.sub-expect-item__text {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
-  line-height: 1.7;
-  margin: 0 0 16px;
+  color: var(--color-ink-mid);
+  line-height: 1.55;
 }
 
-.insight-freq-box {
-  padding: 12px 14px;
-  background: rgba(140, 110, 255, 0.04);
-  border: 1px solid rgba(140, 110, 255, 0.1);
-  border-radius: 8px;
-  text-align: center;
+/* ── Account note ── */
+.sub-account-note {
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 12px;
+  color: var(--color-ink-faint);
+  margin-top: 20px;
+  letter-spacing: 0.04em;
 }
 
-.insight-freq-label {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.2);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin: 0 0 6px;
-}
-
-.insight-freq {
-  font-size: 14px;
-  font-style: italic;
-  color: rgba(200, 180, 255, 0.85);
-  margin: 0;
-}
-
-/* Return button */
-.return-btn {
-  width: 100%;
-  padding: 14px;
-  background: transparent;
-  border: 1px solid rgba(140, 110, 255, 0.4);
-  border-radius: 10px;
-  color: rgba(200, 180, 255, 0.8);
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-  margin-top: 16px;
-}
-
-.return-btn:hover {
-  border-color: rgba(140, 110, 255, 0.7);
-  color: rgba(200, 180, 255, 1);
+.sub-account-note a {
+  color: var(--color-ink-mid);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 </style>

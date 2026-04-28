@@ -22,6 +22,11 @@ export const useAnalysisStore = defineStore('analysis', {
     firstName: '',
     dateOfBirth: '',
     city: '',
+    cityLat: null as number | null,
+    cityLng: null as number | null,
+    cityPlaceId: '' as string,
+    partnerCityLat: null as number | null,
+    partnerCityLng: null as number | null,
     answers: {
       p1: '', // focus area
       p2: '', // insight style

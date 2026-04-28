@@ -1,485 +1,400 @@
 <template>
-  <!-- ── STATE 1: Loading ── -->
-  <div v-if="isLoading" class="center-page">
-    <div class="center-content">
-      <OrbitalMark />
-      <p class="brand-text">OMENORA</p>
-      <p class="status-text">Loading your account...</p>
-    </div>
+  <!-- ── STATE: Loading ── -->
+  <div v-if="isLoading" class="account-state-page">
+    <OrbitalMark />
+    <p class="annotation" style="margin-top: 16px; color: var(--color-ink-faint);">Loading your account…</p>
   </div>
 
-  <!-- ── STATE 2b: Magic link pending — require explicit click to confirm ── -->
-  <div v-else-if="pendingTokenHash" class="center-page auth-page">
-    <div class="auth-top-bar">
-      <p class="top-brand">OMENORA</p>
-    </div>
+  <!-- ── STATE: Magic link pending (click-to-confirm) ── -->
+  <div v-else-if="pendingTokenHash" class="account-state-page">
+    <AppHeader />
     <div class="auth-card">
-      <p class="sent-icon">✦</p>
-      <p class="auth-title">Complete your sign-in</p>
-      <p class="auth-sub">Click the button below to finish signing in to your account.</p>
-
-      <button
-        class="cta-btn"
-        :disabled="isConfirming"
-        @click="handleConfirmMagicLink"
-      >
-        {{ isConfirming ? 'Signing in...' : 'Sign in to OMENORA' }}
+      <p class="label-caps auth-card__eyebrow">Sign in</p>
+      <h1 class="auth-card__headline font-display-italic">Complete your sign-in.</h1>
+      <div class="editorial-rule" />
+      <p class="auth-card__body">Click the button below to finish signing in to your account.</p>
+      <button class="auth-submit label-caps" :disabled="isConfirming" @click="handleConfirmMagicLink">
+        {{ isConfirming ? 'Signing in…' : 'Sign in to Omenora' }}
       </button>
-
-      <div v-if="confirmError === 'expired'" class="confirm-error">
+      <div v-if="confirmError === 'expired'" class="auth-error">
         <p>This link has expired or was already used.</p>
-        <button class="link-btn" @click="pendingTokenHash = null">Request a new link →</button>
+        <button class="auth-link-btn" @click="pendingTokenHash = null">Request a new link →</button>
       </div>
-      <div v-else-if="confirmError === 'error'" class="confirm-error">
+      <div v-else-if="confirmError === 'error'" class="auth-error">
         <p>Something went wrong. Please try again.</p>
-        <button class="link-btn" @click="pendingTokenHash = null">Request a new link →</button>
+        <button class="auth-link-btn" @click="pendingTokenHash = null">Request a new link →</button>
       </div>
     </div>
   </div>
 
-  <!-- ── STATE 2: Not authenticated — magic link sign-in ── -->
-  <div v-else-if="!isAuthenticated" class="center-page auth-page">
-    <div class="auth-top-bar">
-      <p class="top-brand">OMENORA</p>
-    </div>
+  <!-- ── STATE: Not authenticated ── -->
+  <div v-else-if="!isAuthenticated" class="account-state-page">
+    <AppHeader />
     <div class="auth-card">
-      <p class="auth-title">Sign in to your account</p>
-      <p class="auth-sub">We'll send a magic link to your email. No password needed.</p>
+      <p class="label-caps auth-card__eyebrow">Account</p>
+      <h1 class="auth-card__headline font-display-italic">Sign in to your account.</h1>
+      <div class="editorial-rule" />
+      <p class="auth-card__body">We'll send a magic link to your email. No password needed.</p>
 
-      <div v-if="!magicLinkSent">
+      <template v-if="!magicLinkSent">
+        <label class="field-label label-caps" for="auth-email">Email address</label>
         <input
+          id="auth-email"
           v-model="emailInput"
           type="email"
-          class="email-input"
+          class="editorial-input"
           placeholder="your@email.com"
           autocomplete="email"
           :disabled="isSendingLink"
           @keydown.enter="sendMagicLink"
-        >
+        />
+        <p v-if="magicLinkError" class="auth-error-inline">{{ magicLinkError }}</p>
         <button
-          class="cta-btn"
+          class="auth-submit label-caps"
           :disabled="isSendingLink || !emailInput.trim()"
           @click="sendMagicLink"
         >
-          {{ isSendingLink ? 'Sending...' : 'Send magic link' }}
+          {{ isSendingLink ? 'Sending…' : 'Send magic link' }}
         </button>
-        <p v-if="magicLinkError" class="error-text">{{ magicLinkError }}</p>
-      </div>
+      </template>
 
-      <div v-else class="sent-message">
-        <p class="sent-icon">✦</p>
-        <p class="sent-title">Check your email</p>
-        <p class="sent-sub">We sent a sign-in link to <strong>{{ emailInput }}</strong>. It expires in 1 hour.</p>
+      <div v-else class="auth-sent">
+        <p class="label-caps" style="color: var(--color-gold); margin-bottom: 12px;">✦ Check your email</p>
+        <p class="auth-card__body">We sent a sign-in link to <strong>{{ emailInput }}</strong>. It expires in 1 hour.</p>
       </div>
     </div>
   </div>
 
-  <!-- ── STATE 3: Authenticated dashboard ── -->
+  <!-- ── STATE: Authenticated dashboard ── -->
   <div v-else class="account-page">
-    <div class="account-content">
+    <AppHeader />
 
-      <!-- ── Page header ── -->
-      <div class="page-header">
-        <BackButton to="/" text="Home" />
-        <p class="page-header-brand">OMENORA</p>
-        <p class="page-header-email">{{ userEmail }}</p>
-      </div>
+    <div class="account-layout">
 
-      <!-- ── Hero ── -->
-      <div class="account-hero">
-        <div class="account-hero-glyph" aria-hidden="true">✦</div>
-        <p class="account-hero-label">YOUR ACCOUNT</p>
-        <p class="account-hero-email">{{ userEmail }}</p>
-      </div>
-
-      <!-- ── Section 1: Subscription ── -->
-      <section class="account-section">
-        <h2 class="section-heading">Subscription</h2>
-
-        <div v-if="isLoadingSubscription" class="status-loading">
-          <span class="status-dot-pulse" /> Checking subscription...
+      <!-- Sidebar -->
+      <aside class="account-sidebar">
+        <div class="account-sidebar__user">
+          <p class="account-sidebar__name font-serif">
+            {{ store.firstName || 'Your Account' }}
+          </p>
+          <p class="annotation account-sidebar__email">{{ userEmail }}</p>
         </div>
 
-        <div v-else-if="subscriptionActive" class="sub-status-card">
-          <div class="sub-status-top">
-            <div class="sub-status-row">
-              <span class="active-badge">Active</span>
-              <span class="sub-label">{{ subscriptionPlanName }}</span>
-            </div>
-            <span class="sub-price">{{ subscriptionPlanPrice }}<span class="sub-price-period">/mo</span></span>
-          </div>
-          <ul v-if="subscriptionPlanType === 'compatibility_plus'" class="sub-features">
-            <li>Unlimited compatibility readings</li>
-            <li>Daily horoscope — love, work &amp; health</li>
-            <li>Reading history saved to your account</li>
-            <li>Weekly relationship weather (coming soon)</li>
-          </ul>
-          <ul v-else class="sub-features">
-            <li>Daily personalized horoscope</li>
-            <li>Love, work &amp; health insights</li>
-            <li>Delivered to your inbox every morning</li>
-          </ul>
+        <div class="editorial-rule" />
+
+        <nav class="account-nav">
           <button
-            class="action-btn"
-            :disabled="isOpeningPortal"
-            @click="openPortal"
+            v-for="section in sections"
+            :key="section.id"
+            class="account-nav__item label-caps"
+            :class="{ 'account-nav__item--active': activeSection === section.id }"
+            @click="activeSection = section.id as 'profile' | 'plan' | 'purchases'"
           >
-            {{ isOpeningPortal ? 'Opening...' : 'Manage subscription' }}
+            {{ section.label }}
           </button>
-          <p v-if="portalError" class="error-text">{{ portalError }}</p>
-        </div>
+        </nav>
 
-        <div v-else class="sub-status-card sub-status-card--inactive">
-          <div class="no-sub-row">
-            <span class="inactive-badge">Inactive</span>
-            <span class="sub-label">No active subscription</span>
+        <div class="editorial-rule" />
+
+        <button class="account-signout label-caps" @click="handleSignOut">Sign out</button>
+      </aside>
+
+      <!-- Main content panel -->
+      <main class="account-main">
+
+        <!-- ── PROFILE ── -->
+        <section v-if="activeSection === 'profile'">
+          <h2 class="account-section__headline font-display-italic">Profile</h2>
+          <p class="account-section__desc">Your birth data used for natal calculations.</p>
+          <div class="editorial-rule" />
+
+          <div class="data-row">
+            <span class="data-row__label">Email</span>
+            <span class="data-row__value">{{ userEmail }}</span>
           </div>
-          <p class="sub-desc">Get a daily personal horoscope built from your exact birth chart.</p>
-          <button class="action-btn action-btn--primary" @click="navigateTo('/subscribe')">
-            Start Personal Horoscope — $4.99/mo
-          </button>
-        </div>
-      </section>
+          <div class="data-row">
+            <span class="data-row__label">Name</span>
+            <span class="data-row__value">{{ store.firstName || '—' }}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-row__label">Date of birth</span>
+            <span class="data-row__value">{{ store.dateOfBirth || '—' }}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-row__label">Time of birth</span>
+            <span class="data-row__value">{{ store.timeOfBirth || 'Not provided' }}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-row__label">City of birth</span>
+            <span class="data-row__value">{{ store.city || '—' }}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-row__label">Archetype</span>
+            <span class="data-row__value font-serif">{{ store.archetype || '—' }}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-row__label">Life Path</span>
+            <span class="data-row__value">{{ store.lifePathNumber || '—' }}</span>
+          </div>
 
-      <!-- ── Section 2: Daily Horoscope Insights (subscribers only) ── -->
-      <section v-if="subscriptionActive" class="account-section">
-        <div class="section-header-row">
-          <h2 class="section-heading">Daily Horoscope</h2>
-          <span class="section-badge">Last 7 days</span>
-        </div>
+          <div class="account-section__actions">
+            <CTAButton to="/analysis" variant="outline" :arrow="true">Recalculate chart</CTAButton>
+          </div>
+        </section>
 
-        <div v-if="isLoadingInsights" class="status-loading">
-          <span class="status-dot-pulse" /> Loading insights...
-        </div>
+        <!-- ── PLAN ── -->
+        <section v-else-if="activeSection === 'plan'">
+          <h2 class="account-section__headline font-display-italic">Your Plan</h2>
+          <p class="account-section__desc">Manage your subscription and billing.</p>
+          <div class="editorial-rule" />
 
-        <div v-else-if="dailyInsights.length === 0" class="empty-state">
-          <div class="empty-state-icon" aria-hidden="true">☽</div>
-          <p class="empty-state-text">Your first daily insight will appear here after tomorrow morning's delivery.</p>
-        </div>
+          <div v-if="isLoadingSubscription" class="account-loading">
+            <span class="account-loading__dot" />
+            Checking subscription…
+          </div>
 
-        <div v-else class="insight-cards-list">
-          <div
-            v-for="entry in dailyInsights"
-            :key="entry.sent_date"
-            class="insight-entry"
-          >
-            <!-- Collapsed header -->
-            <button
-              class="insight-entry-header"
-              :aria-expanded="expandedInsight === entry.sent_date"
-              @click="toggleInsight(entry.sent_date)"
-            >
-              <div class="insight-entry-left">
-                <span class="insight-entry-glyph" aria-hidden="true">✦</span>
-                <div class="insight-entry-meta">
-                  <p class="insight-entry-date">{{ formatDate(entry.sent_date) }}</p>
-                  <p class="insight-entry-theme">{{ entry.theme_used }}</p>
+          <template v-else-if="subscriptionActive">
+            <div class="data-row">
+              <span class="data-row__label">Status</span>
+              <span class="status-badge status-badge--active">✦ Active</span>
+            </div>
+            <div class="data-row">
+              <span class="data-row__label">Plan</span>
+              <span class="data-row__value">{{ subscriptionPlanName || 'Daily Personal Horoscope' }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-row__label">Billing</span>
+              <span class="data-row__value">{{ subscriptionPlanPrice || '$4.99' }} / month</span>
+            </div>
+
+            <div class="plan-includes-block">
+              <p class="label-caps plan-includes-block__label">What's included</p>
+              <ul class="plan-includes-list">
+                <li v-if="subscriptionPlanType === 'compatibility_plus'">Unlimited compatibility readings</li>
+                <li v-if="subscriptionPlanType === 'compatibility_plus'">Weekly relationship weather (coming soon)</li>
+                <li>Daily horoscope tailored to your natal chart</li>
+                <li>Love, work &amp; health insights</li>
+                <li>Delivered to your inbox every morning</li>
+              </ul>
+            </div>
+
+            <!-- Cancel flow -->
+            <div class="cancel-flow">
+              <template v-if="cancelState === 'idle'">
+                <button class="cancel-trigger annotation" @click="cancelState = 'confirm'">
+                  Cancel subscription
+                </button>
+              </template>
+
+              <template v-else-if="cancelState === 'confirm'">
+                <div class="cancel-confirm">
+                  <div class="editorial-rule" />
+                  <p class="label-caps cancel-confirm__eyebrow">Before you go</p>
+                  <h3 class="cancel-confirm__headline font-serif">Are you sure you want to cancel?</h3>
+                  <p class="cancel-confirm__body">
+                    Your subscription will remain active until the end of the billing period.
+                    After that, you will lose access to personalized daily readings.
+                  </p>
+
+                  <div class="cancel-reason">
+                    <p class="label-caps cancel-reason__label">Reason (optional)</p>
+                    <div class="cancel-reason__options">
+                      <button
+                        v-for="r in cancelReasons"
+                        :key="r"
+                        class="cancel-reason__option label-caps"
+                        :class="{ 'cancel-reason__option--selected': cancelReason === r }"
+                        @click="cancelReason = r"
+                      >
+                        {{ r }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="cancel-confirm__actions">
+                    <CTAButton variant="outline" @click="cancelState = 'idle'">Keep my plan</CTAButton>
+                    <button
+                      class="cancel-confirm__confirm-btn label-caps"
+                      :disabled="isCancelling"
+                      @click="handleCancelSubscription"
+                    >
+                      {{ isCancelling ? 'Opening portal…' : 'Yes, cancel subscription' }}
+                    </button>
+                  </div>
+                  <p v-if="portalError" class="cancel-error">{{ portalError }}</p>
                 </div>
-              </div>
-              <svg
-                class="insight-entry-chevron"
-                :class="{ 'insight-entry-chevron--open': expandedInsight === entry.sent_date }"
-                viewBox="0 0 16 16" fill="none" aria-hidden="true"
-              >
-                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
+              </template>
 
-            <!-- Expanded body -->
-            <div v-if="expandedInsight === entry.sent_date" class="insight-entry-body">
-
-              <!-- Insight card (visual, downloadable) -->
-              <div class="insight-visual-card">
-                <div class="ivc-header">
-                  <span class="ivc-brand">OMENORA</span>
-                  <span class="ivc-date">{{ formatDate(entry.sent_date) }}</span>
-                </div>
-                <div class="ivc-theme-line" aria-hidden="true" />
-                <p class="ivc-theme">{{ entry.theme_used }}</p>
-                <div v-if="entry.structured" class="insight-sections">
-                  <div class="insight-section-row">
-                    <span class="insight-section-icon" aria-hidden="true">♥</span>
-                    <span class="insight-section-label insight-section-label--love">LOVE</span>
-                    <p class="insight-section-text">{{ entry.structured.love }}</p>
-                  </div>
-                  <div class="insight-section-row">
-                    <span class="insight-section-icon" aria-hidden="true">✦</span>
-                    <span class="insight-section-label insight-section-label--work">WORK</span>
-                    <p class="insight-section-text">{{ entry.structured.work }}</p>
-                  </div>
-                  <div class="insight-section-row">
-                    <span class="insight-section-icon" aria-hidden="true">✿</span>
-                    <span class="insight-section-label insight-section-label--health">HEALTH</span>
-                    <p class="insight-section-text">{{ entry.structured.health }}</p>
-                  </div>
-                  <p v-if="entry.structured.reflection_question" class="insight-reflection">
-                    {{ entry.structured.reflection_question }}
+              <template v-else-if="cancelState === 'cancelled'">
+                <div class="cancel-done">
+                  <div class="editorial-rule" />
+                  <p class="label-caps" style="color: var(--color-ink-faint)">Cancellation initiated</p>
+                  <p class="cancel-done__body font-serif">
+                    Your access continues until the end of the billing period. We hope to see you again.
                   </p>
                 </div>
-                <p v-else class="ivc-body">{{ entry.insight_preview }}</p>
-                <div v-if="!entry.structured && entry.reflection_question" class="ivc-reflection">
-                  <span class="ivc-reflection-label">REFLECTION</span>
-                  <p class="ivc-reflection-text">{{ entry.reflection_question }}</p>
-                </div>
-              </div>
+              </template>
+            </div>
+          </template>
 
-              <!-- Download button -->
-              <button
-                class="insight-dl-btn"
-                :disabled="downloadingInsight === entry.sent_date"
-                @click="downloadInsightCard(entry)"
+          <template v-else>
+            <div class="data-row">
+              <span class="data-row__label">Status</span>
+              <span class="status-badge status-badge--inactive">No active plan</span>
+            </div>
+            <div class="account-section__actions">
+              <p class="account-section__desc">Get personalized daily readings tailored to your natal chart and archetype.</p>
+              <CTAButton to="/subscribe" :arrow="true">View plans</CTAButton>
+            </div>
+          </template>
+        </section>
+
+        <!-- ── PURCHASES ── -->
+        <section v-else-if="activeSection === 'purchases'">
+          <h2 class="account-section__headline font-display-italic">Purchases</h2>
+          <p class="account-section__desc">Your one-time purchases and reports.</p>
+          <div class="editorial-rule" />
+
+          <div v-if="hasPurchases">
+            <div v-if="store.paymentComplete" class="data-row">
+              <span class="data-row__label">Natal Report</span>
+              <div class="data-row__actions">
+                <span class="status-badge status-badge--active">Purchased</span>
+                <CTAButton to="/report" variant="outline">View report</CTAButton>
+              </div>
+            </div>
+            <div v-if="store.calendarPurchased" class="data-row">
+              <span class="data-row__label">Cosmic Calendar</span>
+              <div class="data-row__actions">
+                <span class="status-badge status-badge--active">Purchased</span>
+                <CTAButton to="/calendar" variant="outline">View calendar</CTAButton>
+              </div>
+            </div>
+            <div v-if="store.birthChartPurchased" class="data-row">
+              <span class="data-row__label">Birth Chart</span>
+              <span class="status-badge status-badge--active">Purchased</span>
+            </div>
+            <div v-if="store.compatibilityData" class="data-row">
+              <span class="data-row__label">Compatibility Reading</span>
+              <div class="data-row__actions">
+                <span class="status-badge status-badge--active">Purchased</span>
+                <CTAButton to="/compatibility" variant="outline">View reading</CTAButton>
+              </div>
+            </div>
+          </div>
+
+          <div v-else>
+            <p class="account-section__empty annotation">No purchases yet.</p>
+            <CTAButton to="/analysis" :arrow="true">Begin your reading</CTAButton>
+          </div>
+
+          <!-- Reading history -->
+          <template v-if="reports.length > 0">
+            <div class="editorial-rule" style="margin-top: 40px;" />
+            <p class="label-caps" style="color: var(--color-ink-faint); margin-bottom: 16px;">Reading History</p>
+            <div class="reading-list">
+              <div
+                v-for="report in reports"
+                :key="report.id"
+                class="reading-card"
               >
-                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="insight-dl-icon">
-                  <path d="M8 2v8M5 7l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                {{ downloadingInsight === entry.sent_date ? 'Generating...' : 'Download as Image' }}
-              </button>
-
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Section 3: Compatibility readings ── -->
-      <section class="account-section">
-        <h2 class="section-heading">Compatibility Readings</h2>
-
-        <div v-if="isLoadingCompatReadings" class="section-loading">Loading readings...</div>
-
-        <div v-else-if="compatibilityReadings.length === 0" class="section-empty">
-          <p>No compatibility readings yet.</p>
-          <button class="cta-small" @click="navigateTo('/compatibility-quiz')">
-            Try your first reading →
-          </button>
-        </div>
-
-        <div v-else class="compat-readings-list">
-          <div
-            v-for="reading in compatibilityReadings"
-            :key="reading.id"
-            class="compat-reading-card"
-          >
-            <div class="crc-header">
-              <span class="crc-partner">{{ reading.partnerName || 'Unknown partner' }}</span>
-              <span v-if="reading.score !== null" class="crc-score" :style="{ color: scoreColor(reading.score) }">
-                {{ reading.score }}%
-              </span>
-            </div>
-            <p v-if="reading.title" class="crc-title">{{ reading.title }}</p>
-            <div class="crc-footer">
-              <span class="crc-date">{{ formatDate(reading.createdAt) }}</span>
-              <button class="crc-view-btn" @click="navigateTo('/compatibility?session_id=' + reading.sessionId)">
-                View reading →
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Section 4: Reading history ── -->
-      <section class="account-section">
-        <h2 class="section-heading">Reading History</h2>
-
-        <div v-if="isLoadingReports" class="status-loading">
-          <span class="status-dot-pulse" /> Loading readings...
-        </div>
-
-        <div v-else-if="reports.length === 0" class="empty-state">
-          <p class="empty-state-text">No readings yet.</p>
-          <button class="action-btn action-btn--ghost" @click="navigateTo('/')">
-            Get your first reading
-          </button>
-        </div>
-
-        <div v-else class="reading-list">
-          <div
-            v-for="report in reports"
-            :key="report.id"
-            class="reading-card"
-          >
-            <div class="reading-card-left">
-              <span class="reading-icon">{{ report.type === 'compatibility' ? '♥' : '✦' }}</span>
-              <div class="reading-info">
-                <p class="reading-title">
-                  {{ report.type === 'compatibility'
-                    ? `Compatibility — ${report.partner_name || 'Unknown'}`
-                    : 'Archetype Reading' }}
-                </p>
-                <p class="reading-date">{{ formatDate(report.created_at) }}</p>
+                <div class="reading-card__info">
+                  <p class="reading-card__title">
+                    {{ report.type === 'compatibility'
+                      ? `Compatibility — ${report.partner_name || 'Unknown'}`
+                      : 'Archetype Reading' }}
+                  </p>
+                  <p class="reading-card__date annotation">{{ formatDate(report.created_at) }}</p>
+                </div>
+                <button
+                  class="reading-card__view label-caps"
+                  @click="navigateTo(report.type === 'compatibility' ? `/compatibility?session_id=${report.session_id}&from=history` : `/report?session_id=${report.session_id}`)"
+                >
+                  View
+                </button>
               </div>
             </div>
-            <button
-              class="view-btn"
-              @click="navigateTo(report.type === 'compatibility' ? `/compatibility?session_id=${report.session_id}&from=history` : `/report?session_id=${report.session_id}`)"
-            >View</button>
-          </div>
-        </div>
-      </section>
+          </template>
 
-      <!-- ── Section 4: Account actions ── -->
-      <section class="account-section account-section--last">
-        <button class="action-btn action-btn--ghost" @click="handleSignOut">Sign out</button>
-        <p class="support-text">Questions? <a href="mailto:support@omenora.com" class="support-link">support@omenora.com</a></p>
-      </section>
+          <!-- Compatibility readings -->
+          <template v-if="compatibilityReadings.length > 0">
+            <div class="editorial-rule" style="margin-top: 40px;" />
+            <p class="label-caps" style="color: var(--color-ink-faint); margin-bottom: 16px;">Compatibility Readings</p>
+            <div class="reading-list">
+              <div
+                v-for="reading in compatibilityReadings"
+                :key="reading.id"
+                class="reading-card"
+              >
+                <div class="reading-card__info">
+                  <p class="reading-card__title">{{ reading.partnerName || 'Unknown partner' }}</p>
+                  <p class="reading-card__date annotation">{{ formatDate(reading.createdAt) }}</p>
+                </div>
+                <button
+                  class="reading-card__view label-caps"
+                  @click="navigateTo('/compatibility?session_id=' + reading.sessionId)"
+                >
+                  View
+                </button>
+              </div>
+            </div>
+          </template>
+        </section>
 
+      </main>
     </div>
 
-    <!-- Toast notification -->
-    <div v-if="toast" class="toast">{{ toast }}</div>
-
+    <!-- Toast -->
+    <div v-if="toast" class="account-toast">{{ toast }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
-
-// ── Canvas-based insight card download ────────────────────────────────────────
-const downloadingInsight = ref<string | null>(null)
-
-async function downloadInsightCard(entry: { sent_date: string; theme_used: string; insight_full?: string; insight_preview?: string; reflection_question?: string }) {
-  if (downloadingInsight.value) return
-  downloadingInsight.value = entry.sent_date
-
-  try {
-    const W = 1080
-    const H = 1350
-    const canvas = document.createElement('canvas')
-    canvas.width  = W
-    canvas.height = H
-    const ctx = canvas.getContext('2d')!
-
-    // Background
-    ctx.fillStyle = '#07070D'
-    ctx.fillRect(0, 0, W, H)
-
-    // Radial top glow
-    const glow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, H * 0.65)
-    glow.addColorStop(0,   'rgba(75, 45, 155, 0.30)')
-    glow.addColorStop(0.5, 'rgba(50, 25, 110, 0.12)')
-    glow.addColorStop(1,   'rgba(0,0,0,0)')
-    ctx.fillStyle = glow
-    ctx.fillRect(0, 0, W, H)
-
-    // Header line
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)'
-    ctx.lineWidth = 1
-    ctx.beginPath(); ctx.moveTo(72, 120); ctx.lineTo(W - 72, 120); ctx.stroke()
-
-    // Brand
-    ctx.font = '500 28px -apple-system, BlinkMacSystemFont, sans-serif'
-    ctx.letterSpacing = '0.22em'
-    ctx.fillStyle = 'rgba(255,255,255,0.28)'
-    ctx.textAlign = 'left'
-    ctx.fillText('OMENORA', 72, 92)
-
-    // Date
-    ctx.font = '400 26px -apple-system, BlinkMacSystemFont, sans-serif'
-    ctx.letterSpacing = '0.04em'
-    ctx.fillStyle = 'rgba(255,255,255,0.22)'
-    ctx.textAlign = 'right'
-    ctx.fillText(formatDate(entry.sent_date), W - 72, 92)
-
-    // Glyph
-    ctx.font = '400 48px serif'
-    ctx.fillStyle = 'rgba(107, 72, 224, 0.60)'
-    ctx.textAlign = 'center'
-    ctx.fillText('✦', W / 2, 200)
-
-    // Theme
-    ctx.font = '300 52px Georgia, serif'
-    ctx.fillStyle = 'rgba(220, 210, 255, 0.88)'
-    ctx.textAlign = 'center'
-    ctx.letterSpacing = '0.02em'
-    wrapText(ctx, entry.theme_used, W / 2, 280, W - 144, 68)
-
-    // Divider
-    const divY = 380
-    ctx.strokeStyle = 'rgba(107, 72, 224, 0.20)'
-    ctx.lineWidth = 1
-    ctx.beginPath(); ctx.moveTo(144, divY); ctx.lineTo(W - 144, divY); ctx.stroke()
-
-    // Insight body
-    const bodyText = entry.insight_full || entry.insight_preview || ''
-    ctx.font = '300 34px -apple-system, BlinkMacSystemFont, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.72)'
-    ctx.textAlign = 'left'
-    ctx.letterSpacing = '0.01em'
-    const bodyEndY = wrapText(ctx, bodyText, 72, 440, W - 144, 50)
-
-    // Reflection
-    if (entry.reflection_question) {
-      const rfY = Math.max(bodyEndY + 60, 900)
-      ctx.font = 'italic 400 30px Georgia, serif'
-      ctx.fillStyle = 'rgba(255,255,255,0.38)'
-      ctx.textAlign = 'left'
-      ctx.letterSpacing = '0.01em'
-      ctx.fillText('Reflection', 72, rfY)
-      ctx.font = 'italic 300 30px Georgia, serif'
-      ctx.fillStyle = 'rgba(200, 180, 255, 0.60)'
-      wrapText(ctx, entry.reflection_question, 72, rfY + 48, W - 144, 44)
-    }
-
-    // Footer
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)'
-    ctx.lineWidth = 1
-    ctx.beginPath(); ctx.moveTo(72, H - 100); ctx.lineTo(W - 72, H - 100); ctx.stroke()
-    ctx.font = '400 24px -apple-system, BlinkMacSystemFont, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.14)'
-    ctx.textAlign = 'center'
-    ctx.letterSpacing = '0.10em'
-    ctx.fillText('omenora.com', W / 2, H - 60)
-
-    const link = document.createElement('a')
-    link.download = `omenora-insight-${entry.sent_date}.png`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
-    showToast('Image saved!')
-  } catch {
-    showToast('Download failed. Please try again.')
-  } finally {
-    downloadingInsight.value = null
-  }
-}
-
-function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {
-  const words = text.split(' ')
-  let line = ''
-  let cy = y
-  for (let n = 0; n < words.length; n++) {
-    const testLine  = line + words[n] + ' '
-    const metrics   = ctx.measureText(testLine)
-    if (metrics.width > maxWidth && n > 0) {
-      ctx.fillText(line.trim(), x, cy)
-      line = words[n] + ' '
-      cy += lineHeight
-    } else {
-      line = testLine
-    }
-  }
-  if (line.trim()) { ctx.fillText(line.trim(), x, cy); cy += lineHeight }
-  return cy
-}
+import { useAnalysisStore } from '~/stores/analysisStore'
 
 useSeoMeta({ title: 'My Account — OMENORA', robots: 'noindex, nofollow' })
 
+const store = useAnalysisStore()
 const { isAuthenticated, userEmail, session, restoreSession, confirmMagicLink, getMyReports, signOut } = useAuth()
 
-// ── Page-level state ──────────────────────────────────────────────────────────
+// ── Page state ─────────────────────────────────────────────────────────────────
 const isLoading = ref(true)
 
-// ── Sign-in form state ────────────────────────────────────────────────────────
-const emailInput      = ref('')
-const isSendingLink   = ref(false)
-const magicLinkSent   = ref(false)
-const magicLinkError  = ref('')
+// ── Sidebar navigation ─────────────────────────────────────────────────────────
+const activeSection = ref<'profile' | 'plan' | 'purchases'>('profile')
 
-// ── Magic link confirm state (click-to-confirm, prevents prefetch consumption)
-const pendingTokenHash    = ref<string | null>(null)
-const isConfirming        = ref(false)
-const confirmError        = ref<'expired' | 'error' | null>(null)
+const sections = [
+  { id: 'profile',   label: 'Profile'   },
+  { id: 'plan',      label: 'Plan'      },
+  { id: 'purchases', label: 'Purchases' },
+]
 
-// ── Subscription state ────────────────────────────────────────────────────────
+// ── Cancel flow ────────────────────────────────────────────────────────────────
+const cancelState = ref<'idle' | 'confirm' | 'cancelled'>('idle')
+const cancelReason = ref('')
+const isCancelling = ref(false)
+
+const cancelReasons = [
+  'Too expensive',
+  'Not using it enough',
+  'Missing features',
+  'Found an alternative',
+  'Other',
+]
+
+// ── Auth form ──────────────────────────────────────────────────────────────────
+const emailInput     = ref('')
+const isSendingLink  = ref(false)
+const magicLinkSent  = ref(false)
+const magicLinkError = ref('')
+
+const pendingTokenHash = ref<string | null>(null)
+const isConfirming     = ref(false)
+const confirmError     = ref<'expired' | 'error' | null>(null)
+
+// ── Subscription state ─────────────────────────────────────────────────────────
 const isLoadingSubscription = ref(false)
 const subscriptionActive    = ref(false)
 const subscriptionPlanName  = ref<string | null>(null)
@@ -488,24 +403,19 @@ const subscriptionPlanType  = ref<string | null>(null)
 const isOpeningPortal       = ref(false)
 const portalError           = ref('')
 
-// ── Reports state ─────────────────────────────────────────────────────────────
-const isLoadingReports = ref(false)
-const reports          = ref<any[]>([])
-
-// ── Daily insights state ──────────────────────────────────────────────────────
-const isLoadingInsights = ref(false)
-const dailyInsights     = ref<any[]>([])
-const expandedInsight   = ref<string | null>(null)
-
-// ── Compatibility readings state ───────────────────────────────────────────────
+// ── Reports & insights ─────────────────────────────────────────────────────────
+const isLoadingReports         = ref(false)
+const reports                  = ref<any[]>([])
+const isLoadingInsights        = ref(false)
+const dailyInsights            = ref<any[]>([])
+const expandedInsight          = ref<string | null>(null)
 const compatibilityReadings    = ref<any[]>([])
 const isLoadingCompatReadings  = ref(false)
 
-function toggleInsight(date: string) {
-  expandedInsight.value = expandedInsight.value === date ? null : date
-}
+// ── Download state ─────────────────────────────────────────────────────────────
+const downloadingInsight = ref<string | null>(null)
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
+// ── Toast ──────────────────────────────────────────────────────────────────────
 const toast = ref('')
 let toastTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -515,11 +425,16 @@ function showToast(msg: string) {
   toastTimer = setTimeout(() => { toast.value = '' }, 3000)
 }
 
-// ── onMounted: restore session then load data ─────────────────────────────────
+// ── Computed ───────────────────────────────────────────────────────────────────
+const hasPurchases = computed(() =>
+  store.paymentComplete ||
+  store.calendarPurchased ||
+  store.birthChartPurchased ||
+  !!store.compatibilityData
+)
+
+// ── onMounted ──────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  // Detect magic link token in URL — do NOT exchange it here.
-  // Show a confirmation button instead so email prefetch scanners
-  // (Gmail, Outlook Safe Links, etc.) cannot consume the one-time token.
   if (import.meta.client) {
     const urlToken = new URLSearchParams(window.location.search).get('token_hash')
     if (urlToken) {
@@ -540,7 +455,7 @@ onMounted(async () => {
   }
 })
 
-// ── Confirm magic link on explicit user click ─────────────────────────────────
+// ── Confirm magic link ─────────────────────────────────────────────────────────
 async function handleConfirmMagicLink() {
   if (!pendingTokenHash.value || isConfirming.value) return
   isConfirming.value = true
@@ -560,34 +475,47 @@ async function handleConfirmMagicLink() {
   isConfirming.value = false
 }
 
-// ── Load subscription status ──────────────────────────────────────────────────
+// ── Send magic link ────────────────────────────────────────────────────────────
+async function sendMagicLink() {
+  const email = emailInput.value.trim()
+  if (!email || isSendingLink.value) return
+  isSendingLink.value = true
+  magicLinkError.value = ''
+  try {
+    await $fetch('/api/auth/request-magic-link', { method: 'POST', body: { email } })
+    magicLinkSent.value = true
+  } catch {
+    magicLinkError.value = 'Something went wrong. Please try again.'
+  } finally {
+    isSendingLink.value = false
+  }
+}
+
+// ── Load subscription ──────────────────────────────────────────────────────────
 async function loadSubscription() {
   isLoadingSubscription.value = true
   try {
     const token = session.value?.access_token
     if (!token) return
-
     const data = await $fetch<{
       active: boolean
       stripeSubscriptionId: string | null
       planName: string | null
       planPrice: string | null
       planType: string | null
-    }>('/api/me/subscription', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    }>('/api/me/subscription', { headers: { Authorization: `Bearer ${token}` } })
     subscriptionActive.value    = data.active
     subscriptionPlanName.value  = data.planName
     subscriptionPlanPrice.value = data.planPrice
     subscriptionPlanType.value  = data.planType
   } catch {
-    // Non-critical — silently fail
+    // Non-critical
   } finally {
     isLoadingSubscription.value = false
   }
 }
 
-// ── Load daily insights ─────────────────────────────────────────────────────
+// ── Load daily insights ────────────────────────────────────────────────────────
 async function loadDailyInsights() {
   isLoadingInsights.value = true
   try {
@@ -596,16 +524,11 @@ async function loadDailyInsights() {
     const data = await $fetch<{ insights: any[] }>('/api/me/daily-insights', {
       headers: { Authorization: `Bearer ${token}` },
     })
-    const parsedInsights = data.insights.map((item: any) => {
+    dailyInsights.value = data.insights.map((item: any) => {
       let structured = null
-      try {
-        structured = item.insight_full ? JSON.parse(item.insight_full) : null
-      } catch {
-        structured = null
-      }
+      try { structured = item.insight_full ? JSON.parse(item.insight_full) : null } catch { structured = null }
       return { ...item, structured }
     })
-    dailyInsights.value = parsedInsights
   } catch {
     dailyInsights.value = []
   } finally {
@@ -613,7 +536,7 @@ async function loadDailyInsights() {
   }
 }
 
-// ── Load reading history ──────────────────────────────────────────────────────
+// ── Load reports ───────────────────────────────────────────────────────────────
 async function loadReports() {
   isLoadingReports.value = true
   try {
@@ -626,58 +549,7 @@ async function loadReports() {
   }
 }
 
-// ── Magic link send ───────────────────────────────────────────────────────────
-async function sendMagicLink() {
-  const email = emailInput.value.trim()
-  if (!email || isSendingLink.value) return
-
-  isSendingLink.value = true
-  magicLinkError.value = ''
-
-  try {
-    await $fetch('/api/auth/request-magic-link', {
-      method: 'POST',
-      body: { email },
-    })
-    magicLinkSent.value = true
-  } catch {
-    magicLinkError.value = 'Something went wrong. Please try again.'
-  } finally {
-    isSendingLink.value = false
-  }
-}
-
-// ── Open Stripe Customer Portal ───────────────────────────────────────────────
-async function openPortal() {
-  if (isOpeningPortal.value || !userEmail.value) return
-
-  isOpeningPortal.value = true
-  portalError.value = ''
-
-  try {
-    const { url } = await $fetch<{ url: string }>('/api/create-portal-session', {
-      method: 'POST',
-      body: { email: userEmail.value },
-    })
-    window.location.href = url
-  } catch (err: any) {
-    const msg = err?.data?.message || ''
-    if (msg.includes('No active subscription')) {
-      portalError.value = 'No active subscription found. If you believe this is an error, contact support@omenora.com'
-    } else {
-      portalError.value = 'Unable to open subscription portal. Please try again or contact support.'
-    }
-    isOpeningPortal.value = false
-  }
-}
-
-// ── Sign out ──────────────────────────────────────────────────────────────────
-async function handleSignOut() {
-  await signOut()
-  navigateTo('/')
-}
-
-// ── Compatibility readings loader ────────────────────────────────────────────
+// ── Load compatibility readings ────────────────────────────────────────────────
 async function loadCompatibilityReadings() {
   isLoadingCompatReadings.value = true
   try {
@@ -694,992 +566,748 @@ async function loadCompatibilityReadings() {
   }
 }
 
-// ── Score colour helper ───────────────────────────────────────────────────────
+// ── Open Stripe portal (manage/cancel) ────────────────────────────────────────
+async function openPortal() {
+  if (isOpeningPortal.value || !userEmail.value) return
+  isOpeningPortal.value = true
+  portalError.value = ''
+  try {
+    const { url } = await $fetch<{ url: string }>('/api/create-portal-session', {
+      method: 'POST',
+      body: { email: userEmail.value },
+    })
+    window.location.href = url
+  } catch (err: any) {
+    const msg = err?.data?.message || ''
+    portalError.value = msg.includes('No active subscription')
+      ? 'No active subscription found. Contact support@omenora.com'
+      : 'Unable to open subscription portal. Please try again or contact support.'
+    isOpeningPortal.value = false
+  }
+}
+
+// ── Cancel subscription (via Stripe portal) ────────────────────────────────────
+async function handleCancelSubscription() {
+  isCancelling.value = true
+  try {
+    await openPortal()
+    cancelState.value = 'cancelled'
+  } catch {
+    // portalError already set inside openPortal
+  } finally {
+    isCancelling.value = false
+  }
+}
+
+// ── Sign out ───────────────────────────────────────────────────────────────────
+async function handleSignOut() {
+  await signOut()
+  navigateTo('/')
+}
+
+// ── Insight helpers ────────────────────────────────────────────────────────────
+function toggleInsight(date: string) {
+  expandedInsight.value = expandedInsight.value === date ? null : date
+}
+
 function scoreColor(score: number): string {
-  if (score >= 80) return 'rgba(140, 110, 255, 0.9)'
+  if (score >= 80) return 'var(--color-gold)'
   if (score >= 60) return 'rgba(200, 150, 50, 0.9)'
   return 'rgba(180, 80, 80, 0.9)'
 }
 
-// ── Date formatter (shared by reports and insights) ─────────────────────────
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return ''
   try {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  } catch { return '' }
+}
+
+// ── Canvas insight download (preserved) ───────────────────────────────────────
+async function downloadInsightCard(entry: { sent_date: string; theme_used: string; insight_full?: string; insight_preview?: string; reflection_question?: string }) {
+  if (downloadingInsight.value) return
+  downloadingInsight.value = entry.sent_date
+  try {
+    const W = 1080, H = 1350
+    const canvas = document.createElement('canvas')
+    canvas.width = W; canvas.height = H
+    const ctx = canvas.getContext('2d')!
+    ctx.fillStyle = '#07070D'; ctx.fillRect(0, 0, W, H)
+    const glow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, H * 0.65)
+    glow.addColorStop(0, 'rgba(75,45,155,0.30)'); glow.addColorStop(0.5, 'rgba(50,25,110,0.12)'); glow.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H)
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(72, 120); ctx.lineTo(W - 72, 120); ctx.stroke()
+    ctx.font = '500 28px -apple-system,BlinkMacSystemFont,sans-serif'; ctx.letterSpacing = '0.22em'
+    ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.textAlign = 'left'; ctx.fillText('OMENORA', 72, 92)
+    ctx.font = '400 26px -apple-system,BlinkMacSystemFont,sans-serif'; ctx.letterSpacing = '0.04em'
+    ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.textAlign = 'right'; ctx.fillText(formatDate(entry.sent_date), W - 72, 92)
+    ctx.font = '400 48px serif'; ctx.fillStyle = 'rgba(107,72,224,0.60)'; ctx.textAlign = 'center'; ctx.fillText('✦', W / 2, 200)
+    ctx.font = '300 52px Georgia,serif'; ctx.fillStyle = 'rgba(220,210,255,0.88)'; ctx.textAlign = 'center'; ctx.letterSpacing = '0.02em'
+    wrapText(ctx, entry.theme_used, W / 2, 280, W - 144, 68)
+    const divY = 380
+    ctx.strokeStyle = 'rgba(107,72,224,0.20)'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(144, divY); ctx.lineTo(W - 144, divY); ctx.stroke()
+    const bodyText = entry.insight_full || entry.insight_preview || ''
+    ctx.font = '300 34px -apple-system,BlinkMacSystemFont,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.72)'; ctx.textAlign = 'left'; ctx.letterSpacing = '0.01em'
+    const bodyEndY = wrapText(ctx, bodyText, 72, 440, W - 144, 50)
+    if (entry.reflection_question) {
+      const rfY = Math.max(bodyEndY + 60, 900)
+      ctx.font = 'italic 400 30px Georgia,serif'; ctx.fillStyle = 'rgba(255,255,255,0.38)'; ctx.textAlign = 'left'; ctx.letterSpacing = '0.01em'
+      ctx.fillText('Reflection', 72, rfY)
+      ctx.font = 'italic 300 30px Georgia,serif'; ctx.fillStyle = 'rgba(200,180,255,0.60)'
+      wrapText(ctx, entry.reflection_question, 72, rfY + 48, W - 144, 44)
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(72, H - 100); ctx.lineTo(W - 72, H - 100); ctx.stroke()
+    ctx.font = '400 24px -apple-system,BlinkMacSystemFont,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.textAlign = 'center'; ctx.letterSpacing = '0.10em'
+    ctx.fillText('omenora.com', W / 2, H - 60)
+    const link = document.createElement('a')
+    link.download = `omenora-insight-${entry.sent_date}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+    showToast('Image saved!')
   } catch {
-    return ''
+    showToast('Download failed. Please try again.')
+  } finally {
+    downloadingInsight.value = null
   }
+}
+
+function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {
+  const words = text.split(' ')
+  let line = '', cy = y
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' '
+    if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+      ctx.fillText(line.trim(), x, cy); line = words[n] + ' '; cy += lineHeight
+    } else { line = testLine }
+  }
+  if (line.trim()) { ctx.fillText(line.trim(), x, cy); cy += lineHeight }
+  return cy
 }
 </script>
 
 <style scoped>
-/* ── Base ── */
-.center-page,
-.account-page {
-  background: #07070D;
-  color: rgba(255, 255, 255, 0.94);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
+/* ── Loading / auth states ── */
+.account-state-page {
   min-height: 100vh;
-  box-sizing: border-box;
-}
-
-.center-page::before,
-.account-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(75, 45, 155, 0.22) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 45% at 85% 70%, rgba(50, 25, 110, 0.10) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.center-page > *,
-.account-page > * {
-  position: relative;
-  z-index: 1;
-}
-
-.account-page {
-  display: block;
-}
-
-/* ── STATE 1: Loading ── */
-.center-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.center-content {
+  background: var(--color-bone);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  text-align: center;
-  padding: 0 24px;
-}
-
-.brand-text {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 13px;
-  letter-spacing: 0.20em;
-  color: rgba(255, 255, 255, 0.28);
-  margin: 0;
-}
-
-.status-text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 0;
-}
-
-/* ── STATE 2: Auth ── */
-.auth-page {
-  flex-direction: column;
-  justify-content: flex-start;
-  padding-top: 0;
-}
-
-.auth-top-bar {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 18px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  width: 100%;
+  padding: 40px 24px;
 }
 
+/* ── Auth card ── */
 .auth-card {
   width: 100%;
-  max-width: 400px;
-  padding: 48px 24px 40px;
-  margin: 0 auto;
-  box-sizing: border-box;
+  max-width: 480px;
+  padding: clamp(32px, 5vw, 56px) clamp(24px, 4vw, 40px);
+  background: var(--color-bone);
 }
 
-.auth-title {
-  font-size: 20px;
-  font-weight: 400;
-  color: rgba(230, 220, 255, 0.9);
-  margin: 0 0 10px;
-  text-align: center;
-  line-height: 1.4;
+.auth-card__eyebrow {
+  color: var(--color-ink-faint);
+  margin-bottom: 16px;
 }
 
-.auth-sub {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.35);
-  margin: 0 0 28px;
-  text-align: center;
-  line-height: 1.6;
+.auth-card__headline {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(36px, 7vw, 56px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  margin: 0 0 20px;
 }
 
-.email-input {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.85);
+.auth-card__body {
   font-size: 15px;
-  font-family: inherit;
-  padding: 13px 16px;
-  outline: none;
-  box-sizing: border-box;
-  margin-bottom: 12px;
-  transition: border-color 0.18s ease;
-  -webkit-appearance: none;
-  appearance: none;
+  color: var(--color-ink-mid);
+  line-height: 1.65;
+  margin: 0 0 24px;
 }
 
-.email-input:focus { border-color: rgba(107, 72, 224, 0.50); }
-.email-input::placeholder { color: rgba(255, 255, 255, 0.2); }
-.email-input:disabled { opacity: 0.5; }
+.field-label {
+  display: block;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  margin-bottom: 8px;
+}
 
-.cta-btn {
+.editorial-input {
   width: 100%;
   background: transparent;
-  border: 1px solid rgba(107, 72, 224, 0.50);
-  border-radius: 12px;
-  padding: 14px 24px;
-  min-height: 48px;
-  font-size: 14px;
-  font-family: inherit;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  color: rgba(200, 180, 255, 0.85);
-  cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-  -webkit-tap-highlight-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-ink-ghost);
+  padding: 8px 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  color: var(--color-ink);
+  outline: none;
   box-sizing: border-box;
+  transition: border-color 0.2s;
+  margin-bottom: 24px;
 }
 
-.cta-btn:hover:not(:disabled) {
-  background: rgba(107, 72, 224, 0.10);
-  border-color: rgba(107, 72, 224, 0.70);
-  color: rgba(200, 180, 255, 1);
+.editorial-input:focus {
+  border-bottom-color: var(--color-ink-mid);
 }
 
-.cta-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.editorial-input::placeholder {
+  color: var(--color-ink-ghost);
+}
 
-.error-text {
+.auth-submit {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  border: none;
+  padding: 14px 28px;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  width: 100%;
+}
+
+.auth-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.auth-submit:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.auth-error {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid rgba(139, 37, 0, 0.2);
+  background: rgba(139, 37, 0, 0.04);
   font-size: 13px;
-  color: rgba(255, 100, 100, 0.75);
-  margin: 10px 0 0;
-  text-align: center;
+  color: #8B2500;
   line-height: 1.5;
 }
 
-.confirm-error { margin-top: 20px; text-align: center; }
-
-.confirm-error p {
-  font-size: 13px;
-  color: rgba(255, 100, 100, 0.75);
-  margin: 0 0 10px;
-  line-height: 1.5;
+.auth-error-inline {
+  font-size: 12px;
+  color: #8B2500;
+  margin: -16px 0 16px;
 }
 
-.link-btn {
+.auth-link-btn {
   background: none;
   border: none;
-  color: rgba(140, 110, 255, 0.70);
+  cursor: pointer;
+  color: var(--color-ink-mid);
   font-size: 13px;
   font-family: inherit;
-  cursor: pointer;
   padding: 0;
   text-decoration: underline;
-  transition: color 0.15s ease;
+  text-underline-offset: 3px;
+  display: block;
+  margin-top: 8px;
 }
 
-.link-btn:hover { color: rgba(170, 140, 255, 0.90); }
-
-.sent-message { text-align: center; padding: 8px 0; }
-
-.sent-icon {
-  font-size: 28px;
-  color: rgba(107, 72, 224, 0.70);
-  margin: 0 0 16px;
+.auth-sent {
+  padding: 8px 0;
 }
 
-.sent-title {
-  font-size: 18px;
-  font-weight: 400;
-  color: rgba(230, 220, 255, 0.9);
-  margin: 0 0 10px;
+/* ── Authenticated page shell ── */
+.account-page {
+  min-height: 100vh;
+  background: var(--color-bone);
 }
 
-.sent-sub {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.35);
-  line-height: 1.6;
-  margin: 0;
-}
-
-/* ── Authenticated layout ── */
-.account-content {
-  max-width: 560px;
+.account-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: calc(100vh - 57px);
+  border-top: 1px solid var(--color-ink-ghost);
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 20px 20px 80px;
 }
 
-/* ── Page header — BackButton + brand + email ── */
-.page-header {
+@media (max-width: 768px) {
+  .account-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Sidebar ── */
+.account-sidebar {
+  padding: 40px 32px;
+  border-right: 1px solid var(--color-ink-ghost);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 36px;
+  flex-direction: column;
+  gap: 0;
 }
 
-.page-header-brand {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 13px;
-  letter-spacing: 0.22em;
-  color: rgba(255, 255, 255, 0.28);
-  margin: 0;
-  flex: 1;
-  text-align: center;
+@media (max-width: 768px) {
+  .account-sidebar {
+    padding: 24px 20px;
+    border-right: none;
+    border-bottom: 1px solid var(--color-ink-ghost);
+  }
 }
 
-.page-header-email {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.20);
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 150px;
-  text-align: right;
-  flex-shrink: 0;
+.account-sidebar__user {
+  padding-bottom: 24px;
 }
 
-/* ── Hero ── */
-.account-hero {
-  text-align: center;
-  padding: 20px 0 40px;
-  margin-bottom: 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.account-hero-glyph {
+.account-sidebar__name {
+  font-family: 'Cormorant Garamond', serif;
   font-size: 22px;
-  color: rgba(107, 72, 224, 0.45);
-  margin-bottom: 16px;
+  font-weight: 400;
+  color: var(--color-ink);
+  margin: 0 0 4px;
+}
+
+.account-sidebar__email {
+  color: var(--color-ink-faint);
+  word-break: break-all;
+}
+
+.account-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+}
+
+@media (max-width: 768px) {
+  .account-nav {
+    flex-direction: row;
+    gap: 4px;
+  }
+}
+
+.account-nav__item {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 600;
+  color: var(--color-ink-faint);
+  transition: color 0.15s, background 0.15s;
+  border-radius: 2px;
+}
+
+.account-nav__item:hover {
+  color: var(--color-ink);
+  background: rgba(26, 22, 18, 0.04);
+}
+
+.account-nav__item--active {
+  color: var(--color-ink);
+  background: rgba(26, 22, 18, 0.06);
+}
+
+.account-signout {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 600;
+  color: var(--color-ink-faint);
+  transition: color 0.15s;
+  margin-top: 8px;
+}
+
+.account-signout:hover {
+  color: #8B2500;
+}
+
+/* ── Main panel ── */
+.account-main {
+  padding: clamp(32px, 5vw, 56px) clamp(28px, 5vw, 56px);
+  max-width: 680px;
+}
+
+.account-section__headline {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(32px, 6vw, 52px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  margin: 0 0 12px;
+  color: var(--color-ink);
+}
+
+.account-section__desc {
+  font-size: 15px;
+  color: var(--color-ink-mid);
+  line-height: 1.6;
+  margin: 0 0 8px;
+}
+
+.account-section__actions {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.account-section__empty {
+  color: var(--color-ink-faint);
+  margin-bottom: 24px;
   display: block;
 }
 
-.account-hero-label {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.20em;
-  color: rgba(107, 72, 224, 0.55);
-  margin: 0 0 14px;
-}
-
-.account-hero-email {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 22px;
-  font-weight: 300;
-  color: rgba(220, 210, 255, 0.65);
-  margin: 0;
-  word-break: break-all;
-  letter-spacing: 0.01em;
-}
-
-/* ── Sections ── */
-.account-section {
-  margin-bottom: 44px;
-  padding-bottom: 44px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.account-section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.section-heading {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  color: rgba(107, 72, 224, 0.65);
+/* ── Loading inline ── */
+.account-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--color-ink-faint);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin: 0 0 18px;
+  font-family: 'Hanken Grotesk', sans-serif;
+  padding: 16px 0;
 }
 
-.section-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-
-.section-header-row .section-heading {
-  margin: 0;
-}
-
-.section-badge {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 20px;
-  padding: 3px 10px;
-  letter-spacing: 0.04em;
-}
-
-/* ── Loading indicator ── */
-.status-loading {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.30);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-@keyframes pulse-dot {
+@keyframes account-pulse {
   0%, 100% { opacity: 0.4; transform: scale(1); }
-  50%       { opacity: 1;   transform: scale(1.3); }
+  50% { opacity: 1; transform: scale(1.3); }
 }
 
-.status-dot-pulse {
+.account-loading__dot {
   display: inline-block;
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(107, 72, 224, 0.60);
-  animation: pulse-dot 1.4s ease-in-out infinite;
+  background: var(--color-ink-mid);
+  animation: account-pulse 1.4s ease-in-out infinite;
   flex-shrink: 0;
 }
 
-/* ── Subscription card ── */
-.sub-status-card {
-  background: rgba(107, 72, 224, 0.04);
-  border: 1px solid rgba(107, 72, 224, 0.16);
-  border-radius: 16px;
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.sub-status-card--inactive {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 255, 255, 0.06);
-}
-
-.sub-status-top {
+/* ── Data rows ── */
+.data-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-ink-ghost);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.data-row:first-of-type {
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.data-row__label {
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  flex-shrink: 0;
+}
+
+.data-row__value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--color-ink);
+  text-align: right;
+}
+
+.data-row__actions {
+  display: flex;
+  align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.sub-status-row,
-.no-sub-row {
-  display: flex;
+/* ── Status badges ── */
+.status-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.active-badge {
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-ink-ghost);
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 10px;
-  font-weight: 500;
-  color: rgba(90, 210, 130, 0.92);
-  background: rgba(90, 210, 130, 0.08);
-  border: 1px solid rgba(90, 210, 130, 0.20);
-  border-radius: 20px;
-  padding: 3px 10px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
-.inactive-badge {
-  font-size: 10px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.30);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 3px 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.status-badge--active {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
 }
 
-.sub-label {
-  font-size: 14px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.65);
+.status-badge--inactive {
+  color: var(--color-ink-faint);
 }
 
-.sub-price {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 20px;
-  font-weight: 400;
-  color: rgba(220, 210, 255, 0.80);
-  white-space: nowrap;
+/* ── Plan includes ── */
+.plan-includes-block {
+  margin: 28px 0;
+  padding: 24px;
+  border: 1px solid var(--color-ink-ghost);
 }
 
-.sub-price-period {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.30);
+.plan-includes-block__label {
+  color: var(--color-ink-faint);
+  margin-bottom: 16px;
+  display: block;
 }
 
-.sub-desc {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.28);
-  margin: 0;
-  line-height: 1.65;
-}
-
-.sub-features {
+.plan-includes-list {
   list-style: none;
   padding: 0;
   margin: 0;
-}
-
-.sub-features li {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.60);
-  padding: 3px 0;
-  padding-left: 1.1em;
-  position: relative;
-}
-
-.sub-features li::before {
-  content: '✦';
-  position: absolute;
-  left: 0;
-  color: rgba(140, 110, 255, 0.70);
-  font-size: 0.6rem;
-  top: 5px;
-}
-
-/* ── Action buttons ── */
-.action-btn {
-  width: 100%;
-  background: transparent;
-  border: 1px solid rgba(107, 72, 224, 0.38);
-  border-radius: 12px;
-  padding: 13px 24px;
-  min-height: 46px;
-  font-size: 13px;
-  font-family: inherit;
-  letter-spacing: 0.03em;
-  color: rgba(200, 180, 255, 0.78);
-  cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-  -webkit-tap-highlight-color: transparent;
-  box-sizing: border-box;
-}
-
-.action-btn:hover:not(:disabled) {
-  background: rgba(107, 72, 224, 0.10);
-  border-color: rgba(107, 72, 224, 0.62);
-  color: rgba(200, 180, 255, 1);
-}
-
-.action-btn:disabled { opacity: 0.40; cursor: not-allowed; }
-
-.action-btn--primary {
-  background: rgba(107, 72, 224, 0.10);
-  border-color: rgba(107, 72, 224, 0.50);
-  color: rgba(200, 180, 255, 0.90);
-}
-
-.action-btn--primary:hover:not(:disabled) {
-  background: rgba(107, 72, 224, 0.18);
-  border-color: rgba(107, 72, 224, 0.75);
-  color: rgba(220, 200, 255, 1);
-}
-
-.action-btn--ghost {
-  width: auto;
-  padding: 10px 20px;
-  border-color: rgba(255, 255, 255, 0.09);
-  color: rgba(255, 255, 255, 0.32);
-  font-size: 12px;
-}
-
-.action-btn--ghost:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.58);
-}
-
-/* ── Empty states ── */
-.empty-state {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
 }
 
-.empty-state-icon {
-  font-size: 24px;
-  color: rgba(107, 72, 224, 0.30);
-  margin-bottom: 2px;
-}
-
-.empty-state-text {
+.plan-includes-list li {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.25);
-  margin: 0;
-  line-height: 1.65;
+  color: var(--color-ink-mid);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* ── Reading history ── */
+.plan-includes-list li::before {
+  content: '✦';
+  color: var(--color-gold);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Cancel flow ── */
+.cancel-flow {
+  margin-top: 28px;
+}
+
+.cancel-trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-ink-faint);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: 'Hanken Grotesk', sans-serif;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+
+.cancel-trigger:hover {
+  color: #8B2500;
+}
+
+.cancel-confirm {
+  margin-top: 8px;
+}
+
+.cancel-confirm__eyebrow {
+  color: var(--color-ink-faint);
+  margin-bottom: 12px;
+}
+
+.cancel-confirm__headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--color-ink);
+  margin: 0 0 16px;
+}
+
+.cancel-confirm__body {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--color-ink-mid);
+  margin-bottom: 24px;
+}
+
+.cancel-reason {
+  margin-bottom: 28px;
+}
+
+.cancel-reason__label {
+  color: var(--color-ink-faint);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.cancel-reason__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cancel-reason__option {
+  background: none;
+  border: 1px solid var(--color-ink-ghost);
+  cursor: pointer;
+  padding: 8px 14px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 600;
+  color: var(--color-ink-faint);
+  transition: all 0.15s;
+}
+
+.cancel-reason__option:hover {
+  border-color: var(--color-ink-mid);
+  color: var(--color-ink);
+}
+
+.cancel-reason__option--selected {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+  background: rgba(26, 22, 18, 0.05);
+}
+
+.cancel-confirm__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cancel-confirm__confirm-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #8B2500;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 600;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s;
+}
+
+.cancel-confirm__confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-error {
+  font-size: 12px;
+  color: #8B2500;
+  margin-top: 12px;
+}
+
+.cancel-done__body {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--color-ink-mid);
+  margin: 12px 0 0;
+}
+
+/* ── Reading cards (history / compat) ── */
 .reading-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
 }
 
 .reading-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 14px 16px;
-  gap: 12px;
-  transition: border-color 0.18s ease;
-}
-
-.reading-card:hover {
-  border-color: rgba(107, 72, 224, 0.18);
-}
-
-.reading-card-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  flex: 1;
-}
-
-.reading-icon {
-  font-size: 14px;
-  color: rgba(107, 72, 224, 0.50);
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(107, 72, 224, 0.07);
-  border-radius: 8px;
-}
-
-.reading-info { min-width: 0; }
-
-.reading-title {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.72);
-  margin: 0 0 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.reading-date {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.22);
-  margin: 0;
-}
-
-.view-btn {
-  background: none;
-  border: 1px solid rgba(107, 72, 224, 0.20);
-  color: rgba(107, 72, 224, 0.60);
-  font-size: 11px;
-  font-family: inherit;
-  padding: 5px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
-  -webkit-tap-highlight-color: transparent;
-  letter-spacing: 0.03em;
-}
-
-.view-btn:hover {
-  background: rgba(107, 72, 224, 0.07);
-  border-color: rgba(107, 72, 224, 0.45);
-  color: rgba(140, 110, 255, 0.90);
-}
-
-/* ── Daily horoscope insight entries ── */
-.insight-cards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.insight-entry {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
-  overflow: hidden;
-  transition: border-color 0.2s ease;
-}
-
-.insight-entry:has(.insight-entry-body) {
-  border-color: rgba(107, 72, 224, 0.20);
-}
-
-.insight-entry-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: none;
-  border: none;
-  padding: 16px 18px;
-  cursor: pointer;
-  text-align: left;
-  color: inherit;
-  font-family: inherit;
-  gap: 12px;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.insight-entry-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-  flex: 1;
-}
-
-.insight-entry-glyph {
-  font-size: 12px;
-  color: rgba(107, 72, 224, 0.55);
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(107, 72, 224, 0.08);
-  border-radius: 8px;
-}
-
-.insight-entry-meta { min-width: 0; }
-
-.insight-entry-date {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
-  margin: 0 0 3px;
-  font-weight: 400;
-}
-
-.insight-entry-theme {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.28);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-style: italic;
-}
-
-.insight-entry-chevron {
-  width: 16px;
-  height: 16px;
-  color: rgba(255, 255, 255, 0.20);
-  flex-shrink: 0;
-  transition: transform 0.22s ease, color 0.18s ease;
-}
-
-.insight-entry-chevron--open {
-  transform: rotate(180deg);
-  color: rgba(107, 72, 224, 0.60);
-}
-
-/* ── Expanded insight body ── */
-.insight-entry-body {
-  padding: 0 18px 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* ── Visual insight card (premium readable card) ── */
-.insight-visual-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 24px;
-  padding: 32px 28px;
-  margin-top: 16px;
-  margin-bottom: 14px;
-}
-
-.ivc-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.ivc-brand {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 11px;
-  letter-spacing: 0.20em;
-  color: rgba(255, 255, 255, 0.22);
-}
-
-.ivc-date {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.22);
-  letter-spacing: 0.03em;
-}
-
-.ivc-theme-line {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.07);
-  margin-bottom: 16px;
-}
-
-.ivc-theme {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 22px;
-  font-weight: 400;
-  color: rgba(201, 168, 76, 0.95);
-  margin: 0 0 14px;
-  line-height: 1.3;
-  letter-spacing: 0.02em;
-}
-
-.ivc-body {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.68);
-  line-height: 1.75;
-  margin: 0;
-}
-
-.insight-sections {
-  margin-top: 12px;
-}
-
-.insight-section-row {
-  display: grid;
-  grid-template-columns: 14px 52px 1fr;
-  align-items: baseline;
-  gap: 6px;
-  padding: 10px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-}
-
-.insight-section-row:first-child {
-  border-top: none;
-  padding-top: 0;
-}
-
-.insight-section-icon {
-  font-size: 11px;
-  color: rgba(201, 168, 76, 0.85);
-  line-height: 1;
-}
-
-.insight-section-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.38);
-  line-height: 1.4;
-}
-
-.insight-section-label--love   { color: rgba(255, 255, 255, 0.38); }
-.insight-section-label--work   { color: rgba(255, 255, 255, 0.38); }
-.insight-section-label--health { color: rgba(255, 255, 255, 0.38); }
-
-.insight-section-text {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.70);
-  line-height: 1.55;
-  margin: 0;
-}
-
-.insight-reflection {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.40);
-  font-style: italic;
-  margin-top: 12px;
-  margin-bottom: 0;
-  line-height: 1.5;
-}
-
-.ivc-reflection {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(107, 72, 224, 0.10);
-}
-
-.ivc-reflection-label {
-  display: block;
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  color: rgba(107, 72, 224, 0.50);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.ivc-reflection-text {
-  font-size: 13px;
-  font-style: italic;
-  color: rgba(200, 185, 255, 0.55);
-  line-height: 1.65;
-  margin: 0;
-}
-
-/* ── Download button ── */
-.insight-dl-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  background: rgba(201, 168, 76, 0.10);
-  border: 1px solid rgba(201, 168, 76, 0.40);
-  border-radius: 10px;
-  padding: 14px 18px;
-  font-size: 13px;
-  font-family: inherit;
-  letter-spacing: 0.04em;
-  color: rgba(201, 168, 76, 0.90);
-  cursor: pointer;
-  transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.insight-dl-btn:hover:not(:disabled) {
-  background: rgba(201, 168, 76, 0.18);
-  border-color: rgba(201, 168, 76, 0.65);
-  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
-}
-
-.insight-dl-btn:disabled {
-  opacity: 0.40;
-  cursor: not-allowed;
-}
-
-.insight-dl-icon {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-
-/* ── Account actions section ── */
-.account-section--last {
-  border-bottom: none;
-  margin-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-ink-ghost);
   gap: 16px;
 }
 
-.support-text {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.18);
+.reading-card:first-child {
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.reading-card__info {
+  min-width: 0;
+  flex: 1;
+}
+
+.reading-card__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  color: var(--color-ink);
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reading-card__date {
+  color: var(--color-ink-faint);
   margin: 0;
 }
 
-.support-link {
-  color: rgba(107, 72, 224, 0.45);
-  text-decoration: underline;
-  transition: color 0.15s ease;
-}
-
-.support-link:hover { color: rgba(140, 110, 255, 0.70); }
-
-/* ── Compatibility reading cards ── */
-.compat-readings-list { display: flex; flex-direction: column; gap: 12px; }
-
-.compat-reading-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 16px;
-}
-
-.crc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.crc-partner { font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.9); }
-.crc-score { font-size: 18px; font-weight: 700; }
-
-.crc-title { font-size: 12px; color: rgba(255, 255, 255, 0.5); font-style: italic; margin: 0 0 10px; line-height: 1.4; }
-
-.crc-footer { display: flex; justify-content: space-between; align-items: center; }
-.crc-date { font-size: 11px; color: rgba(255, 255, 255, 0.3); }
-
-.crc-view-btn {
-  font-size: 12px;
-  color: rgba(140, 110, 255, 0.8);
+.reading-card__view {
   background: none;
-  border: none;
+  border: 1px solid var(--color-ink-ghost);
   cursor: pointer;
-  padding: 0;
+  padding: 6px 14px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-weight: 600;
+  color: var(--color-ink-faint);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
 }
-.crc-view-btn:hover { color: rgba(140, 110, 255, 1); }
 
-.section-loading { color: rgba(255, 255, 255, 0.4); font-size: 13px; padding: 12px 0; }
-
-.section-empty { text-align: center; padding: 20px 0; }
-.section-empty p { color: rgba(255, 255, 255, 0.4); font-size: 13px; margin-bottom: 12px; }
-
-.cta-small {
-  background: rgba(140, 110, 255, 0.15);
-  border: 1px solid rgba(140, 110, 255, 0.3);
-  color: rgba(140, 110, 255, 0.9);
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 13px;
-  cursor: pointer;
-  font-family: inherit;
+.reading-card__view:hover {
+  color: var(--color-ink);
+  border-color: var(--color-ink-mid);
 }
-.cta-small:hover { background: rgba(140, 110, 255, 0.25); }
 
 /* ── Toast ── */
-.toast {
+.account-toast {
   position: fixed;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(22, 18, 42, 0.96);
-  border: 1px solid rgba(107, 72, 224, 0.28);
-  color: rgba(220, 210, 255, 0.88);
-  font-size: 13px;
-  font-family: inherit;
-  padding: 11px 22px;
-  border-radius: 8px;
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 20px;
   white-space: nowrap;
   pointer-events: none;
   z-index: 100;
-  letter-spacing: 0.01em;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-/* ── Responsive ── */
-@media (max-width: 400px) {
-  .page-header-email { display: none; }
-
-  .auth-card { padding: 36px 20px 32px; }
-
-  .account-content { padding: 16px 16px 60px; }
-
-  .reading-card { padding: 12px 14px; }
-
-  .sub-status-card { padding: 16px; }
-
-  .account-hero { padding: 12px 0 32px; }
 }
 </style>

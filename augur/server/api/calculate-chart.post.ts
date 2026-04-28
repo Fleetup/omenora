@@ -29,10 +29,26 @@ export default defineEventHandler(async (event) => {
       return sendError(event, createError({ statusCode: 400, message: 'Invalid input', data: { field: 'city' } }))
     }
 
-    // ── Step 2: Geocode city ─────────────────────────────────────────────────
+    // ── Step 2: Resolve coordinates ──────────────────────────────────────────
+    // Prefer client-provided coordinates from Google Places selection (more
+    // accurate). Fall back to server-side geocoding when not present.
 
-    const { lat, lon } = await geocodeCity(city)
-    const geocodeFailed = lat === 0 && lon === 0
+    const clientLat = typeof body.cityLat === 'number' ? body.cityLat : null
+    const clientLng = typeof body.cityLng === 'number' ? body.cityLng : null
+
+    let lat: number
+    let lon: number
+    let geocodeFailed = false
+
+    if (clientLat !== null && clientLng !== null) {
+      lat = clientLat
+      lon = clientLng
+    } else {
+      const coords = await geocodeCity(city)
+      lat = coords.lat
+      lon = coords.lon
+      geocodeFailed = lat === 0 && lon === 0
+    }
 
     // ── Step 3: Calculate natal chart ────────────────────────────────────────
 

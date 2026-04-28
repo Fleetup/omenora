@@ -1,159 +1,195 @@
 <template>
   <!-- ── Loading ── -->
-  <div v-if="isLoading" class="center-page" aria-live="polite">
-    <div class="center-content">
+  <div v-if="isLoading" class="compat-state-page" aria-live="polite">
+    <div class="compat-state-inner">
       <OrbitalMark />
-      <p class="brand-text">OMENORA</p>
-      <p class="status-text">{{ t('analyzingCompat') }}</p>
+      <p class="label-caps compat-state-brand">Omenora</p>
+      <p class="annotation compat-state-msg">{{ t('analyzingCompat') }}</p>
     </div>
   </div>
 
   <!-- ── Error (post-payment path) ── -->
-  <div v-else-if="hasError && !isPreviewMode" class="center-page">
-    <div class="center-content">
+  <div v-else-if="hasError && !isPreviewMode" class="compat-state-page">
+    <div class="compat-state-inner">
       <OrbitalMark />
-      <p class="brand-text">OMENORA</p>
-      <p class="status-text">{{ t('somethingWrong') }}</p>
+      <p class="label-caps compat-state-brand">Omenora</p>
+      <p class="annotation compat-state-msg">{{ t('somethingWrong') }}</p>
     </div>
   </div>
 
   <!-- ── Session expired (preview path, no store data) ── -->
-  <div v-else-if="isPreviewMode && !previewData" class="center-page">
-    <div class="center-content">
-      <p class="brand-text">OMENORA</p>
-      <p class="status-text" style="max-width: 260px; line-height: 1.6;">Session expired. Start the quiz again to see your reading.</p>
-      <button class="retry-btn" @click="navigateTo('/compatibility-quiz')">Restart the quiz</button>
+  <div v-else-if="isPreviewMode && !previewData" class="compat-state-page">
+    <div class="compat-state-inner">
+      <p class="label-caps compat-state-brand">Omenora</p>
+      <p class="annotation compat-state-msg" style="max-width: 280px;">Session expired. Start the quiz again to see your reading.</p>
+      <CTAButton :arrow="true" @click="navigateTo('/compatibility-quiz')">Restart the quiz</CTAButton>
     </div>
   </div>
 
   <!-- ── CASE A: Full post-payment report ── -->
-  <div v-else-if="!isPreviewMode && compatibility" class="compat-page">
+  <div v-else-if="!isPreviewMode && compatibility" class="compat-full-page">
 
-    <div class="top-bar">
-      <button class="top-bar-back" aria-label="Go back" @click="navigateTo('/')">
-        <span aria-hidden="true">←</span>
-      </button>
-      <p class="top-brand">OMENORA</p>
-      <span class="report-label">{{ t('compatReading') }}</span>
+    <AppHeader>
+      <template #action>
+        <span class="label-caps compat-full-page__badge">{{ t('compatReading') }}</span>
+      </template>
+    </AppHeader>
+
+    <!-- Report masthead -->
+    <div class="compat-masthead">
+      <p class="label-caps compat-masthead__kicker">{{ t('destinyCompat') }}</p>
+      <h1 class="compat-masthead__names font-display-italic">
+        {{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}
+      </h1>
+      <p class="compat-masthead__score font-serif" :style="{ color: scoreColor }">
+        {{ compatibility.compatibilityScore }}%
+      </p>
+      <div class="editorial-rule" />
+      <p class="compat-masthead__title font-display-italic">{{ compatibility.compatibilityTitle }}</p>
     </div>
 
-    <!-- Hero -->
-    <div class="hero-block">
-      <p class="archetype-label">{{ t('destinyCompat') }}</p>
-      <p class="names-line">{{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}</p>
-      <p class="score-display" :style="{ color: scoreColor }">{{ compatibility.compatibilityScore }}%</p>
-      <p class="compat-title-text">{{ compatibility.compatibilityTitle }}</p>
-    </div>
-
-    <!-- All 5 sections (post-payment full read) -->
-    <div
-      v-for="(key, idx) in SECTION_ORDER"
-      :key="key"
-      class="section-wrapper"
-      :class="{ 'no-border': idx === SECTION_ORDER.length - 1 }"
-    >
-      <h3 class="section-title">{{ compatibility.sections[key]?.title }}</h3>
-      <div v-if="key === 'advice'" class="advice-box">
-        {{ compatibility.sections[key]?.content }}
+    <!-- All 5 sections (full read) -->
+    <div class="report-body">
+      <div
+        v-for="(key, idx) in SECTION_ORDER"
+        :key="key"
+        class="report-section"
+        :class="{ 'report-section--last': idx === SECTION_ORDER.length - 1 }"
+      >
+        <div class="report-section__header">
+          <span class="report-section__num label-caps">{{ String(idx + 1).padStart(2, '0') }}</span>
+          <div class="report-section__rule" />
+        </div>
+        <h2 class="report-section__heading font-display-italic">
+          {{ compatibility.sections[key]?.title }}
+        </h2>
+        <div v-if="key === 'advice'" class="advice-block">
+          <p class="report-section__body">{{ compatibility.sections[key]?.content }}</p>
+        </div>
+        <p v-else class="report-section__body">{{ compatibility.sections[key]?.content }}</p>
       </div>
-      <p v-else class="section-content">{{ compatibility.sections[key]?.content }}</p>
     </div>
 
-    <!-- Share -->
-    <div class="share-section">
-      <h3 class="share-title">{{ t('shareYourReading') }}</h3>
-      <p class="share-subtitle">{{ t('shareCompatSubtitle').replace('{name}', store.partnerName || 'them') }}</p>
+    <!-- Share / download -->
+    <div class="compat-share">
+      <h2 class="compat-share__heading font-display-italic">{{ t('shareYourReading') }}</h2>
+      <p class="compat-share__sub annotation">
+        {{ t('shareCompatSubtitle').replace('{name}', store.partnerName || 'them') }}
+      </p>
 
-      <!-- Preview card -->
       <div class="compat-share-card">
-        <p class="compat-share-card-label">DESTINY COMPATIBILITY</p>
-        <p class="compat-share-card-names">{{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}</p>
-        <p class="compat-share-card-score" :style="{ color: scoreColor }">{{ compatibility.compatibilityScore }}%</p>
-        <p class="compat-share-card-title">{{ compatibility.compatibilityTitle }}</p>
-        <p class="compat-share-card-domain">omenora.com</p>
+        <p class="label-caps compat-share-card__kicker">Destiny Compatibility</p>
+        <p class="compat-share-card__names font-serif">{{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}</p>
+        <p class="compat-share-card__score font-serif" :style="{ color: scoreColor }">
+          {{ compatibility.compatibilityScore }}%
+        </p>
+        <p class="compat-share-card__title">{{ compatibility.compatibilityTitle }}</p>
+        <p class="label-caps compat-share-card__domain">omenora.com</p>
       </div>
 
-      <div class="compat-download-row">
-        <button class="compat-download-btn" :disabled="isDownloadingCard" @click="downloadCompatCard">
-          {{ isDownloadingCard ? 'Generating...' : 'Download your compatibility card' }}
-        </button>
-      </div>
-      <p v-if="cardDownloadError" class="compat-download-error">{{ cardDownloadError }}</p>
+      <CTAButton
+        :arrow="false"
+        :disabled="isDownloadingCard"
+        class="compat-download-btn"
+        @click="downloadCompatCard"
+      >
+        {{ isDownloadingCard ? 'Generating…' : 'Download your compatibility card' }}
+      </CTAButton>
+      <p v-if="cardDownloadError" class="annotation compat-download-error">{{ cardDownloadError }}</p>
     </div>
+
+    <footer class="compat-footer">
+      <nav aria-label="Legal">
+        <NuxtLink to="/privacy" class="footer-link annotation">Privacy Policy</NuxtLink>
+        <span class="footer-sep" aria-hidden="true">·</span>
+        <NuxtLink to="/terms" class="footer-link annotation">Terms of Service</NuxtLink>
+      </nav>
+    </footer>
   </div>
 
-  <!-- ── CASE B / C: Preview state ── -->
-  <div v-else-if="isPreviewMode && previewData" class="preview-page">
+  <!-- ── CASE B / C: Preview + paywall ── -->
+  <div v-else-if="isPreviewMode && previewData" class="compat-preview-page">
 
-    <!-- Top bar -->
-    <div class="top-bar">
-      <button class="top-bar-back" aria-label="Go back" @click="navigateTo('/compatibility-quiz')">
-        <span aria-hidden="true">←</span>
-      </button>
-      <p class="top-brand">OMENORA</p>
-      <span class="preview-badge">FREE PREVIEW</span>
+    <AppHeader>
+      <template #action>
+        <span class="label-caps compat-preview__badge">Free Preview</span>
+      </template>
+    </AppHeader>
+
+    <!-- Canceled banner (CASE C) -->
+    <div v-if="isCanceled" class="compat-canceled" role="status">
+      <p class="annotation">Checkout canceled. Your reading is still here when you're ready.</p>
     </div>
 
-    <!-- Checkout canceled banner (CASE C) -->
-    <div v-if="isCanceled" class="canceled-banner" role="status">
-      Checkout canceled. Your reading is still here when you're ready.
+    <!-- Preview masthead -->
+    <div class="compat-masthead compat-masthead--preview">
+      <p class="label-caps compat-masthead__kicker">Destiny Compatibility</p>
+      <h1 class="compat-masthead__names font-display-italic">
+        {{ displayMyName }} &amp; {{ displayTheirName }}
+      </h1>
+      <p class="compat-masthead__score font-serif" :style="{ color: previewScoreColor }">
+        {{ previewData.compatibilityScore }}%
+      </p>
+      <div class="editorial-rule" />
+      <p class="compat-masthead__title font-display-italic">{{ previewData.compatibilityTitle }}</p>
     </div>
 
-    <!-- Hero (same structure as full report) -->
-    <div class="hero-block hero-block--preview">
-      <p class="archetype-label">DESTINY COMPATIBILITY</p>
-      <p class="names-line">{{ displayMyName }} &amp; {{ displayTheirName }}</p>
-      <p class="score-display" :style="{ color: previewScoreColor }">{{ previewData.compatibilityScore }}%</p>
-      <p class="compat-title-text">{{ previewData.compatibilityTitle }}</p>
-    </div>
-
-    <!-- Challenge section (full, visible — the hook) -->
-    <div class="section-wrapper challenge-section">
-      <div class="challenge-badge">THE TENSION YOU MUST NAVIGATE</div>
-      <h3 class="section-title section-title--challenge">{{ previewData.sections?.challenge?.title }}</h3>
-      <p class="section-content">{{ previewData.sections?.challenge?.content }}</p>
-    </div>
-
-    <!-- Locked sections (bond, strength, forecast, advice) -->
-    <div class="locked-sections-strip">
-      <div class="locked-header">
-        <span class="lock-icon">🔒</span>
-        <span class="locked-strip-label">Still locked in your reading:</span>
+    <!-- Challenge section (free hook) -->
+    <div class="report-body">
+      <div class="report-section report-section--challenge">
+        <p class="label-caps report-section__kicker">The Tension You Must Navigate</p>
+        <div class="report-section__header">
+          <span class="report-section__num label-caps">01</span>
+          <div class="report-section__rule" />
+        </div>
+        <h2 class="report-section__heading font-display-italic">
+          {{ previewData.sections?.challenge?.title }}
+        </h2>
+        <p class="report-section__body">{{ previewData.sections?.challenge?.content }}</p>
       </div>
-      <div class="locked-cards">
+    </div>
+
+    <!-- Locked sections strip -->
+    <div class="locked-strip">
+      <div class="locked-strip__header">
+        <span class="label-caps locked-strip__label">Still locked in your reading</span>
+      </div>
+      <div class="locked-strip__cards">
         <div v-for="key in LOCKED_SECTIONS" :key="key" class="locked-card">
-          <div class="locked-card-header">
-            <span class="lock-icon-sm">🔒</span>
-            <span class="locked-card-title">{{ previewData.sections?.[key]?.title || LOCKED_FALLBACK_TITLES[key] }}</span>
+          <div class="locked-card__header">
+            <span class="locked-card__icon">—</span>
+            <span class="locked-card__title annotation">
+              {{ previewData.sections?.[key]?.title || LOCKED_FALLBACK_TITLES[key] }}
+            </span>
           </div>
-          <div class="blurred-preview">
-            <p>{{ LOCKED_PLACEHOLDER_TEXT[key] }}</p>
-          </div>
+          <p class="locked-card__blur annotation">{{ LOCKED_PLACEHOLDER_TEXT[key] }}</p>
         </div>
       </div>
     </div>
 
     <!-- Calculation receipt -->
     <div class="calc-receipt">
-      <p class="calc-receipt-header">How we calculated this</p>
-      <p class="calc-receipt-body">
+      <p class="label-caps calc-receipt__header">How we calculated this</p>
+      <p class="annotation calc-receipt__body">
         Born {{ formatDob(store.dateOfBirth) }}{{ store.city ? ' in ' + store.city : '' }}
         · Born {{ formatDob(store.partnerDob) }}{{ store.partnerCity ? ' in ' + store.partnerCity : '' }}
       </p>
-      <p class="calc-receipt-meta">Western (Tropical) · Calculated with Swiss Ephemeris</p>
+      <p class="annotation calc-receipt__meta">Western (Tropical) · Calculated with Swiss Ephemeris</p>
     </div>
 
-    <!-- Trust banner -->
-    <p class="trust-banner">Not a $1 soulmate sketch. Not a psychic chat. Just real birth charts compared.</p>
+    <!-- Trust line -->
+    <p class="compat-trust annotation">Not a $1 soulmate sketch. Not a psychic chat. Just real birth charts compared.</p>
 
-    <!-- Paywall -->
-    <div class="paywall-block">
-      <h2 class="paywall-heading">Unlock your full reading</h2>
-      <p class="paywall-sub">Your challenge is just the beginning. The bond, strength, forecast, and one piece of advice — written for this exact connection, grounded in real chart data.</p>
+    <!-- Paywall block -->
+    <div class="paywall">
+      <h2 class="paywall__heading font-display-italic">Unlock your full reading</h2>
+      <p class="paywall__sub annotation">
+        Your challenge is just the beginning. The bond, strength, forecast, and one piece of advice — written for this exact connection, grounded in real chart data.
+      </p>
 
       <!-- Name + email capture -->
-      <div class="email-capture-card">
-        <label class="email-label" for="compat-my-name">Your first name</label>
+      <div class="capture-block">
+        <label class="label-caps capture-block__label" for="compat-my-name">Your first name</label>
         <input
           id="compat-my-name"
           v-model="myNameInput"
@@ -161,10 +197,10 @@
           placeholder="Your first name"
           autocomplete="given-name"
           maxlength="50"
-          class="email-input"
+          class="editorial-input"
           @focus="trackEvent('name_field_focused')"
-        >
-        <label class="email-label email-label--spaced" for="compat-their-name">Their first name</label>
+        />
+        <label class="label-caps capture-block__label capture-block__label--spaced" for="compat-their-name">Their first name</label>
         <input
           id="compat-their-name"
           v-model="theirNameInput"
@@ -172,68 +208,68 @@
           placeholder="Their first name"
           autocomplete="off"
           maxlength="50"
-          class="email-input"
+          class="editorial-input"
           @focus="trackEvent('name_field_focused')"
-        >
-        <label class="email-label email-label--spaced" for="compat-email">Where should we send your reading?</label>
+        />
+        <label class="label-caps capture-block__label capture-block__label--spaced" for="compat-email">Where should we send your reading?</label>
         <input
           id="compat-email"
           v-model="emailInput"
           type="email"
           placeholder="your@email.com"
           autocomplete="email"
-          class="email-input"
+          class="editorial-input"
           @focus="trackEvent('email_field_focused')"
           @blur="onEmailBlur"
-        >
+        />
       </div>
 
-      <!-- Subscription email prompt -->
-      <p v-if="emailPrompt" class="email-prompt-msg" role="alert">Please enter your email to start the subscription.</p>
-
-      <!-- Checkout error -->
-      <div v-if="checkoutError" class="checkout-error-msg" role="alert">
+      <p v-if="emailPrompt" class="compat-email-prompt annotation" role="alert">
+        Please enter your email to start the subscription.
+      </p>
+      <div v-if="checkoutError" class="compat-checkout-error annotation" role="alert">
         {{ checkoutError }}
       </div>
 
       <!-- Option 1: Subscription (primary) -->
       <div class="pay-card pay-card--primary">
-        <div class="pay-card-badge">RECOMMENDED</div>
-        <p class="pay-card-name">Compatibility Plus</p>
-        <p class="pay-card-price">$9.99<span class="pay-card-freq"> / month</span></p>
-        <ul class="pay-card-bullets">
+        <p class="label-caps pay-card__badge">Recommended</p>
+        <p class="pay-card__name">Compatibility Plus</p>
+        <p class="pay-card__price font-serif">$9.99<span class="pay-card__freq annotation"> / month</span></p>
+        <ul class="pay-card__bullets annotation">
           <li>Unlimited compatibility readings — any pairing, any time</li>
           <li>Weekly relationship weather — every Monday in your inbox</li>
           <li>Daily horoscope — love, work &amp; health, personalized to your chart</li>
           <li>Full reading history on your account</li>
           <li>Real chart math — Swiss Ephemeris, not sun sign guesses</li>
         </ul>
-        <button
-          class="pay-btn pay-btn--primary"
-          :class="{ 'pay-btn--processing': isProcessing && activeTier === 'subscription' }"
+        <CTAButton
+          :arrow="false"
           :disabled="isProcessing"
+          class="pay-card__btn"
+          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'subscription' }"
           @click="handleCheckout('subscription')"
         >
           <span v-if="isProcessing && activeTier === 'subscription'">Processing…</span>
           <span v-else>Start subscription — $9.99/month</span>
-        </button>
-        <p class="pay-btn-footnote">Cancel anytime in 1 click. No hidden trial.</p>
-        <p class="pay-btn-footnote">Next charge: {{ nextChargeDate }}</p>
-        <p class="pay-btn-footnote pay-btn-footnote--muted">Apple Pay &amp; Google Pay accepted</p>
+        </CTAButton>
+        <p class="annotation pay-card__footnote">Cancel anytime in 1 click. No hidden trial.</p>
+        <p class="annotation pay-card__footnote">Next charge: {{ nextChargeDate }}</p>
+        <p class="annotation pay-card__footnote pay-card__footnote--muted">Apple Pay &amp; Google Pay accepted</p>
       </div>
 
       <!-- Option 2: Single (secondary) -->
       <div class="pay-card pay-card--secondary">
-        <p class="pay-card-name">Just this reading</p>
-        <p class="pay-card-price">$7.99<span class="pay-card-freq"> one-time</span></p>
-        <ul class="pay-card-bullets">
+        <p class="pay-card__name">Just this reading</p>
+        <p class="pay-card__price font-serif">$7.99<span class="pay-card__freq annotation"> one-time</span></p>
+        <ul class="pay-card__bullets annotation">
           <li>Full compatibility analysis for this pairing only</li>
           <li>All 5 sections unlocked — bond, strength, challenge, forecast &amp; advice</li>
           <li>Shareable reading card included</li>
         </ul>
         <button
-          class="pay-btn pay-btn--secondary"
-          :class="{ 'pay-btn--processing': isProcessing && activeTier === 'single' }"
+          class="pay-card__btn pay-card__btn--secondary"
+          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'single' }"
           :disabled="isProcessing"
           @click="handleCheckout('single')"
         >
@@ -242,19 +278,20 @@
         </button>
       </div>
 
-      <!-- Guarantee & trust signals -->
-      <div class="guarantee-block">
-        <p class="guarantee-text">✦ If it doesn't feel like it was written for you, full refund within 24 hours. No form to fill.</p>
+      <!-- Guarantee -->
+      <div class="guarantee">
+        <p class="annotation guarantee__text">
+          ✦ If it doesn't feel like it was written for you, full refund within 24 hours. No form to fill.
+        </p>
       </div>
-      <p class="trust-secure">Secure payment by Stripe</p>
+      <p class="label-caps compat-trust-secure">Secure payment by Stripe</p>
     </div>
 
-    <!-- Footer -->
     <footer class="compat-footer">
       <nav aria-label="Legal">
-        <NuxtLink to="/privacy" class="footer-link">Privacy Policy</NuxtLink>
+        <NuxtLink to="/privacy" class="footer-link annotation">Privacy Policy</NuxtLink>
         <span class="footer-sep" aria-hidden="true">·</span>
-        <NuxtLink to="/terms" class="footer-link">Terms of Service</NuxtLink>
+        <NuxtLink to="/terms" class="footer-link annotation">Terms of Service</NuxtLink>
       </nav>
     </footer>
   </div>
@@ -662,836 +699,640 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ── Shared bg + font base ── */
-.center-page,
-.compat-page,
-.preview-page {
-  background: #07070D;
-  color: rgba(255, 255, 255, 0.94);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
+/* ── Centered state pages (loading / error / expired) ── */
+.compat-state-page {
   min-height: 100vh;
-  box-sizing: border-box;
-}
-
-.center-page::before,
-.compat-page::before,
-.preview-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 55% at 50% 0%, rgba(75, 45, 155, 0.18) 0%, transparent 68%),
-    radial-gradient(ellipse 50% 40% at 15% 55%, rgba(50, 25, 110, 0.10) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.center-page > *,
-.compat-page > *,
-.preview-page > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* ── Centered states ── */
-.center-page {
+  background: var(--color-bone);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.center-content {
+.compat-state-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
   text-align: center;
-  padding: 0 24px;
+  padding: 0 clamp(20px, 5vw, 48px);
 }
 
-.brand-text {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 13px;
-  letter-spacing: 0.20em;
-  color: rgba(255, 255, 255, 0.28);
-  margin: 0;
+.compat-state-brand {
+  color: var(--color-ink-faint);
 }
 
-.status-text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 0;
+.compat-state-msg {
+  color: var(--color-ink-faint);
+  max-width: 300px;
+  line-height: 1.6;
 }
 
-.retry-btn {
-  background: transparent;
-  border: 1px solid rgba(107, 72, 224, 0.40);
-  border-radius: 12px;
-  padding: 14px 36px;
-  min-height: 48px;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  color: rgba(200, 180, 255, 0.78);
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.18s ease, border-color 0.18s ease;
-  -webkit-tap-highlight-color: transparent;
+/* ── Full report page ── */
+.compat-full-page {
+  min-height: 100vh;
+  background: var(--color-bone);
 }
 
-.retry-btn:hover {
-  background: rgba(107, 72, 224, 0.10);
-  border-color: rgba(107, 72, 224, 0.65);
+.compat-full-page__badge {
+  color: var(--color-ink-faint);
+  font-size: 10px;
 }
 
-/* ── Full-report page layout ── */
-.compat-page {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 24px 20px 60px;
+/* ── Preview page ── */
+.compat-preview-page {
+  min-height: 100vh;
+  background: var(--color-bone);
 }
 
-/* ── Preview page layout ── */
-.preview-page {
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 28px 24px calc(52px + env(safe-area-inset-bottom, 0px));
-}
-
-/* ── Top bar ── */
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.top-bar-back {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: none;
-  border: none;
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 18px;
-  cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-}
-
-.top-bar-back:hover {
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.07);
-}
-
-.top-brand {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 13px;
-  letter-spacing: 0.20em;
-  color: rgba(255, 255, 255, 0.28);
-  margin: 0;
-}
-
-.report-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.28);
-  letter-spacing: 0.04em;
-}
-
-.preview-badge {
-  font-size: 9px;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.60);
-  border: 1px solid rgba(201, 168, 76, 0.22);
-  border-radius: 3px;
-  padding: 3px 10px;
+.compat-preview__badge {
+  color: var(--color-ink-faint);
+  font-size: 10px;
 }
 
 /* ── Canceled banner ── */
-.canceled-banner {
-  background: rgba(107, 72, 224, 0.07);
-  border: 1px solid rgba(107, 72, 224, 0.18);
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: rgba(200, 180, 255, 0.70);
-  line-height: 1.5;
+.compat-canceled {
+  border-top: 1px solid var(--color-ink-ghost);
+  padding: 14px clamp(20px, 5vw, 48px);
   text-align: center;
+}
+
+.compat-canceled .annotation {
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+/* ── Masthead ── */
+.compat-masthead {
+  padding: clamp(48px, 8vw, 80px) clamp(20px, 5vw, 80px) clamp(40px, 6vw, 64px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.compat-masthead__kicker {
+  color: var(--color-ink-faint);
   margin-bottom: 20px;
 }
 
-/* ── Hero block ── */
-.hero-block {
-  padding: 32px 24px;
-  background: linear-gradient(180deg, rgba(107, 72, 224, 0.10) 0%, transparent 100%);
-  border-radius: 16px;
-  margin-bottom: 32px;
-  text-align: center;
-}
-
-.hero-block--preview {
-  margin-bottom: 24px;
-}
-
-.archetype-label {
-  font-size: 10px;
-  color: rgba(107, 72, 224, 0.70);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin: 0 0 8px;
-}
-
-.names-line {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 20px;
+.compat-masthead__names {
+  font-family: 'Fraunces', serif;
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 0 0 16px;
-  letter-spacing: 0.02em;
-}
-
-.score-display {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 80px;
-  font-weight: 300;
-  line-height: 1;
-  margin: 0 0 16px;
-  letter-spacing: -2px;
-}
-
-.compat-title-text {
-  font-size: 14px;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.42);
-  line-height: 1.55;
-  margin: 0;
-}
-
-/* ── Sections (shared) ── */
-.section-wrapper {
-  margin-bottom: 32px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.section-wrapper.no-border { border-bottom: none; }
-
-.section-title {
-  font-size: 9px;
-  font-weight: 500;
-  color: rgba(107, 72, 224, 0.65);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  margin: 0 0 12px;
-}
-
-.section-content {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.82;
-  margin: 0;
-}
-
-.advice-box {
-  background: rgba(107, 72, 224, 0.08);
-  border: 1px solid rgba(107, 72, 224, 0.20);
-  border-radius: 12px;
-  padding: 20px;
-  font-size: 17px;
-  font-style: italic;
-  color: rgba(200, 180, 255, 0.95);
-  line-height: 1.6;
-  text-align: center;
-}
-
-/* ── Challenge section highlight (preview only) ── */
-.challenge-section {
-  background: rgba(107, 72, 224, 0.05);
-  border: 1px solid rgba(107, 72, 224, 0.14);
-  border-left: 2px solid rgba(201, 168, 76, 0.50);
-  border-radius: 14px;
-  padding: 20px 20px 24px 24px;
-  margin-bottom: 24px;
-}
-
-.challenge-badge {
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.65);
-  margin-bottom: 10px;
-}
-
-.section-title--challenge {
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 11px;
-  margin-bottom: 14px;
-}
-
-/* ── Locked sections strip ── */
-.locked-sections-strip {
-  background: rgba(107, 72, 224, 0.06);
-  border: 1px solid rgba(107, 72, 224, 0.15);
-  border-radius: 14px;
-  padding: 20px 20px 16px;
-  margin-bottom: 24px;
-}
-
-.locked-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.lock-icon {
-  font-size: 11px;
-}
-
-.locked-strip-label {
-  font-size: 11px;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.35);
-}
-
-.locked-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.locked-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
-  padding: 14px 16px 12px;
-}
-
-.locked-card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.lock-icon-sm {
-  font-size: 10px;
-  opacity: 0.5;
-}
-
-.locked-card-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.60);
-  letter-spacing: 0.01em;
-}
-
-/* Blurred locked content */
-.blurred-preview {
-  filter: blur(5px);
-  opacity: 0.5;
-  pointer-events: none;
-  user-select: none;
-  font-size: 13px;
-  line-height: 1.72;
-  color: rgba(255, 255, 255, 0.65);
-  overflow: hidden;
-  max-height: 52px;
-}
-
-.blurred-preview p { margin: 0; }
-
-/* ── Calculation receipt ── */
-.calc-receipt {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 16px 18px;
-  margin-bottom: 16px;
-  opacity: 0.65;
-}
-
-.calc-receipt-header {
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.40);
-  margin: 0 0 8px;
-}
-
-.calc-receipt-body {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.50);
-  line-height: 1.6;
-  margin: 0 0 6px;
-}
-
-.calc-receipt-meta {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.25);
-  margin: 0;
-  letter-spacing: 0.01em;
-}
-
-/* ── Trust banner ── */
-.trust-banner {
-  font-size: 12px;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.25);
-  text-align: center;
-  line-height: 1.6;
-  margin: 0 0 32px;
-  padding: 0 12px;
-}
-
-/* ── Paywall block ── */
-.paywall-block {
-  margin-bottom: 40px;
-}
-
-.paywall-heading {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 32px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.94);
-  margin: 0 0 8px;
-  letter-spacing: 0.01em;
-}
-
-.paywall-sub {
-  font-size: 14px;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.38);
-  line-height: 1.55;
+  font-size: clamp(36px, 8vw, 72px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
   margin: 0 0 24px;
 }
 
-/* ── Email capture card ── */
-.email-capture-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  padding: 16px;
+.compat-masthead__score {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(72px, 16vw, 120px);
+  font-weight: 300;
+  line-height: 1;
+  margin: 0 0 24px;
+  letter-spacing: -0.04em;
+}
+
+.editorial-rule {
+  width: 48px;
+  height: 1px;
+  background: var(--color-ink-mid);
+  margin-bottom: 24px;
+}
+
+.compat-masthead__title {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(18px, 3vw, 24px);
+  line-height: 1.4;
+  color: var(--color-ink-mid);
+  margin: 0;
+}
+
+/* ── Report body ── */
+.report-body {
+  max-width: 1400px;
+  padding: 0 clamp(20px, 5vw, 80px);
+  margin: 0 auto;
+}
+
+/* ── Report sections ── */
+.report-section {
+  padding: clamp(36px, 6vw, 56px) 0;
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.report-section--last {
+  border-bottom: 1px solid var(--color-ink-ghost);
+}
+
+.report-section__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.report-section__num {
+  color: var(--color-ink-faint);
+  flex-shrink: 0;
+}
+
+.report-section__rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-ink-ghost);
+}
+
+.report-section__kicker {
+  color: var(--color-ink-faint);
   margin-bottom: 16px;
 }
 
-.email-label {
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.28);
-  text-transform: uppercase;
-  display: block;
+.report-section__heading {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(22px, 4vw, 32px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  margin: 0 0 24px;
+}
+
+.report-section__body {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(17px, 2.5vw, 20px);
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--color-ink-mid);
+  margin: 0;
+}
+
+/* ── Advice block ── */
+.advice-block {
+  border-left: 2px solid var(--color-ink-mid);
+  padding-left: 24px;
+}
+
+/* ── Challenge section (free preview hook) ── */
+.report-section--challenge {
+  border-top: 2px solid var(--color-ink);
+}
+
+/* ── Locked strip ── */
+.locked-strip {
+  max-width: 1400px;
+  padding: clamp(28px, 4vw, 40px) clamp(20px, 5vw, 80px);
+  border-top: 1px solid var(--color-ink-ghost);
+  margin: 0 auto;
+}
+
+.locked-strip__header {
+  margin-bottom: 20px;
+}
+
+.locked-strip__label {
+  color: var(--color-ink-faint);
+}
+
+.locked-strip__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.locked-card {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-ink-ghost);
+}
+
+.locked-card:last-child {
+  border-bottom: none;
+}
+
+.locked-card__header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.locked-card__icon {
+  color: var(--color-ink-faint);
+  flex-shrink: 0;
+}
+
+.locked-card__title {
+  color: var(--color-ink-mid);
+  font-style: italic;
+}
+
+.locked-card__blur {
+  filter: blur(4px);
+  opacity: 0.4;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  max-height: 48px;
+  color: var(--color-ink-mid);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Calculation receipt ── */
+.calc-receipt {
+  max-width: 1400px;
+  padding: clamp(20px, 3vw, 32px) clamp(20px, 5vw, 80px);
+  border-top: 1px solid var(--color-ink-ghost);
+  opacity: 0.7;
+  margin: 0 auto;
+}
+
+.calc-receipt__header {
+  color: var(--color-ink-faint);
   margin-bottom: 8px;
 }
 
-.email-label--spaced {
-  margin-top: 16px;
+.calc-receipt__body {
+  color: var(--color-ink-faint);
+  line-height: 1.6;
+  margin: 0 0 4px;
 }
 
-.email-input {
+.calc-receipt__meta {
+  color: var(--color-ink-faint);
+  margin: 0;
+  opacity: 0.7;
+}
+
+/* ── Trust line ── */
+.compat-trust {
+  max-width: 1400px;
+  padding: 0 clamp(20px, 5vw, 80px) clamp(24px, 4vw, 36px);
+  color: var(--color-ink-faint);
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0 auto;
+}
+
+/* ── Paywall ── */
+.paywall {
+  max-width: 1400px;
+  padding: clamp(36px, 6vw, 56px) clamp(20px, 5vw, 80px) clamp(48px, 8vw, 72px);
+  border-top: 1px solid var(--color-ink-ghost);
+  margin: 0 auto;
+}
+
+.paywall__heading {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(28px, 6vw, 48px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  margin: 0 0 16px;
+}
+
+.paywall__sub {
+  color: var(--color-ink-faint);
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0 0 32px;
+  max-width: 520px;
+}
+
+/* ── Capture block ── */
+.capture-block {
+  margin-bottom: 24px;
+}
+
+.capture-block__label {
+  display: block;
+  color: var(--color-ink-faint);
+  margin-bottom: 10px;
+}
+
+.capture-block__label--spaced {
+  margin-top: 24px;
+}
+
+.editorial-input {
+  width: 100%;
+  max-width: 480px;
+  padding: 12px 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--color-ink);
   background: transparent;
   border: none;
+  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
   outline: none;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 15px;
-  width: 100%;
-  font-family: inherit;
-  padding: 0;
+  border-radius: 0;
+  transition: border-color 0.2s;
+  display: block;
 }
 
-.email-input::placeholder { color: rgba(255, 255, 255, 0.18); }
-
-.email-input:-webkit-autofill,
-.email-input:-webkit-autofill:hover,
-.email-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #0d0b1e inset !important;
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
-  caret-color: rgba(255, 255, 255, 0.88);
-  transition: background-color 9999s ease-in-out 0s;
+.editorial-input:focus {
+  border-bottom-color: var(--color-ink);
 }
 
-/* ── Email prompt ── */
-.email-prompt-msg {
-  font-size: 12px;
-  color: rgba(201, 168, 76, 0.85);
-  border: 1px solid rgba(201, 168, 76, 0.25);
-  background: rgba(201, 168, 76, 0.06);
-  border-radius: 8px;
+.editorial-input::placeholder {
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+/* ── Prompts / errors ── */
+.compat-email-prompt {
+  color: var(--color-ink-faint);
+  font-style: italic;
+  border: 1px solid var(--color-ink-ghost);
   padding: 10px 14px;
-  text-align: center;
   margin-bottom: 12px;
   line-height: 1.5;
 }
 
-/* ── Checkout error ── */
-.checkout-error-msg {
-  background: rgba(220, 80, 80, 0.07);
-  border: 1px solid rgba(220, 80, 80, 0.35);
-  border-radius: 10px;
+.compat-checkout-error {
+  color: var(--color-ink-faint);
+  border: 1px solid var(--color-ink-ghost);
   padding: 12px 16px;
-  font-size: 13px;
-  color: rgba(255, 160, 160, 0.9);
-  line-height: 1.55;
-  text-align: center;
   margin-bottom: 16px;
+  line-height: 1.55;
 }
 
-/* ── Purchase option cards ── */
+/* ── Pay cards ── */
 .pay-card {
-  border-radius: 14px;
-  padding: 22px 20px;
-  margin-bottom: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
   position: relative;
 }
 
 .pay-card--primary {
-  background: rgba(107, 72, 224, 0.08);
-  border: 1px solid rgba(107, 72, 224, 0.22);
-  border-left: 2px solid rgba(201, 168, 76, 0.65);
-  box-shadow:
-    0 0 0 1px rgba(201, 168, 76, 0.30),
-    0 8px 32px rgba(107, 72, 224, 0.16);
-  padding-top: 32px;
+  border: 1px solid var(--color-ink-mid);
+  border-left: 2px solid var(--color-ink);
+  padding-top: 36px;
 }
 
 .pay-card--secondary {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--color-ink-ghost);
 }
 
-.pay-card-badge {
+.pay-card__badge {
   position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(201, 168, 76, 0.92);
-  color: #07070D;
+  top: -1px;
+  left: 24px;
+  color: var(--color-ink);
   font-size: 9px;
-  font-weight: 600;
-  padding: 3px 14px;
-  border-radius: 3px;
   letter-spacing: 0.12em;
-  white-space: nowrap;
+  background: var(--color-bone);
+  padding: 0 8px;
+  transform: translateY(-50%);
 }
 
-.pay-card-name {
+.pay-card__name {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.90);
-  margin: 0 0 6px;
+  color: var(--color-ink);
+  margin: 0 0 8px;
+  letter-spacing: 0.02em;
 }
 
-.pay-card--secondary .pay-card-name {
+.pay-card--secondary .pay-card__name {
+  color: var(--color-ink-mid);
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.60);
 }
 
-.pay-card-price {
-  font-family: 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
-  font-size: 36px;
+.pay-card__price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 6vw, 44px);
   font-weight: 300;
-  color: rgba(200, 180, 255, 0.95);
-  margin: 0 0 14px;
+  color: var(--color-ink);
+  margin: 0 0 16px;
   line-height: 1;
 }
 
-.pay-card--secondary .pay-card-price {
-  font-size: 28px;
-  color: rgba(255, 255, 255, 0.45);
+.pay-card--secondary .pay-card__price {
+  font-size: clamp(26px, 5vw, 36px);
+  color: var(--color-ink-mid);
 }
 
-.pay-card-freq {
+.pay-card__freq {
   font-size: 14px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.35);
-  font-family: inherit;
+  color: var(--color-ink-faint);
 }
 
-.pay-card-bullets {
+.pay-card__bullets {
   list-style: none;
   padding: 0;
-  margin: 0 0 18px;
+  margin: 0 0 20px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
-.pay-card-bullets li {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.58);
+.pay-card__bullets li {
+  color: var(--color-ink-mid);
   line-height: 1.5;
-  padding-left: 18px;
+  padding-left: 16px;
   position: relative;
 }
 
-.pay-card-bullets li::before {
-  content: '◆';
+.pay-card__bullets li::before {
+  content: '—';
   position: absolute;
   left: 0;
-  font-size: 7px;
-  color: rgba(107, 72, 224, 0.55);
-  top: 4px;
+  color: var(--color-ink-faint);
+  font-size: 10px;
+  top: 3px;
 }
 
-/* ── Purchase buttons ── */
-.pay-btn {
+.pay-card__btn {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.pay-card__btn--processing {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.pay-card__btn--secondary {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 54px;
-  border-radius: 14px;
-  font-size: 15px;
+  min-height: 48px;
+  padding: 14px 24px;
+  background: transparent;
+  border: 1px solid var(--color-ink-ghost);
+  color: var(--color-ink-mid);
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 13px;
   font-weight: 500;
-  font-family: inherit;
+  letter-spacing: 0.05em;
   cursor: pointer;
-  letter-spacing: 0.01em;
-  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
-  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.2s, color 0.2s;
   margin-bottom: 8px;
 }
 
-.pay-btn--primary {
-  background: #6B48E0;
-  border: none;
-  color: #ffffff;
-  box-shadow:
-    0 0 0 1px rgba(107, 72, 224, 0.55),
-    0 8px 32px rgba(107, 72, 224, 0.28),
-    0 2px 8px rgba(0, 0, 0, 0.35);
+.pay-card__btn--secondary:hover:not(:disabled) {
+  border-color: var(--color-ink-mid);
+  color: var(--color-ink);
 }
 
-.pay-btn--primary:hover:not(:disabled) {
-  background: #7B5AF2;
-  box-shadow:
-    0 0 0 1px rgba(123, 90, 242, 0.65),
-    0 12px 44px rgba(107, 72, 224, 0.44),
-    0 4px 12px rgba(0, 0, 0, 0.40);
-  transform: translateY(-1px);
-}
-
-.pay-btn--primary:active:not(:disabled) {
-  transform: translateY(0) scale(0.985);
-  background: #5B38D0;
-}
-
-.pay-btn--secondary {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.50);
-}
-
-.pay-btn--secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.24);
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.pay-btn--processing {
-  opacity: 0.62;
-  cursor: default;
-  transform: none !important;
-}
-
-.pay-btn:disabled {
+.pay-card__btn--secondary:disabled {
   opacity: 0.35;
-  cursor: default;
-  transform: none;
   pointer-events: none;
 }
 
-.pay-btn-footnote {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.28);
-  text-align: center;
+.pay-card__footnote {
+  color: var(--color-ink-faint);
   margin: 4px 0 0;
   line-height: 1.5;
 }
 
-.pay-btn-footnote--muted {
-  color: rgba(255, 255, 255, 0.18);
+.pay-card__footnote--muted {
+  opacity: 0.6;
 }
 
 /* ── Guarantee ── */
-.guarantee-block {
-  margin-top: 20px;
-  padding: 14px 18px;
-  background: rgba(107, 72, 224, 0.05);
-  border: 1px solid rgba(107, 72, 224, 0.13);
-  border-radius: 12px;
-  text-align: center;
+.guarantee {
+  margin-top: 24px;
+  padding: 16px 20px;
+  border: 1px solid var(--color-ink-ghost);
 }
 
-.guarantee-text {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
+.guarantee__text {
+  color: var(--color-ink-faint);
+  font-style: italic;
   line-height: 1.6;
   margin: 0;
 }
 
-.trust-secure {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.14);
+.compat-trust-secure {
+  color: var(--color-ink-faint);
   text-align: center;
-  margin: 12px 0 0;
-  letter-spacing: 0.02em;
+  margin-top: 14px;
+  opacity: 0.7;
 }
 
-/* ── Share section (post-payment) ── */
-.share-section {
-  margin-top: 48px;
-  padding: 0 20px;
+/* ── Share section (full report) ── */
+.compat-share {
+  max-width: 1400px;
+  padding: clamp(40px, 6vw, 60px) clamp(20px, 5vw, 80px);
+  border-top: 1px solid var(--color-ink-ghost);
   text-align: center;
+  margin: 0 auto;
 }
 
-.share-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.90);
-  margin: 0 0 4px;
+.compat-share__heading {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(22px, 4vw, 32px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  margin: 0 0 10px;
 }
 
-.share-subtitle {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
-  margin: 0 0 20px;
+.compat-share__sub {
+  color: var(--color-ink-faint);
+  margin: 0 0 28px;
 }
 
 .compat-share-card {
-  width: min(280px, 100%);
-  background: linear-gradient(140deg, #0d0b1e, #12101f);
-  border: 1px solid rgba(140, 110, 255, 0.25);
-  border-radius: 16px;
-  margin: 0 auto 16px;
-  padding: 20px 16px 16px;
+  width: min(300px, 100%);
+  border: 1px solid var(--color-ink-ghost);
+  margin: 0 auto 24px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
-.compat-share-card-label {
-  font-size: 10px;
-  font-weight: 500;
-  color: rgba(140, 110, 255, 0.6);
-  letter-spacing: 0.1em;
-  margin: 0 0 6px;
+.compat-share-card__kicker {
+  color: var(--color-ink-faint);
+  margin: 0 0 8px;
 }
 
-.compat-share-card-names {
-  font-size: 15px;
-  font-weight: 500;
-  color: rgba(230, 220, 255, 0.90);
+.compat-share-card__names {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--color-ink);
   margin: 0;
 }
 
-.compat-share-card-score {
-  font-size: 40px;
-  font-weight: 500;
-  line-height: 1.1;
-  margin: 6px 0 0;
+.compat-share-card__score {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 48px;
+  font-weight: 300;
+  line-height: 1;
+  margin: 4px 0 0;
 }
 
-.compat-share-card-title {
-  font-size: 12px;
+.compat-share-card__title {
+  font-size: 13px;
   font-style: italic;
-  color: rgba(200, 180, 255, 0.70);
-  margin: 2px 0 8px;
+  color: var(--color-ink-mid);
+  margin: 4px 0 8px;
 }
 
-.compat-share-card-domain {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.20);
+.compat-share-card__domain {
+  color: var(--color-ink-faint);
   margin: 0;
-  letter-spacing: 0.05em;
-}
-
-.compat-download-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 4px;
+  opacity: 0.7;
 }
 
 .compat-download-btn {
-  background: rgba(140, 110, 255, 0.12);
-  border: 1px solid rgba(140, 110, 255, 0.35);
-  border-radius: 10px;
-  color: rgba(200, 180, 255, 0.90);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 11px 22px;
-  cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
-  font-family: inherit;
-}
-
-.compat-download-btn:hover:not(:disabled) {
-  background: rgba(140, 110, 255, 0.20);
-}
-
-.compat-download-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  margin: 0 auto;
 }
 
 .compat-download-error {
-  font-size: 12px;
-  color: rgba(255, 100, 100, 0.7);
+  color: var(--color-ink-faint);
   text-align: center;
-  margin: 8px 0 0;
+  margin-top: 8px;
+  font-style: italic;
 }
 
 /* ── Footer ── */
 .compat-footer {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 20px 0 28px;
-  margin-top: 8px;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 40px) clamp(20px, 5vw, 48px);
+  border-top: 1px solid var(--color-ink-ghost);
 }
 
 .compat-footer nav {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .footer-link {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.18);
+  color: var(--color-ink-faint);
   text-decoration: none;
-  letter-spacing: 0.06em;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: var(--color-ink-mid);
 }
 
 .footer-sep {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.10);
+  color: var(--color-ink-ghost);
 }
 
 /* ── Responsive ── */
-@media (max-width: 400px) {
-  .preview-page { padding: 20px 16px calc(44px + env(safe-area-inset-bottom, 0px)); }
-  .paywall-heading { font-size: 26px; }
-  .score-display { font-size: 68px; }
-  .pay-card-price { font-size: 30px; }
-  .pay-card--secondary .pay-card-price { font-size: 24px; }
-}
-
-@media (max-width: 360px) {
-  .preview-page { padding: 16px 12px calc(40px + env(safe-area-inset-bottom, 0px)); }
-  .paywall-heading { font-size: 22px; }
-  .score-display { font-size: 60px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pay-btn--primary:hover:not(:disabled),
-  .pay-btn--secondary:hover:not(:disabled) { transform: none; }
+@media (max-width: 480px) {
+  .compat-masthead__score { font-size: clamp(60px, 18vw, 90px); }
+  .pay-card__price { font-size: clamp(28px, 8vw, 36px); }
 }
 </style>

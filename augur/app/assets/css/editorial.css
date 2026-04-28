@@ -1,0 +1,135 @@
+:root {
+  /* Palette */
+  --color-bone:       #F2EBDD;
+  --color-bone-dim:   #EAE2CF;
+  --color-ink:        #1A1612;
+  --color-ink-mid:    #3D3530;
+  --color-ink-faint:  rgba(26, 22, 18, 0.45);
+  --color-ink-ghost:  rgba(26, 22, 18, 0.18);
+  --color-gold:       #C9A961;
+  --color-gold-dim:   rgba(201, 169, 97, 0.55);
+
+  /* Typography scale */
+  --text-display:  clamp(64px, 16vw, 160px);
+  --text-headline: clamp(36px, 8vw, 72px);
+  --text-title:    clamp(24px, 5vw, 40px);
+  --text-pull:     clamp(20px, 4vw, 28px);
+  --text-body:     17px;
+  --text-caption:  13px;
+  --text-label:    11px;
+
+  /* Spacing rhythm */
+  --space-section: clamp(64px, 10vw, 120px);
+  --space-block:   clamp(32px, 5vw, 56px);
+
+  /* Borders */
+  --rule-ink:  1px solid rgba(26, 22, 18, 0.2);
+  --rule-gold: 1px solid rgba(201, 169, 97, 0.5);
+}
+
+/* ── Typography utilities ── */
+.font-display {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+}
+
+.font-display-italic {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.font-serif {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-sans {
+  font-family: 'Hanken Grotesk', sans-serif;
+}
+
+.label-caps {
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.pull-quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: var(--text-pull);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.35;
+}
+
+.annotation {
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: var(--text-label);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+/* ── Editorial rule ── */
+.editorial-rule {
+  width: 100%;
+  height: 1px;
+  background: var(--color-ink-ghost);
+}
+
+/* ── Archetype symbol on light bg ── */
+.symbol-editorial {
+  filter: brightness(0) saturate(100%);
+  opacity: 0.85;
+}
+
+.symbol-editorial-gold {
+  /* keep gold fill, works on both light and dark */
+  opacity: 1;
+}
+
+/* ── Wide-screen centering system ── */
+.page-wrapper {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: clamp(20px, 5vw, 80px);
+  padding-right: clamp(20px, 5vw, 80px);
+}
+
+/* Wide editorial column — for text-heavy sections */
+.page-col {
+  width: 100%;
+  max-width: 860px;
+}
+
+/* For sections that have their own padding, use this to cap & center */
+.section-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --section-h-pad: 80px;
+  }
+}
+
+/* ── Autofill override (all inputs) ── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #F2EBDD inset !important;
+  box-shadow: 0 0 0 1000px #F2EBDD inset !important;
+  -webkit-text-fill-color: #1A1612 !important;
+  caret-color: #1A1612;
+  transition: background-color 9999s ease-in-out 0s;
+}

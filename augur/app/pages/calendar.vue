@@ -2,12 +2,7 @@
   <!-- Loading -->
   <div v-if="isLoading" class="center-page">
     <div class="center-content">
-      <div class="orbital-mark">
-        <div class="orbit-outer"><div class="orbit-planet" /></div>
-        <div class="orbit-inner" />
-        <div class="orbit-center" />
-      </div>
-      <p class="brand-text">OMENORA</p>
+      <PhoenixLoader :size="72" />
       <p :key="currentMessageIndex" class="loading-msg">
         {{ loadingMessages[currentMessageIndex] }}
       </p>
@@ -17,12 +12,7 @@
   <!-- Error -->
   <div v-else-if="hasError" class="center-page">
     <div class="center-content">
-      <div class="orbital-mark">
-        <div class="orbit-outer"><div class="orbit-planet" /></div>
-        <div class="orbit-inner" />
-        <div class="orbit-center" />
-      </div>
-      <p class="brand-text">OMENORA</p>
+      <PhoenixLoader :size="72" />
       <p class="loading-msg">{{ t('somethingWrong') }}</p>
     </div>
   </div>
@@ -30,18 +20,19 @@
   <!-- Calendar -->
   <div v-else-if="calendarData" class="cal-page">
 
-    <!-- Top bar -->
-    <div class="top-bar">
-      <p class="top-brand">OMENORA</p>
-      <span class="page-label">{{ t('luckyTimingCalendar') }}</span>
-    </div>
+    <!-- Header -->
+    <AppHeader>
+      <template #action>
+        <span class="cal-page-label label-caps">{{ t('luckyTimingCalendar') }}</span>
+      </template>
+    </AppHeader>
 
-    <!-- Hero -->
+    <!-- Hero / Masthead -->
     <div class="cal-hero">
-      <div class="cal-hero-glow" aria-hidden="true" />
-      <p class="cal-hero-label">{{ t('calDestinyCalendar') }}</p>
-      <h1 class="cal-hero-title">{{ store.firstName }}'s<br>{{ t('yearOfBecoming') }}</h1>
-      <p class="cal-hero-theme">{{ calendarData.overallTheme }}</p>
+      <p class="label-caps cal-hero__eyebrow">{{ t('calDestinyCalendar') }}</p>
+      <h1 class="cal-hero__title font-display-italic">{{ store.firstName }}'s<br>{{ t('yearOfBecoming') }}</h1>
+      <div class="editorial-rule" />
+      <p class="cal-hero__theme">{{ calendarData.overallTheme }}</p>
     </div>
 
     <!-- Peak / Caution summary -->
@@ -375,9 +366,9 @@ async function downloadCalendarPDF() {
 </script>
 
 <style scoped>
-/* ── Centered states ── */
+/* ── Centered states (loading / error) ── */
 .center-page {
-  background: #050410;
+  background: var(--color-bone);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -393,65 +384,6 @@ async function downloadCalendarPDF() {
   padding: 0 24px;
 }
 
-/* ── Orbital mark ── */
-.orbital-mark {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.orbit-outer {
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: 1px solid rgba(201, 168, 76, 0.3);
-  animation: orbit-spin 18s linear infinite;
-}
-
-.orbit-planet {
-  position: absolute;
-  top: -3px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(201, 168, 76, 0.85);
-  box-shadow: 0 0 6px rgba(201, 168, 76, 0.5);
-}
-
-.orbit-inner {
-  position: absolute;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(140, 110, 255, 0.2);
-}
-
-.orbit-center {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(200, 180, 255, 0.9);
-  box-shadow: 0 0 8px rgba(180, 150, 255, 0.6);
-}
-
-@keyframes orbit-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.brand-text {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.25);
-  margin: 0;
-}
-
 @keyframes fadeInMsg {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
@@ -462,7 +394,7 @@ async function downloadCalendarPDF() {
   font-style: italic;
   font-size: 16px;
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--color-ink-mid);
   margin: 0;
   animation: fadeInMsg 0.45s ease;
   max-width: 260px;
@@ -471,91 +403,74 @@ async function downloadCalendarPDF() {
 
 /* ── Calendar page ── */
 .cal-page {
-  background: #050410;
+  background: var(--color-bone);
   min-height: 100vh;
-  color: white;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 24px 20px 80px;
+  color: var(--color-ink);
+  max-width: 100%;
   box-sizing: border-box;
 }
 
-/* ── Top bar ── */
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 28px;
-}
-
-.top-brand {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.22);
-  margin: 0;
-}
-
-.page-label {
+/* ── Page label in header slot ── */
+.cal-page-label {
   font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.55);
-  border: 1px solid rgba(201, 168, 76, 0.2);
-  border-radius: 2px;
-  padding: 3px 10px;
+  color: var(--color-gold);
+  letter-spacing: 0.2em;
 }
 
-/* ── Hero ── */
+/* ── Hero / Masthead ── */
 .cal-hero {
-  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(40px, 8vw, 72px) clamp(20px, 5vw, 56px) 0;
+  padding-bottom: 0;
   margin-bottom: 32px;
-  padding-bottom: 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  overflow: hidden;
 }
 
-.cal-hero-glow {
-  position: absolute;
-  top: -40px;
-  right: -80px;
-  width: 320px;
-  height: 220px;
-  background: radial-gradient(ellipse at right top, rgba(201, 168, 76, 0.07) 0%, transparent 60%);
-  pointer-events: none;
+.cal-hero__eyebrow {
+  color: var(--color-ink-faint);
+  margin: 0 0 20px;
 }
 
-.cal-hero-label {
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: rgba(201, 168, 76, 0.6);
-  margin: 0 0 14px;
-  text-transform: uppercase;
-}
-
-.cal-hero-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 52px;
+.cal-hero__title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(44px, 12vw, 96px);
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.94);
-  margin: 0 0 12px;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  font-style: italic;
+  color: var(--color-ink);
+  margin: 0 0 24px;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
 }
 
-.cal-hero-theme {
-  font-size: 14px;
+.cal-hero__theme {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.38);
+  color: var(--color-ink-mid);
   line-height: 1.65;
-  margin: 0;
-  max-width: 420px;
+  margin: 16px 0 0;
+  max-width: 520px;
+}
+
+/* inner content wrapper */
+.cal-page > *:not(.cal-page) {
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(20px, 5vw, 80px);
+  padding-right: clamp(20px, 5vw, 80px);
+}
+
+/* header spans full width */
+.cal-page > header {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* ── Peak / Caution summary ── */
 .cal-summary {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  border: 1px solid var(--color-ink-ghost);
   padding: 16px 20px;
   margin-bottom: 32px;
 }
@@ -569,38 +484,39 @@ async function downloadCalendarPDF() {
 
 .cal-summary-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-ink-ghost);
   margin: 4px 0;
 }
 
 .summary-label {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 9px;
-  letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.15em;
+  color: var(--color-ink-faint);
   text-transform: uppercase;
   flex-shrink: 0;
   width: 110px;
 }
 
 .peak-months {
-  font-size: 12px;
-  color: rgba(201, 168, 76, 0.82);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  color: var(--color-gold);
   letter-spacing: 0.04em;
 }
 
 .caution-months {
-  font-size: 12px;
-  color: rgba(255, 130, 130, 0.6);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  color: #8B2500;
   letter-spacing: 0.04em;
 }
 
 /* ── Month card ── */
 .month-card {
   position: relative;
-  margin-bottom: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--color-ink-ghost);
   padding: 18px 20px 16px 24px;
   overflow: hidden;
   box-sizing: border-box;
@@ -608,7 +524,7 @@ async function downloadCalendarPDF() {
 }
 
 .month-card:hover {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-ink-mid);
 }
 
 .month-accent {
@@ -617,7 +533,6 @@ async function downloadCalendarPDF() {
   top: 0;
   bottom: 0;
   width: 2px;
-  border-radius: 2px 0 0 2px;
 }
 
 .month-header {
@@ -640,15 +555,16 @@ async function downloadCalendarPDF() {
   font-family: 'Cormorant Garamond', serif;
   font-size: 26px;
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-ink);
   letter-spacing: 0.01em;
 }
 
 .month-theme-text {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--color-ink-faint);
   margin: 4px 0 0;
 }
 
@@ -666,8 +582,9 @@ async function downloadCalendarPDF() {
 }
 
 .energy-label {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--color-ink-faint);
   margin: 3px 0 0;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -676,7 +593,7 @@ async function downloadCalendarPDF() {
 /* ── Energy bar ── */
 .energy-track {
   height: 1px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-ink-ghost);
   margin: 12px 0;
   overflow: hidden;
 }
@@ -714,19 +631,19 @@ async function downloadCalendarPDF() {
 
 .insight-text {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.52);
+  color: var(--color-ink-mid);
   line-height: 1.5;
   font-weight: 300;
 }
 
 /* ── Warning ── */
 .month-warning {
-  background: rgba(180, 80, 80, 0.05);
-  border: 1px solid rgba(180, 80, 80, 0.12);
-  border-radius: 4px;
+  border: 1px solid rgba(139, 37, 0, 0.15);
+  background: rgba(139, 37, 0, 0.03);
   padding: 8px 12px;
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 11px;
-  color: rgba(255, 140, 140, 0.55);
+  color: #8B2500;
   margin-bottom: 12px;
 }
 
@@ -737,24 +654,24 @@ async function downloadCalendarPDF() {
   flex-wrap: wrap;
   gap: 5px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid var(--color-ink-ghost);
 }
 
 .lucky-label {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 9px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.18);
+  color: var(--color-ink-faint);
   margin-right: 4px;
 }
 
 .lucky-chip {
-  background: rgba(201, 168, 76, 0.08);
-  border: 1px solid rgba(201, 168, 76, 0.2);
-  border-radius: 2px;
+  border: 1px solid var(--color-gold-dim);
   padding: 2px 8px;
-  font-size: 11px;
-  color: rgba(201, 168, 76, 0.7);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: var(--color-gold);
   letter-spacing: 0.02em;
 }
 
@@ -762,35 +679,40 @@ async function downloadCalendarPDF() {
 .save-section {
   margin-top: 52px;
   text-align: center;
+  padding-bottom: 80px;
 }
 
 .save-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent);
+  background: var(--color-ink-ghost);
   margin-bottom: 32px;
 }
 
 .save-label {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 9px;
-  letter-spacing: 0.18em;
-  color: rgba(201, 168, 76, 0.5);
+  letter-spacing: 0.2em;
+  color: var(--color-gold);
   margin: 0 0 10px;
   text-transform: uppercase;
 }
 
 .save-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 28px;
+  font-family: 'Fraunces', serif;
+  font-size: clamp(24px, 5vw, 36px);
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.88);
+  font-style: italic;
+  color: var(--color-ink);
   margin: 0 0 6px;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .save-subtitle {
+  font-family: 'Hanken Grotesk', sans-serif;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.28);
+  color: var(--color-ink-faint);
   margin: 0 0 24px;
+  letter-spacing: 0.05em;
 }
 
 /* ── Download buttons ── */
@@ -806,33 +728,30 @@ async function downloadCalendarPDF() {
 
 .download-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.45);
-  border-radius: 4px;
+  border: 1px solid var(--color-ink-ghost);
+  color: var(--color-ink-faint);
   padding: 13px 20px;
-  font-size: 12px;
-  letter-spacing: 0.06em;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
   cursor: pointer;
-  font-family: inherit;
   transition: all 0.22s;
 }
 
 .download-btn:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.72);
+  border-color: var(--color-ink-mid);
+  color: var(--color-ink);
 }
 
 .download-btn--primary {
-  background: rgba(201, 168, 76, 0.1);
-  border-color: rgba(201, 168, 76, 0.42);
-  color: rgba(201, 168, 76, 0.88);
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-bone);
 }
 
 .download-btn--primary:not(:disabled):hover {
-  background: rgba(201, 168, 76, 0.18);
-  border-color: rgba(201, 168, 76, 0.68);
-  color: rgba(201, 168, 76, 1);
-  box-shadow: 0 0 20px rgba(201, 168, 76, 0.08);
+  opacity: 0.85;
 }
 
 .download-btn:disabled {
@@ -841,20 +760,11 @@ async function downloadCalendarPDF() {
 }
 
 /* ── Mobile responsive fixes ── */
-@media (max-width: 400px) {
-  .cal-page {
-    padding: 20px 16px 80px;
+@media (max-width: 640px) {
+  .cal-hero__title {
+    font-size: clamp(36px, 12vw, 56px);
   }
 
-  .cal-hero-title {
-    font-size: 40px;
-  }
-
-  .cal-hero-theme {
-    font-size: 13px;
-  }
-
-  /* Summary row: allow label to wrap */
   .cal-summary-row {
     flex-wrap: wrap;
     gap: 6px;
@@ -862,15 +772,12 @@ async function downloadCalendarPDF() {
 
   .summary-label {
     width: auto;
-    flex-shrink: 0;
   }
 
-  /* Month card: tighter padding */
   .month-card {
     padding: 16px 16px 14px 20px;
   }
 
-  /* Download row: stack vertically */
   .download-row {
     flex-direction: column;
     gap: 10px;
@@ -880,16 +787,6 @@ async function downloadCalendarPDF() {
   .download-row .download-btn {
     flex: unset;
     width: 100%;
-  }
-}
-
-@media (max-width: 360px) {
-  .cal-page {
-    padding: 16px 12px 80px;
-  }
-
-  .cal-hero-title {
-    font-size: 34px;
   }
 }
 </style>

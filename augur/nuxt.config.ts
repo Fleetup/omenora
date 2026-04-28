@@ -3,6 +3,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: process.env.NODE_ENV !== 'production' },
 
+  css: ['~/assets/css/editorial.css'],
+
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
@@ -33,6 +35,7 @@ export default defineNuxtConfig({
       tiktokPixelId: '',
       metaPixelId: '',
       posthogKey: '',
+      googlePlacesKey: process.env.NUXT_PUBLIC_GOOGLE_PLACES_KEY || '',
     },
   },
 
@@ -99,8 +102,8 @@ export default defineNuxtConfig({
           content:
             'Discover your personality archetype through astrology, numerology, and six ancient traditions. AI-generated reading in 60 seconds. No account required.',
         },
-        { name: 'theme-color', content: '#07070D' },
-        { name: 'msapplication-TileColor', content: '#07070D' },
+        { name: 'theme-color', content: '#F2EBDD' },
+        { name: 'msapplication-TileColor', content: '#F2EBDD' },
         { name: 'robots', content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' },
         { name: 'author', content: 'OMENORA' },
         { name: 'copyright', content: '© 2026 OMENORA. All rights reserved.' },
@@ -149,13 +152,10 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
         { rel: 'manifest', href: '/site.webmanifest' },
         { rel: 'sitemap', type: 'application/xml', href: 'https://omenora.com/sitemap.xml' },
-        // Self-hosted Inter font preloads — WOFF2 for optimal compression and browser support
-        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/Inter-Regular.woff2', crossorigin: '' },
-        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/Inter-Medium.woff2', crossorigin: '' },
-        // Cormorant Garamond + Playfair Display — Google Fonts stylesheet (display fonts, non-blocking)
+        // Fraunces + Cormorant Garamond + Hanken Grotesk + JetBrains Mono — Editorial design system
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..900;1,9..144,200..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Hanken+Grotesk:wght@300..800&family=JetBrains+Mono:wght@300..700&display=swap' },
         // Performance: Preconnect to critical third-party domains
         { rel: 'preconnect', href: 'https://js.stripe.com' },
         { rel: 'preconnect', href: 'https://api.stripe.com' },
