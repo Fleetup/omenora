@@ -123,7 +123,7 @@
         <!-- Planet cells row -->
         <div class="report-masthead__planets">
           <div v-for="p in keyPlanets" :key="p.label" class="planet-cell">
-            <span class="planet-cell__glyph">{{ p.glyph }}</span>
+            <img :src="`/symbols/${p.sign}.svg`" :alt="p.sign" class="planet-cell__zodiac" aria-hidden="true" />
             <span class="planet-cell__sign annotation">{{ p.sign }}</span>
             <span class="planet-cell__label annotation">{{ p.label }}</span>
           </div>
@@ -230,12 +230,14 @@
     </div>
 
     <!-- Birth chart: no time of birth -->
-    <div v-else class="upsell-inline">
+    <div v-else class="upsell-inline upsell-inline--active">
       <div class="upsell-inline__info">
-        <p class="label-caps upsell-inline__title upsell-inline__title--dim">{{ t('birthChartUnlockedLabel') }}</p>
+        <p class="label-caps upsell-inline__title">{{ t('birthChartUnlockedLabel') }}</p>
         <p class="annotation upsell-inline__desc">{{ t('birthChartRequiresTime') }}</p>
       </div>
-      <span class="upsell-inline__locked-badge annotation">{{ t('requiresTimeOfBirth') }}</span>
+      <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
+        {{ isLoadingBirthChart ? t('loadingBirthChart') : '$2.99 — Unlock' }}
+      </button>
     </div>
 
     <!-- ── CORE REPORT SECTIONS ── -->
@@ -274,7 +276,7 @@
     <!-- Vedic (India) -->
     <section v-if="store.region === 'india' && vedicData" class="report-section regional-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">🕉</span>
+        <img src="/symbols/Life Path Number copy.svg" alt="" class="report-section__tradition-symbol" aria-hidden="true" />
         <div>
           <p class="label-caps report-section__tradition">{{ t('vedicReadingLabel') }}</p>
           <h2 class="report-section__heading font-serif">{{ vedicData.vedicTitle }}</h2>
@@ -307,7 +309,7 @@
     <!-- BaZi (China) -->
     <section v-if="store.region === 'china' && baziData" class="report-section regional-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">☯</span>
+        <img src="/symbols/Destiny Forecast copy.svg" alt="" class="report-section__tradition-symbol" aria-hidden="true" />
         <div>
           <p class="label-caps report-section__tradition">{{ t('baziReadingLabel') }}</p>
           <h2 class="report-section__heading font-serif">{{ baziData.baziTitle }}</h2>
@@ -340,7 +342,7 @@
     <!-- Tarot / LatAm -->
     <section v-if="(store.region === 'latam' || store.region === 'tarot') && tarotData" class="report-section regional-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">🔮</span>
+        <img src="/symbols/Love & Relationship Patterns copy.svg" alt="" class="report-section__tradition-symbol" aria-hidden="true" />
         <div>
           <p class="label-caps report-section__tradition">{{ t('tarotReadingLabel') }}</p>
           <h2 class="report-section__heading font-serif">{{ tarotData.soulCard }}</h2>
@@ -394,14 +396,15 @@
           :disabled="store.region === opt.value || isSwitchingTradition"
           @click="handleTraditionSwitch(opt.value)"
         >
-          <span class="tradition-opt-icon">{{ opt.icon }}</span>
+          <span class="tradition-opt-num annotation">{{ opt.num }}</span>
+          <img :src="opt.symbol" :alt="opt.label" class="tradition-opt-symbol" aria-hidden="true" />
           <span class="tradition-opt-text">
-            <span class="tradition-opt-name">{{ opt.label }}</span>
+            <span class="tradition-opt-name font-serif">{{ opt.label }}</span>
             <span class="annotation tradition-opt-sub">{{ opt.sub }}</span>
           </span>
           <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active label-caps">{{ t('currentLabel') }}</span>
           <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free label-caps">{{ t('freeLabel') }}</span>
-          <span v-else class="tradition-opt-tag tradition-opt-tag--paid">$2.99</span>
+          <span v-else class="tradition-opt-tag tradition-opt-tag--paid label-caps">$2.99</span>
         </button>
       </div>
     </section>
@@ -1639,10 +1642,10 @@ async function startSubscription() {
 // ── Tradition Switcher ────────────────────────────────────────────────────
 
 const TRADITION_OPTIONS = computed(() => [
-  { value: 'western', label: t('traditionWesternName'), sub: t('traditionWesternSub'), icon: '⭐' },
-  { value: 'india',   label: t('traditionVedicName'),   sub: t('traditionVedicSub'),   icon: '🕉' },
-  { value: 'china',   label: t('traditionChineseName'), sub: t('traditionChineseSub'), icon: '☯' },
-  { value: 'latam',   label: t('traditionTarotName'),   sub: t('traditionTarotSub'),   icon: '🔮' },
+  { value: 'western', label: t('traditionWesternName'), sub: t('traditionWesternSub'), num: '01', symbol: '/symbols/Destiny Archetype.svg' },
+  { value: 'india',   label: t('traditionVedicName'),   sub: t('traditionVedicSub'),   num: '02', symbol: '/symbols/Life Path Number copy.svg' },
+  { value: 'china',   label: t('traditionChineseName'), sub: t('traditionChineseSub'), num: '03', symbol: '/symbols/Destiny Forecast copy.svg' },
+  { value: 'latam',   label: t('traditionTarotName'),   sub: t('traditionTarotSub'),   num: '04', symbol: '/symbols/Love & Relationship Patterns copy.svg' },
 ])
 
 const unlockedTraditions = ref<string[]>([store.region || 'western'])
@@ -2314,10 +2317,11 @@ async function downloadReportPDF() {
   border-right: none;
 }
 
-.planet-cell__glyph {
-  font-size: 14px;
-  color: var(--color-gold);
-  line-height: 1;
+.planet-cell__zodiac {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  opacity: 0.6;
 }
 
 .planet-cell__sign {
@@ -2485,6 +2489,15 @@ async function downloadReportPDF() {
   align-items: flex-start;
   gap: 14px;
   margin-bottom: 4px;
+}
+
+.report-section__tradition-symbol {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  opacity: 0.55;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .report-section__num {
@@ -2728,8 +2741,8 @@ async function downloadReportPDF() {
 .tradition-opt-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 14px;
+  padding: 14px 16px;
   background: transparent;
   border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
   cursor: pointer;
@@ -2737,12 +2750,33 @@ async function downloadReportPDF() {
   color: var(--color-ink-mid, #3D3530);
   font-family: var(--font-sans);
   transition: background 0.2s, border-color 0.2s;
-  border-radius: 1px;
+  border-radius: 0;
+  width: 100%;
+}
+
+.tradition-opt-num {
+  min-width: 24px;
+  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  flex-shrink: 0;
+}
+
+.tradition-opt-symbol {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  opacity: 0.55;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.tradition-opt-btn:hover:not(:disabled) .tradition-opt-symbol,
+.tradition-opt-active .tradition-opt-symbol {
+  opacity: 0.85;
 }
 
 .tradition-opt-btn:hover:not(:disabled) {
-  background: rgba(26,22,18,0.04);
-  border-color: rgba(26,22,18,0.15);
+  background: rgba(26,22,18,0.03);
+  border-color: rgba(26,22,18,0.14);
 }
 
 .tradition-opt-btn:disabled {
@@ -2750,29 +2784,28 @@ async function downloadReportPDF() {
 }
 
 .tradition-opt-active {
-  background: rgba(201,168,76,0.05);
-  border-color: rgba(201,168,76,0.2);
+  background: rgba(201,168,76,0.04);
+  border-color: rgba(201,168,76,0.22);
 }
 
 .tradition-opt-unlocked {
   border-color: rgba(80,200,120,0.15);
 }
 
-.tradition-opt-icon {
-  font-size: 16px;
-  flex-shrink: 0;
-}
+
 
 .tradition-opt-text {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
 }
 
 .tradition-opt-name {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-ink, #1A1612);
+  line-height: 1.2;
 }
 
 .tradition-opt-sub {
