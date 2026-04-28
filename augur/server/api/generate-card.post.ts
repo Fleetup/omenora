@@ -74,8 +74,6 @@ function ensureFonts() {
   registerFont(resolveFontPath('Inter-Regular.ttf'),          { family: 'Inter',     weight: '400', style: 'normal' })
   registerFont(resolveFontPath('Inter-Medium.ttf'),           { family: 'Inter',     weight: '500', style: 'normal' })
   registerFont(resolveFontPath('Inter-Italic.ttf'),           { family: 'Inter',     weight: '400', style: 'italic' })
-  registerFont(resolveFontPath('Fraunces-Light.ttf'),         { family: 'Fraunces',  weight: '300', style: 'normal' })
-  registerFont(resolveFontPath('Fraunces-LightItalic.ttf'),   { family: 'Fraunces',  weight: '300', style: 'italic' })
   registerFont(resolveFontPath('Cormorant-Light.ttf'),        { family: 'Cormorant', weight: '300', style: 'normal' })
   registerFont(resolveFontPath('Cormorant-LightItalic.ttf'),  { family: 'Cormorant', weight: '300', style: 'italic' })
   fontsRegistered = true
@@ -186,11 +184,11 @@ export default defineEventHandler(async (event) => {
   const nameWithout = (archetypeName || 'The Phoenix').replace(/^The\s+/i, '')
   const nameFontSize = nameWithout.length > 10 ? 88 : 112
 
-  ctx.font = 'italic 300 52px Fraunces'
+  ctx.font = 'italic 300 52px Cormorant'
   ctx.fillStyle = 'rgba(26,22,18,0.5)'
   ctx.fillText('The', cx, 592)
 
-  ctx.font = `italic 300 ${nameFontSize}px Fraunces`
+  ctx.font = `italic 300 ${nameFontSize}px Cormorant`
   ctx.fillStyle = INK
   ctx.fillText(nameWithout, cx, 712)
 

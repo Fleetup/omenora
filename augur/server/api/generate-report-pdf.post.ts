@@ -80,8 +80,6 @@ export default defineEventHandler(async (event) => {
   doc.registerFont('Inter',            resolveFontPath('Inter-Regular.ttf'))
   doc.registerFont('Inter-Medium',     resolveFontPath('Inter-Medium.ttf'))
   doc.registerFont('Inter-Light',      resolveFontPath('Inter-Light.ttf'))
-  doc.registerFont('Fraunces',         resolveFontPath('Fraunces-Light.ttf'))
-  doc.registerFont('Fraunces-Italic',  resolveFontPath('Fraunces-LightItalic.ttf'))
   doc.registerFont('Cormorant',        resolveFontPath('Cormorant-Light.ttf'))
   doc.registerFont('Cormorant-Italic', resolveFontPath('Cormorant-LightItalic.ttf'))
 
@@ -114,11 +112,11 @@ export default defineEventHandler(async (event) => {
   drawRule(y, ML + 160, ML + CW - 160)
   y += 20
 
-  // Archetype name in Fraunces italic
+  // Archetype name in Cormorant italic
   const archetypeName = report.archetypeName || ''
-  doc.font('Fraunces-Italic').fontSize(32).fillColor(INK)
+  doc.font('Cormorant-Italic').fontSize(32).fillColor(INK)
      .text(archetypeName, ML, y, { width: CW, align: 'center' })
-  y += doc.heightOfString(archetypeName, { width: CW, font: 'Fraunces-Italic', fontSize: 32 } as any) + 10
+  y += doc.heightOfString(archetypeName, { width: CW, font: 'Cormorant-Italic', fontSize: 32 } as any) + 10
 
   // Symbol image
   const symbolPngPath = resolveSymbolPath(report.archetypeSymbol || '◆')
@@ -183,7 +181,7 @@ export default defineEventHandler(async (event) => {
     if (y > H - 250) { doc.addPage({ size: 'A4', margin: 0 }); y = 52 }
     drawRule(y); y += 14
     drawGoldLabel(L['vedic'] || 'VEDIC DESTINY READING', ML, y); y += 14
-    doc.font('Fraunces-Italic').fontSize(14).fillColor(INK)
+    doc.font('Cormorant-Italic').fontSize(14).fillColor(INK)
        .text(vedicData.vedicTitle || '', ML, y); y += 20
     doc.font('Inter-Medium').fontSize(9).fillColor(GOLD)
        .text(`Nakshatra: ${vedicData.nakshatraName || ''}  ·  Ruling Planet: ${vedicData.rulingPlanet || ''}`, ML, y)
@@ -204,7 +202,7 @@ export default defineEventHandler(async (event) => {
     if (y > H - 250) { doc.addPage({ size: 'A4', margin: 0 }); y = 52 }
     drawRule(y); y += 14
     drawGoldLabel(L['bazi'] || 'BAZI FOUR PILLARS READING', ML, y); y += 14
-    doc.font('Fraunces-Italic').fontSize(14).fillColor(INK)
+    doc.font('Cormorant-Italic').fontSize(14).fillColor(INK)
        .text(baziData.baziTitle || '', ML, y); y += 20
     doc.font('Inter-Medium').fontSize(9).fillColor(GOLD)
        .text(`Day Master: ${baziData.dayMaster || ''}  ·  Dominant Element: ${baziData.dominantElement || ''}`, ML, y)
@@ -225,7 +223,7 @@ export default defineEventHandler(async (event) => {
     if (y > H - 250) { doc.addPage({ size: 'A4', margin: 0 }); y = 52 }
     drawRule(y); y += 14
     drawGoldLabel(L['spiritual'] || 'SPIRITUAL DESTINY READING', ML, y); y += 14
-    doc.font('Fraunces-Italic').fontSize(14).fillColor(INK)
+    doc.font('Cormorant-Italic').fontSize(14).fillColor(INK)
        .text(tarotData.soulCard || '', ML, y); y += 14
     doc.font('Cormorant-Italic').fontSize(12).fillColor(INK_MID)
        .text(tarotData.soulCardMeaning || '', ML, y, { width: CW, align: 'center' })
@@ -252,7 +250,7 @@ export default defineEventHandler(async (event) => {
     if (y > H - 250) { doc.addPage({ size: 'A4', margin: 0 }); y = 52 }
     drawRule(y); y += 14
     drawGoldLabel('YOUR NATAL CHART', ML, y, { width: CW, align: 'center' }); y += 14
-    doc.font('Fraunces-Italic').fontSize(16).fillColor(INK)
+    doc.font('Cormorant-Italic').fontSize(16).fillColor(INK)
        .text(birthChartData.chartTitle || 'Your Birth Chart', ML, y, { width: CW, align: 'center' })
     y += 20
     const placements = [
@@ -345,7 +343,7 @@ export default defineEventHandler(async (event) => {
        .text(compatNames, ML, ky, { width: CW, align: 'center' })
     ky += 20
 
-    doc.font('Fraunces-Italic').fontSize(40).fillColor(GOLD)
+    doc.font('Cormorant-Italic').fontSize(40).fillColor(GOLD)
        .text(`${compatibilityData.compatibilityScore}%`, ML, ky, { width: CW, align: 'center' })
     ky += 48
 
