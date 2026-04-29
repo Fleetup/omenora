@@ -1,6 +1,36 @@
 <template>
+  <!-- ── Step 0: UTM landing / pre-sell ── -->
+  <div v-if="currentStep === 0" class="compat-landing">
+    <AppHeader>
+      <template #action>
+        <span class="label-caps compat-landing__badge">Free Preview</span>
+      </template>
+    </AppHeader>
+
+    <div class="compat-landing__inner">
+      <p class="label-caps compat-landing__eyebrow">Compatibility Reading</p>
+      <h1 class="compat-landing__headline font-display-italic" v-html="heroVariant.headline" />
+      <div class="compat-landing__rule" />
+      <p class="compat-landing__body">{{ heroVariant.body }}</p>
+
+      <div class="compat-landing__trust">
+        <span class="annotation compat-landing__trust-item">Free preview</span>
+        <span class="compat-landing__trust-sep" aria-hidden="true">·</span>
+        <span class="annotation compat-landing__trust-item">No account needed</span>
+        <span class="compat-landing__trust-sep" aria-hidden="true">·</span>
+        <span class="annotation compat-landing__trust-item">Results in 60 seconds</span>
+      </div>
+
+      <CTAButton :arrow="true" class="compat-landing__cta" @click="startQuiz">
+        {{ heroVariant.ctaLabel }}
+      </CTAButton>
+
+      <p class="annotation compat-landing__privacy">Your birth data is used only to generate your reading. Never sold.</p>
+    </div>
+  </div>
+
   <!-- ── Loading state (step 4) ── -->
-  <div v-if="currentStep === 4" class="compat-loading" aria-live="polite">
+  <div v-else-if="currentStep === 4" class="compat-loading" aria-live="polite">
     <div class="compat-loading__inner">
       <OrbitalMark />
       <p class="label-caps compat-loading__brand">Omenora</p>
@@ -263,12 +293,61 @@ const stepConfig = computed(() => [
   { headline: t('quizStep3Headline') },
 ])
 
+// ── Hero copy variants (UTM-driven) ──────────────────────────────────
+interface HeroVariant {
+  headline:  string
+  body:      string
+  ctaLabel:  string
+}
+
+const DEFAULT_HERO: HeroVariant = {
+  headline:  'Are you and this person<br>actually compatible?',
+  body:      'Your birth charts reveal patterns most people never see. Enter both dates and we\'ll calculate your synastry score, core bond, and the one thing driving the dynamic between you.',
+  ctaLabel:  'Check Our Compatibility',
+}
+
+const heroVariant = ref<HeroVariant>({ ...DEFAULT_HERO })
+
+function resolveHeroVariant(utmCreative: string): HeroVariant {
+  const c = utmCreative.toLowerCase()
+  if (c.includes('disappear') || c.includes('alone') || c.includes('end_up')) {
+    return {
+      headline:  'Why do people who matter<br>always disappear?',
+      body:      'Your Venus placement and life-path number reveal the pattern. It\'s written in your birth chart — not your sun sign. Enter your details and we\'ll show you what\'s actually driving it.',
+      ctaLabel:  'See My Pattern',
+    }
+  }
+  if (c.includes('wrong') || c.includes('attract') || c.includes('trust')) {
+    return {
+      headline:  'You don\'t attract the<br>wrong people by accident.',
+      body:      'Your chart carries a specific relational pattern that shows up in every dynamic. Enter both birth dates and we\'ll map exactly where it comes from — and whether you two can work.',
+      ctaLabel:  'Reveal the Pattern',
+    }
+  }
+  if (c.includes('feeling') || c.includes('empty') || c.includes('connection')) {
+    return {
+      headline:  'Something feels off<br>even when things are good.',
+      body:      'Your synastry chart shows whether the connection between two people has a genuine structural match — or a pattern that creates distance no matter how hard you try.',
+      ctaLabel:  'Check the Connection',
+    }
+  }
+  if (c.includes('score') || c.includes('percent') || c.includes('match')) {
+    return {
+      headline:  'What\'s the real compatibility<br>score between you two?',
+      body:      'Not a sun-sign quiz. Your synastry score is calculated from exact planetary positions at birth — both charts, cross-referenced across six astrological factors.',
+      ctaLabel:  'Calculate Our Score',
+    }
+  }
+  return { ...DEFAULT_HERO }
+}
+
 // ── Transition direction ─────────────────────────────────────────────
 const transitionDir = ref('slide-left')
 
 // ── Step state ──────────────────────────────────────────────────────
-const currentStep   = ref(1)
-const revealVisible = ref(false)
+const currentStep    = ref(1)
+const hadLandingStep = ref(false)
+const revealVisible  = ref(false)
 
 const mySunSign:     Ref<SunSign | null> = ref(null)
 const myLifePath:    Ref<number>         = ref(0)
@@ -295,11 +374,22 @@ function triggerReveal() {
   setTimeout(() => { revealVisible.value = true }, 60)
 }
 
+function startQuiz() {
+  transitionDir.value = 'slide-left'
+  currentStep.value = 1
+  triggerReveal()
+  trackEvent('compatibility_quiz_started')
+  trackEvent('compatibility_landing_cta_clicked', { utm_creative: (route.query.utm_creative as string) || '' })
+}
+
 function goBack() {
   if (currentStep.value > 1) {
     transitionDir.value = 'slide-right'
     currentStep.value--
     triggerReveal()
+  } else if (currentStep.value === 1 && hadLandingStep.value) {
+    transitionDir.value = 'slide-right'
+    currentStep.value = 0
   } else {
     navigateTo('/')
   }
@@ -390,10 +480,18 @@ onMounted(() => {
   }
   if (utmParams.utm_source) {
     sessionStorage.setItem('omenora_utms', JSON.stringify(utmParams))
+    heroVariant.value = resolveHeroVariant(utmParams.utm_creative)
+    hadLandingStep.value = true
+    currentStep.value = 0
+    trackEvent('compatibility_landing_viewed', {
+      utm_source:   utmParams.utm_source,
+      utm_campaign: utmParams.utm_campaign,
+      utm_creative: utmParams.utm_creative,
+    })
+  } else {
+    trackEvent('compatibility_quiz_started')
+    triggerReveal()
   }
-
-  trackEvent('compatibility_quiz_started')
-  triggerReveal()
 })
 
 onUnmounted(() => {
@@ -736,6 +834,88 @@ input[type="time"] {
   font-size: inherit;
   padding: 0;
   text-decoration: underline;
+}
+
+/* ── Step 0: Landing / pre-sell ── */
+.compat-landing {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bone);
+}
+
+.compat-landing__badge {
+  color: var(--color-ink-faint);
+  font-size: 10px;
+}
+
+.compat-landing__inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(48px, 10vw, 96px) clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.compat-landing__eyebrow {
+  color: var(--color-ink-faint);
+  margin-bottom: 28px;
+}
+
+.compat-landing__headline {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(40px, 9vw, 76px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  margin: 0 0 36px;
+  color: var(--color-ink);
+}
+
+.compat-landing__rule {
+  width: 56px;
+  height: 1px;
+  background: var(--color-ink-mid);
+  margin-bottom: 32px;
+}
+
+.compat-landing__body {
+  font-size: clamp(15px, 2.2vw, 18px);
+  line-height: 1.75;
+  color: var(--color-ink-mid);
+  max-width: 52ch;
+  margin-bottom: 40px;
+}
+
+.compat-landing__trust {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 36px;
+}
+
+.compat-landing__trust-item {
+  color: var(--color-ink-faint);
+}
+
+.compat-landing__trust-sep {
+  color: var(--color-ink-ghost);
+  font-size: 12px;
+}
+
+.compat-landing__cta {
+  align-self: flex-start;
+  margin-bottom: 28px;
+}
+
+.compat-landing__privacy {
+  color: var(--color-ink-faint);
+  max-width: 44ch;
 }
 
 /* ── Step transitions ── */
