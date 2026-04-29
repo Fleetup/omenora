@@ -39,6 +39,20 @@
           </NuxtLink>
         </slot>
 
+        <!-- Language switcher — desktop only -->
+        <div class="app-header__lang-strip app-header__desktop-only">
+          <button
+            v-for="lang in LANGUAGES"
+            :key="lang.code"
+            class="app-header__lang-btn label-caps"
+            :class="{ 'app-header__lang-btn--active': currentLang === lang.code }"
+            :aria-label="lang.name"
+            @click="selectLanguage(lang.code)"
+          >
+            {{ lang.label }}
+          </button>
+        </div>
+
         <!-- Burger — mobile only -->
         <button
           class="app-header__burger app-header__mobile-only"
@@ -105,6 +119,24 @@
             </NuxtLink>
           </div>
 
+          <!-- Language switcher — mobile -->
+          <div class="mobile-nav-lang">
+            <p class="label-caps mobile-nav-lang__label">Language</p>
+            <div class="mobile-nav-lang__pills">
+              <button
+                v-for="lang in LANGUAGES"
+                :key="lang.code"
+                class="mobile-nav-lang__pill label-caps"
+                :class="{ 'mobile-nav-lang__pill--active': currentLang === lang.code }"
+                :aria-label="lang.name"
+                @click="selectLanguage(lang.code)"
+              >
+                <span class="mobile-nav-lang__flag">{{ lang.flag }}</span>
+                {{ lang.label }}
+              </button>
+            </div>
+          </div>
+
           <div class="app-header__mobile-nav-footer">
             <div class="editorial-rule" />
             <NuxtLink
@@ -133,8 +165,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
+import { useAnalysisStore } from '~/stores/analysisStore'
+import { LANGUAGES } from '~/utils/translations'
 
 defineProps<{
   dark?: boolean
@@ -142,6 +176,13 @@ defineProps<{
 
 const currentYear = new Date().getFullYear()
 const { isAuthenticated } = useAuth()
+const store = useAnalysisStore()
+
+const currentLang = computed(() => store.language)
+
+function selectLanguage(code: string) {
+  store.setLanguageOverride(code)
+}
 
 const menuOpen = ref(false)
 
@@ -398,6 +439,91 @@ onUnmounted(() => {
 
 .mobile-nav-account:hover {
   color: var(--color-ink);
+}
+
+/* ── Desktop language strip ── */
+.app-header__lang-strip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  padding-left: 12px;
+  border-left: 1px solid var(--color-ink-ghost);
+}
+
+.app-header__lang-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--color-ink-faint);
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.app-header__lang-btn:hover {
+  color: var(--color-ink);
+  background: rgba(26, 22, 18, 0.05);
+}
+
+.app-header__lang-btn--active {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+/* ── Mobile language switcher ── */
+.mobile-nav-lang {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.mobile-nav-lang__label {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--color-ink-faint);
+  margin-bottom: 16px;
+}
+
+.mobile-nav-lang__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mobile-nav-lang__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--color-ink-ghost);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--color-ink-faint);
+  padding: 7px 14px;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.mobile-nav-lang__pill:hover {
+  border-color: var(--color-ink-mid);
+  color: var(--color-ink);
+}
+
+.mobile-nav-lang__pill--active {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+  background: rgba(26, 22, 18, 0.04);
+}
+
+.mobile-nav-lang__flag {
+  font-size: 14px;
+  line-height: 1;
 }
 
 /* ── Transition ── */
