@@ -90,7 +90,9 @@ export default defineEventHandler(async (event) => {
         let insightResult: {
           success: boolean
           insight: {
-            insight: string
+            love: string
+            work: string
+            health: string
             reflection_question: string
             theme: string
             moonPhase: string
@@ -140,7 +142,10 @@ export default defineEventHandler(async (event) => {
               archetype,
               cache_date:          targetDate,
               language,
-              insight:             insight.insight,
+              insight:             insight.love,
+              love:                insight.love,
+              work:                insight.work,
+              health:              insight.health,
               reflection_question: insight.reflection_question,
               theme:               insight.theme,
               moon_phase:          insight.moonPhase,
@@ -190,7 +195,9 @@ export default defineEventHandler(async (event) => {
             let retryResult: {
               success: boolean
               insight: {
-                insight: string
+                love: string
+                work: string
+                health: string
                 reflection_question: string
                 theme: string
                 moonPhase: string
@@ -236,7 +243,10 @@ export default defineEventHandler(async (event) => {
                   archetype,
                   cache_date:          targetDate,
                   language,
-                  insight:             retryInsight.insight,
+                  insight:             retryInsight.love,
+                  love:                retryInsight.love,
+                  work:                retryInsight.work,
+                  health:              retryInsight.health,
                   reflection_question: retryInsight.reflection_question,
                   theme:               retryInsight.theme,
                   moon_phase:          retryInsight.moonPhase,
