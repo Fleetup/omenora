@@ -277,12 +277,47 @@
             <div
               v-for="insight in dailyInsights"
               :key="insight.sent_date"
-              class="data-row"
+              class="insight-row"
+              :class="{ 'insight-row--open': expandedInsight === insight.sent_date }"
             >
-              <div>
-                <span class="data-row__value font-serif">{{ insight.theme_used || 'Daily Reading' }}</span>
-                <span class="data-row__label" style="display: block; margin-top: 2px;">{{ formatDate(insight.sent_date) }}</span>
-              </div>
+              <!-- Header row — always visible, clickable -->
+              <button
+                class="insight-row__header data-row"
+                @click="toggleInsight(insight.sent_date)"
+              >
+                <div class="insight-row__left">
+                  <span class="data-row__value font-serif">
+                    {{ insight.theme_used || 'Daily Reading' }}
+                  </span>
+                  <span class="data-row__label" style="display: block; margin-top: 2px;">
+                    {{ formatDate(insight.sent_date) }}
+                  </span>
+                </div>
+                <span class="insight-row__toggle label-caps">
+                  {{ expandedInsight === insight.sent_date ? '−' : '+' }}
+                </span>
+              </button>
+
+              <!-- Expanded content -->
+              <Transition name="insight-expand">
+                <div
+                  v-if="expandedInsight === insight.sent_date"
+                  class="insight-row__body"
+                >
+                  <!-- Full insight text -->
+                  <p class="insight-row__text">
+                    {{ insight.insight_full || insight.insight_preview }}
+                  </p>
+
+                  <!-- Reflection question -->
+                  <div v-if="insight.reflection_question" class="insight-row__reflection">
+                    <span class="label-caps insight-row__reflection-label">Today's reflection</span>
+                    <p class="insight-row__reflection-text font-serif">
+                      {{ insight.reflection_question }}
+                    </p>
+                  </div>
+                </div>
+              </Transition>
             </div>
           </template>
 
@@ -1288,6 +1323,96 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 .reading-card__view:hover {
   color: var(--color-ink);
   border-color: var(--color-ink-mid);
+}
+
+/* ── Insight expandable rows ── */
+.insight-row {
+  border-bottom: 1px solid var(--color-ink-ghost);
+}
+
+.insight-row:first-of-type {
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.insight-row__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 16px;
+  transition: opacity 0.15s;
+}
+
+.insight-row__header:hover {
+  opacity: 0.75;
+}
+
+.insight-row__left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.insight-row__toggle {
+  color: var(--color-gold);
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.insight-row__body {
+  padding: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 60ch;
+}
+
+.insight-row__text {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--color-ink-mid);
+  margin: 0;
+}
+
+.insight-row__reflection {
+  padding: 16px 20px;
+  border-left: 2px solid var(--color-gold);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.insight-row__reflection-label {
+  color: var(--color-gold);
+  font-size: 10px;
+}
+
+.insight-row__reflection-text {
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.65;
+  color: var(--color-ink-mid);
+  margin: 0;
+}
+
+/* Transition */
+.insight-expand-enter-active,
+.insight-expand-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.insight-expand-enter-from,
+.insight-expand-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 /* ── Toast ── */
