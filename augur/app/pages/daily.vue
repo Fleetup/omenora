@@ -43,6 +43,36 @@
         <p class="annotation">Today's horoscopes are being prepared. Check back shortly.</p>
       </div>
 
+      <!-- Featured sign: no reading yet (cache empty or error) -->
+      <template v-else-if="featuredSign && !featuredSignReading">
+        <div class="reading-view">
+          <button class="back-link label-caps" @click="navigateTo('/daily')">← All signs</button>
+
+          <div class="reading-sign-header">
+            <div class="reading-sign-header__sign">
+              <img
+                :src="`/symbols/${zodiacSignFile(featuredSign)}`"
+                :alt="currentSignName"
+                class="reading-sign-img"
+              />
+              <div>
+                <h2 class="font-serif reading-sign-name">{{ currentSignName }}</h2>
+                <span class="annotation">{{ currentSignDates }}</span>
+              </div>
+            </div>
+          </div>
+
+          <EditorialRule />
+
+          <div class="reading-empty">
+            <p class="label-caps reading-empty__label">{{ todayFormatted }}</p>
+            <p class="pull-quote reading-empty__msg">Today's reading is being prepared.</p>
+            <p class="annotation reading-empty__sub">Daily horoscopes are generated each morning. Check back shortly.</p>
+            <button class="back-link label-caps" @click="navigateTo('/daily')" style="margin-top: 24px">← Choose another sign</button>
+          </div>
+        </div>
+      </template>
+
       <!-- Featured sign view (deep link ?sign=) -->
       <template v-else-if="featuredSign && featuredSignReading">
         <div class="reading-view">
@@ -170,6 +200,36 @@
       <div v-else-if="!archetypeData" class="daily-empty">
         <p class="annotation">Today's archetype readings are being prepared. Check back shortly.</p>
       </div>
+
+      <!-- Featured archetype: no reading yet (cache empty or error) -->
+      <template v-else-if="featuredArchetype && !featuredReading">
+        <div class="reading-view">
+          <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')">← All archetypes</button>
+
+          <div class="reading-sign-header">
+            <div class="reading-sign-header__sign">
+              <img
+                :src="`/symbols/${selectedArchetypeFile}`"
+                :alt="featuredDisplayName"
+                class="reading-archetype-symbol symbol-editorial"
+              />
+              <div>
+                <h2 class="font-serif reading-sign-name">{{ featuredDisplayName }}</h2>
+                <span class="annotation">Archetype Reading</span>
+              </div>
+            </div>
+          </div>
+
+          <EditorialRule />
+
+          <div class="reading-empty">
+            <p class="label-caps reading-empty__label">{{ todayFormatted }}</p>
+            <p class="pull-quote reading-empty__msg">Today's reading is being prepared.</p>
+            <p class="annotation reading-empty__sub">Archetype readings are generated each morning. Check back shortly.</p>
+            <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')" style="margin-top: 24px">← Choose another archetype</button>
+          </div>
+        </div>
+      </template>
 
       <!-- Featured archetype view (deep link ?archetype=) -->
       <template v-else-if="featuredArchetype && featuredReading">
@@ -640,6 +700,27 @@ onMounted(async () => {
 .daily-empty {
   padding: clamp(20px, 5vw, 48px);
   color: var(--color-ink-faint);
+}
+
+.reading-empty {
+  padding: 32px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reading-empty__label {
+  color: var(--color-ink-faint);
+}
+
+.reading-empty__msg {
+  max-width: 32ch;
+  margin: 0;
+}
+
+.reading-empty__sub {
+  color: var(--color-ink-faint);
+  max-width: 44ch;
 }
 
 /* ─────────────────────────────────────────────
