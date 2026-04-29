@@ -5,7 +5,7 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const API_URL = 'https://omenora.com/api/generate-compatibility';
+const API_URL = 'http://localhost:3000/api/generate-compatibility';
 const OUTPUT_PATH = join(__dirname, 'sample-readings.json');
 const DELAY_MS = 3000;
 
@@ -54,7 +54,7 @@ async function fetchReading(pairing) {
     partnerDob: pairing.person2.dob,
     partnerCity: pairing.person2.city,
     language: 'en',
-    previewMode: false,
+    previewMode: true,
   };
 
   const response = await fetch(API_URL, {
@@ -72,10 +72,11 @@ async function fetchReading(pairing) {
 }
 
 function extractResult(pairing, data) {
-  const receipt = data.calculationReceipt ?? {};
+  const compat = data.compatibility ?? data;
+  const receipt = compat.calculationReceipt ?? {};
   const p1Receipt = receipt.person1 ?? {};
   const p2Receipt = receipt.person2 ?? {};
-  const sections = data.sections ?? {};
+  const sections = compat.sections ?? {};
 
   return {
     pairing: pairing.label,
@@ -90,8 +91,8 @@ function extractResult(pairing, data) {
       sunSign: p2Receipt.sunSign ?? null,
       lifePathNumber: p2Receipt.lifePathNumber ?? null,
     },
-    score: data.compatibilityScore ?? null,
-    title: data.compatibilityTitle ?? null,
+    score: compat.compatibilityScore ?? null,
+    title: compat.compatibilityTitle ?? null,
     challenge: sections.challenge?.content ?? null,
     bond: sections.bond?.content ?? null,
     advice: sections.advice?.content ?? null,

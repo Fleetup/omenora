@@ -1,0 +1,101 @@
+[
+  {
+    "pairing": "Capricorn + Gemini",
+    "person1": {
+      "dob": "1985-01-19",
+      "sunSign": "Capricorn",
+      "lifePathNumber": 7,
+      "archetype": "architect"
+    },
+    "person2": {
+      "dob": "1990-06-15",
+      "sunSign": "Gemini",
+      "lifePathNumber": 4
+    },
+    "score": 82,
+    "title": "The Architect meets The Builder — two minds that shape the same world",
+    "challenge": "Your Life Path 7 needs silence, depth, and time alone to process the world. Your partner's 4 energy, sharpened by the pace of New York summers, pushes toward action and visible results. You may sometimes feel rushed. Your partner may sometimes feel left out of your inner world.",
+    "bond": "[locked]",
+    "advice": "[locked]"
+  },
+  {
+    "pairing": "Aries + Scorpio",
+    "person1": {
+      "dob": "1988-03-21",
+      "sunSign": "Aries",
+      "lifePathNumber": 5,
+      "archetype": "wildfire"
+    },
+    "person2": {
+      "dob": "1992-11-08",
+      "sunSign": "Scorpio",
+      "lifePathNumber": 4
+    },
+    "score": 72,
+    "title": "The Wildfire meets The Architect — freedom tested by foundation",
+    "challenge": "Your Life Path 5 demands freedom above almost everything else, and your partner's Life Path 4 moves slowly, values security, and distrusts sudden change. You may feel that your partner's caution puts out your fire, while they may feel that your constant motion makes it impossible to build anything stable. This is not a small tension — it lives at the center of who you each are.",
+    "bond": "[locked]",
+    "advice": "[locked]"
+  },
+  {
+    "pairing": "Cancer + Aquarius",
+    "person1": {
+      "dob": "1990-07-04",
+      "sunSign": "Cancer",
+      "lifePathNumber": 3,
+      "archetype": "catalyst"
+    },
+    "person2": {
+      "dob": "1987-02-14",
+      "sunSign": "Aquarius",
+      "lifePathNumber": 5
+    },
+    "score": 78,
+    "title": "The Catalyst meets The Wanderer — creation through constant motion",
+    "challenge": "You, as Water, want depth and continuity — you want to feel that you matter to the same person over time. Your partner, shaped by winter's cold clarity and the 5's hunger for change, can mistake rootedness for limitation. The real friction here is not conflict — it is timing. You reach for stillness just when they are ready to move, and they reach for newness just when you need to rest.",
+    "bond": "[locked]",
+    "advice": "[locked]"
+  },
+  {
+    "pairing": "Scorpio + Taurus",
+    "person1": {
+      "dob": "1983-10-23",
+      "sunSign": "Scorpio",
+      "lifePathNumber": 9,
+      "archetype": "wanderer"
+    },
+    "person2": {
+      "dob": "1991-05-01",
+      "sunSign": "Taurus",
+      "lifePathNumber": 8
+    },
+    "score": 78,
+    "title": "The Wanderer meets The Architect — depth searching for direction",
+    "challenge": "Your Life Path 9 asks you to let go; their Life Path 8 asks them to hold tighter. This is the central friction between you. Your partner's spring birth gives them momentum and optimism, but also impatience with your need to drift before you commit. You may feel controlled; they may feel abandoned. Neither feeling is wrong — both are real.",
+    "bond": "[locked]",
+    "advice": "[locked]"
+  },
+  {
+    "pairing": "Capricorn + Leo",
+    "person1": {
+      "dob": "1995-12-22",
+      "sunSign": "Capricorn",
+      "lifePathNumber": 4,
+      "archetype": "architect"
+    },
+    "person2": {
+      "dob": "1989-08-11",
+      "sunSign": "Leo",
+      "lifePathNumber": 1
+    },
+    "score": 72,
+    "title": "The Architect meets The Pioneer — structure tested by ambition",
+    "challenge": "Your partner moves with the heat of a Sydney summer — fast, bright, and self-directed. You move with Earth — deliberate, methodical, and resistant to sudden change. Your partner may read your caution as doubt. You may read their speed as recklessness. This misreading is the central problem between you, and it will repeat until you name it directly.",
+    "bond": "[locked]",
+    "advice": "[locked]"
+  },
+  {
+    "pairing": "Virgo + Taurus",
+    "error": "HTTP 429: {\"statusCode\":429,\"statusMessage\":\"Internal Server Error\",\"stack\":\"Error: Too many requests — please try again later.\\n    at createError (file:///Volumes/ESSD/Projects/Augur-V1/augur/node_modules/h3/dist/index.mjs:71:15)\\n    at Object.handler (file:///Volumes/ESSD/Projects/Augur-V1/augur/.nuxt/dev/index.mjs:1518:11)\\n    at file:///Volumes/ESSD/Projects/Augur-V1/augur/node_modules/h3/dist/index.mjs:2017:31\\n    at async Object.callAsync (file:///Volumes/ESSD/Projects/Augur-V1/augur/node_modules/unctx/dist/index.mjs:72:16)\\n    at async Server.toNodeHandle (file:///Volumes/ESSD/Projects/Augur-V1/augur/node_modules/h3/dist/index.mjs:2316:7)\"}"
+  }
+]
