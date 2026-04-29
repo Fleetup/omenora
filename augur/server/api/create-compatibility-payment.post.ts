@@ -21,6 +21,7 @@ export default defineEventHandler(async (event) => {
   const utmCreative  = sanitizeString(body.utmCreative  || '', 100)
   const utmSource    = sanitizeString(body.utmSource    || '', 100)
   const utmCampaign  = sanitizeString(body.utmCampaign  || '', 100)
+  const utmMedium    = sanitizeString(body.utmMedium    || '', 100)
 
   // tier: default to 'legacy' if missing or not a recognised value
   const rawTier = sanitizeString(body.tier ?? '', 20)
@@ -61,6 +62,7 @@ export default defineEventHandler(async (event) => {
     ...(utmCreative  ? { utm_creative: utmCreative } : {}),
     ...(utmSource    ? { utm_source:   utmSource }   : {}),
     ...(utmCampaign  ? { utm_campaign: utmCampaign } : {}),
+    ...(utmMedium    ? { utm_medium:   utmMedium }   : {}),
   }
 
   // ── Stripe session construction ───────────────────────────────────────────

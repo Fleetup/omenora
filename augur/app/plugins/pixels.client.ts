@@ -126,7 +126,12 @@ export default defineNuxtPlugin(() => {
   function getUtmParams(): Record<string, string> {
     try {
       const stored = sessionStorage.getItem(UTM_SESSION_KEY)
-      if (stored) return JSON.parse(stored) as Record<string, string>
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          if (parsed.utm_source) return parsed
+        } catch {}
+      }
     } catch {
       // sessionStorage unavailable or corrupt — fall through to URL
     }

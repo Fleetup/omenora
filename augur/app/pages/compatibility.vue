@@ -549,6 +549,7 @@ async function handleCheckout(tier: 'subscription' | 'single') {
           utmCreative: utmParams.utm_creative || '',
           utmSource:   utmParams.utm_source   || '',
           utmCampaign: utmParams.utm_campaign  || '',
+          utmMedium:   utmParams.utm_medium    || '',
         },
       },
     )
