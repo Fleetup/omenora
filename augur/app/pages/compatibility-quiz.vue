@@ -310,6 +310,35 @@ const heroVariant = ref<HeroVariant>({ ...DEFAULT_HERO })
 
 function resolveHeroVariant(utmCreative: string): HeroVariant {
   const c = utmCreative.toLowerCase()
+
+  // v3_ignoring — being left on read / ignored
+  if (c.includes('ignoring') || c.includes('left_on_read') || c.includes('read') || c.includes('seen')) {
+    return {
+      headline:  'Why do they go cold<br>after showing so much interest?',
+      body:      'Your synastry chart shows whether the pull between you is real — or a pattern your chart keeps recreating. Enter both birth dates and we\'ll show you what\'s actually happening.',
+      ctaLabel:  'See What\'s Really Happening',
+    }
+  }
+
+  // v4_weather — going through a rough patch / can this survive
+  if (c.includes('weather') || c.includes('storm') || c.includes('rough') || c.includes('survive') || c.includes('work_out')) {
+    return {
+      headline:  'Can this relationship<br>actually survive this?',
+      body:      'Your birth charts reveal whether two people have the structural bond to get through hard periods — or whether the tension is written into the connection itself.',
+      ctaLabel:  'Check Our Bond',
+    }
+  }
+
+  // v5_antiscam — is this person genuine / red flags / real feelings
+  if (c.includes('antiscam') || c.includes('scam') || c.includes('real') || c.includes('genuine') || c.includes('redflag') || c.includes('red_flag')) {
+    return {
+      headline:  'Is what they feel for you<br>actually real?',
+      body:      'Your synastry chart shows whether someone\'s feelings have a genuine astrological foundation — or whether the attraction is one-sided by design. Enter both dates to find out.',
+      ctaLabel:  'Find Out If It\'s Real',
+    }
+  }
+
+  // v1_disappear / alone
   if (c.includes('disappear') || c.includes('alone') || c.includes('end_up')) {
     return {
       headline:  'Why do people who matter<br>always disappear?',
@@ -317,6 +346,8 @@ function resolveHeroVariant(utmCreative: string): HeroVariant {
       ctaLabel:  'See My Pattern',
     }
   }
+
+  // wrong person / attraction pattern
   if (c.includes('wrong') || c.includes('attract') || c.includes('trust')) {
     return {
       headline:  'You don\'t attract the<br>wrong people by accident.',
@@ -324,6 +355,8 @@ function resolveHeroVariant(utmCreative: string): HeroVariant {
       ctaLabel:  'Reveal the Pattern',
     }
   }
+
+  // empty / off feeling
   if (c.includes('feeling') || c.includes('empty') || c.includes('connection')) {
     return {
       headline:  'Something feels off<br>even when things are good.',
@@ -331,6 +364,8 @@ function resolveHeroVariant(utmCreative: string): HeroVariant {
       ctaLabel:  'Check the Connection',
     }
   }
+
+  // score / match
   if (c.includes('score') || c.includes('percent') || c.includes('match')) {
     return {
       headline:  'What\'s the real compatibility<br>score between you two?',
@@ -338,6 +373,7 @@ function resolveHeroVariant(utmCreative: string): HeroVariant {
       ctaLabel:  'Calculate Our Score',
     }
   }
+
   return { ...DEFAULT_HERO }
 }
 
