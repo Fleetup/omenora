@@ -21,8 +21,8 @@
   <div v-else-if="isPreviewMode && !previewData" class="compat-state-page">
     <div class="compat-state-inner">
       <p class="label-caps compat-state-brand">Omenora</p>
-      <p class="annotation compat-state-msg" style="max-width: 280px;">Session expired. Start the quiz again to see your forecast.</p>
-      <CTAButton :arrow="true" @click="navigateTo('/compatibility-quiz')">Restart the quiz</CTAButton>
+      <p class="annotation compat-state-msg" style="max-width: 280px;">{{ t('compatSessionExpired') }}</p>
+      <CTAButton :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</CTAButton>
     </div>
   </div>
 
@@ -72,25 +72,25 @@
 
     <!-- Calculation receipt -->
     <div v-if="compatibility.calculationReceipt" class="calc-receipt calc-receipt--full">
-      <p class="label-caps calc-receipt__header">How we calculated this</p>
+      <p class="label-caps calc-receipt__header">{{ t('compatHowCalculated') }}</p>
       <div class="calc-receipt__rows">
         <div class="calc-receipt__row">
-          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person1?.name || 'You' }}</span>
+          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person1?.name || t('quizYouLabel') }}</span>
           <span class="annotation calc-receipt__detail">
             {{ compatibility.calculationReceipt.person1?.sunSign }}
             · {{ compatibility.calculationReceipt.person1?.element }}
-            · Life Path {{ compatibility.calculationReceipt.person1?.lifePathNumber }}
+            · {{ t('compatLifePathLabel') }} {{ compatibility.calculationReceipt.person1?.lifePathNumber }}
             <template v-if="compatibility.calculationReceipt.person1?.archetype">
               · {{ compatibility.calculationReceipt.person1.archetype }}
             </template>
           </span>
         </div>
         <div class="calc-receipt__row">
-          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person2?.name || 'Them' }}</span>
+          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person2?.name || t('quizThemLabel') }}</span>
           <span class="annotation calc-receipt__detail">
             {{ compatibility.calculationReceipt.person2?.sunSign }}
             · {{ compatibility.calculationReceipt.person2?.element }}
-            · Life Path {{ compatibility.calculationReceipt.person2?.lifePathNumber }}
+            · {{ t('compatLifePathLabel') }} {{ compatibility.calculationReceipt.person2?.lifePathNumber }}
           </span>
         </div>
         <div v-for="(note, i) in compatibility.calculationReceipt.synastryNotes" :key="i" class="calc-receipt__row calc-receipt__row--note">
@@ -108,7 +108,7 @@
       </p>
 
       <div class="compat-share-card">
-        <p class="label-caps compat-share-card__kicker">Destiny Compatibility</p>
+        <p class="label-caps compat-share-card__kicker">{{ t('compatShareCardKicker') }}</p>
         <p class="compat-share-card__names font-serif">{{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}</p>
         <p class="compat-share-card__score font-serif" :style="{ color: scoreColor }">
           {{ compatibility.compatibilityScore }}%
@@ -123,16 +123,16 @@
         class="compat-download-btn"
         @click="downloadCompatCard"
       >
-        {{ isDownloadingCard ? 'Generating…' : 'Download your compatibility card' }}
+        {{ isDownloadingCard ? t('compatDownloadGenerating') : t('compatDownloadCta') }}
       </CTAButton>
       <p v-if="cardDownloadError" class="annotation compat-download-error">{{ cardDownloadError }}</p>
     </div>
 
     <footer class="compat-footer">
       <nav aria-label="Legal">
-        <NuxtLink to="/privacy" class="footer-link annotation">Privacy Policy</NuxtLink>
+        <NuxtLink to="/privacy" class="footer-link annotation">{{ t('compatPrivacy') }}</NuxtLink>
         <span class="footer-sep" aria-hidden="true">·</span>
-        <NuxtLink to="/terms" class="footer-link annotation">Terms of Service</NuxtLink>
+        <NuxtLink to="/terms" class="footer-link annotation">{{ t('compatTerms') }}</NuxtLink>
       </nav>
     </footer>
   </div>
@@ -142,18 +142,18 @@
 
     <AppHeader>
       <template #action>
-        <span class="label-caps compat-preview__badge">Free Preview</span>
+        <span class="label-caps compat-preview__badge">{{ t('compatFreeBadge') }}</span>
       </template>
     </AppHeader>
 
     <!-- Canceled banner (CASE C) -->
     <div v-if="isCanceled" class="compat-canceled" role="status">
-      <p class="annotation">Checkout canceled. Your forecast is still here when you're ready.</p>
+      <p class="annotation">{{ t('compatCanceled') }}</p>
     </div>
 
     <!-- Preview masthead -->
     <div class="compat-masthead compat-masthead--preview">
-      <p class="label-caps compat-masthead__kicker">Destiny Compatibility</p>
+      <p class="label-caps compat-masthead__kicker">{{ t('compatDestinyLabel') }}</p>
       <h1 class="compat-masthead__names font-display-italic">
         {{ displayMyName }} &amp; {{ displayTheirName }}
       </h1>
@@ -167,7 +167,7 @@
     <!-- Challenge section (free hook) -->
     <div class="report-body">
       <div class="report-section report-section--challenge">
-        <p class="label-caps report-section__kicker">The Tension You Must Navigate</p>
+        <p class="label-caps report-section__kicker">{{ t('compatChallengeKicker') }}</p>
         <div class="report-section__header">
           <span class="report-section__num label-caps">01</span>
           <div class="report-section__rule" />
@@ -182,7 +182,7 @@
     <!-- Locked sections strip -->
     <div class="locked-strip">
       <div class="locked-strip__header">
-        <span class="label-caps locked-strip__label">Still locked in your forecast</span>
+        <span class="label-caps locked-strip__label">{{ t('compatLockedLabel') }}</span>
       </div>
       <div class="locked-strip__cards">
         <div v-for="key in LOCKED_SECTIONS" :key="key" class="locked-card">
@@ -199,54 +199,52 @@
 
     <!-- Calculation receipt -->
     <div class="calc-receipt">
-      <p class="label-caps calc-receipt__header">How we calculated this</p>
+      <p class="label-caps calc-receipt__header">{{ t('compatHowCalculated') }}</p>
       <p class="annotation calc-receipt__body">
-        Born {{ formatDob(store.dateOfBirth) }}{{ store.city ? ' in ' + store.city : '' }}
-        · Born {{ formatDob(store.partnerDob) }}{{ store.partnerCity ? ' in ' + store.partnerCity : '' }}
+        {{ t('compatBornPrefix') }} {{ formatDob(store.dateOfBirth) }}{{ store.city ? t('compatBornIn') + store.city : '' }}
+        · {{ t('compatBornPrefix') }} {{ formatDob(store.partnerDob) }}{{ store.partnerCity ? t('compatBornIn') + store.partnerCity : '' }}
       </p>
-      <p class="annotation calc-receipt__meta">Western (Tropical) · Calculated with Swiss Ephemeris</p>
+      <p class="annotation calc-receipt__meta">{{ t('compatCalcSource') }}</p>
     </div>
 
     <!-- Trust line -->
-    <p class="compat-trust annotation">Not a $1 soulmate sketch. Not a psychic chat. Just real birth charts compared.</p>
+    <p class="compat-trust annotation">{{ t('compatTrustLine') }}</p>
 
     <!-- Paywall block -->
     <div class="paywall">
-      <h2 class="paywall__heading font-display-italic">Unlock your full forecast</h2>
-      <p class="paywall__sub annotation">
-        Your challenge is just the beginning. The bond, strength, forecast, and one piece of advice — written for this exact connection, grounded in real chart data.
-      </p>
+      <h2 class="paywall__heading font-display-italic">{{ t('compatUnlockHeading') }}</h2>
+      <p class="paywall__sub annotation">{{ t('compatUnlockSub') }}</p>
 
       <!-- Name + email capture -->
       <div class="capture-block">
-        <label class="label-caps capture-block__label" for="compat-my-name">Your first name</label>
+        <label class="label-caps capture-block__label" for="compat-my-name">{{ t('compatYourName') }}</label>
         <input
           id="compat-my-name"
           v-model="myNameInput"
           type="text"
-          placeholder="Your first name"
+          :placeholder="t('compatYourNamePlaceholder')"
           autocomplete="given-name"
           maxlength="50"
           class="editorial-input"
           @focus="trackEvent('name_field_focused')"
         />
-        <label class="label-caps capture-block__label capture-block__label--spaced" for="compat-their-name">Their first name</label>
+        <label class="label-caps capture-block__label capture-block__label--spaced" for="compat-their-name">{{ t('compatTheirName') }}</label>
         <input
           id="compat-their-name"
           v-model="theirNameInput"
           type="text"
-          placeholder="Their first name"
+          :placeholder="t('compatTheirNamePlaceholder')"
           autocomplete="off"
           maxlength="50"
           class="editorial-input"
           @focus="trackEvent('name_field_focused')"
         />
-        <label class="label-caps capture-block__label capture-block__label--spaced" for="compat-email">Where should we send your reading?</label>
+        <label class="label-caps capture-block__label capture-block__label--spaced" for="compat-email">{{ t('compatEmailLabel') }}</label>
         <input
           id="compat-email"
           v-model="emailInput"
           type="email"
-          placeholder="your@email.com"
+          :placeholder="t('emailPlaceholder')"
           autocomplete="email"
           class="editorial-input"
           @focus="trackEvent('email_field_focused')"
@@ -254,24 +252,22 @@
         />
       </div>
 
-      <p v-if="emailPrompt" class="compat-email-prompt annotation" role="alert">
-        Please enter your email to start the subscription.
-      </p>
+      <p v-if="emailPrompt" class="compat-email-prompt annotation" role="alert">{{ t('compatEmailPrompt') }}</p>
       <div v-if="checkoutError" class="compat-checkout-error annotation" role="alert">
         {{ checkoutError }}
       </div>
 
       <!-- Option 1: Subscription (primary) -->
       <div class="pay-card pay-card--primary">
-        <p class="label-caps pay-card__badge">Recommended</p>
-        <p class="pay-card__name">Compatibility Plus</p>
-        <p class="pay-card__price font-serif">$9.99<span class="pay-card__freq annotation"> / month</span></p>
+        <p class="label-caps pay-card__badge">{{ t('compatSubBadge') }}</p>
+        <p class="pay-card__name">{{ t('compatSubName') }}</p>
+        <p class="pay-card__price font-serif">{{ t('compatSubPrice') }}<span class="pay-card__freq annotation"> {{ t('compatSubFreq') }}</span></p>
         <ul class="pay-card__bullets annotation">
-          <li>Unlimited compatibility forecasts — any pairing, any time</li>
-          <li>Weekly relationship weather — every Monday in your inbox</li>
-          <li>Daily horoscope — love, work &amp; health, personalized to your chart</li>
-          <li>Full forecast history on your account</li>
-          <li>Real chart math — Swiss Ephemeris, not sun sign guesses</li>
+          <li>{{ t('compatSubBullet1') }}</li>
+          <li>{{ t('compatSubBullet2') }}</li>
+          <li>{{ t('compatSubBullet3') }}</li>
+          <li>{{ t('compatSubBullet4') }}</li>
+          <li>{{ t('compatSubBullet5') }}</li>
         </ul>
         <CTAButton
           :arrow="false"
@@ -280,22 +276,22 @@
           :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'subscription' }"
           @click="handleCheckout('subscription')"
         >
-          <span v-if="isProcessing && activeTier === 'subscription'">Processing…</span>
-          <span v-else>Start subscription — $9.99/month</span>
+          <span v-if="isProcessing && activeTier === 'subscription'">{{ t('compatProcessing') }}</span>
+          <span v-else>{{ t('compatSubCta') }}</span>
         </CTAButton>
-        <p class="annotation pay-card__footnote">Cancel anytime in 1 click. No hidden trial.</p>
-        <p class="annotation pay-card__footnote">Next charge: {{ nextChargeDate }}</p>
-        <p class="annotation pay-card__footnote pay-card__footnote--muted">Apple Pay &amp; Google Pay accepted</p>
+        <p class="annotation pay-card__footnote">{{ t('compatSubFootnote1') }}</p>
+        <p class="annotation pay-card__footnote">{{ t('compatSubFootnote2') }} {{ nextChargeDate }}</p>
+        <p class="annotation pay-card__footnote pay-card__footnote--muted">{{ t('compatSubFootnote3') }}</p>
       </div>
 
       <!-- Option 2: Single (secondary) -->
       <div class="pay-card pay-card--secondary">
-        <p class="pay-card__name">Just this forecast</p>
-        <p class="pay-card__price font-serif">$7.99<span class="pay-card__freq annotation"> one-time</span></p>
+        <p class="pay-card__name">{{ t('compatSingleName') }}</p>
+        <p class="pay-card__price font-serif">{{ t('compatSinglePrice') }}<span class="pay-card__freq annotation"> {{ t('compatSingleFreq') }}</span></p>
         <ul class="pay-card__bullets annotation">
-          <li>Full compatibility analysis for this pairing only</li>
-          <li>All 5 sections unlocked — bond, strength, challenge, forecast &amp; advice</li>
-          <li>Shareable forecast card included</li>
+          <li>{{ t('compatSingleBullet1') }}</li>
+          <li>{{ t('compatSingleBullet2') }}</li>
+          <li>{{ t('compatSingleBullet3') }}</li>
         </ul>
         <button
           class="pay-card__btn pay-card__btn--secondary"
@@ -303,25 +299,25 @@
           :disabled="isProcessing"
           @click="handleCheckout('single')"
         >
-          <span v-if="isProcessing && activeTier === 'single'">Processing…</span>
-          <span v-else>Get this forecast — $7.99</span>
+          <span v-if="isProcessing && activeTier === 'single'">{{ t('compatProcessing') }}</span>
+          <span v-else>{{ t('compatSingleCta') }}</span>
         </button>
       </div>
 
       <!-- Guarantee -->
       <div class="guarantee">
         <p class="annotation guarantee__text">
-          ✦ If it doesn't feel like it was written for you, full refund within 24 hours. No form to fill.
+          {{ t('compatGuarantee') }}
         </p>
       </div>
-      <p class="label-caps compat-trust-secure">Secure payment by Stripe</p>
+      <p class="label-caps compat-trust-secure">{{ t('compatSecurePayment') }}</p>
     </div>
 
     <footer class="compat-footer">
       <nav aria-label="Legal">
-        <NuxtLink to="/privacy" class="footer-link annotation">Privacy Policy</NuxtLink>
+        <NuxtLink to="/privacy" class="footer-link annotation">{{ t('compatPrivacy') }}</NuxtLink>
         <span class="footer-sep" aria-hidden="true">·</span>
-        <NuxtLink to="/terms" class="footer-link annotation">Terms of Service</NuxtLink>
+        <NuxtLink to="/terms" class="footer-link annotation">{{ t('compatTerms') }}</NuxtLink>
       </nav>
     </footer>
   </div>

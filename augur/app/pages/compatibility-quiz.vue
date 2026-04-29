@@ -11,8 +11,8 @@
         <div class="compat-loading__fill" />
       </div>
       <p v-if="apiError" class="compat-loading__error annotation">
-        Something went wrong.
-        <button class="compat-loading__retry" @click="runApiCall">Try again</button>
+        {{ t('quizErrorMsg') }}
+        <button class="compat-loading__retry" @click="runApiCall">{{ t('quizRetry') }}</button>
       </p>
     </div>
   </div>
@@ -50,7 +50,7 @@
 
             <!-- ── Step 1: Your birth details ── -->
             <template v-if="currentStep === 1">
-              <label class="field-label label-caps" for="compat-my-dob">Your birth date</label>
+              <label class="field-label label-caps" for="compat-my-dob">{{ t('quizMyBirthDate') }}</label>
               <input
                 id="compat-my-dob"
                 v-model="myDob"
@@ -64,16 +64,16 @@
               <div style="margin-top: 32px;">
                 <PlacesAutocomplete
                   v-model="myCity"
-                  label="Your birth city"
-                  placeholder="City, Country"
+                  :label="t('quizMyBirthCity')"
+                  :placeholder="t('quizCityPlaceholder')"
                   input-id="myCity"
                   @place-selected="onMyCitySelected"
                 />
               </div>
 
               <div class="compat-time-row">
-                <label class="field-label label-caps" for="compat-my-time">Birth time</label>
-                <button type="button" class="compat-skip-time label-caps" @click="myTime = ''">Skip</button>
+                <label class="field-label label-caps" for="compat-my-time">{{ t('quizBirthTime') }}</label>
+                <button type="button" class="compat-skip-time label-caps" @click="myTime = ''">{{ t('quizSkip') }}</button>
               </div>
               <input
                 id="compat-my-time"
@@ -81,7 +81,7 @@
                 type="time"
                 class="editorial-input"
               />
-              <p class="field-hint annotation">More accurate Rising sign — leave blank if unknown</p>
+              <p class="field-hint annotation">{{ t('quizBirthTimeHint') }}</p>
             </template>
 
             <!-- ── Step 2: Their birth details ── -->
@@ -89,15 +89,15 @@
 
               <!-- Your sign reveal card -->
               <div class="compat-reveal" :class="{ 'compat-reveal--visible': revealVisible }">
-                <p class="label-caps compat-reveal__label">You</p>
+                <p class="label-caps compat-reveal__label">{{ t('quizYouLabel') }}</p>
                 <p class="compat-reveal__sign font-serif">
                   <ZodiacSymbol v-if="mySunSign" :sign="mySunSign.name" :size="22" />
                   {{ mySunSign?.name }}
                 </p>
-                <p class="compat-reveal__path annotation">Life Path {{ myLifePath }}</p>
+                <p class="compat-reveal__path annotation">{{ t('quizLifePath') }} {{ myLifePath }}</p>
               </div>
 
-              <label class="field-label label-caps" for="compat-their-dob">Their birth date</label>
+              <label class="field-label label-caps" for="compat-their-dob">{{ t('quizTheirBirthDate') }}</label>
               <input
                 id="compat-their-dob"
                 v-model="theirDob"
@@ -111,16 +111,16 @@
               <div style="margin-top: 32px;">
                 <PlacesAutocomplete
                   v-model="theirCity"
-                  label="Their birth city"
-                  placeholder="City, Country"
+                  :label="t('quizTheirBirthCity')"
+                  :placeholder="t('quizCityPlaceholder')"
                   input-id="theirCity"
                   @place-selected="onTheirCitySelected"
                 />
               </div>
 
               <div class="compat-time-row">
-                <label class="field-label label-caps" for="compat-their-time">Birth time</label>
-                <button type="button" class="compat-skip-time label-caps" @click="theirTime = ''">Skip</button>
+                <label class="field-label label-caps" for="compat-their-time">{{ t('quizBirthTime') }}</label>
+                <button type="button" class="compat-skip-time label-caps" @click="theirTime = ''">{{ t('quizSkip') }}</button>
               </div>
               <input
                 id="compat-their-time"
@@ -128,34 +128,32 @@
                 type="time"
                 class="editorial-input"
               />
-              <p class="field-hint annotation">More accurate Rising sign — leave blank if unknown</p>
+              <p class="field-hint annotation">{{ t('quizBirthTimeHint') }}</p>
             </template>
 
             <!-- ── Step 3: Confirm & calculate ── -->
             <template v-else-if="currentStep === 3">
               <div class="compat-dual-reveal" :class="{ 'compat-dual-reveal--visible': revealVisible }">
                 <div class="compat-dual-reveal__card">
-                  <p class="label-caps compat-reveal__label">You</p>
+                  <p class="label-caps compat-reveal__label">{{ t('quizYouLabel') }}</p>
                   <p class="compat-reveal__sign font-serif">
                     <ZodiacSymbol v-if="mySunSign" :sign="mySunSign.name" :size="20" />
                     {{ mySunSign?.name }}
                   </p>
-                  <p class="compat-reveal__path annotation">Life Path {{ myLifePath }}</p>
+                  <p class="compat-reveal__path annotation">{{ t('quizLifePath') }} {{ myLifePath }}</p>
                 </div>
                 <div class="compat-dual-reveal__sep font-display">×</div>
                 <div class="compat-dual-reveal__card">
-                  <p class="label-caps compat-reveal__label">Them</p>
+                  <p class="label-caps compat-reveal__label">{{ t('quizThemLabel') }}</p>
                   <p class="compat-reveal__sign font-serif">
                     <ZodiacSymbol v-if="theirSunSign" :sign="theirSunSign.name" :size="20" />
                     {{ theirSunSign?.name }}
                   </p>
-                  <p class="compat-reveal__path annotation">Life Path {{ theirLifePath }}</p>
+                  <p class="compat-reveal__path annotation">{{ t('quizLifePath') }} {{ theirLifePath }}</p>
                 </div>
               </div>
 
-              <p class="field-hint annotation" style="margin-top: 0;">
-                We'll map the synastry between your two birth charts — communication, conflict, attraction, and what's coming next.
-              </p>
+              <p class="field-hint annotation" style="margin-top: 0;">{{ t('quizSynastryHint') }}</p>
             </template>
 
           </div>
@@ -167,7 +165,7 @@
               class="back-link label-caps"
               @click="goBack"
             >
-              ← Back
+              {{ t('quizBack') }}
             </button>
 
             <CTAButton
@@ -176,7 +174,7 @@
               class="advance-btn"
               @click="advanceStep3"
             >
-              Calculate compatibility
+              {{ t('quizCalculate') }}
             </CTAButton>
 
             <CTAButton
@@ -186,7 +184,7 @@
               class="advance-btn"
               @click="advanceStep1"
             >
-              Continue
+              {{ t('quizContinue') }}
             </CTAButton>
 
             <CTAButton
@@ -196,7 +194,7 @@
               class="advance-btn"
               @click="advanceStep2"
             >
-              Continue
+              {{ t('quizContinue') }}
             </CTAButton>
           </div>
 
@@ -204,7 +202,7 @@
       </Transition>
     </div>
 
-    <p class="trust-footer annotation">🔒 Your birth data is used only to generate your reading. Never sold.</p>
+    <p class="trust-footer annotation">{{ t('quizTrustFooter') }}</p>
 
   </div>
 </template>
@@ -213,10 +211,12 @@
 import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import { getSunSign, getLifePathNumber, type SunSign } from '~/utils/quick-signs-client'
 import { useAnalysisStore } from '~/stores/analysisStore'
+import { useLanguage } from '~/composables/useLanguage'
 
 useSeoMeta({ title: 'Free Compatibility Reading — OMENORA', robots: 'noindex, nofollow' })
 
 const store = useAnalysisStore()
+const { t } = useLanguage()
 const route = useRoute()
 const { $trackCustomEvent } = useNuxtApp() as any
 
@@ -257,11 +257,11 @@ function onTheirCitySelected(place: { name: string; lat: number; lng: number; pl
 }
 
 // ── Step config ─────────────────────────────────────────────────────
-const stepConfig = [
-  { headline: 'Whose chart are we comparing?' },
-  { headline: 'Now their birth details.' },
-  { headline: 'Ready to see what your charts say?' },
-]
+const stepConfig = computed(() => [
+  { headline: t('quizStep1Headline') },
+  { headline: t('quizStep2Headline') },
+  { headline: t('quizStep3Headline') },
+])
 
 // ── Transition direction ─────────────────────────────────────────────
 const transitionDir = ref('slide-left')
@@ -282,11 +282,11 @@ const step2Valid = computed(() => theirDob.value.length === 10 && theirCity.valu
 // ── Loading ─────────────────────────────────────────────────────────
 const apiError       = ref(false)
 const loadingMsgIdx  = ref(0)
-const loadingMessages = [
-  'Reading your birth charts...',
-  'Mapping the synastry aspects...',
-  'Generating your reading...',
-]
+const loadingMessages = computed(() => [
+  t('quizLoadingMsg1'),
+  t('quizLoadingMsg2'),
+  t('quizLoadingMsg3'),
+])
 let loadingInterval: ReturnType<typeof setInterval> | null = null
 
 // ── Navigation ────────────────────────────────────────────────────────────────
@@ -340,7 +340,7 @@ function advanceStep3() {
 function startLoadingCycle() {
   loadingMsgIdx.value = 0
   loadingInterval = setInterval(() => {
-    loadingMsgIdx.value = (loadingMsgIdx.value + 1) % loadingMessages.length
+    loadingMsgIdx.value = (loadingMsgIdx.value + 1) % loadingMessages.value.length
   }, 1200)
 }
 
