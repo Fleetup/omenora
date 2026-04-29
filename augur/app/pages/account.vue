@@ -306,17 +306,22 @@
                 >
                   <!-- Structured insight (JSON format from generate-daily-insight) -->
                   <template v-if="insight.structured">
-                    <div class="insight-row__section">
-                      <span class="label-caps insight-row__section-label">♥ Love</span>
-                      <p class="insight-row__text">{{ insight.structured.love }}</p>
-                    </div>
-                    <div class="insight-row__section">
-                      <span class="label-caps insight-row__section-label">✦ Work</span>
-                      <p class="insight-row__text">{{ insight.structured.work }}</p>
-                    </div>
-                    <div class="insight-row__section">
-                      <span class="label-caps insight-row__section-label">✿ Health</span>
-                      <p class="insight-row__text">{{ insight.structured.health }}</p>
+                    <div class="insight-sign-sections">
+                      <div class="insight-sign-section-row">
+                        <HoroscopeSymbol type="love" :size="16" />
+                        <span class="label-caps insight-section-label">Love</span>
+                        <span class="insight-section-text">{{ insight.structured.love }}</span>
+                      </div>
+                      <div class="insight-sign-section-row">
+                        <HoroscopeSymbol type="work" :size="16" />
+                        <span class="label-caps insight-section-label">Work</span>
+                        <span class="insight-section-text">{{ insight.structured.work }}</span>
+                      </div>
+                      <div class="insight-sign-section-row">
+                        <HoroscopeSymbol type="health" :size="16" />
+                        <span class="label-caps insight-section-label">Health</span>
+                        <span class="insight-section-text">{{ insight.structured.health }}</span>
+                      </div>
                     </div>
                     <div v-if="insight.structured.reflection_question" class="insight-row__reflection">
                       <span class="label-caps insight-row__reflection-label">Today's reflection</span>
@@ -1391,16 +1396,34 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   max-width: 60ch;
 }
 
-.insight-row__section {
+.insight-sign-sections {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  margin: 4px 0;
 }
 
-.insight-row__section-label {
+.insight-sign-section-row {
+  display: grid;
+  grid-template-columns: 16px 52px 1fr;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.insight-sign-section-row:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.insight-section-label {
   color: var(--color-ink-faint);
-  font-size: 10px;
-  letter-spacing: 0.12em;
+}
+
+.insight-section-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-ink-mid);
 }
 
 .insight-row__text {
