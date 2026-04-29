@@ -3,6 +3,7 @@ import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { CompatibilitySchema, type CompatibilityType, type CompatibilityReceiptType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
 import { getSunSign, getLifePathNumber } from '~~/server/utils/quick-signs'
+import { getPlanetaryTransits } from '~~/server/utils/planetaryTransits'
 import { calculateNatalChart, assignArchetypeFromChart } from '~~/app/utils/natalChart'
 
 export default defineEventHandler(async (event) => {
@@ -84,8 +85,9 @@ export default defineEventHandler(async (event) => {
 
   // ── Partner calculations ─────────────────────────────────────────────────
 
-  // Change 1: replaced inline IIFE with getLifePathNumber() from quick-signs.ts
   const partnerLifePath = getLifePathNumber(partnerDob).number
+  const partnerSunSign  = getSunSign(partnerDob)
+  const partnerElement  = partnerSunSign.element
 
   const partnerSeason = (() => {
     const month = new Date(partnerDob).getMonth()
@@ -93,6 +95,61 @@ export default defineEventHandler(async (event) => {
     if (month >= 5 && month <= 7) return 'summer'
     if (month >= 8 && month <= 10) return 'autumn'
     return 'winter'
+  })()
+
+  // ── Current planetary transits (7-day forecast window) ────────────────
+
+  const todayDate  = new Date().toISOString().split('T')[0]!
+  const sevenDaysFromNow = new Date()
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
+  const forecastEndDate = sevenDaysFromNow.toISOString().split('T')[0]!
+
+  const currentTransits = getPlanetaryTransits(todayDate)
+  const forecastTransits = getPlanetaryTransits(forecastEndDate)
+
+  // ── Synastry element notes (deterministic, server-side) ──────────────
+  //
+  // Derives meaningful elemental synastry notes from both people's elements.
+  // These are factual, rule-based statements — not AI invention.
+
+  const ELEMENT_PAIRS: Record<string, Record<string, string>> = {
+    Fire: {
+      Fire:  'Fire + Fire: high passion, risk of burnout without space',
+      Earth: 'Fire + Earth: drive meets stability — grounding tension',
+      Air:   'Fire + Air: Air fans the flame — mentally stimulating match',
+      Water: 'Fire + Water: intense chemistry, steam when pressure builds',
+    },
+    Earth: {
+      Fire:  'Earth + Fire: stability challenged by spontaneity',
+      Earth: 'Earth + Earth: reliable foundation, slow to change',
+      Air:   'Earth + Air: practicality vs. ideas — communication gap risk',
+      Water: 'Earth + Water: Water nourishes Earth — naturally complementary',
+    },
+    Air: {
+      Fire:  'Air + Fire: ideas ignite action — fast-moving connection',
+      Earth: 'Air + Earth: vision vs. structure — needs shared goals',
+      Air:   'Air + Air: strong mental bond, may lack emotional grounding',
+      Water: 'Air + Water: logical meets intuitive — requires translation',
+    },
+    Water: {
+      Fire:  'Water + Fire: deep feeling meets boldness — intense polarity',
+      Earth: 'Water + Earth: Water finds its container — stabilising bond',
+      Air:   'Water + Air: emotion vs. logic — empathy bridges the gap',
+      Water: 'Water + Water: profound emotional depth, boundary blurring risk',
+    },
+  }
+
+  const p1Element = element || 'Unknown'
+  const p2Element = partnerElement
+  const elementNote = ELEMENT_PAIRS[p1Element]?.[p2Element]
+    ?? `${p1Element} + ${p2Element}: elemental interplay shapes the dynamic`
+
+  const lifePathNote = (() => {
+    const diff = Math.abs(lifePathNumber - partnerLifePath)
+    if (diff === 0)  return `Life Path ${lifePathNumber} + ${partnerLifePath}: shared number — mirrored life mission, risk of echo chamber`
+    if (diff <= 2)   return `Life Path ${lifePathNumber} + ${partnerLifePath}: compatible rhythm — goals align with natural variance`
+    if (diff <= 5)   return `Life Path ${lifePathNumber} + ${partnerLifePath}: moderate contrast — complementary if communication is strong`
+    return           `Life Path ${lifePathNumber} + ${partnerLifePath}: significant contrast — different life missions require intentional bridging`
   })()
 
   // ── Language instruction ──────────────────────────────────────────────────
@@ -115,8 +172,8 @@ export default defineEventHandler(async (event) => {
 
   const prompt = `${langInstruction}
 
-You are OMENORA, an AI destiny analysis system. Generate a compatibility report between two people.
-Be specific, poetic, and personal. Reference their actual names, archetypes, life paths, and seasons throughout.
+You are OMENORA, an AI destiny analysis system. Generate a 7-section compatibility report between two people.
+Be specific, poetic, and personal. Reference their actual names, archetypes, life paths, and elements throughout.
 Never be generic. Write in second person to ${firstName || 'the user'}.
 
 Person 1 (the user):
@@ -124,13 +181,30 @@ Person 1 (the user):
 - Archetype: ${archetype}
 - Element: ${element}
 - Life Path: ${lifePathNumber}
-- Traits: ${powerTraits?.join(', ')}
+- Traits: ${powerTraits?.join(', ') || 'not provided'}
 
 Person 2 (their person):
 - Name: ${partnerName || '(not provided — refer to as "your partner")'}
 - Born: ${partnerSeason} season
+- Element: ${partnerElement}
 - Life Path: ${partnerLifePath}
+- Sun sign: ${partnerSunSign.name}
 - City: ${partnerCity}
+
+ELEMENTAL SYNASTRY:
+${elementNote}
+
+NUMEROLOGY:
+${lifePathNote}
+
+CURRENT PLANETARY WINDOW (${todayDate} – ${forecastEndDate}):
+- Sun: ${currentTransits.sun.sign} ${currentTransits.sun.degree}° → ${forecastTransits.sun.sign} ${forecastTransits.sun.degree}°
+- Moon: ${currentTransits.moon.sign} ${currentTransits.moon.degree}° → ${forecastTransits.moon.sign} ${forecastTransits.moon.degree}° (${currentTransits.moonPhaseName})
+- Mercury: ${currentTransits.mercury.sign} ${currentTransits.mercury.degree}° → ${forecastTransits.mercury.sign} ${forecastTransits.mercury.degree}°
+- Venus: ${currentTransits.venus.sign} ${currentTransits.venus.degree}° → ${forecastTransits.venus.sign} ${forecastTransits.venus.degree}°
+- Mars: ${currentTransits.mars.sign} ${currentTransits.mars.degree}° → ${forecastTransits.mars.sign} ${forecastTransits.mars.degree}°
+
+Generate exactly 7 sections. Each section MUST be specific to this exact pairing — never a generic template.
 
 Return ONLY valid JSON, no markdown:
 {
@@ -138,24 +212,32 @@ Return ONLY valid JSON, no markdown:
   "compatibilityTitle": "The Alchemist meets The Storm — transformation through tension",
   "sections": {
     "bond": {
-      "title": "The Bond Between You",
-      "content": "[3-4 sentences about the core dynamic between these two specific people and their archetypes]"
+      "title": "The Bond That Holds You Together",
+      "content": "[3-4 sentences: why these two connect at a fundamental level — specific to their archetypes and elements]"
     },
     "strength": {
       "title": "Your Greatest Strength Together",
-      "content": "[2-3 sentences about what makes this pairing powerful]"
+      "content": "[2-3 sentences: the specific advantage this pairing creates that neither person has alone]"
     },
     "challenge": {
       "title": "The Tension You Must Navigate",
-      "content": "[2-3 sentences honest about the friction point between their energies]"
+      "content": "[2-3 sentences: the core friction between their elemental and archetypal energies — honest, not softened]"
+    },
+    "communication": {
+      "title": "The Communication Pattern",
+      "content": "[3 sentences: how these two people talk, process conflict, and repair — what works, what breaks down, what heals it. Ground in Mercury position and their elements.]"
+    },
+    "powerDynamic": {
+      "title": "The Power Dynamic",
+      "content": "[3 sentences: who leads, who follows, where the balance tips and why — be precise, name the archetype that tends to dominate and in which situations]"
     },
     "forecast": {
-      "title": "What 2026 Holds For You Both",
-      "content": "[3 sentences about the year ahead for this relationship]"
+      "title": "The Next 7 Days",
+      "content": "[3 sentences: use the actual planetary window above to describe what this specific couple will feel in the coming week. Name the planets and signs explicitly. Be a real forecast, not generic.]"
     },
     "advice": {
-      "title": "The One Thing That Changes Everything",
-      "content": "[1-2 sentences of the single most important insight for this pairing]"
+      "title": "The One Move That Changes Everything",
+      "content": "[1-2 sentences: one concrete, specific action rooted in both charts that shifts the dynamic more than any other single thing]"
     }
   }
 }`
@@ -168,13 +250,15 @@ Return ONLY valid JSON, no markdown:
       sections: {
         type: 'object',
         properties: {
-          bond:      { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
-          strength:  { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
-          challenge: { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
-          forecast:  { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
-          advice:    { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          bond:          { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          strength:      { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          challenge:     { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          communication: { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          powerDynamic:  { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          forecast:      { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
+          advice:        { type: 'object', properties: { title: { type: 'string' }, content: { type: 'string' } }, required: ['title', 'content'] },
         },
-        required: ['bond', 'strength', 'challenge', 'forecast', 'advice'],
+        required: ['bond', 'strength', 'challenge', 'communication', 'powerDynamic', 'forecast', 'advice'],
       },
     },
     required: ['compatibilityScore', 'compatibilityTitle', 'sections'],
@@ -183,7 +267,7 @@ Return ONLY valid JSON, no markdown:
   const message = await withAiRetry('generate-compatibility', () =>
     client.messages.parse({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2500,
+      max_tokens: 4000,
       system: `You are writing a personal relationship compatibility reading between two specific people. Your analysis is grounded, honest, and precise. You name real dynamics — not flattering generalities. Every sentence must be specific to these two people's actual combination. Write at B2 English level. Short sentences. No cultural idioms. Make the reader feel their relationship has just been seen clearly for the first time.`,
       messages: [{ role: 'user', content: prompt }],
       output_config: { format: jsonSchemaOutputFormat(compatibilityJsonSchema) },
@@ -227,34 +311,42 @@ Return ONLY valid JSON, no markdown:
 
   const sections = previewMode
     ? {
-        bond:      { title: compatibilityData.sections.bond.title,     content: '[locked]' },
-        strength:  { title: compatibilityData.sections.strength.title, content: '[locked]' },
-        challenge: compatibilityData.sections.challenge,
-        forecast:  { title: compatibilityData.sections.forecast.title, content: '[locked]' },
-        advice:    { title: compatibilityData.sections.advice.title,   content: '[locked]' },
+        bond:          { title: compatibilityData.sections.bond.title,          content: '[locked]' },
+        strength:      { title: compatibilityData.sections.strength.title,      content: '[locked]' },
+        challenge:     compatibilityData.sections.challenge,
+        communication: { title: compatibilityData.sections.communication.title, content: '[locked]' },
+        powerDynamic:  { title: compatibilityData.sections.powerDynamic.title,  content: '[locked]' },
+        forecast:      { title: compatibilityData.sections.forecast.title,      content: '[locked]' },
+        advice:        { title: compatibilityData.sections.advice.title,        content: '[locked]' },
       }
     : compatibilityData.sections
 
   // ── Change 4: Calculation receipt ─────────────────────────────────────────
 
-  const person1SunSignForReceipt = person1Dob && isValidDateOfBirth(person1Dob)
-    ? getSunSign(person1Dob).name
-    : ''
+  const person1SunSign = person1Dob && isValidDateOfBirth(person1Dob)
+    ? getSunSign(person1Dob)
+    : null
 
   const calculationReceipt: CompatibilityReceiptType = {
     person1: {
       name:           firstName,
       dateOfBirth:    person1Dob,
-      sunSign:        person1SunSignForReceipt,
+      sunSign:        person1SunSign?.name ?? '',
+      element:        element || person1SunSign?.element || '',
       lifePathNumber: lifePathNumber,
       archetype:      archetype,
     },
     person2: {
       name:           partnerName,
       dateOfBirth:    partnerDob,
-      sunSign:        getSunSign(partnerDob).name,
+      sunSign:        partnerSunSign.name,
+      element:        partnerElement,
       lifePathNumber: partnerLifePath,
     },
+    synastryNotes: [
+      elementNote,
+      lifePathNote,
+    ],
     tradition:         'Western (Tropical)',
     calculationSource: 'Swiss Ephemeris',
     generatedAt:       new Date().toISOString(),

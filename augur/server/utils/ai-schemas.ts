@@ -137,20 +137,22 @@ export type CalendarType = z.infer<typeof CalendarSchema>
 // ── CompatibilitySchema ─────────────────────────────────────────────────────
 // Used by: generate-compatibility.post.ts
 //
-// Expected Claude output shape (from generate-compatibility prompt lines 72–97):
+// Expected Claude output shape (7 sections):
 // {
 //   compatibilityScore: 85,
 //   compatibilityTitle: "...",
 //   sections: {
-//     bond:      { title, content },
-//     strength:  { title, content },
-//     challenge: { title, content },
-//     forecast:  { title, content },
-//     advice:    { title, content },
+//     bond:          { title, content },  — The Bond That Holds You Together
+//     strength:      { title, content },  — Your Greatest Strength Together
+//     challenge:     { title, content },  — The Tension You Must Navigate (free preview)
+//     communication: { title, content },  — The Communication Pattern
+//     powerDynamic:  { title, content },  — The Power Dynamic
+//     forecast:      { title, content },  — The Timing Forecast (7-day transit window)
+//     advice:        { title, content },  — The Advice
 //   }
 // }
 //
-// API response also includes (added server-side, not from Claude):
+// API response also includes (assembled server-side, not from Claude):
 //   previewMode:        boolean (optional, true when sections are partially locked)
 //   calculationReceipt: object  (transparent math receipt shown on the report)
 
@@ -163,11 +165,13 @@ export const CompatibilitySchema = z.object({
   compatibilityScore: z.number().int().min(0).max(100),
   compatibilityTitle: z.string().min(1),
   sections: z.object({
-    bond:      CompatibilitySectionSchema,
-    strength:  CompatibilitySectionSchema,
-    challenge: CompatibilitySectionSchema,
-    forecast:  CompatibilitySectionSchema,
-    advice:    CompatibilitySectionSchema,
+    bond:          CompatibilitySectionSchema,
+    strength:      CompatibilitySectionSchema,
+    challenge:     CompatibilitySectionSchema,
+    communication: CompatibilitySectionSchema,
+    powerDynamic:  CompatibilitySectionSchema,
+    forecast:      CompatibilitySectionSchema,
+    advice:        CompatibilitySectionSchema,
   }),
 })
 
@@ -181,6 +185,7 @@ export const CompatibilityReceiptPersonSchema = z.object({
   name:           z.string(),
   dateOfBirth:    z.string(),
   sunSign:        z.string(),
+  element:        z.string(),
   lifePathNumber: z.number().int(),
   archetype:      z.string().optional(),
 })
@@ -188,6 +193,7 @@ export const CompatibilityReceiptPersonSchema = z.object({
 export const CompatibilityReceiptSchema = z.object({
   person1:           CompatibilityReceiptPersonSchema,
   person2:           CompatibilityReceiptPersonSchema.omit({ archetype: true }),
+  synastryNotes:     z.array(z.string()).min(1),
   tradition:         z.literal('Western (Tropical)'),
   calculationSource: z.literal('Swiss Ephemeris'),
   generatedAt:       z.string(),

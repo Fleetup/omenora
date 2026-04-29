@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
   const compatTitle = compatibility.compatibilityTitle
 
   type SectionKey = keyof typeof sections
-  const sectionOrder: SectionKey[] = ['bond', 'strength', 'challenge', 'forecast', 'advice']
+  const sectionOrder: SectionKey[] = ['bond', 'strength', 'challenge', 'communication', 'powerDynamic', 'forecast', 'advice']
 
   const scoreColor = score >= 80
     ? '#8c6eff'

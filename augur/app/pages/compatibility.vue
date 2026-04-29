@@ -48,7 +48,7 @@
       <p class="compat-masthead__title font-display-italic">{{ compatibility.compatibilityTitle }}</p>
     </div>
 
-    <!-- All 5 sections (full read) -->
+    <!-- All 7 sections (full read) -->
     <div class="report-body">
       <div
         v-for="(key, idx) in SECTION_ORDER"
@@ -68,6 +68,36 @@
         </div>
         <p v-else class="report-section__body">{{ compatibility.sections[key]?.content }}</p>
       </div>
+    </div>
+
+    <!-- Calculation receipt -->
+    <div v-if="compatibility.calculationReceipt" class="calc-receipt calc-receipt--full">
+      <p class="label-caps calc-receipt__header">How we calculated this</p>
+      <div class="calc-receipt__rows">
+        <div class="calc-receipt__row">
+          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person1?.name || 'You' }}</span>
+          <span class="annotation calc-receipt__detail">
+            {{ compatibility.calculationReceipt.person1?.sunSign }}
+            · {{ compatibility.calculationReceipt.person1?.element }}
+            · Life Path {{ compatibility.calculationReceipt.person1?.lifePathNumber }}
+            <template v-if="compatibility.calculationReceipt.person1?.archetype">
+              · {{ compatibility.calculationReceipt.person1.archetype }}
+            </template>
+          </span>
+        </div>
+        <div class="calc-receipt__row">
+          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person2?.name || 'Them' }}</span>
+          <span class="annotation calc-receipt__detail">
+            {{ compatibility.calculationReceipt.person2?.sunSign }}
+            · {{ compatibility.calculationReceipt.person2?.element }}
+            · Life Path {{ compatibility.calculationReceipt.person2?.lifePathNumber }}
+          </span>
+        </div>
+        <div v-for="(note, i) in compatibility.calculationReceipt.synastryNotes" :key="i" class="calc-receipt__row calc-receipt__row--note">
+          <span class="annotation calc-receipt__detail">{{ note }}</span>
+        </div>
+      </div>
+      <p class="annotation calc-receipt__meta">{{ compatibility.calculationReceipt.tradition }} · {{ compatibility.calculationReceipt.calculationSource }}</p>
     </div>
 
     <!-- Share / download -->
@@ -316,21 +346,25 @@ function trackEvent(name: string, props?: Record<string, unknown>) {
 }
 
 // ── Shared section order ───────────────────────────────────────────────────────
-const SECTION_ORDER = ['bond', 'strength', 'challenge', 'forecast', 'advice']
-const LOCKED_SECTIONS = ['bond', 'strength', 'forecast', 'advice'] as const
+const SECTION_ORDER = ['bond', 'strength', 'challenge', 'communication', 'powerDynamic', 'forecast', 'advice']
+const LOCKED_SECTIONS = ['bond', 'strength', 'communication', 'powerDynamic', 'forecast', 'advice'] as const
 
 const LOCKED_FALLBACK_TITLES: Record<string, string> = {
-  bond:     'The Bond Between You',
-  strength: 'Your Shared Strength',
-  forecast: '12-Month Relationship Forecast',
-  advice:   'One Piece of Advice',
+  bond:          'The Bond That Holds You Together',
+  strength:      'Your Greatest Strength Together',
+  communication: 'The Communication Pattern',
+  powerDynamic:  'The Power Dynamic',
+  forecast:      'The Next 7 Days',
+  advice:        'The One Move That Changes Everything',
 }
 
 const LOCKED_PLACEHOLDER_TEXT: Record<string, string> = {
-  bond:     'The gravitational pull between your charts reveals a pattern that most couples never identify — a shared frequency that either becomes your greatest resource or your blind spot.',
-  strength: 'Hidden inside this pairing is a specific combination of planetary placements that creates unusual resilience under pressure. This section maps exactly where that strength lives.',
-  forecast: 'The next 12 months carry three distinct windows for this connection — one that opens in the next 60 days, and two that require you to pay attention to specific planetary shifts.',
-  advice:   'One concrete move — rooted in both of your charts — that will shift the dynamic of this connection more than any other single action you could take.',
+  bond:          'The gravitational pull between your charts reveals a pattern that most couples never identify — a shared frequency that either becomes your greatest resource or your blind spot.',
+  strength:      'Hidden inside this pairing is a specific combination of elemental and archetypal placements that creates unusual resilience under pressure. This section maps exactly where that strength lives.',
+  communication: 'How you talk to each other, how you fight, and what actually repairs the connection — grounded in Mercury\'s position and both of your elements. This section names the breakdown pattern before it costs you.',
+  powerDynamic:  'Who leads in this pairing, who follows, and where the balance quietly tips — named by archetype and situation. Most couples feel this dynamic but never identify it clearly.',
+  forecast:      'The next 7 days carry specific planetary weather for your connection — Venus, Mercury, and Mars are all moving through signs that affect this pairing directly. This section reads the week ahead for you.',
+  advice:        'One concrete move — rooted in both of your charts — that will shift the dynamic of this connection more than any other single action you could take.',
 }
 
 // ── Routing flags ─────────────────────────────────────────────────────────────
@@ -950,9 +984,47 @@ onMounted(async () => {
   margin: 0 auto;
 }
 
+.calc-receipt--full {
+  opacity: 1;
+  border-top: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--color-ink-ghost);
+  margin-bottom: 0;
+}
+
 .calc-receipt__header {
   color: var(--color-ink-faint);
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.calc-receipt__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.calc-receipt__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: baseline;
+}
+
+.calc-receipt__row--note {
+  padding-top: 6px;
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.calc-receipt__person {
+  color: var(--color-ink-mid);
+  font-weight: 500;
+  flex-shrink: 0;
+  min-width: 72px;
+}
+
+.calc-receipt__detail {
+  color: var(--color-ink-faint);
+  line-height: 1.6;
 }
 
 .calc-receipt__body {
