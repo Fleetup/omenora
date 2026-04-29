@@ -2,61 +2,46 @@
   <header class="app-header">
     <div class="app-header__inner">
 
-      <!-- Left: meta (desktop only) -->
+      <!-- Left: meta -->
       <span class="app-header__meta label-caps">
         Vol. I · {{ currentYear }}
       </span>
 
       <!-- Center: wordmark -->
       <NuxtLink to="/" class="app-header__logo">
-        <span class="app-header__wordmark">
-          Omenora
-        </span>
+        <span class="app-header__wordmark">Omenora</span>
       </NuxtLink>
 
-      <!-- Right: desktop pills + mobile burger -->
+      <!-- Right: action slot + burger -->
       <div class="app-header__right">
         <slot name="action">
           <NuxtLink
             to="/daily"
-            class="app-header__pill label-caps app-header__desktop-only"
+            class="app-header__pill label-caps"
           >
             ◑ Daily
           </NuxtLink>
           <NuxtLink
             v-if="isAuthenticated"
             to="/account"
-            class="app-header__pill label-caps app-header__desktop-only"
+            class="app-header__pill label-caps"
           >
             My Account
           </NuxtLink>
           <NuxtLink
             v-else
             to="/account"
-            class="app-header__pill app-header__pill--ghost label-caps app-header__desktop-only"
+            class="app-header__pill app-header__pill--ghost label-caps"
           >
             Sign in
           </NuxtLink>
         </slot>
 
-        <!-- Language switcher — desktop only -->
-        <div class="app-header__lang-strip app-header__desktop-only">
-          <button
-            v-for="lang in LANGUAGES"
-            :key="lang.code"
-            class="app-header__lang-btn label-caps"
-            :class="{ 'app-header__lang-btn--active': currentLang === lang.code }"
-            :aria-label="lang.name"
-            @click="selectLanguage(lang.code)"
-          >
-            {{ lang.label }}
-          </button>
-        </div>
-
-        <!-- Burger — mobile only -->
+        <!-- Burger — always visible -->
         <button
-          class="app-header__burger app-header__mobile-only"
-          aria-label="Open menu"
+          class="app-header__burger"
+          :class="{ 'app-header__burger--open': menuOpen }"
+          :aria-label="menuOpen ? 'Close menu' : 'Open menu'"
           :aria-expanded="menuOpen"
           @click="menuOpen = !menuOpen"
         >
@@ -71,93 +56,93 @@
     <!-- Running rule -->
     <div class="editorial-rule" />
 
-    <!-- Mobile nav overlay -->
-    <Transition name="menu-fade">
+    <!-- Backdrop -->
+    <Transition name="backdrop-fade">
       <div
         v-if="menuOpen"
-        class="app-header__mobile-nav"
-        @click.self="menuOpen = false"
-      >
-        <nav class="app-header__mobile-nav-inner">
+        class="nav-backdrop"
+        aria-hidden="true"
+        @click="menuOpen = false"
+      />
+    </Transition>
 
+    <!-- Right-side drawer -->
+    <Transition name="drawer-slide">
+      <div
+        v-if="menuOpen"
+        class="nav-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site navigation"
+      >
+        <!-- Drawer header -->
+        <div class="nav-drawer__head">
+          <span class="nav-drawer__wordmark label-caps">Menu</span>
           <button
-            class="app-header__mobile-nav-close label-caps"
+            class="nav-drawer__close label-caps"
             aria-label="Close menu"
             @click="menuOpen = false"
           >
             Close
           </button>
+        </div>
 
-          <div class="app-header__mobile-nav-links">
-            <NuxtLink
-              to="/"
-              class="mobile-nav-link"
-              @click="menuOpen = false"
-            >
-              Home
-            </NuxtLink>
-            <NuxtLink
-              to="/daily"
-              class="mobile-nav-link"
-              @click="menuOpen = false"
-            >
-              Daily Horoscope
-            </NuxtLink>
-            <NuxtLink
-              to="/compatibility-quiz"
-              class="mobile-nav-link"
-              @click="menuOpen = false"
-            >
-              Compatibility
-            </NuxtLink>
-            <NuxtLink
-              to="/analysis"
-              class="mobile-nav-link"
-              @click="menuOpen = false"
-            >
-              Begin Reading
-            </NuxtLink>
-          </div>
+        <div class="nav-drawer__rule" />
 
-          <!-- Language switcher — mobile -->
-          <div class="mobile-nav-lang">
-            <p class="label-caps mobile-nav-lang__label">Language</p>
-            <div class="mobile-nav-lang__pills">
-              <button
-                v-for="lang in LANGUAGES"
-                :key="lang.code"
-                class="mobile-nav-lang__pill label-caps"
-                :class="{ 'mobile-nav-lang__pill--active': currentLang === lang.code }"
-                :aria-label="lang.name"
-                @click="selectLanguage(lang.code)"
-              >
-                <span class="mobile-nav-lang__flag">{{ lang.flag }}</span>
-                {{ lang.label }}
-              </button>
-            </div>
-          </div>
-
-          <div class="app-header__mobile-nav-footer">
-            <div class="editorial-rule" />
-            <NuxtLink
-              v-if="isAuthenticated"
-              to="/account"
-              class="label-caps mobile-nav-account"
-              @click="menuOpen = false"
-            >
-              My Account →
-            </NuxtLink>
-            <NuxtLink
-              v-else
-              to="/account"
-              class="label-caps mobile-nav-account"
-              @click="menuOpen = false"
-            >
-              Sign in →
-            </NuxtLink>
-          </div>
-
+        <!-- Nav links -->
+        <nav class="nav-drawer__links">
+          <NuxtLink to="/" class="drawer-link" @click="menuOpen = false">
+            Home
+          </NuxtLink>
+          <NuxtLink to="/daily" class="drawer-link" @click="menuOpen = false">
+            Daily Horoscope
+          </NuxtLink>
+          <NuxtLink to="/compatibility-quiz" class="drawer-link" @click="menuOpen = false">
+            Compatibility
+          </NuxtLink>
+          <NuxtLink to="/analysis" class="drawer-link" @click="menuOpen = false">
+            Begin Reading
+          </NuxtLink>
         </nav>
+
+        <!-- Language switcher -->
+        <div class="nav-drawer__lang">
+          <p class="label-caps nav-drawer__lang-label">Language</p>
+          <div class="nav-drawer__lang-pills">
+            <button
+              v-for="lang in LANGUAGES"
+              :key="lang.code"
+              class="lang-pill label-caps"
+              :class="{ 'lang-pill--active': currentLang === lang.code }"
+              :aria-label="lang.name"
+              @click="selectLanguage(lang.code)"
+            >
+              <span class="lang-pill__flag">{{ lang.flag }}</span>
+              {{ lang.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Drawer footer -->
+        <div class="nav-drawer__footer">
+          <div class="nav-drawer__rule" />
+          <NuxtLink
+            v-if="isAuthenticated"
+            to="/account"
+            class="label-caps nav-drawer__account"
+            @click="menuOpen = false"
+          >
+            My Account →
+          </NuxtLink>
+          <NuxtLink
+            v-else
+            to="/account"
+            class="label-caps nav-drawer__account"
+            @click="menuOpen = false"
+          >
+            Sign in →
+          </NuxtLink>
+        </div>
       </div>
     </Transition>
 
@@ -205,6 +190,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── Header shell ── */
 .app-header {
   position: sticky;
   top: 0;
@@ -235,9 +221,7 @@ onUnmounted(() => {
   transition: opacity 0.15s;
 }
 
-.app-header__logo:hover {
-  opacity: 0.65;
-}
+.app-header__logo:hover { opacity: 0.65; }
 
 .app-header__wordmark {
   font-family: 'Cormorant Garamond', serif;
@@ -254,7 +238,7 @@ onUnmounted(() => {
   gap: 8px;
 }
 
-/* Pills */
+/* ── Pills ── */
 .app-header__pill {
   display: inline-flex;
   align-items: center;
@@ -285,44 +269,12 @@ onUnmounted(() => {
   color: var(--color-ink);
 }
 
-/* Show/hide helpers */
-.app-header__desktop-only {
-  display: inline-flex;
-}
-
-.app-header__mobile-only {
-  display: none;
-}
-
-@media (max-width: 640px) {
-  .app-header__desktop-only {
-    display: none !important;
-  }
-  .app-header__mobile-only {
-    display: flex;
-  }
-  .app-header__meta {
-    display: none;
-  }
-  .app-header__inner {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .app-header__logo {
-    justify-content: flex-start;
-  }
-  .app-header__right {
-    flex-shrink: 0;
-  }
-}
-
-/* ── Burger button ── */
+/* ── Burger — always visible ── */
 .app-header__burger {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: flex-end;
   gap: 5px;
   width: 36px;
   height: 36px;
@@ -330,14 +282,14 @@ onUnmounted(() => {
   border: none;
   cursor: pointer;
   padding: 6px;
-  align-items: flex-end;
+  flex-shrink: 0;
 }
 
 .app-header__burger-bar {
   display: block;
   height: 1px;
   background: var(--color-ink);
-  transition: all 0.25s ease;
+  transition: width 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
 }
 
 .app-header__burger-bar:nth-child(1) { width: 22px; }
@@ -357,54 +309,48 @@ onUnmounted(() => {
   transform: translateY(-6px) rotate(-45deg);
 }
 
-/* ── Mobile nav overlay ── */
-.app-header__mobile-nav {
+/* ── Backdrop ── */
+.nav-backdrop {
   position: fixed;
-  inset: 52px 0 0 0;
+  inset: 0;
+  z-index: 299;
+  background: rgba(26, 22, 18, 0.35);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* ── Drawer ── */
+.nav-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 300;
+  width: min(420px, 100vw);
   background: var(--color-bone);
-  z-index: 199;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  padding: 0 clamp(24px, 6vw, 48px) calc(48px + env(safe-area-inset-bottom, 0px));
+  box-shadow: -1px 0 0 rgba(26, 22, 18, 0.08), -24px 0 80px rgba(26, 22, 18, 0.12);
 }
 
-.app-header__mobile-nav-inner {
+/* ── Drawer head ── */
+.nav-drawer__head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: space-between;
-  min-height: 100%;
-  padding: 40px 24px calc(48px + env(safe-area-inset-bottom, 0px));
+  height: 52px;
+  flex-shrink: 0;
 }
 
-.app-header__mobile-nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+.nav-drawer__wordmark {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--color-ink-faint);
 }
 
-.mobile-nav-link {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(32px, 8vw, 48px);
-  font-weight: 300;
-  font-style: italic;
-  color: var(--color-ink);
-  text-decoration: none;
-  line-height: 1.3;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--color-ink-ghost);
-  transition: opacity 0.2s;
-}
-
-.mobile-nav-link:first-child {
-  border-top: 1px solid var(--color-ink-ghost);
-}
-
-.mobile-nav-link:hover {
-  opacity: 0.6;
-}
-
-.app-header__mobile-nav-close {
-  align-self: flex-end;
+.nav-drawer__close {
   background: none;
   border: none;
   cursor: pointer;
@@ -414,87 +360,69 @@ onUnmounted(() => {
   text-transform: uppercase;
   color: var(--color-ink-faint);
   padding: 0;
-  margin-bottom: 24px;
   transition: color 0.2s;
 }
 
-.app-header__mobile-nav-close:hover {
+.nav-drawer__close:hover {
   color: var(--color-ink);
 }
 
-.app-header__mobile-nav-footer {
+.nav-drawer__rule {
+  height: 1px;
+  background: var(--color-ink-ghost);
+  flex-shrink: 0;
+}
+
+/* ── Nav links ── */
+.nav-drawer__links {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-top: 40px;
+  margin-top: 40px;
+  flex: 1;
 }
 
-.mobile-nav-account {
-  color: var(--color-ink-faint);
+.drawer-link {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 6vw, 44px);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--color-ink);
   text-decoration: none;
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  transition: color 0.2s;
+  line-height: 1.25;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-ink-ghost);
+  transition: opacity 0.2s;
 }
 
-.mobile-nav-account:hover {
-  color: var(--color-ink);
-}
-
-/* ── Desktop language strip ── */
-.app-header__lang-strip {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: 4px;
-  padding-left: 12px;
-  border-left: 1px solid var(--color-ink-ghost);
-}
-
-.app-header__lang-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  color: var(--color-ink-faint);
-  padding: 4px 6px;
-  border-radius: 4px;
-  transition: color 0.15s, background 0.15s;
-}
-
-.app-header__lang-btn:hover {
-  color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.05);
-}
-
-.app-header__lang-btn--active {
-  color: var(--color-ink);
-  font-weight: 600;
-}
-
-/* ── Mobile language switcher ── */
-.mobile-nav-lang {
-  margin-top: 32px;
-  padding-top: 24px;
+.drawer-link:first-child {
   border-top: 1px solid var(--color-ink-ghost);
 }
 
-.mobile-nav-lang__label {
+.drawer-link:hover {
+  opacity: 0.55;
+}
+
+/* ── Language switcher ── */
+.nav-drawer__lang {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.nav-drawer__lang-label {
   font-size: 10px;
   letter-spacing: 0.25em;
   color: var(--color-ink-faint);
   margin-bottom: 16px;
 }
 
-.mobile-nav-lang__pills {
+.nav-drawer__lang-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.mobile-nav-lang__pill {
+.lang-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -510,31 +438,84 @@ onUnmounted(() => {
   transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
-.mobile-nav-lang__pill:hover {
+.lang-pill:hover {
   border-color: var(--color-ink-mid);
   color: var(--color-ink);
 }
 
-.mobile-nav-lang__pill--active {
+.lang-pill--active {
   border-color: var(--color-ink);
   color: var(--color-ink);
   background: rgba(26, 22, 18, 0.04);
 }
 
-.mobile-nav-lang__flag {
+.lang-pill__flag {
   font-size: 14px;
   line-height: 1;
 }
 
-/* ── Transition ── */
-.menu-fade-enter-active,
-.menu-fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+/* ── Drawer footer ── */
+.nav-drawer__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 32px;
 }
 
-.menu-fade-enter-from,
-.menu-fade-leave-to {
+.nav-drawer__account {
+  color: var(--color-ink-faint);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  transition: color 0.2s;
+}
+
+.nav-drawer__account:hover {
+  color: var(--color-ink);
+}
+
+/* ── Mobile adjustments ── */
+@media (max-width: 640px) {
+  .app-header__meta {
+    display: none;
+  }
+  .app-header__inner {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .app-header__logo {
+    justify-content: flex-start;
+  }
+  .app-header__right {
+    flex-shrink: 0;
+  }
+  /* Hide default slot pills on mobile — burger opens drawer with all links */
+  .app-header__pill {
+    display: none;
+  }
+}
+
+/* ── Backdrop transition ── */
+.backdrop-fade-enter-active,
+.backdrop-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.backdrop-fade-enter-from,
+.backdrop-fade-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+}
+
+/* ── Drawer slide transition ── */
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  transform: translateX(100%);
 }
 </style>
