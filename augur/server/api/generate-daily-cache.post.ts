@@ -3,8 +3,10 @@
  *
  * Pre-generates daily insight content for all 12 archetypes and stores the
  * results in the daily_archetype_cache table. Called once per day by the
- * Railway cron before the daily insight dispatcher runs, so each subscriber
- * receives a cached insight rather than triggering a live Claude call.
+ * Railway cron (6am UTC) independently of the zodiac job.
+ *
+ * This job handles archetypes ONLY. Zodiac signs are handled exclusively
+ * by /api/generate-daily-horoscope (5am UTC cron) — do not call it from here.
  *
  * Protected by a shared secret (NUXT_EMAIL_JOB_SECRET) so only Railway
  * cron can trigger it — not arbitrary internet callers.
@@ -276,29 +278,6 @@ export default defineEventHandler(async (event) => {
       console.log(`[generate-daily-cache] FINAL STATUS — date: ${targetDate}`)
       console.log(`[generate-daily-cache] Archetypes confirmed in DB: ${finalConfirmed.join(', ')}`)
       console.log(`[generate-daily-cache] Permanently failed: ${finalFailed.length > 0 ? finalFailed.join(', ') : 'none'}`)
-
-      // ── Zodiac generation with retry ─────────────────────────────────────────
-      let zodiacSucceeded = false
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          await $fetch('/api/generate-daily-horoscope', {
-            method:  'POST',
-            headers: { 'x-job-secret': expectedSecret },
-            body:    { targetDate, language },
-          })
-          console.log(`[daily-cache] Zodiac horoscope generation succeeded on attempt ${attempt}`)
-          zodiacSucceeded = true
-          break
-        } catch (zodiacErr: any) {
-          console.error(`[daily-cache] Zodiac generation attempt ${attempt}/3 failed:`, zodiacErr?.message ?? zodiacErr)
-          if (attempt < 3) {
-            await new Promise(r => setTimeout(r, 3000))
-          }
-        }
-      }
-      if (!zodiacSucceeded) {
-        console.error(`[daily-cache] Zodiac generation failed permanently for date ${targetDate} after 3 attempts — daily horoscope page will be empty`)
-      }
     } catch (outerErr: any) {
       console.error('[daily-cache] Fatal background error:', outerErr?.message)
     }
