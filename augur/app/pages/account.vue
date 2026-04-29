@@ -304,18 +304,34 @@
                   v-if="expandedInsight === insight.sent_date"
                   class="insight-row__body"
                 >
-                  <!-- Full insight text -->
-                  <p class="insight-row__text">
-                    {{ insight.insight_full || insight.insight_preview }}
-                  </p>
+                  <!-- Structured insight (JSON format from generate-daily-insight) -->
+                  <template v-if="insight.structured">
+                    <div class="insight-row__section">
+                      <span class="label-caps insight-row__section-label">♥ Love</span>
+                      <p class="insight-row__text">{{ insight.structured.love }}</p>
+                    </div>
+                    <div class="insight-row__section">
+                      <span class="label-caps insight-row__section-label">✦ Work</span>
+                      <p class="insight-row__text">{{ insight.structured.work }}</p>
+                    </div>
+                    <div class="insight-row__section">
+                      <span class="label-caps insight-row__section-label">✿ Health</span>
+                      <p class="insight-row__text">{{ insight.structured.health }}</p>
+                    </div>
+                    <div v-if="insight.structured.reflection_question" class="insight-row__reflection">
+                      <span class="label-caps insight-row__reflection-label">Today's reflection</span>
+                      <p class="insight-row__reflection-text font-serif">{{ insight.structured.reflection_question }}</p>
+                    </div>
+                  </template>
 
-                  <!-- Reflection question -->
-                  <div v-if="insight.reflection_question" class="insight-row__reflection">
-                    <span class="label-caps insight-row__reflection-label">Today's reflection</span>
-                    <p class="insight-row__reflection-text font-serif">
-                      {{ insight.reflection_question }}
-                    </p>
-                  </div>
+                  <!-- Plain text fallback (new cache-based format or missing parse) -->
+                  <template v-else>
+                    <p class="insight-row__text">{{ insight.insight_preview }}</p>
+                    <div v-if="insight.reflection_question" class="insight-row__reflection">
+                      <span class="label-caps insight-row__reflection-label">Today's reflection</span>
+                      <p class="insight-row__reflection-text font-serif">{{ insight.reflection_question }}</p>
+                    </div>
+                  </template>
                 </div>
               </Transition>
             </div>
@@ -1373,6 +1389,18 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   flex-direction: column;
   gap: 20px;
   max-width: 60ch;
+}
+
+.insight-row__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.insight-row__section-label {
+  color: var(--color-ink-faint);
+  font-size: 10px;
+  letter-spacing: 0.12em;
 }
 
 .insight-row__text {
