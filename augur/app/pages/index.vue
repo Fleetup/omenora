@@ -83,7 +83,51 @@
       <div class="editorial-rule" />
     </section>
 
-    <!-- ③ TRADITIONS -->
+    <!-- ③ COMPATIBILITY TEASER -->
+    <section class="compat-teaser">
+      <div class="compat-teaser__inner">
+
+        <!-- Left: copy -->
+        <div class="compat-teaser__copy">
+          <p class="label-caps compat-teaser__eyebrow">Compatibility</p>
+          <h2 class="compat-teaser__headline font-display-italic">
+            How two archetypes meet.
+          </h2>
+          <div class="compat-teaser__rule" />
+          <p class="compat-teaser__body">
+            Every relationship is a collision of two charts. Omenora calculates
+            both natal profiles and reads them against each other — revealing
+            what draws you together, where you'll clash, and what makes it last.
+            No account. Results in 60 seconds.
+          </p>
+          <CTAButton to="/compatibility-quiz" variant="outline" :arrow="true">
+            Check compatibility
+          </CTAButton>
+        </div>
+
+        <!-- Right: two overlapping archetype symbols -->
+        <div class="compat-teaser__visual" aria-hidden="true">
+          <div class="compat-teaser__symbols">
+            <img
+              src="/symbols/phoenix.svg"
+              alt="Phoenix archetype"
+              class="compat-teaser__symbol compat-teaser__symbol--a symbol-editorial"
+            />
+            <img
+              src="/symbols/guardian.svg"
+              alt="Guardian archetype"
+              class="compat-teaser__symbol compat-teaser__symbol--b symbol-editorial"
+            />
+          </div>
+          <p class="annotation compat-teaser__visual-hint">
+            Your archetype + theirs
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ④ TRADITIONS -->
     <section class="traditions">
       <div class="traditions__header">
         <p class="label-caps traditions__label">Six traditions. One chart.</p>
@@ -441,7 +485,103 @@ section {
 .trust-item__num { color: var(--color-ink-faint); }
 .trust-item__label { font-family: 'Hanken Grotesk', sans-serif; font-size: 13px; font-weight: 500; color: var(--color-ink); }
 
-/* ── ③ Traditions ── */
+/* ── ③ Compatibility teaser ── */
+.compat-teaser {
+  padding-top: var(--space-section);
+  padding-bottom: var(--space-section);
+  border-bottom: 1px solid var(--color-ink-ghost);
+}
+
+.compat-teaser__inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .compat-teaser__inner {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(48px, 8vw, 120px);
+  }
+}
+
+.compat-teaser__eyebrow {
+  color: var(--color-ink-faint);
+  margin-bottom: 20px;
+}
+
+.compat-teaser__headline {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 28px;
+  color: var(--color-ink);
+}
+
+.compat-teaser__rule {
+  width: 48px;
+  height: 1px;
+  background: var(--color-ink-mid);
+  margin-bottom: 28px;
+}
+
+.compat-teaser__body {
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--color-ink-mid);
+  max-width: 46ch;
+  margin-bottom: 36px;
+}
+
+.compat-teaser__visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.compat-teaser__symbols {
+  position: relative;
+  width: min(320px, 100%);
+  height: min(320px, 100%);
+  aspect-ratio: 1;
+}
+
+.compat-teaser__symbol {
+  position: absolute;
+  width: 62%;
+  height: 62%;
+  object-fit: contain;
+  opacity: 0.72;
+}
+
+.compat-teaser__symbol--a {
+  top: 0;
+  left: 0;
+}
+
+.compat-teaser__symbol--b {
+  bottom: 0;
+  right: 0;
+  opacity: 0.52;
+}
+
+.compat-teaser__visual-hint {
+  color: var(--color-ink-faint);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+@media (max-width: 767px) {
+  .compat-teaser__visual { display: none; }
+}
+
+/* ── ④ Traditions ── */
 .traditions { padding-top: var(--space-section); padding-bottom: var(--space-section); }
 .traditions__header { max-width: 600px; margin-bottom: var(--space-block); }
 .traditions__label { color: var(--color-ink-faint); margin-bottom: 16px; }
