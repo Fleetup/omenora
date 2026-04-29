@@ -25,6 +25,8 @@ export default defineNuxtConfig({
     stripeCompatSinglePriceId: '',
     emailJobSecret: '',
     cronSecret: '',
+    inngestEventKey: '',
+    inngestSigningKey: '',
     stripeWebhookSecret: '',
     redisUrl: '',
     public: {

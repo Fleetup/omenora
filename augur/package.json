@@ -26,6 +26,7 @@
     "@supabase/supabase-js": "^2.102.1",
     "canvas": "^3.2.3",
     "html2canvas": "^1.4.1",
+    "inngest": "^4.2.5",
     "jspdf": "^4.2.1",
     "nuxt": "^4.4.2",
     "pdfkit": "^0.18.0",

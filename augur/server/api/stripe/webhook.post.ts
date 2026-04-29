@@ -7,6 +7,18 @@ import { sendReportEmail } from '~~/server/utils/report-email-builder'
 import { buildTestimonialRequestEmail } from '~~/server/utils/email-templates'
 import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
+import { inngest, subscriberWelcomeSend } from '~~/inngest/client'
+import type { createSupabaseAdmin as _createSupabaseAdmin } from '~~/server/utils/auth'
+
+type SupabaseAdminClient = ReturnType<typeof _createSupabaseAdmin>
+
+interface WebhookRuntimeConfig {
+  stripeSecretKey: string
+  resendApiKey: string
+  anthropicApiKey: string
+  emailJobSecret: string
+  stripeWebhookSecret: string
+}
 
 /**
  * POST /api/stripe/webhook
@@ -48,15 +60,38 @@ export default defineEventHandler(async (event) => {
   const sig = getHeader(event, 'stripe-signature') ?? ''
 
   const stripe = new Stripe(config.stripeSecretKey as string, {
+    // Stripe SDK type does not yet include this pre-release API version string.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     apiVersion: '2026-03-25.dahlia' as any,
   })
 
   let stripeEvent: Stripe.Event
   try {
     stripeEvent = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret)
-  } catch (err: any) {
-    console.error('[stripe-webhook] Signature verification failed:', err.message)
+  } catch (err: unknown) {
+    console.error('[stripe-webhook] Signature verification failed:', err instanceof Error ? err.message : String(err))
     throw createError({ statusCode: 400, message: 'Invalid webhook signature' })
+  }
+
+  // ── Delivery-level idempotency via stripe_webhook_events ─────────────────
+  // Insert the Stripe event ID as the primary key. A unique-constraint violation
+  // (Postgres code 23505) means Stripe is retrying an already-processed event —
+  // return 200 immediately. Any other insert error means something is wrong with
+  // the DB; throw 500 so Stripe retries rather than silently dropping the event.
+  {
+    const supabaseIdem = createSupabaseAdmin()
+    const { error: idemErr } = await supabaseIdem
+      .from('stripe_webhook_events')
+      .insert({ event_id: stripeEvent.id, event_type: stripeEvent.type })
+
+    if (idemErr) {
+      if (idemErr.code === '23505') {
+        console.info('[stripe-webhook] Duplicate event — already processed:', stripeEvent.id)
+        return { received: true, duplicate: true }
+      }
+      console.error('[stripe-webhook] stripe_webhook_events insert failed:', idemErr.code, idemErr.message)
+      throw createError({ statusCode: 500, message: 'Idempotency check failed' })
+    }
   }
 
   // ── Route by event type ───────────────────────────────────────────────────
@@ -141,8 +176,8 @@ export default defineEventHandler(async (event) => {
         prompt_version: dbRow?.prompt_version ?? 'unknown',
         timestamp: new Date().toISOString(),
       })
-    } catch (err: any) {
-      console.error('[B-4] chargeback logging failed (non-blocking):', err?.message)
+    } catch (err: unknown) {
+      console.error('[B-4] chargeback logging failed (non-blocking):', err instanceof Error ? err.message : String(err))
     }
     return { received: true }
   }
@@ -185,8 +220,8 @@ export default defineEventHandler(async (event) => {
         prompt_version: dbRow?.prompt_version ?? 'unknown',
         timestamp: new Date().toISOString(),
       })
-    } catch (err: any) {
-      console.error('[B-4] refund logging failed (non-blocking):', err?.message)
+    } catch (err: unknown) {
+      console.error('[B-4] refund logging failed (non-blocking):', err instanceof Error ? err.message : String(err))
     }
     return { received: true }
   }
@@ -252,8 +287,8 @@ export default defineEventHandler(async (event) => {
             .eq('plan_type', 'daily_horoscope')
           console.info('[stripe-webhook] Canceled daily_horoscope sub for upgrade:', existingSubId)
         }
-      } catch (upgradeErr: any) {
-        console.error('[stripe-webhook] Failed to cancel daily_horoscope on upgrade (non-blocking):', upgradeErr?.message)
+      } catch (upgradeErr: unknown) {
+        console.error('[stripe-webhook] Failed to cancel daily_horoscope on upgrade (non-blocking):', upgradeErr instanceof Error ? upgradeErr.message : String(upgradeErr))
       }
     }
 
@@ -277,8 +312,8 @@ export default defineEventHandler(async (event) => {
           console.info('[stripe-webhook] Blocked daily_horoscope save — compatibility_plus already active for this email:', subEmail)
           return { received: true }
         }
-      } catch (guardErr: any) {
-        console.error('[stripe-webhook] Downgrade guard check failed (non-blocking):', guardErr?.message)
+      } catch (guardErr: unknown) {
+        console.error('[stripe-webhook] Downgrade guard check failed (non-blocking):', guardErr instanceof Error ? guardErr.message : String(guardErr))
       }
     }
 
@@ -299,51 +334,48 @@ export default defineEventHandler(async (event) => {
         },
       })
       console.info('[stripe-webhook] Subscriber saved:', { subId, subCustomer })
-    } catch (err: any) {
-      console.error('[stripe-webhook] save-subscriber failed (non-blocking):', err?.message)
+    } catch (err: unknown) {
+      console.error('[stripe-webhook] save-subscriber failed (non-blocking):', err instanceof Error ? err.message : String(err))
     }
 
-    const jobSecret = (config.emailJobSecret as string | undefined) ?? ''
-    if (jobSecret && isValidEmail(subEmail) && subFirstName && isValidArchetype(subArchetype)) {
+    // ── Fire subscriber/welcome.send Inngest event (replaces inline Claude + Resend) ──
+    // The session ID is used as the Inngest event ID for 24h dedup at the Inngest layer.
+    if (isValidEmail(subEmail) && subFirstName && isValidArchetype(subArchetype)) {
       try {
-        const todayDate = new Date().toISOString().split('T')[0]
-        const insightResult = await $fetch<{ success: boolean; insight: any }>('/api/generate-daily-insight', {
-          method: 'POST',
-          headers: { 'x-job-secret': jobSecret },
-          body: {
-            email:          subEmail,
-            firstName:      subFirstName,
-            archetype:      subArchetype,
-            lifePathNumber: subLPN,
-            element:        meta.element || 'Earth',
-            region:         isValidRegion(meta.region) ? meta.region : 'western',
-            targetDate:     todayDate,
-            language:       'en',
-          },
-        })
-
-        if (insightResult?.insight) {
-          try {
-            await $fetch('/api/send-daily-insight', {
-              method: 'POST',
-              headers: { 'x-job-secret': jobSecret },
-              body: {
-                email:     subEmail,
-                firstName: subFirstName,
-                archetype: subArchetype,
-                insight:   insightResult.insight,
-              },
-            })
-            console.info('[stripe-webhook] Welcome daily insight sent:', subEmail)
-          } catch (sendErr: any) {
-            console.error('[stripe-webhook] send-daily-insight failed (non-blocking):', sendErr?.message)
-          }
-        }
-      } catch (genErr: any) {
-        console.error('[stripe-webhook] generate-daily-insight failed (non-blocking):', genErr?.message)
+        await inngest.send(
+          subscriberWelcomeSend.create(
+            {
+              email:          subEmail,
+              firstName:      subFirstName,
+              archetype:      subArchetype,
+              lifePathNumber: subLPN,
+              element:        meta.element || 'Earth',
+              region:         isValidRegion(meta.region) ? meta.region : 'western',
+              planType,
+              sessionId,
+            },
+            { id: sessionId },
+          ),
+        )
+        console.info('[stripe-webhook] subscriber/welcome.send fired for:', subEmail)
+      } catch (inngestErr: unknown) {
+        // Best-effort: log loudly but don't fail the webhook. Stripe will not retry
+        // (the idempotency row is already written), so we log for manual recovery.
+        console.error('[stripe-webhook] inngest.send failed — welcome insight not queued for:', subEmail, inngestErr instanceof Error ? inngestErr.message : String(inngestErr))
       }
-    } else if (!jobSecret) {
-      console.warn('[stripe-webhook] NUXT_EMAIL_JOB_SECRET not set — skipping welcome insight for:', subEmail)
+    }
+
+    // ── Suppress abandonment sequence for paying subscribers ─────────────────
+    // Fire-and-forget: a transient failure here must never fail the webhook.
+    // cancelEmailJobs above handles the email_jobs table; this endpoint additionally
+    // stamps sequence_completed on email_captures.
+    if (isValidEmail(subEmail)) {
+      $fetch('/api/suppress-abandon-sequence', {
+        method: 'POST',
+        body: { email: subEmail },
+      }).catch((suppressErr: unknown) => {
+        console.error('[stripe-webhook] suppress-abandon-sequence failed (non-blocking):', suppressErr instanceof Error ? suppressErr.message : String(suppressErr))
+      })
     }
 
     return { received: true }
@@ -430,8 +462,8 @@ export default defineEventHandler(async (event) => {
             })
         }
       }
-    } catch (err: any) {
-      console.error('[stripe-webhook] Promo logging failed (non-blocking):', err?.message)
+    } catch (err: unknown) {
+      console.error('[stripe-webhook] Promo logging failed (non-blocking):', err instanceof Error ? err.message : String(err))
     }
   }
 
@@ -467,7 +499,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Try to load the pre-payment report from the temp record
-  let reportData: any = null
+  let reportData: unknown = null
   if (tempId) {
     const { data: tempRecord } = await supabase
       .from('reports')
@@ -492,8 +524,8 @@ export default defineEventHandler(async (event) => {
         language,
         city: sanitizeString(meta.city || '', 100),
       })
-    } catch (err: any) {
-      console.error('[stripe-webhook] Report generation failed for', sessionId, err?.message)
+    } catch (err: unknown) {
+      console.error('[stripe-webhook] Report generation failed for', sessionId, err instanceof Error ? err.message : String(err))
       return { received: true, warning: 'report_generation_failed' }
     }
   }
@@ -545,6 +577,18 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  // ── Suppress abandonment sequence for one-time purchases ──────────────────
+  // Any successful paid checkout (including one-time report purchases) should
+  // stop the abandonment cascade for this email.
+  if (isValidEmail(email)) {
+    $fetch('/api/suppress-abandon-sequence', {
+      method: 'POST',
+      body: { email },
+    }).catch((suppressErr: unknown) => {
+      console.error('[stripe-webhook] suppress-abandon-sequence (one-time) failed (non-blocking):', suppressErr instanceof Error ? suppressErr.message : String(suppressErr))
+    })
+  }
+
   // ── TC-1: Schedule day-2 testimonial request email ────────────────────────
   // Only fires on a confirmed paid checkout. Disputes/refunds happen after this
   // point in the Stripe lifecycle and are handled by the charge.dispute.created /
@@ -573,8 +617,8 @@ export default defineEventHandler(async (event) => {
         })
         console.info('[TC-1] testimonial email scheduled: true', { sessionId, language })
       }
-    } catch (err: any) {
-      console.error('[TC-1] testimonial schedule failed — non-blocking:', err?.message)
+    } catch (err: unknown) {
+      console.error('[TC-1] testimonial schedule failed — non-blocking:', err instanceof Error ? err.message : String(err))
     }
   }
 
@@ -599,7 +643,7 @@ const ARCHETYPE_SYMBOLS: Record<string, string> = {
 }
 
 async function generateReport(opts: {
-  config: any
+  config: WebhookRuntimeConfig
   firstName: string
   dateOfBirth: string
   archetype: string
@@ -607,7 +651,7 @@ async function generateReport(opts: {
   region: string
   language: string
   city: string
-}): Promise<any> {
+}): Promise<ReportType> {
   const client = new Anthropic({ apiKey: opts.config.anthropicApiKey as string })
 
   const archetypeDescriptions: Record<string, string> = {
@@ -746,7 +790,7 @@ Generate exactly 7 sections. Return ONLY valid JSON with this structure:
 }
 
 async function sendReportEmailViaWebhook(opts: {
-  config: any
+  config: WebhookRuntimeConfig
   email: string
   firstName: string
   archetype: string
@@ -756,14 +800,14 @@ async function sendReportEmailViaWebhook(opts: {
   sessionId: string
   isBundlePurchase: boolean
   isOraclePurchase: boolean
-  reportData: any
-  supabase: any
+  reportData: unknown
+  supabase: SupabaseAdminClient
   dateOfBirth?: string
   timeOfBirth?: string
   city?: string
   answers?: Record<string, string>
 }): Promise<void> {
-  const { email, firstName, sessionId, supabase, timeOfBirth, city } = opts
+  const { email, firstName, sessionId, supabase, timeOfBirth } = opts
 
   // Double-check email_sent flag to guard against duplicate sends
   const { data: check } = await supabase
@@ -784,7 +828,7 @@ async function sendReportEmailViaWebhook(opts: {
   }
 
   // ── Generate calendar for bundle/oracle purchases ────────────────────────
-  let calendarData: any = null
+  let calendarData: unknown = null
   if ((opts.isBundlePurchase || opts.isOraclePurchase) && opts.dateOfBirth && opts.firstName) {
     try {
       // Check if already saved to calendars table first
@@ -819,12 +863,12 @@ async function sendReportEmailViaWebhook(opts: {
           }
         }
       }
-    } catch (calErr: any) {
-      console.error('[stripe-webhook] Calendar generation failed (non-blocking):', calErr?.message)
+    } catch (calErr: unknown) {
+      console.error('[stripe-webhook] Calendar generation failed (non-blocking):', calErr instanceof Error ? calErr.message : String(calErr))
     }
   }
 
-  let birthChartData: any = null
+  let birthChartData: unknown = null
   if (opts.isOraclePurchase && opts.firstName && opts.dateOfBirth) {
     try {
       const { data: existingReport } = await supabase
@@ -848,18 +892,19 @@ async function sendReportEmailViaWebhook(opts: {
             region: opts.region,
           },
         })
-        if ((birthChartResponse as any)?.birthChart) {
-          birthChartData = (birthChartResponse as any).birthChart
+        const bcRes = birthChartResponse as { birthChart?: unknown }
+        if (bcRes?.birthChart) {
+          birthChartData = bcRes.birthChart
         }
       }
-    } catch (bcErr: any) {
-      console.error('[stripe-webhook] Birth chart generation failed (non-blocking):', bcErr?.message)
+    } catch (bcErr: unknown) {
+      console.error('[stripe-webhook] Birth chart generation failed (non-blocking):', bcErr instanceof Error ? bcErr.message : String(bcErr))
     }
   }
 
-  let vedicData: any = null
-  let baziData: any = null
-  let tarotData: any = null
+  let vedicData: unknown = null
+  let baziData: unknown = null
+  let tarotData: unknown = null
   if (opts.isOraclePurchase && opts.firstName && opts.dateOfBirth) {
     try {
       const { data: existingReport } = await supabase
@@ -870,8 +915,8 @@ async function sendReportEmailViaWebhook(opts: {
       if (existingReport?.report_data_vedic) vedicData = existingReport.report_data_vedic
       if (existingReport?.report_data_bazi) baziData = existingReport.report_data_bazi
       if (existingReport?.report_data_latam) tarotData = existingReport.report_data_latam
-    } catch (tradErr: any) {
-      console.error('[stripe-webhook] Tradition data fetch failed (non-blocking):', tradErr?.message)
+    } catch (tradErr: unknown) {
+      console.error('[stripe-webhook] Tradition data fetch failed (non-blocking):', tradErr instanceof Error ? tradErr.message : String(tradErr))
     }
   }
 
@@ -897,13 +942,13 @@ async function sendReportEmailViaWebhook(opts: {
       .from('reports')
       .update({ email_sent: true })
       .eq('session_id', sessionId)
-  } catch (err: any) {
-    console.error('[stripe-webhook] Email send failed for', sessionId, err?.message)
+  } catch (err: unknown) {
+    console.error('[stripe-webhook] Email send failed for', sessionId, err instanceof Error ? err.message : String(err))
   }
 }
 
 async function generateCalendar(opts: {
-  config: any
+  config: WebhookRuntimeConfig
   firstName: string
   archetype: string
   element: string
@@ -911,7 +956,7 @@ async function generateCalendar(opts: {
   answers: Record<string, string>
   dateOfBirth: string
   language: string
-}): Promise<any> {
+}): Promise<CalendarType> {
   const client = new Anthropic({ apiKey: opts.config.anthropicApiKey as string })
 
   const languageInstructions: Record<string, string> = {
