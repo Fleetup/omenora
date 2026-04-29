@@ -1,5 +1,5 @@
-import { cancelEmailJobs } from '~~/server/utils/email-jobs'
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { inngest, userUnsubscribed } from '~~/inngest/client'
 
 /**
  * Returns a 32-char hex HMAC-SHA256 token for the given email.
@@ -43,17 +43,13 @@ export default defineEventHandler(async (event) => {
 
   const supabase = createSupabaseAdmin()
 
-  await Promise.all([
-    supabase
-      .from('email_captures')
-      .update({
-        sequence_completed: true,
-        updated_at:         new Date().toISOString(),
-      })
-      .eq('email', email.toLowerCase().trim()),
-
-    cancelEmailJobs(email),
-  ])
+  await supabase
+    .from('email_captures')
+    .update({
+      sequence_completed: true,
+      updated_at:         new Date().toISOString(),
+    })
+    .eq('email', email.toLowerCase().trim())
 
   try {
     const { error: subErr } = await supabase
@@ -64,9 +60,17 @@ export default defineEventHandler(async (event) => {
     if (subErr) {
       console.error('[unsubscribe] Failed to deactivate subscriber:', subErr.code)
     }
-  } catch (err: any) {
-    console.error('[unsubscribe] Unexpected error deactivating subscriber:', err?.message)
+  } catch (err: unknown) {
+    console.error('[unsubscribe] Unexpected error deactivating subscriber:', err instanceof Error ? err.message : String(err))
   }
+
+  // Fire user/unsubscribed to cancel any in-flight Inngest abandonment sequence.
+  // Fire-and-forget — must never block the redirect.
+  inngest.send(
+    userUnsubscribed.create({ email: email.toLowerCase().trim() }),
+  ).catch((inngestErr: unknown) => {
+    console.error('[unsubscribe] inngest.send user/unsubscribed failed (non-blocking):', inngestErr instanceof Error ? inngestErr.message : String(inngestErr))
+  })
 
   return sendRedirect(event, '/?unsubscribed=true')
 })

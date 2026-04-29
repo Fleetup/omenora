@@ -68,8 +68,23 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const { scheduleEmailJob, SEQUENCE_DELAYS_MS } = await import('~~/server/utils/email-jobs')
-  scheduleEmailJob(email.toLowerCase().trim(), 1, SEQUENCE_DELAYS_MS[1]!).catch(() => {})
+  const { inngest, abandonmentStarted } = await import('~~/inngest/client')
+  inngest.send(
+    abandonmentStarted.create({
+      email:            normalizedEmail,
+      sessionId:        sessionId || '',
+      firstName:        firstName || '',
+      archetypeName:    archetypeName || '',
+      archetypeEmoji:   archetypeEmoji || '',
+      archetypeElement: archetypeElement || '',
+      lifePath:         lifePath || '',
+      birthCity:        birthCity || '',
+      readingTradition: readingTradition || 'Western',
+      language:         (language || 'EN').toUpperCase(),
+    }),
+  ).catch((err: unknown) => {
+    console.error('[capture-email] inngest.send abandonment/started failed (non-blocking):', err instanceof Error ? err.message : String(err))
+  })
 
   return { success: true }
 })

@@ -28,6 +28,7 @@ export default defineNuxtConfig({
     inngestEventKey: '',
     inngestSigningKey: '',
     stripeWebhookSecret: '',
+    resendWebhookSecret: '',
     redisUrl: '',
     public: {
       stripePublishableKey: '',

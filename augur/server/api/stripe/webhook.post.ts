@@ -2,12 +2,11 @@ import Stripe from 'stripe'
 import { Resend } from 'resend'
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
-import { cancelEmailJobs } from '~~/server/utils/email-jobs'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
 import { buildTestimonialRequestEmail } from '~~/server/utils/email-templates'
 import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
-import { inngest, subscriberWelcomeSend } from '~~/inngest/client'
+import { inngest, subscriberWelcomeSend, stripeCheckoutCompleted } from '~~/inngest/client'
 import type { createSupabaseAdmin as _createSupabaseAdmin } from '~~/server/utils/auth'
 
 type SupabaseAdminClient = ReturnType<typeof _createSupabaseAdmin>
@@ -242,12 +241,24 @@ export default defineEventHandler(async (event) => {
   // ── Suppress abandonment sequence immediately ──────────────────────────────
   const customerEmail = session.customer_email || meta.email || ''
   if (isValidEmail(customerEmail)) {
-    cancelEmailJobs(customerEmail).catch(() => {})
-
     void createSupabaseAdmin()
       .from('email_captures')
       .update({ purchased: true, sequence_completed: true })
       .eq('email', customerEmail.toLowerCase().trim())
+
+    // Fire stripe/checkout.completed to cancel any in-flight Inngest abandonment
+    // sequence for this email. Fire-and-forget — a transient failure must never
+    // block the webhook response. Fires for ALL paid checkouts (subscriptions and
+    // one-time) so the cancelOn matcher triggers regardless of product type.
+    inngest.send(
+      stripeCheckoutCompleted.create({
+        email:      customerEmail.toLowerCase().trim(),
+        sessionId,
+        customerId: (session.customer as string) || '',
+      }),
+    ).catch((inngestErr: unknown) => {
+      console.error('[stripe-webhook] inngest.send stripe/checkout.completed failed (non-blocking):', inngestErr instanceof Error ? inngestErr.message : String(inngestErr))
+    })
   }
 
   // ── Handle subscription checkout — save subscriber + send welcome insight ──
@@ -363,19 +374,6 @@ export default defineEventHandler(async (event) => {
         // (the idempotency row is already written), so we log for manual recovery.
         console.error('[stripe-webhook] inngest.send failed — welcome insight not queued for:', subEmail, inngestErr instanceof Error ? inngestErr.message : String(inngestErr))
       }
-    }
-
-    // ── Suppress abandonment sequence for paying subscribers ─────────────────
-    // Fire-and-forget: a transient failure here must never fail the webhook.
-    // cancelEmailJobs above handles the email_jobs table; this endpoint additionally
-    // stamps sequence_completed on email_captures.
-    if (isValidEmail(subEmail)) {
-      $fetch('/api/suppress-abandon-sequence', {
-        method: 'POST',
-        body: { email: subEmail },
-      }).catch((suppressErr: unknown) => {
-        console.error('[stripe-webhook] suppress-abandon-sequence failed (non-blocking):', suppressErr instanceof Error ? suppressErr.message : String(suppressErr))
-      })
     }
 
     return { received: true }
@@ -574,18 +572,6 @@ export default defineEventHandler(async (event) => {
       timeOfBirth,
       city: sanitizeString(meta.city || '', 100),
       answers: {},
-    })
-  }
-
-  // ── Suppress abandonment sequence for one-time purchases ──────────────────
-  // Any successful paid checkout (including one-time report purchases) should
-  // stop the abandonment cascade for this email.
-  if (isValidEmail(email)) {
-    $fetch('/api/suppress-abandon-sequence', {
-      method: 'POST',
-      body: { email },
-    }).catch((suppressErr: unknown) => {
-      console.error('[stripe-webhook] suppress-abandon-sequence (one-time) failed (non-blocking):', suppressErr instanceof Error ? suppressErr.message : String(suppressErr))
     })
   }
 

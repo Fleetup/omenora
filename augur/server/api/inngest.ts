@@ -1,8 +1,12 @@
 import { serve } from 'inngest/nuxt'
 import { inngest } from '~~/inngest/client'
-import { setupVerification } from '~~/inngest/setup-verification'
 import { welcomeInsight } from '~~/inngest/welcome-insight'
 import { abandonmentSequence } from '~~/inngest/abandonment-sequence'
+import { resendBouncedHandler, resendComplainedHandler } from '~~/inngest/resend-handlers'
+import { zodiacCacheOrchestrator, zodiacCacheWorker } from '~~/inngest/zodiac-cache'
+import { archetypeCacheOrchestrator, archetypeCacheWorker } from '~~/inngest/archetype-cache'
+import { dailyInsightOrchestrator, dailyInsightWorker } from '~~/inngest/daily-insight-delivery'
+import { weeklyTransitOrchestrator, weeklyTransitWorker } from '~~/inngest/weekly-transit-delivery'
 
 /**
  * POST/GET/PUT /api/inngest
@@ -20,6 +24,19 @@ import { abandonmentSequence } from '~~/inngest/abandonment-sequence'
 export default defineEventHandler(
   serve({
     client: inngest,
-    functions: [setupVerification, welcomeInsight, abandonmentSequence],
+    functions: [
+      welcomeInsight,
+      abandonmentSequence,
+      resendBouncedHandler,
+      resendComplainedHandler,
+      zodiacCacheOrchestrator,
+      zodiacCacheWorker,
+      archetypeCacheOrchestrator,
+      archetypeCacheWorker,
+      dailyInsightOrchestrator,
+      dailyInsightWorker,
+      weeklyTransitOrchestrator,
+      weeklyTransitWorker,
+    ],
   }),
 )
