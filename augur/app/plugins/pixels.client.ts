@@ -290,6 +290,41 @@ export default defineNuxtPlugin(() => {
         })
       },
 
+      trackCompatibilityQuizStart: () => {
+        try {
+          if (tiktokPixelId && (window as any).ttq) {
+            ;(window as any).ttq.track('ViewContent', {
+              content_type: 'product',
+              content_name: 'Compatibility Reading',
+              content_id: 'compatibility_reading',
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackCompatibilityQuizStart TikTok error:', err) }
+        safeTrack('compatibility_quiz_start', {
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
+      trackCompatibilityPaywallView: (params: { score?: number }) => {
+        try {
+          if (tiktokPixelId && (window as any).ttq) {
+            ;(window as any).ttq.track('AddToCart', {
+              content_type: 'product',
+              content_name: 'Compatibility Reading',
+              content_id: 'compatibility_reading',
+              value: 7.99,
+              currency: 'USD',
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackCompatibilityPaywallView TikTok error:', err) }
+        safeTrack('compatibility_paywall_view', {
+          score: params.score,
+          device_type: getDeviceType(),
+          ...getUtmParams(),
+        })
+      },
+
       trackAnalysisStart: () => {
         safeTrack('analysis_start', {
           device_type: getDeviceType(),

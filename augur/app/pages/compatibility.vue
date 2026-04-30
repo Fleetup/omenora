@@ -335,7 +335,7 @@ const store = useAnalysisStore()
 const route = useRoute()
 const { t } = useLanguage()
 const { provisionUser, session, restoreSession } = useAuth()
-const { $trackCustomEvent, $trackInitiateCheckout, $trackPurchase, $identifyUser } = useNuxtApp() as any
+const { $trackCustomEvent, $trackInitiateCheckout, $trackPurchase, $identifyUser, $trackCompatibilityPaywallView } = useNuxtApp() as any
 
 function trackEvent(name: string, props?: Record<string, unknown>) {
   try { $trackCustomEvent?.(name, props ?? {}) } catch { /* never block UI */ }
@@ -618,6 +618,7 @@ onMounted(async () => {
       score: store.compatibilityData?.compatibilityScore,
       has_names: false,
     })
+    try { $trackCompatibilityPaywallView?.({ score: store.compatibilityData?.compatibilityScore }) } catch { /* never block UI */ }
     return
   }
 

@@ -248,7 +248,7 @@ useSeoMeta({ title: 'Free Compatibility Reading — OMENORA', robots: 'noindex, 
 const store = useAnalysisStore()
 const { t } = useLanguage()
 const route = useRoute()
-const { $trackCustomEvent } = useNuxtApp() as any
+const { $trackCustomEvent, $trackCompatibilityQuizStart } = useNuxtApp() as any
 
 function trackEvent(name: string, props?: Record<string, unknown>) {
   try { $trackCustomEvent?.(name, props ?? {}) } catch { /* never throw into the funnel */ }
@@ -416,6 +416,7 @@ function startQuiz() {
   triggerReveal()
   trackEvent('compatibility_quiz_started')
   trackEvent('compatibility_landing_cta_clicked', { utm_creative: (route.query.utm_creative as string) || '' })
+  try { $trackCompatibilityQuizStart?.() } catch { /* never block UI */ }
 }
 
 function goBack() {
