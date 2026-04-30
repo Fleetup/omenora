@@ -100,6 +100,19 @@
       <p class="annotation calc-receipt__meta">{{ compatibility.calculationReceipt.tradition }} · {{ compatibility.calculationReceipt.calculationSource }}</p>
     </div>
 
+    <!-- Trustpilot widget -->
+    <div
+      class="trustpilot-widget compat-tp-widget"
+      data-locale="en-US"
+      data-template-id="5419b6a8b0d04a076446a9ad"
+      data-businessunit-id="69f37a2519d955d321733cd4"
+      data-style-height="24px"
+      data-style-width="100%"
+      data-theme="dark"
+    >
+      <a href="https://www.trustpilot.com/review/omenora.com" target="_blank" rel="noopener">Trustpilot</a>
+    </div>
+
     <!-- Share / download -->
     <div class="compat-share">
       <h2 class="compat-share__heading font-display-italic">{{ t('shareYourReading') }}</h2>
@@ -211,7 +224,7 @@
     <p class="compat-trust annotation">{{ t('compatTrustLine') }}</p>
 
     <div
-      class="trustpilot-widget"
+      class="trustpilot-widget compat-tp-widget"
       data-locale="en-US"
       data-template-id="5419b6a8b0d04a076446a9ad"
       data-businessunit-id="69f37a2519d955d321733cd4"
@@ -1052,6 +1065,13 @@ onMounted(async () => {
   color: var(--color-ink-faint);
   margin: 0;
   opacity: 0.7;
+}
+
+/* ── Trustpilot widget ── */
+.compat-tp-widget {
+  max-width: 1400px;
+  padding: clamp(16px, 2.5vw, 24px) clamp(20px, 5vw, 80px);
+  margin: 0 auto;
 }
 
 /* ── Trust line ── */

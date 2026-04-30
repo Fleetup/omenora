@@ -22,7 +22,7 @@
       </div>
 
       <div
-        class="trustpilot-widget"
+        class="trustpilot-widget compat-landing__tp-widget"
         data-locale="en-US"
         data-template-id="5419b6a8b0d04a076446a9ad"
         data-businessunit-id="69f37a2519d955d321733cd4"
@@ -955,6 +955,11 @@ input[type="time"] {
 .compat-landing__trust-sep {
   color: var(--color-ink-ghost);
   font-size: 12px;
+}
+
+.compat-landing__tp-widget {
+  margin-bottom: 28px;
+  max-width: 320px;
 }
 
 .compat-landing__cta {
