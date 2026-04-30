@@ -10,10 +10,7 @@
 
         <p class="loading-status label-caps">
           <template v-if="loadingStage === 0">Mapping your natal chart, {{ store.firstName }}…</template>
-          <template v-else-if="loadingStage === 1">
-            <template v-if="showTestimonialSlot">"{{ currentTestimonial.quote }}"</template>
-            <template v-else>Computing across four traditions…</template>
-          </template>
+          <template v-else-if="loadingStage === 1">Computing across four traditions…</template>
           <template v-else-if="loadingStage === 2">Your {{ loadingArchetypeLabel }} archetype is being mapped…</template>
           <template v-else>Your reading is ready.</template>
         </p>
@@ -119,11 +116,17 @@
         </ul>
       </section>
 
-      <!-- Social proof (only when REAL_TESTIMONIALS populated) -->
-      <div v-if="showTestimonialSlot" class="testimonial">
-        <div class="testimonial__stars annotation">★★★★★</div>
-        <p class="testimonial__quote font-serif">"{{ currentTestimonial.quote }}"</p>
-        <p class="annotation testimonial__attr">— {{ currentTestimonial.author }}</p>
+      <!-- Trustpilot widget -->
+      <div
+        class="trustpilot-widget"
+        data-locale="en-US"
+        data-template-id="5419b6a8b0d04a076446a9ad"
+        data-businessunit-id="69f37a2519d955d321733cd4"
+        data-style-height="24px"
+        data-style-width="100%"
+        data-theme="dark"
+      >
+        <a href="https://www.trustpilot.com/review/omenora.com" target="_blank" rel="noopener">Trustpilot</a>
       </div>
 
       <!-- ── PAYWALL (standard pricing) ── -->
@@ -338,14 +341,6 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import type { ComputedRef } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
-
-
-const REAL_TESTIMONIALS: Array<{ quote: string; author: string }> = [
-  // ADD REAL BUYER QUOTES HERE — leave empty until collected from post-purchase emails
-  // Format: { quote: 'Under 20 words verbatim.', author: 'First name · something specific' }
-]
-const showTestimonialSlot = computed(() => REAL_TESTIMONIALS.length > 0)
-const currentTestimonial = computed(() => REAL_TESTIMONIALS[0] ?? { quote: '', author: '' })
 
 useSeoMeta({ title: 'Your Personality Archetype Reading', robots: 'noindex, nofollow' })
 
