@@ -1,10 +1,56 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
-import { CompatibilitySchema, type CompatibilityType, type CompatibilityReceiptType } from '~~/server/utils/ai-schemas'
+import { CompatibilitySchema, type CompatibilityType, PreviewCompatibilitySchema, type CompatibilityReceiptType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
 import { getSunSign, getLifePathNumber } from '~~/server/utils/quick-signs'
 import { getPlanetaryTransits } from '~~/server/utils/planetaryTransits'
 import { calculateNatalChart, assignArchetypeFromChart } from '~~/app/utils/natalChart'
+
+// ── Deterministic compatibility score ────────────────────────────────────────
+// Combines life-path harmony and elemental synastry into a 0-100 score.
+// No AI involved — runs in microseconds.
+
+function computeCompatibilityScore(
+  lifePathA: number,
+  lifePathB: number,
+  elementA: string,
+  elementB: string,
+): number {
+  const ELEMENT_AFFINITY: Record<string, Record<string, number>> = {
+    Fire:  { Fire: 70, Earth: 55, Air: 85, Water: 60 },
+    Earth: { Fire: 55, Earth: 75, Air: 60, Water: 85 },
+    Air:   { Fire: 85, Earth: 60, Air: 70, Water: 60 },
+    Water: { Fire: 60, Earth: 85, Air: 60, Water: 75 },
+  }
+  const elementScore = ELEMENT_AFFINITY[elementA]?.[elementB] ?? 65
+
+  const diff = Math.abs(lifePathA - lifePathB)
+  const lifePathScore =
+    diff === 0 ? 72
+    : diff <= 2 ? 82
+    : diff <= 4 ? 68
+    : diff <= 6 ? 58
+    : 50
+
+  const raw = Math.round(elementScore * 0.55 + lifePathScore * 0.45)
+  return Math.min(99, Math.max(28, raw))
+}
+
+// ── Deterministic compatibility title ────────────────────────────────────────
+// Template-based from archetype pair — no AI needed.
+
+function computeCompatibilityTitle(archetypeA: string, archetypeB: string, elementA: string, elementB: string): string {
+  const ELEMENT_PHRASE: Record<string, Record<string, string>> = {
+    Fire:  { Fire: 'two flames seeking direction', Earth: 'spark meets stone', Air: 'the fire that thought ignites', Water: 'steam and depth' },
+    Earth: { Fire: 'the ground that holds the flame', Earth: 'roots intertwined', Air: 'the field that lifts the wind', Water: 'the riverbed and its current' },
+    Air:   { Fire: 'the breath behind the blaze', Earth: 'sky above solid ground', Air: 'minds in orbit', Water: 'wind over still water' },
+    Water: { Fire: 'depth meets intensity', Earth: 'the river finds its banks', Air: 'intuition meets logic', Water: 'two currents, one sea' },
+  }
+  const phrase = ELEMENT_PHRASE[elementA]?.[elementB] ?? 'a meeting of forces'
+  const a = archetypeA || 'The Seeker'
+  const b = archetypeB || 'The Mirror'
+  return `${a} & ${b} — ${phrase}`
+}
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -97,16 +143,6 @@ export default defineEventHandler(async (event) => {
     return 'winter'
   })()
 
-  // ── Current planetary transits (7-day forecast window) ────────────────
-
-  const todayDate  = new Date().toISOString().split('T')[0]!
-  const sevenDaysFromNow = new Date()
-  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
-  const forecastEndDate = sevenDaysFromNow.toISOString().split('T')[0]!
-
-  const currentTransits = getPlanetaryTransits(todayDate)
-  const forecastTransits = getPlanetaryTransits(forecastEndDate)
-
   // ── Synastry element notes (deterministic, server-side) ──────────────
   //
   // Derives meaningful elemental synastry notes from both people's elements.
@@ -170,7 +206,138 @@ export default defineEventHandler(async (event) => {
     apiKey: config.anthropicApiKey as string,
   })
 
-  const prompt = `${langInstruction}
+  // ── Shared context strings (used by both preview and full prompts) ─────────
+
+  const personContext = `Person 1 (the user):
+- Archetype: ${archetype}
+- Element: ${element}
+- Life Path: ${lifePathNumber}
+
+Person 2 (their person):
+- Born: ${partnerSeason} season
+- Element: ${partnerElement}
+- Life Path: ${partnerLifePath}
+- Sun sign: ${partnerSunSign.name}
+
+ELEMENTAL SYNASTRY:
+${elementNote}
+
+NUMEROLOGY:
+${lifePathNote}`
+
+  // ── PREVIEW PATH ──────────────────────────────────────────────────────────
+  // Generate ONLY the challenge (tension) section.
+  // Score and title are computed deterministically — no AI needed for them.
+  // This reduces preview latency from 15-20 seconds to ~3-5 seconds.
+
+  if (previewMode) {
+    const compatibilityScore = computeCompatibilityScore(lifePathNumber, partnerLifePath, element || 'Unknown', partnerElement)
+    const compatibilityTitle = computeCompatibilityTitle(archetype, partnerSunSign.name, element || 'Unknown', partnerElement)
+
+    const previewPrompt = `${langInstruction}
+
+You are OMENORA, an AI destiny analysis system. Write ONE section of a compatibility reading.
+Be specific, poetic, and honest. Reference their archetypes, life paths, and elements.
+Never be generic.
+
+${personContext}
+
+Generate ONLY the challenge section: the core friction between their elemental and archetypal energies.
+Be honest, not softened. 2-3 sentences.
+
+Return ONLY valid JSON, no markdown:
+{
+  "challenge": {
+    "title": "The Tension You Must Navigate",
+    "content": "[2-3 sentences: the core friction — honest, specific to this pairing]"
+  }
+}`
+
+    const previewJsonSchema = {
+      type: 'object',
+      properties: {
+        challenge: {
+          type: 'object',
+          properties: {
+            title:   { type: 'string' },
+            content: { type: 'string' },
+          },
+          required: ['title', 'content'],
+        },
+      },
+      required: ['challenge'],
+    } as const
+
+    const previewMessage = await withAiRetry('generate-compatibility-preview', () =>
+      client.messages.parse({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 600,
+        system: `You are writing the tension section of a compatibility reading. Be grounded and precise. Every sentence must be specific to this exact pairing. Write at B2 English level. Short sentences. No cultural idioms.`,
+        messages: [{ role: 'user', content: previewPrompt }],
+        output_config: { format: jsonSchemaOutputFormat(previewJsonSchema) },
+      })
+    )
+
+    const previewRawParsed = previewMessage.parsed_output
+
+    if (!previewRawParsed) {
+      const firstContent = previewMessage.content[0]
+      const rawText = firstContent?.type === 'text' ? firstContent.text : ''
+      console.error('[generate-compatibility] Preview structured output returned null parsed_output', {
+        endpoint: 'generate-compatibility-preview',
+        timestamp: new Date().toISOString(),
+        rawResponsePreview: (rawText || '').slice(0, 500),
+        archetype,
+        language,
+      })
+      throw createError({ statusCode: 500, message: 'Failed to parse compatibility preview' })
+    }
+
+    const previewZodResult = PreviewCompatibilitySchema.safeParse(previewRawParsed)
+    if (!previewZodResult.success) {
+      console.error('[generate-compatibility] Preview schema validation failed', {
+        endpoint: 'generate-compatibility-preview',
+        timestamp: new Date().toISOString(),
+        zodErrors: previewZodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`),
+        archetype,
+        language,
+      })
+      throw createError({ statusCode: 500, message: 'Failed to parse compatibility preview' })
+    }
+
+    const challengeSection = previewZodResult.data.challenge
+
+    return {
+      success: true,
+      compatibility: {
+        compatibilityScore,
+        compatibilityTitle,
+        sections: {
+          bond:          { title: 'The Bond That Holds You Together',      content: '[locked]' },
+          strength:      { title: 'Your Greatest Strength Together',       content: '[locked]' },
+          challenge:     challengeSection,
+          communication: { title: 'The Communication Pattern',             content: '[locked]' },
+          powerDynamic:  { title: 'The Power Dynamic',                     content: '[locked]' },
+          forecast:      { title: 'The Next 7 Days',                       content: '[locked]' },
+          advice:        { title: 'The One Move That Changes Everything',   content: '[locked]' },
+        },
+        previewMode: true,
+      },
+    }
+  }
+
+  // ── FULL PATH (post-payment) ───────────────────────────────────────────────
+  // Generates all 7 sections. Only reached when previewMode === false.
+
+  const todayDate  = new Date().toISOString().split('T')[0]!
+  const sevenDaysFromNow = new Date()
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
+  const forecastEndDate = sevenDaysFromNow.toISOString().split('T')[0]!
+
+  const currentTransits  = getPlanetaryTransits(todayDate)
+  const forecastTransits = getPlanetaryTransits(forecastEndDate)
+
+  const fullPrompt = `${langInstruction}
 
 You are OMENORA, an AI destiny analysis system. Generate a 7-section compatibility report between two people.
 Be specific, poetic, and personal. Reference their actual names, archetypes, life paths, and elements throughout.
@@ -269,7 +436,7 @@ Return ONLY valid JSON, no markdown:
       model: 'claude-sonnet-4-6',
       max_tokens: 4000,
       system: `You are writing a personal relationship compatibility reading between two specific people. Your analysis is grounded, honest, and precise. You name real dynamics — not flattering generalities. Every sentence must be specific to these two people's actual combination. Write at B2 English level. Short sentences. No cultural idioms. Make the reader feel their relationship has just been seen clearly for the first time.`,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: 'user', content: fullPrompt }],
       output_config: { format: jsonSchemaOutputFormat(compatibilityJsonSchema) },
     })
   )
@@ -305,23 +472,7 @@ Return ONLY valid JSON, no markdown:
 
   const compatibilityData: CompatibilityType = zodResult.data
 
-  // ── Change 3: Preview mode transform ─────────────────────────────────────
-  // When previewMode is true: keep score, title, and challenge section fully.
-  // Replace the other 4 sections' content with "[locked]" but keep their titles.
-
-  const sections = previewMode
-    ? {
-        bond:          { title: compatibilityData.sections.bond.title,          content: '[locked]' },
-        strength:      { title: compatibilityData.sections.strength.title,      content: '[locked]' },
-        challenge:     compatibilityData.sections.challenge,
-        communication: { title: compatibilityData.sections.communication.title, content: '[locked]' },
-        powerDynamic:  { title: compatibilityData.sections.powerDynamic.title,  content: '[locked]' },
-        forecast:      { title: compatibilityData.sections.forecast.title,      content: '[locked]' },
-        advice:        { title: compatibilityData.sections.advice.title,        content: '[locked]' },
-      }
-    : compatibilityData.sections
-
-  // ── Change 4: Calculation receipt ─────────────────────────────────────────
+  // ── Calculation receipt ───────────────────────────────────────────────────
 
   const person1SunSign = person1Dob && isValidDateOfBirth(person1Dob)
     ? getSunSign(person1Dob)
@@ -357,8 +508,7 @@ Return ONLY valid JSON, no markdown:
     compatibility: {
       compatibilityScore: compatibilityData.compatibilityScore,
       compatibilityTitle: compatibilityData.compatibilityTitle,
-      sections,
-      ...(previewMode ? { previewMode: true } : {}),
+      sections:           compatibilityData.sections,
       calculationReceipt,
     },
   }

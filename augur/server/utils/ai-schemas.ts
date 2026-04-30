@@ -177,6 +177,24 @@ export const CompatibilitySchema = z.object({
 
 export type CompatibilityType = z.infer<typeof CompatibilitySchema>
 
+// ── PreviewCompatibilitySchema ───────────────────────────────────────────────
+// Used by: generate-compatibility.post.ts (previewMode === true)
+//
+// Preview AI call generates ONLY the challenge (tension) section.
+// compatibilityScore and compatibilityTitle are computed deterministically
+// server-side — Claude is not asked for them in preview mode.
+//
+// Claude output shape (preview):
+// {
+//   challenge: { title: "...", content: "..." }
+// }
+
+export const PreviewCompatibilitySchema = z.object({
+  challenge: CompatibilitySectionSchema,
+})
+
+export type PreviewCompatibilityType = z.infer<typeof PreviewCompatibilitySchema>
+
 // ── CompatibilityReceipt ────────────────────────────────────────────────────
 // Transparent calculation receipt appended to every compatibility response.
 // Not validated by Claude — assembled server-side from deterministic inputs.
