@@ -68,14 +68,13 @@ const paths: readonly string[] = [
     role="img"
     :aria-label="ariaLabel"
   >
-    <g class="phoenix-loader__paths">
-      <path
-        v-for="(d, i) in paths"
-        :key="i"
-        :d="d"
-        :pathLength="1"
-      />
-    </g>
+    <path
+      v-for="(d, i) in paths"
+      :key="i"
+      class="phoenix-loader__path"
+      :d="d"
+      pathLength="1"
+    />
   </svg>
 </template>
 
@@ -87,7 +86,7 @@ const paths: readonly string[] = [
   overflow: visible;
 }
 
-.phoenix-loader__paths {
+.phoenix-loader__path {
   fill: v-bind(colorValue);
   fill-opacity: 0;
   stroke: v-bind(colorValue);
