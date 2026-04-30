@@ -235,8 +235,76 @@
       <a href="https://www.trustpilot.com/review/omenora.com" target="_blank" rel="noopener">Trustpilot</a>
     </div>
 
+    <!-- Promo code -->
+    <div class="compat-promo">
+      <button
+        v-if="!compatPromoInputVisible && !compatAppliedPromo"
+        class="compat-promo__toggle annotation"
+        @click="compatPromoInputVisible = true"
+      >
+        Have a promo code?
+      </button>
+      <template v-else-if="!compatAppliedPromo">
+        <div class="compat-promo__row">
+          <input
+            id="compat-promo-code"
+            v-model="compatPromoCodeInput"
+            type="text"
+            name="compat-promo-code"
+            class="compat-promo__input editorial-input"
+            placeholder="Enter code"
+            autocomplete="off"
+            :disabled="isValidatingCompatPromo"
+            @input="compatPromoCodeInput = compatPromoCodeInput.toUpperCase()"
+            @keydown.enter="validateCompatPromoCode"
+          />
+          <button
+            class="compat-promo__apply label-caps"
+            :disabled="isValidatingCompatPromo || !compatPromoCodeInput.trim()"
+            @click="validateCompatPromoCode"
+          >
+            {{ isValidatingCompatPromo ? '…' : 'Apply' }}
+          </button>
+        </div>
+        <p v-if="compatPromoValidationResult && !compatPromoValidationResult.valid" class="compat-promo__msg compat-promo__msg--error annotation">
+          {{ compatPromoValidationResult.message }}
+        </p>
+      </template>
+      <p v-if="compatAppliedPromo" class="compat-promo__msg compat-promo__msg--success annotation">
+        ✦ Full access unlocked
+      </p>
+    </div>
+
+    <!-- Free-access block (replaces paywall when full_access code applied) -->
+    <div v-if="compatAppliedPromo" class="paywall paywall--free">
+      <div class="editorial-rule" />
+      <div class="capture-block">
+        <label class="label-caps capture-block__label" for="compat-promo-email">{{ t('compatEmailLabel') }}</label>
+        <input
+          id="compat-promo-email"
+          v-model="emailInput"
+          type="email"
+          :placeholder="t('emailPlaceholder')"
+          autocomplete="email"
+          class="editorial-input"
+        />
+      </div>
+      <p v-if="compatPromoErrorMessage" class="compat-promo__msg compat-promo__msg--error annotation" role="alert">
+        {{ compatPromoErrorMessage }}
+      </p>
+      <CTAButton
+        :arrow="false"
+        :disabled="isApplyingCompatAccess || !emailInput"
+        :class="{ 'pay-card__btn--processing': isApplyingCompatAccess }"
+        @click="applyCompatFreeAccess"
+      >
+        <span v-if="isApplyingCompatAccess">{{ t('compatProcessing') }}</span>
+        <span v-else>Get Free Access →</span>
+      </CTAButton>
+    </div>
+
     <!-- Paywall block -->
-    <div class="paywall">
+    <div v-if="!compatAppliedPromo" class="paywall">
       <h2 class="paywall__heading font-display-italic">{{ t('compatUnlockHeading') }}</h2>
       <p class="paywall__sub annotation">{{ t('compatUnlockSub') }}</p>
 
@@ -519,6 +587,87 @@ async function onEmailBlur() {
   } catch { /* silent — never block UI */ }
 }
 
+// ── Promo code (compatibility) ──────────────────────────────────────────────
+const compatPromoInputVisible     = ref(false)
+const compatPromoCodeInput        = ref('')
+const isValidatingCompatPromo     = ref(false)
+const compatPromoValidationResult = ref<{ valid: boolean; message: string } | null>(null)
+const compatAppliedPromo          = ref<{ codeId: string; codeType: string; accessTier: string } | null>(null)
+const isApplyingCompatAccess      = ref(false)
+const compatPromoErrorMessage     = ref('')
+
+async function validateCompatPromoCode() {
+  const code = compatPromoCodeInput.value.trim()
+  if (!code) return
+  isValidatingCompatPromo.value = true
+  compatPromoValidationResult.value = null
+  try {
+    const result = await $fetch<{ valid: boolean; message: string; codeId?: string; codeType?: string; accessTier?: string }>(
+      '/api/validate-promo',
+      { method: 'POST', body: { code, email: emailInput.value || '' } },
+    )
+    if (result.valid && result.codeType === 'full_access' && result.accessTier === 'compatibility') {
+      compatAppliedPromo.value = {
+        codeId:     result.codeId!,
+        codeType:   result.codeType,
+        accessTier: result.accessTier,
+      }
+      compatPromoValidationResult.value = null
+    } else if (result.valid && result.codeType === 'full_access' && result.accessTier !== 'compatibility') {
+      compatPromoValidationResult.value = { valid: false, message: 'This code is not valid for the compatibility reading.' }
+    } else {
+      compatPromoValidationResult.value = { valid: false, message: result.message }
+    }
+  } catch {
+    compatPromoValidationResult.value = { valid: false, message: 'Unable to validate code. Please try again.' }
+  } finally {
+    isValidatingCompatPromo.value = false
+  }
+}
+
+async function applyCompatFreeAccess() {
+  if (!emailInput.value || !emailInput.value.includes('@')) {
+    compatPromoErrorMessage.value = 'Please enter your email address first.'
+    return
+  }
+  if (!compatAppliedPromo.value) return
+  isApplyingCompatAccess.value = true
+  compatPromoErrorMessage.value = ''
+  store.setEmail(emailInput.value)
+  try {
+    const result = await $fetch<{ success: boolean; sessionId: string }>(
+      '/api/apply-promo-access',
+      {
+        method: 'POST',
+        body: {
+          codeId:         compatAppliedPromo.value.codeId,
+          code:           compatPromoCodeInput.value.trim(),
+          email:          emailInput.value,
+          firstName:      myNameInput.value.trim() || store.firstName || 'User',
+          dateOfBirth:    store.dateOfBirth || '',
+          city:           store.city || '',
+          archetype:      store.archetype || 'phoenix',
+          lifePathNumber: store.lifePathNumber || 1,
+          region:         store.region || 'western',
+          language:       store.language || 'en',
+          answers:        store.answers || {},
+          accessTier:     compatAppliedPromo.value.accessTier,
+        },
+      },
+    )
+    // Store the already-computed compatibility data into the full-report ref
+    // before navigating so CASE P in onMounted can render it without re-fetching.
+    if (store.compatibilityData) {
+      compatibility.value = store.compatibilityData
+    }
+    await navigateTo('/compatibility?promo=1')
+  } catch (err: any) {
+    compatPromoErrorMessage.value = err?.data?.message || 'Something went wrong. Please try again.'
+  } finally {
+    isApplyingCompatAccess.value = false
+  }
+}
+
 // ── Checkout ──────────────────────────────────────────────────────────────────
 const isProcessing  = ref(false)
 const activeTier    = ref<'subscription' | 'single' | null>(null)
@@ -604,7 +753,20 @@ onMounted(async () => {
   const isPreview  = preview  === '1'
   const isCanceled = canceled === '1'
 
-  console.warn('[compatibility] onMounted params', { sessionId: !!sessionId, isPreview, isCanceled, fromHistory, hasStoreData: !!store.compatibilityData })
+  const isPromo = route.query.promo === '1'
+
+  console.warn('[compatibility] onMounted params', { sessionId: !!sessionId, isPreview, isCanceled, fromHistory, isPromo, hasStoreData: !!store.compatibilityData })
+
+  // CASE P — promo free-access: compatibility data already in the ref (set before navigate)
+  if (isPromo) {
+    if (!compatibility.value && store.compatibilityData) {
+      compatibility.value = store.compatibilityData
+    }
+    if (!compatibility.value) {
+      hasError.value = true
+    }
+    return
+  }
 
   // CASE H — history view from account page: load saved reading from DB, no re-generation
   if (fromHistory && sessionId) {
@@ -1082,6 +1244,74 @@ onMounted(async () => {
   font-style: italic;
   line-height: 1.6;
   margin: 0 auto;
+}
+
+/* ── Promo code (compatibility) ── */
+.compat-promo {
+  max-width: 1400px;
+  padding: 0 clamp(20px, 5vw, 80px) clamp(20px, 3vw, 28px);
+  margin: 0 auto;
+}
+
+.compat-promo__toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-ink-faint);
+  font-style: italic;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.compat-promo__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.compat-promo__input {
+  flex: 1;
+  max-width: 280px;
+}
+
+.compat-promo__apply {
+  background: none;
+  border: none;
+  padding: 0 0 12px;
+  color: var(--color-ink-mid);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.compat-promo__apply:hover:not(:disabled) {
+  color: var(--color-ink);
+}
+
+.compat-promo__apply:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.compat-promo__msg {
+  margin: 10px 0 0;
+  line-height: 1.5;
+}
+
+.compat-promo__msg--error {
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+.compat-promo__msg--success {
+  color: var(--color-ink-mid);
+  font-style: italic;
+}
+
+/* ── Free-access paywall variant ── */
+.paywall--free {
+  border-top: none;
 }
 
 /* ── Paywall ── */

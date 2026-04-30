@@ -20,13 +20,18 @@ export default defineEventHandler(async (event) => {
   const region        = isValidRegion(body.region) ? body.region : 'western'
   const language      = sanitizeString(body.language || 'en', 5)
   const answers       = body.answers && typeof body.answers === 'object' ? body.answers : {}
+  const accessTierRaw = sanitizeString(body.accessTier || '', 30)
 
   assertInput(codeId.length > 0, 'codeId is required')
   assertInput(rawCode.length > 0, 'code is required')
   assertInput(isValidEmail(email), 'Valid email is required')
   assertInput(!!firstName, 'firstName is required')
-  assertInput(isValidDateOfBirth(dateOfBirth), 'Valid dateOfBirth is required')
-  assertInput(isValidArchetype(archetype), 'Invalid archetype')
+  // dateOfBirth and archetype are only required for destiny-report generation.
+  // Compatibility-tier codes skip generation entirely, so we skip those asserts.
+  if (accessTierRaw !== 'compatibility') {
+    assertInput(isValidDateOfBirth(dateOfBirth), 'Valid dateOfBirth is required')
+    assertInput(isValidArchetype(archetype), 'Invalid archetype')
+  }
 
   const normalizedEmail = email.toLowerCase().trim()
   const supabase = createSupabaseAdmin()
@@ -102,7 +107,46 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // ── Step 4: Generate report via Anthropic directly ──────────────────────
+  // ── Step 4: Short-circuit for compatibility-tier codes ───────────────────
+  // Compatibility codes only need to consume the promo code and log usage.
+  // Report generation and email are handled separately by the compatibility page.
+  if (accessTierRaw === 'compatibility') {
+    const promoSessionIdCompat = `promo_${randomBytes(16).toString('hex')}`
+    const normalizedEmailCompat = email.toLowerCase().trim()
+
+    // Lock personal code to email
+    if (codeRecord.code_subtype === 'personal' && !codeRecord.locked_to_email) {
+      const { error: lockErr } = await supabase
+        .from('promo_codes')
+        .update({ locked_to_email: normalizedEmailCompat })
+        .eq('id', codeId)
+      if (lockErr) console.error('[apply-promo-access] Compat lock email failed:', lockErr.code)
+    }
+
+    // Log usage
+    const { error: useErr } = await supabase
+      .from('promo_code_uses')
+      .insert({
+        code_id:   codeId,
+        email:     normalizedEmailCompat,
+        used_at:   new Date().toISOString(),
+        report_id: null,
+      })
+    if (useErr) console.error('[apply-promo-access] Compat usage log failed:', useErr.code)
+
+    return {
+      success:         true,
+      reportId:        null,
+      report:          null,
+      sessionId:       promoSessionIdCompat,
+      accessTier:      'compatibility',
+      bundlePurchased: false,
+      oraclePurchased: false,
+      message:         'Compatibility access granted',
+    }
+  }
+
+  // ── Step 5: Generate report via Anthropic directly ──────────────────────
   let reportData: any
   try {
     reportData = await generateReport({
@@ -120,7 +164,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Failed to generate your reading. Please try again.' })
   }
 
-  // ── Step 5: Save report to Supabase ───────────────────────────────────────
+  // ── Step 6: Save report to Supabase ───────────────────────────────────────
   const promoSessionId = `promo_${randomBytes(16).toString('hex')}`
   let savedReportId: string | null = null
 
@@ -153,7 +197,7 @@ export default defineEventHandler(async (event) => {
     console.error('[apply-promo-access] Save error:', err?.message)
   }
 
-  // ── Step 6: Send report email ─────────────────────────────────────────────
+  // ── Step 7: Send report email ─────────────────────────────────────────────
   const resendKey = config.resendApiKey as string | undefined
   let emailSent = false
 
@@ -181,7 +225,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // ── Step 7: Mark email sent in reports table ──────────────────────────────
+  // ── Step 8: Mark email sent in reports table ──────────────────────────────
   if (emailSent && savedReportId) {
     const { error: markErr } = await supabase
       .from('reports')
@@ -190,7 +234,7 @@ export default defineEventHandler(async (event) => {
     if (markErr) console.error('[apply-promo-access] Failed to mark email sent:', markErr.code)
   }
 
-  // ── Step 8: Lock personal code to email ──────────────────────────────────
+  // ── Step 9: Lock personal code to email ──────────────────────────────────
   if (codeRecord.code_subtype === 'personal' && !codeRecord.locked_to_email) {
     const { error: lockErr } = await supabase
       .from('promo_codes')
@@ -199,7 +243,7 @@ export default defineEventHandler(async (event) => {
     if (lockErr) console.error('[apply-promo-access] Lock email failed:', lockErr.code)
   }
 
-  // ── Step 9: Log usage in promo_code_uses ─────────────────────────────────
+  // ── Step 10: Log usage in promo_code_uses ─────────────────────────────────
   const { error: useErr } = await supabase
     .from('promo_code_uses')
     .insert({
@@ -210,7 +254,7 @@ export default defineEventHandler(async (event) => {
     })
   if (useErr) console.error('[apply-promo-access] Usage log failed:', useErr.code)
 
-  // ── Step 10: Return ───────────────────────────────────────────────────────
+  // ── Step 11: Return ───────────────────────────────────────────────────────
   const resolvedTier = codeRecord.access_tier || 'oracle'
   return {
     success: true,
