@@ -165,6 +165,16 @@ export default defineNuxtPlugin(() => {
     }
   }
 
+  // ─── Email hashing (SHA-256 via Web Crypto API) ──────────────────────────────
+  async function hashEmail(email: string): Promise<string> {
+    const normalized = email.toLowerCase().trim()
+    const encoder = new TextEncoder()
+    const data = encoder.encode(normalized)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  }
+
   // ─── Expose tracking helpers ────────────────────────────────────────────────
   return {
     provide: {
@@ -405,6 +415,19 @@ export default defineNuxtPlugin(() => {
 
       trackCustomEvent: (eventName: string, params?: Record<string, unknown>) => {
         safeTrack(eventName, { ...params, device_type: getDeviceType(), ...getUtmParams() })
+      },
+
+      identifyUser: async (email: string): Promise<void> => {
+        try {
+          if (!tiktokPixelId || !(window as any).ttq) return
+          const hashed = await hashEmail(email)
+          ;(window as any).ttq.identify({
+            email: hashed,
+            phone_number: '',
+          })
+        } catch (err) {
+          console.warn('[B-3] identifyUser TikTok error:', err)
+        }
       },
     },
   }

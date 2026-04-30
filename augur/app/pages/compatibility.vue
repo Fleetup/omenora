@@ -335,7 +335,7 @@ const store = useAnalysisStore()
 const route = useRoute()
 const { t } = useLanguage()
 const { provisionUser, session, restoreSession } = useAuth()
-const { $trackCustomEvent, $trackInitiateCheckout, $trackPurchase } = useNuxtApp() as any
+const { $trackCustomEvent, $trackInitiateCheckout, $trackPurchase, $identifyUser } = useNuxtApp() as any
 
 function trackEvent(name: string, props?: Record<string, unknown>) {
   try { $trackCustomEvent?.(name, props ?? {}) } catch { /* never block UI */ }
@@ -455,6 +455,7 @@ const theirNameInput      = ref(store.partnerName || '')
 const emailInput          = ref(store.email       || '')
 const emailCaptureSubmitted = ref(false)
 const emailPrompt         = ref(false)
+const identifyFired       = ref(false)
 
 const isEmailValid = computed(() =>
   emailInput.value.includes('@') && emailInput.value.includes('.'),
@@ -463,6 +464,10 @@ const isEmailValid = computed(() =>
 watch(emailInput, () => {
   emailCaptureSubmitted.value = false
   emailPrompt.value = false
+  if (isEmailValid.value && !identifyFired.value) {
+    identifyFired.value = true
+    try { $identifyUser?.(emailInput.value) } catch { /* never block UI */ }
+  }
 })
 
 async function onEmailBlur() {
