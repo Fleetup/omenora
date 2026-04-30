@@ -193,9 +193,10 @@ export default defineNuxtPlugin(() => {
         try {
           if (tiktokPixelId && (window as any).ttq) {
             ;(window as any).ttq.track('ViewContent', {
+              content_type: 'product',
               content_name: params.content_name,
               content_category: 'Astrology',
-              content_id: params.content_id || params.content_name,
+              content_id: params.content_id || 'compatibility_reading',
               value: params.value,
               currency: params.currency || 'USD',
             })
@@ -225,6 +226,8 @@ export default defineNuxtPlugin(() => {
         try {
           if (tiktokPixelId && (window as any).ttq) {
             ;(window as any).ttq.track('InitiateCheckout', {
+              content_type: 'product',
+              content_id: 'compatibility_reading',
               value: params.value,
               currency: params.currency || 'USD',
               content_name: params.content_name || 'Destiny Reading',
@@ -254,6 +257,8 @@ export default defineNuxtPlugin(() => {
         try {
           if (tiktokPixelId && (window as any).ttq) {
             ;(window as any).ttq.track('CompletePayment', {
+              content_type: 'product',
+              content_id: 'compatibility_reading',
               value: params.value,
               currency: params.currency || 'USD',
               content_name: params.content_name || 'Destiny Reading',
