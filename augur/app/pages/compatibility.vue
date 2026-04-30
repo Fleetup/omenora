@@ -2,7 +2,7 @@
   <!-- ── Loading ── -->
   <div v-if="isLoading" class="compat-state-page" aria-live="polite">
     <div class="compat-state-inner">
-      <OrbitalMark />
+      <PhoenixLoader :size="72" />
       <p class="label-caps compat-state-brand">Omenora</p>
       <p class="annotation compat-state-msg">{{ t('analyzingCompat') }}</p>
     </div>
@@ -11,7 +11,7 @@
   <!-- ── Error (post-payment path) ── -->
   <div v-else-if="hasError && !isPreviewMode" class="compat-state-page">
     <div class="compat-state-inner">
-      <OrbitalMark />
+      <PhoenixLoader :size="72" />
       <p class="label-caps compat-state-brand">Omenora</p>
       <p class="annotation compat-state-msg">{{ t('somethingWrong') }}</p>
     </div>

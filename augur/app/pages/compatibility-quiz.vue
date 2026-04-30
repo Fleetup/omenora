@@ -32,7 +32,7 @@
   <!-- ── Loading state (step 4) ── -->
   <div v-else-if="currentStep === 4" class="compat-loading" aria-live="polite">
     <div class="compat-loading__inner">
-      <OrbitalMark />
+      <PhoenixLoader :size="72" />
       <p class="label-caps compat-loading__brand">Omenora</p>
       <p :key="loadingMsgIdx" class="compat-loading__msg font-display-italic">
         {{ loadingMessages[loadingMsgIdx] }}

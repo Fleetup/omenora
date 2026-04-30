@@ -1,7 +1,7 @@
 <template>
   <!-- ── STATE: Loading ── -->
   <div v-if="isLoading" class="account-state-page">
-    <OrbitalMark />
+    <PhoenixLoader :size="72" />
     <p class="annotation" style="margin-top: 16px; color: var(--color-ink-faint);">Loading your account…</p>
   </div>
 
