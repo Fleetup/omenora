@@ -17,10 +17,10 @@ export default defineNuxtConfig({
     // Only load gtag.js in production — mirrors the enabled-in-production
     // pattern used by TikTok/Meta/PostHog in pixels.client.ts
     enabled: process.env.NODE_ENV === 'production',
-    // ID is read at runtime from NUXT_PUBLIC_GTAG_ID env var (Railway secret)
-    // The empty string here is the build-time default; Nuxt replaces it at
-    // container startup via the public runtimeConfig mapping below.
-    id: '',
+    // GA4 Measurement ID — public client-side identifier (not a secret).
+    // nuxt-gtag stores this under runtimeConfig.public.gtag which cannot be
+    // overridden by a flat NUXT_PUBLIC_* env var (nested object path).
+    id: 'G-62M5LR63FH',
     // Use async (non-render-blocking) loading strategy
     loadingStrategy: 'async',
     // Default gtag config — GA4 Enhanced Measurement must also be turned on
@@ -58,7 +58,6 @@ export default defineNuxtConfig({
       tiktokPixelId: '',
       metaPixelId: '',
       posthogKey: '',
-      gtagId: '',
       googlePlacesKey: process.env.NUXT_PUBLIC_GOOGLE_PLACES_KEY || '',
     },
   },
