@@ -5,6 +5,9 @@ export default defineNuxtPlugin(() => {
   const tiktokPixelId = config.public.tiktokPixelId as string
   const metaPixelId = config.public.metaPixelId as string
   const posthogKey = config.public.posthogKey as string
+  // nuxt-gtag's useGtag() is SSR-safe: on the server the calls are no-ops.
+  // The gtag.js script itself only loads on the client in production.
+  const { gtag } = useGtag()
 
   // ── PostHog ─────────────────────────────────────────────────────────────
   if (posthogKey) {
@@ -84,12 +87,22 @@ export default defineNuxtPlugin(() => {
 
   // ─── Auto PageView on every route change ───────────────────────────────────
   const router = useRouter()
-  router.afterEach(() => {
+  router.afterEach((to) => {
     if (tiktokPixelId && (window as any).ttq) {
       ;(window as any).ttq.page()
     }
     if (metaPixelId && (window as any).fbq) {
       ;(window as any).fbq('track', 'PageView')
+    }
+    // GA4: nuxt-gtag's send_page_view:true handles the initial load automatically.
+    // For SPA route changes we send an explicit page_view so every nav is tracked.
+    try {
+      gtag('event', 'page_view', {
+        page_path: to.fullPath,
+        page_title: typeof document !== 'undefined' ? document.title : '',
+      })
+    } catch (err) {
+      console.warn('[B-3] GA4 page_view error:', err)
     }
   })
 
@@ -116,6 +129,13 @@ export default defineNuxtPlugin(() => {
       }
     } catch (err) {
       console.warn(`[B-3] PostHog tracking error — ${eventName}:`, err)
+    }
+    try {
+      // GA4 — nuxt-gtag is no-op when disabled (dev/staging) so no guard needed.
+      // Event name: GA4 recommends snake_case which matches our existing convention.
+      gtag('event', eventName, props as Record<string, unknown> ?? {})
+    } catch (err) {
+      console.warn(`[B-3] GA4 tracking error — ${eventName}:`, err)
     }
   }
 

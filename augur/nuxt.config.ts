@@ -8,8 +8,27 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
+    'nuxt-gtag',
     ...(process.env.SENTRY_DSN ? ['@nuxtjs/sentry'] : []),
   ],
+
+  // @ts-ignore — nuxt-gtag augments NuxtConfig at module init time
+  gtag: {
+    // Only load gtag.js in production — mirrors the enabled-in-production
+    // pattern used by TikTok/Meta/PostHog in pixels.client.ts
+    enabled: process.env.NODE_ENV === 'production',
+    // ID is read at runtime from NUXT_PUBLIC_GTAG_ID env var (Railway secret)
+    // The empty string here is the build-time default; Nuxt replaces it at
+    // container startup via the public runtimeConfig mapping below.
+    id: '',
+    // Use async (non-render-blocking) loading strategy
+    loadingStrategy: 'async',
+    // Default gtag config — GA4 Enhanced Measurement must also be turned on
+    // in the GA4 Data Streams dashboard (page_changes_based_on_browser_history).
+    config: {
+      send_page_view: true,
+    },
+  },
 
   runtimeConfig: {
     // Empty string defaults — Nitro reads the actual process.env at container
@@ -39,6 +58,7 @@ export default defineNuxtConfig({
       tiktokPixelId: '',
       metaPixelId: '',
       posthogKey: '',
+      gtagId: '',
       googlePlacesKey: process.env.NUXT_PUBLIC_GOOGLE_PLACES_KEY || '',
     },
   },
@@ -68,7 +88,7 @@ export default defineNuxtConfig({
     },
   },
 
-  // @ts-expect-error - @nuxtjs/sentry module extends NuxtConfig type
+  // @ts-ignore - @nuxtjs/sentry module extends NuxtConfig type
   sentry: {
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || 'development',
@@ -165,6 +185,7 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://api.stripe.com' },
         { rel: 'dns-prefetch', href: 'https://js.stripe.com' },
         { rel: 'dns-prefetch', href: 'https://api.stripe.com' },
+        { rel: 'preconnect', href: 'https://www.googletagmanager.com' },
         { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
       ],
       script: [
