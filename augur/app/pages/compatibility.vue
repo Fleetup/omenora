@@ -687,14 +687,14 @@ async function handleCheckout(tier: 'subscription' | 'single') {
 
   try {
     $trackInitiateCheckout?.({
-      value: tier === 'subscription' ? 9.99 : 7.99,
+      value: tier === 'subscription' ? 9.99 : 17.99,
       currency: 'USD',
       content_name: tier === 'subscription' ? 'Compatibility Plus Subscription' : 'Compatibility Reading',
     })
   } catch { /* never block UI */ }
   trackEvent('initiate_checkout', {
     tier,
-    value: tier === 'subscription' ? 9.99 : 7.99,
+    value: tier === 'subscription' ? 9.99 : 17.99,
   })
 
   isProcessing.value  = true
@@ -901,7 +901,7 @@ onMounted(async () => {
         const pixelKey = `omenora_purchase_tracked_${sessionId}`
         if (!sessionStorage.getItem(pixelKey)) {
           sessionStorage.setItem(pixelKey, '1')
-          const purchaseValue = meta.tier === 'subscription' ? 9.99 : (meta.tier === 'single' ? 7.99 : 2.99)
+          const purchaseValue = meta.tier === 'subscription' ? 9.99 : (meta.tier === 'single' ? 17.99 : 2.99)
           $trackPurchase?.({
             value: purchaseValue,
             currency: 'USD',

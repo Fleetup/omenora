@@ -90,7 +90,7 @@ export default defineEventHandler(async (event) => {
         price_data: {
           currency: 'usd',
           product_data: { name: 'OMENORA Compatibility Reading', description: 'Destiny Compatibility Analysis' },
-          unit_amount: 799,
+          unit_amount: 1799,
         },
         quantity: 1,
       }],
