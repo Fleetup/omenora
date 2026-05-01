@@ -308,6 +308,61 @@
       <h2 class="paywall__heading font-display-italic">{{ t('compatUnlockHeading') }}</h2>
       <p class="paywall__sub annotation">{{ t('compatUnlockSub') }}</p>
 
+      <p v-if="emailPrompt" class="compat-email-prompt annotation" role="alert">{{ t('compatEmailPrompt') }}</p>
+      <div v-if="checkoutError" class="compat-checkout-error annotation" role="alert">
+        {{ checkoutError }}
+      </div>
+
+      <!-- Urgency line -->
+      <p class="paywall__urgency annotation">Your reading is ready — unlock it before this session expires.</p>
+
+      <!-- Option 1: Single (dominant) -->
+      <div class="pay-card pay-card--primary">
+        <p class="label-caps pay-card__badge">{{ t('compatSubBadge') }}</p>
+        <p class="pay-card__name">{{ t('compatSingleName') }}</p>
+        <p class="pay-card__price font-serif">{{ t('compatSinglePrice') }}<span class="pay-card__freq annotation"> {{ t('compatSingleFreq') }}</span></p>
+        <ul class="pay-card__bullets annotation">
+          <li>{{ t('compatSingleBullet1') }}</li>
+          <li>{{ t('compatSingleBullet2') }}</li>
+          <li>{{ t('compatSingleBullet3') }}</li>
+        </ul>
+        <CTAButton
+          :arrow="false"
+          :disabled="isProcessing"
+          class="pay-card__btn"
+          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'single' }"
+          @click="handleCheckout('single')"
+        >
+          <span v-if="isProcessing && activeTier === 'single'">{{ t('compatProcessing') }}</span>
+          <span v-else>{{ t('compatSingleCta') }}</span>
+        </CTAButton>
+      </div>
+
+      <!-- Option 2: Subscription (secondary) -->
+      <div class="pay-card pay-card--secondary">
+        <p class="pay-card__name">{{ t('compatSubName') }}</p>
+        <p class="pay-card__price font-serif">{{ t('compatSubPrice') }}<span class="pay-card__freq annotation"> {{ t('compatSubFreq') }}</span></p>
+        <ul class="pay-card__bullets annotation">
+          <li>{{ t('compatSubBullet1') }}</li>
+          <li>{{ t('compatSubBullet2') }}</li>
+          <li>{{ t('compatSubBullet3') }}</li>
+          <li>{{ t('compatSubBullet4') }}</li>
+          <li>{{ t('compatSubBullet5') }}</li>
+        </ul>
+        <button
+          class="pay-card__btn pay-card__btn--secondary"
+          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'subscription' }"
+          :disabled="isProcessing"
+          @click="handleCheckout('subscription')"
+        >
+          <span v-if="isProcessing && activeTier === 'subscription'">{{ t('compatProcessing') }}</span>
+          <span v-else>{{ t('compatSubCta') }}</span>
+        </button>
+        <p class="annotation pay-card__footnote">{{ t('compatSubFootnote1') }}</p>
+        <p class="annotation pay-card__footnote">{{ t('compatSubFootnote2') }} {{ nextChargeDate }}</p>
+        <p class="annotation pay-card__footnote pay-card__footnote--muted">{{ t('compatSubFootnote3') }}</p>
+      </div>
+
       <!-- Name + email capture -->
       <div class="capture-block">
         <label class="label-caps capture-block__label" for="compat-my-name">{{ t('compatYourName') }}</label>
@@ -343,58 +398,6 @@
           @focus="trackEvent('email_field_focused')"
           @blur="onEmailBlur"
         />
-      </div>
-
-      <p v-if="emailPrompt" class="compat-email-prompt annotation" role="alert">{{ t('compatEmailPrompt') }}</p>
-      <div v-if="checkoutError" class="compat-checkout-error annotation" role="alert">
-        {{ checkoutError }}
-      </div>
-
-      <!-- Option 1: Subscription (primary) -->
-      <div class="pay-card pay-card--primary">
-        <p class="label-caps pay-card__badge">{{ t('compatSubBadge') }}</p>
-        <p class="pay-card__name">{{ t('compatSubName') }}</p>
-        <p class="pay-card__price font-serif">{{ t('compatSubPrice') }}<span class="pay-card__freq annotation"> {{ t('compatSubFreq') }}</span></p>
-        <ul class="pay-card__bullets annotation">
-          <li>{{ t('compatSubBullet1') }}</li>
-          <li>{{ t('compatSubBullet2') }}</li>
-          <li>{{ t('compatSubBullet3') }}</li>
-          <li>{{ t('compatSubBullet4') }}</li>
-          <li>{{ t('compatSubBullet5') }}</li>
-        </ul>
-        <CTAButton
-          :arrow="false"
-          :disabled="isProcessing"
-          class="pay-card__btn"
-          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'subscription' }"
-          @click="handleCheckout('subscription')"
-        >
-          <span v-if="isProcessing && activeTier === 'subscription'">{{ t('compatProcessing') }}</span>
-          <span v-else>{{ t('compatSubCta') }}</span>
-        </CTAButton>
-        <p class="annotation pay-card__footnote">{{ t('compatSubFootnote1') }}</p>
-        <p class="annotation pay-card__footnote">{{ t('compatSubFootnote2') }} {{ nextChargeDate }}</p>
-        <p class="annotation pay-card__footnote pay-card__footnote--muted">{{ t('compatSubFootnote3') }}</p>
-      </div>
-
-      <!-- Option 2: Single (secondary) -->
-      <div class="pay-card pay-card--secondary">
-        <p class="pay-card__name">{{ t('compatSingleName') }}</p>
-        <p class="pay-card__price font-serif">{{ t('compatSinglePrice') }}<span class="pay-card__freq annotation"> {{ t('compatSingleFreq') }}</span></p>
-        <ul class="pay-card__bullets annotation">
-          <li>{{ t('compatSingleBullet1') }}</li>
-          <li>{{ t('compatSingleBullet2') }}</li>
-          <li>{{ t('compatSingleBullet3') }}</li>
-        </ul>
-        <button
-          class="pay-card__btn pay-card__btn--secondary"
-          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'single' }"
-          :disabled="isProcessing"
-          @click="handleCheckout('single')"
-        >
-          <span v-if="isProcessing && activeTier === 'single'">{{ t('compatProcessing') }}</span>
-          <span v-else>{{ t('compatSingleCta') }}</span>
-        </button>
       </div>
 
       <!-- Guarantee -->
@@ -1339,6 +1342,14 @@ onMounted(async () => {
   line-height: 1.6;
   margin: 0 0 32px;
   max-width: 520px;
+}
+
+/* ── Paywall urgency line ── */
+.paywall__urgency {
+  color: var(--color-ink-mid);
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0 0 20px;
 }
 
 /* ── Capture block ── */
