@@ -8,27 +8,8 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
-    'nuxt-gtag',
     ...(process.env.SENTRY_DSN ? ['@nuxtjs/sentry'] : []),
   ],
-
-  // @ts-ignore — nuxt-gtag augments NuxtConfig at module init time
-  gtag: {
-    // Only load gtag.js in production — mirrors the enabled-in-production
-    // pattern used by TikTok/Meta/PostHog in pixels.client.ts
-    enabled: process.env.NODE_ENV === 'production',
-    // GA4 Measurement ID — public client-side identifier (not a secret).
-    // nuxt-gtag stores this under runtimeConfig.public.gtag which cannot be
-    // overridden by a flat NUXT_PUBLIC_* env var (nested object path).
-    id: 'G-62M5LR63FH',
-    // Use async (non-render-blocking) loading strategy
-    loadingStrategy: 'async',
-    // Default gtag config — GA4 Enhanced Measurement must also be turned on
-    // in the GA4 Data Streams dashboard (page_changes_based_on_browser_history).
-    config: {
-      send_page_view: true,
-    },
-  },
 
   runtimeConfig: {
     // Empty string defaults — Nitro reads the actual process.env at container
@@ -188,6 +169,16 @@ export default defineNuxtConfig({
         { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' },
       ],
       script: [
+        // Google Analytics 4 — standard gtag.js snippet (production only)
+        ...(process.env.NODE_ENV === 'production' ? [
+          {
+            src: 'https://www.googletagmanager.com/gtag/js?id=G-62M5LR63FH',
+            async: true,
+          },
+          {
+            innerHTML: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-62M5LR63FH');`,
+          },
+        ] : []),
         {
           type: 'application/ld+json',
           innerHTML: JSON.stringify({

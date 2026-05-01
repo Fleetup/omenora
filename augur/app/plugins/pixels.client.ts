@@ -5,9 +5,18 @@ export default defineNuxtPlugin(() => {
   const tiktokPixelId = config.public.tiktokPixelId as string
   const metaPixelId = config.public.metaPixelId as string
   const posthogKey = config.public.posthogKey as string
-  // nuxt-gtag's useGtag() is SSR-safe: on the server the calls are no-ops.
-  // The gtag.js script itself only loads on the client in production.
-  const { gtag } = useGtag()
+  // GA4: window.gtag is defined by the inline bootstrap script injected in
+  // nuxt.config.ts app.head (production only). On dev/server it is undefined
+  // and calls are silently skipped by the safeGtag wrapper below.
+  function safeGtag(...args: [string, ...unknown[]]) {
+    try {
+      if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+        ;(window as any).gtag(...args)
+      }
+    } catch (err) {
+      console.warn('[GA4] gtag error:', err)
+    }
+  }
 
   // ── PostHog ─────────────────────────────────────────────────────────────
   if (posthogKey) {
@@ -94,16 +103,11 @@ export default defineNuxtPlugin(() => {
     if (metaPixelId && (window as any).fbq) {
       ;(window as any).fbq('track', 'PageView')
     }
-    // GA4: nuxt-gtag's send_page_view:true handles the initial load automatically.
-    // For SPA route changes we send an explicit page_view so every nav is tracked.
-    try {
-      gtag('event', 'page_view', {
-        page_path: to.fullPath,
-        page_title: typeof document !== 'undefined' ? document.title : '',
-      })
-    } catch (err) {
-      console.warn('[B-3] GA4 page_view error:', err)
-    }
+    // GA4: send page_view on every SPA navigation
+    safeGtag('event', 'page_view', {
+      page_path: to.fullPath,
+      page_title: document.title,
+    })
   })
 
   // ─── B-3: safeTrack wrapper ─────────────────────────────────────────────────
@@ -130,13 +134,7 @@ export default defineNuxtPlugin(() => {
     } catch (err) {
       console.warn(`[B-3] PostHog tracking error — ${eventName}:`, err)
     }
-    try {
-      // GA4 — nuxt-gtag is no-op when disabled (dev/staging) so no guard needed.
-      // Event name: GA4 recommends snake_case which matches our existing convention.
-      gtag('event', eventName, props as Record<string, unknown> ?? {})
-    } catch (err) {
-      console.warn(`[B-3] GA4 tracking error — ${eventName}:`, err)
-    }
+    safeGtag('event', eventName, props ?? {})
   }
 
   // ─── B-3: UTM + context helpers ─────────────────────────────────────────────
