@@ -251,6 +251,13 @@ onMounted(async () => {
 
     store.setCalendarPurchased(true)
 
+    const ssKey = `meta_purchase_fired_${sessionId}`
+    if (!sessionStorage.getItem(ssKey)) {
+      sessionStorage.setItem(ssKey, '1')
+      const nuxtApp = useNuxtApp()
+      nuxtApp.$trackPurchase({ value: 2.99, currency: 'USD' })
+    }
+
     if (!store.email && store.tempId) {
       try {
         const reportData = await $fetch<{ report: { email: string } }>(

@@ -107,6 +107,13 @@ onMounted(async () => {
 
     store.setSubscriptionActive(true)
 
+    const ssKey = `meta_purchase_fired_${sessionId}`
+    if (!sessionStorage.getItem(ssKey)) {
+      sessionStorage.setItem(ssKey, '1')
+      const nuxtApp = useNuxtApp()
+      nuxtApp.$trackPurchase({ value: 4.99, currency: 'USD' })
+    }
+
     isLoading.value = false
   } catch {
     console.error('Subscription page failed')
