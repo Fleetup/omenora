@@ -117,16 +117,19 @@
       </section>
 
       <!-- Trustpilot widget -->
-      <div
-        class="trustpilot-widget"
-        data-locale="en-US"
-        data-template-id="5419b6a8b0d04a076446a9ad"
-        data-businessunit-id="69f37a2519d955d321733cd4"
-        data-style-height="24px"
-        data-style-width="100%"
-        data-theme="dark"
-      >
-        <a href="https://www.trustpilot.com/review/omenora.com" target="_blank" rel="noopener">Trustpilot</a>
+      <div class="preview-tp-block">
+        <p class="annotation preview-tp-label">Rated Excellent by our readers</p>
+        <div
+          class="trustpilot-widget"
+          data-locale="en-US"
+          data-template-id="5419b6a8b0d04a076446a9ad"
+          data-businessunit-id="69f37a2519d955d321733cd4"
+          data-style-height="24px"
+          data-style-width="100%"
+          data-theme="dark"
+        >
+          <a href="https://www.trustpilot.com/review/omenora.com" target="_blank" rel="noopener">Trustpilot</a>
+        </div>
       </div>
 
       <!-- ── PAYWALL (standard pricing) ── -->
@@ -1047,6 +1050,19 @@ async function handlePayment() {
 }
 
 .testimonial__attr { color: var(--color-ink-faint); }
+
+/* ── Trustpilot block ── */
+.preview-tp-block {
+  padding: clamp(16px, 2.5vw, 24px) clamp(20px, 5vw, 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.preview-tp-label {
+  color: var(--color-ink-faint);
+  margin-bottom: 8px;
+  letter-spacing: 0.15em;
+}
 
 /* ── PAYWALL ── */
 .paywall {
