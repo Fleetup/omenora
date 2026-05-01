@@ -176,7 +176,7 @@ export default defineNuxtConfig({
             async: true,
           },
           {
-            innerHTML: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-62M5LR63FH');`,
+            textContent: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-62M5LR63FH');`,
           },
         ] : []),
         {
