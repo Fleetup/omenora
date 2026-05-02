@@ -99,9 +99,6 @@ export default defineEventHandler(async (event) => {
       cancel_url:  `${base}/compatibility?canceled=1`,
       customer_email: isValidEmail(email) ? email : undefined,
       metadata,
-      optional_items: config.stripeCompatCalendarBumpPriceId
-        ? [{ price: config.stripeCompatCalendarBumpPriceId as string, quantity: 1 }]
-        : undefined,
     }
   } else {
     // tier === 'legacy' — identical to the original implementation
