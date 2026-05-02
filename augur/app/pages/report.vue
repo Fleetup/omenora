@@ -1348,7 +1348,7 @@ function trackPurchasePixel(sessionId: string, meta: Record<string, string>) {
 
   const purchaseAmount = meta.oracle === 'true' ? 12.99
     : meta.bundle === 'true' ? 5.99
-    : meta.birth_chart === 'true' ? 3.99
+    : meta.birth_chart === 'true' ? 2.99
     : 2.99
 
   const contentName = meta.oracle === 'true' ? 'Oracle Bundle'
