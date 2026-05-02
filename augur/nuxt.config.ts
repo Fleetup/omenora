@@ -23,6 +23,7 @@ export default defineNuxtConfig({
     stripeDailyPriceId: '',
     stripeCompatPlusPriceId: '',
     stripeCompatSinglePriceId: '',
+    stripeCompatCalendarBumpPriceId: '',
     emailJobSecret: '',
     cronSecret: '',
     inngestEventKey: '',

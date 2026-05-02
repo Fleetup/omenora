@@ -34,6 +34,8 @@ export default defineEventHandler(async (event) => {
       paid,
       customerEmail: session.customer_email,
       metadata: paid ? metadata : null,
+      amountTotal: typeof session.amount_total === 'number' ? session.amount_total / 100 : null,
+      currency: session.currency ?? null,
     }
   } catch {
     throw createError({ statusCode: 404, message: 'Session not found' })

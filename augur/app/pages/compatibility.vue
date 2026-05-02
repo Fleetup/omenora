@@ -826,6 +826,7 @@ onMounted(async () => {
         paid: boolean
         customerEmail: string | null
         metadata: Record<string, string> | null
+        amountTotal: number | null
       }>('/api/verify-payment', {
         method: 'POST',
         body: { sessionId },
@@ -907,7 +908,7 @@ onMounted(async () => {
         const pixelKey = `omenora_purchase_tracked_${sessionId}`
         if (!sessionStorage.getItem(pixelKey)) {
           sessionStorage.setItem(pixelKey, '1')
-          const purchaseValue = meta.tier === 'subscription' ? 9.99 : (meta.tier === 'single' ? 17.99 : 2.99)
+          const purchaseValue = paymentData.amountTotal ?? (meta.tier === 'subscription' ? 9.99 : (meta.tier === 'single' ? 17.99 : 2.99))
           $trackPurchase?.({
             value: purchaseValue,
             currency: 'USD',
