@@ -21,8 +21,8 @@ type ProductType = (typeof ALLOWED_TYPES)[number]
 
 const PRODUCTS: Record<ProductType, { amount: number; name: string; description: string }> = {
   report:        { amount: 499,  name: 'OMENORA Destiny Report — Basic',       description: 'Complete destiny analysis' },
-  oracle:        { amount: 1299, name: 'OMENORA Full Oracle Bundle',           description: 'Report + Calendar + Compatibility + Birth Chart + 30 Daily Insights' },
-  bundle:        { amount: 499,  name: 'OMENORA Most Popular Bundle',          description: 'Complete destiny report + 2026 Calendar + Compatibility Reading' },
+  oracle:        { amount: 2499, name: 'OMENORA Full Oracle Bundle',           description: 'Report + Calendar + Compatibility + Birth Chart + 30 Daily Insights' },
+  bundle:        { amount: 999,  name: 'OMENORA Most Popular Bundle',          description: 'Complete destiny report + 2026 Calendar + Compatibility Reading' },
   calendar:      { amount: 499,  name: 'OMENORA 2026 Lucky Timing Calendar',   description: 'Complete month-by-month destiny forecast' },
   compatibility: { amount: 999,  name: 'OMENORA Compatibility Reading',        description: 'Destiny Compatibility Analysis' },
   addon:         { amount: 99,   name: 'OMENORA Compatibility Add-on',         description: 'Add compatibility reading to your order' },

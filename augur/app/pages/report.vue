@@ -487,40 +487,25 @@
     <section v-if="!store.bundlePurchased && !store.oraclePurchased" class="upsell-section">
       <div class="editorial-rule" />
       <div class="upsell-section__inner">
-        <p class="label-caps upsell-section__eyebrow">Go deeper</p>
-        <h3 class="upsell-section__heading font-serif-italic">{{ t('wantDeeper') }}</h3>
-        <p class="annotation upsell-section__sub">{{ t('unlockComplete') }}</p>
+        <p class="label-caps upsell-section__eyebrow">Bundle</p>
+        <h3 class="upsell-section__heading font-serif-italic">{{ t('bundleHeadline') }}</h3>
+        <p class="annotation upsell-section__sub">{{ t('bundleDescription') }}</p>
         <div class="upsell-items">
           <div class="upsell-item">
             <div class="upsell-item__info">
-              <p class="upsell-item__name">2026 Lucky Calendar</p>
-              <p class="annotation upsell-item__desc">Month-by-month lucky timing</p>
+              <p class="upsell-item__name">{{ t('bundleIncludes1') }}</p>
             </div>
-            <span class="upsell-item__price font-serif">$2.99</span>
+            <span class="upsell-item__check">✓</span>
           </div>
           <div class="upsell-item">
             <div class="upsell-item__info">
-              <p class="upsell-item__name">Compatibility Forecast</p>
-              <p class="annotation upsell-item__desc">Discover your destiny match</p>
+              <p class="upsell-item__name">{{ t('bundleIncludes2') }}</p>
             </div>
-            <span class="upsell-item__price font-serif">$2.99</span>
+            <span class="upsell-item__check">✓</span>
           </div>
-          <div class="upsell-item">
-            <div class="upsell-item__info">
-              <p class="upsell-item__name">Full Birth Chart</p>
-              <p class="annotation upsell-item__desc">Sun, Moon + Rising sign analysis</p>
-            </div>
-            <span class="upsell-item__price font-serif">$3.99</span>
-          </div>
-        </div>
-        <div class="upsell-section__rule" />
-        <div class="upsell-section__total-row">
-          <span class="annotation">{{ t('individualTotal') }}</span>
-          <span class="annotation upsell-section__strike">$9.97</span>
         </div>
         <div class="upsell-section__price-row">
-          <span class="annotation">{{ t('yourBundlePrice') }}</span>
-          <span class="upsell-section__price font-serif">$5.99</span>
+          <span class="upsell-section__price font-serif">$9.99</span>
         </div>
         <button class="upsell-cta-btn" :disabled="isLoadingBundle" @click="buyBundle">
           {{ isLoadingBundle ? 'Loading...' : t('unlockBundle') }}
@@ -1260,8 +1245,8 @@ function trackPurchasePixel(sessionId: string, meta: Record<string, string>) {
   if (sessionStorage.getItem(pixelKey)) return
   sessionStorage.setItem(pixelKey, '1')
 
-  const purchaseAmount = meta.oracle === 'true' ? 12.99
-    : meta.bundle === 'true' ? 5.99
+  const purchaseAmount = meta.oracle === 'true' ? 24.99
+    : meta.bundle === 'true' ? 9.99
     : meta.birth_chart === 'true' ? 2.99
     : 2.99
 
@@ -1302,7 +1287,7 @@ async function buyBundle() {
       }
     )
     if (url) {
-      $trackUpsellAccepted({ type: 'bundle', price: 5.99, archetype: store.archetype, language: store.language })
+      $trackUpsellAccepted({ type: 'bundle', price: 9.99, archetype: store.archetype, language: store.language })
       window.location.href = url
     }
   } catch {

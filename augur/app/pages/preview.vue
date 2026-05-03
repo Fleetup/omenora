@@ -171,7 +171,7 @@
                 <p class="annotation tier__desc tier__desc--popular">❆ Full {{ archetypeShortName }} reading + your 2026 destiny windows + compatibility with one person</p>
               </div>
               <div class="tier__price-block">
-                <p class="tier__price tier__price--popular font-serif">$4.99</p>
+                <p class="tier__price tier__price--popular font-serif">$9.99</p>
                 <p class="annotation tier__price-note">one-time payment</p>
               </div>
             </div>
@@ -184,14 +184,20 @@
               :class="{ 'tier--selected-oracle': selectedTier === 3 }"
               @click="selectedTier = 3"
             >
+              <div class="tier__badge tier__badge--oracle label-caps">★ Premium</div>
               <div class="tier__oracle-inner">
                 <div class="tier__info">
-                  <p class="tier__name tier__name--oracle label-caps">{{ t('fullOracle') }}</p>
-                  <p class="annotation tier__desc tier__desc--oracle">✦ Complete {{ archetypeShortName }} map — all 7 sections, your Life Path {{ store.lifePathNumber }} calendar, birth chart &amp; all traditions</p>
+                  <p class="tier__name tier__name--oracle label-caps">{{ t('oracleHeadline') }}</p>
+                  <p class="annotation tier__desc tier__desc--oracle">{{ t('oracleDescription') }}</p>
+                  <ul class="tier__includes">
+                    <li class="annotation tier__includes-item">✓ {{ t('oracleIncludes1') }}</li>
+                    <li class="annotation tier__includes-item">✓ {{ t('oracleIncludes2') }}</li>
+                    <li class="annotation tier__includes-item">✓ {{ t('oracleIncludes3') }}</li>
+                    <li class="annotation tier__includes-item">✓ {{ t('oracleIncludes4') }}</li>
+                  </ul>
                 </div>
                 <div class="tier__price-block">
-                  <p class="tier__price tier__price--oracle font-serif">$12.99</p>
-                  <p class="annotation tier__price-note tier__price-note--oracle">save $8</p>
+                  <p class="tier__price tier__price--oracle font-serif">$24.99</p>
                 </div>
               </div>
             </div>
@@ -203,8 +209,8 @@
         <!--
           PRICE VERIFICATION — last checked 2026-04-17
           Basic:  display $4.99 = Stripe 499 ✓
-          Middle: display $4.99 = Stripe 499 ✓
-          Oracle: display $12.99 = Stripe 1299 ✓
+          Middle: display $9.99 = Stripe 999 ✓
+          Oracle: display $24.99 = Stripe 2499 ✓
 
           If display prices change, update corresponding Stripe unit_amount in:
             server/api/create-payment.post.ts (basic)
@@ -479,7 +485,7 @@ async function triggerApiCall() {
       $trackViewContent({
         content_name: store.report?.archetypeName || 'Destiny Reading Preview',
         content_id: store.report?.archetypeName || 'preview',
-        value: 4.99,
+        value: 9.99,
         currency: 'USD',
       })
       $trackPreviewLoaded({
@@ -671,7 +677,7 @@ async function handlePayment() {
   if (isProcessingPayment.value) return
   if (!email.value) return
 
-  const tierValues: Record<number, number> = { 1: 4.99, 2: 4.99, 3: 12.99 }
+  const tierValues: Record<number, number> = { 1: 4.99, 2: 9.99, 3: 24.99 }
   $trackTierSelected({
     tier: selectedTier.value,
     price: tierValues[selectedTier.value] || 4.99,
