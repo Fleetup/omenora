@@ -341,7 +341,7 @@
       <div class="daily-sub-card">
         <div class="daily-sub-top">
           <span class="label-caps daily-sub-badge">Personal</span>
-          <span class="daily-sub-price font-serif">$4.99<span class="daily-sub-price-period">/mo</span></span>
+          <span class="daily-sub-price font-serif">$6.99<span class="daily-sub-price-period">/mo</span></span>
         </div>
         <h2 class="font-serif-italic daily-sub-headline">Get YOUR personal horoscope every morning</h2>
         <p class="annotation daily-sub-copy">Based on your exact birth chart — not just your sun sign. Love, Work &amp; Health, personalized to you.</p>

@@ -284,9 +284,9 @@ useHead({
         operatingSystem: 'Any',
         offers: [
           { '@type': 'Offer', name: 'Free Personality Preview', price: '0', priceCurrency: 'USD', description: 'Free personality archetype preview — identity section unlocked immediately' },
-          { '@type': 'Offer', name: 'Basic Reading', price: '2.99', priceCurrency: 'USD', description: 'Full 7-section personality reading' },
-          { '@type': 'Offer', name: 'Popular Bundle', price: '4.99', priceCurrency: 'USD', description: 'Full reading + 2026 destiny forecast + compatibility' },
-          { '@type': 'Offer', name: 'Full Oracle', price: '12.99', priceCurrency: 'USD', description: 'Complete reading — all 7 sections, life path calendar, birth chart & all traditions' },
+          { '@type': 'Offer', name: 'Basic Reading', price: '4.99', priceCurrency: 'USD', description: 'Full 7-section personality reading' },
+          { '@type': 'Offer', name: 'Popular Bundle', price: '9.99', priceCurrency: 'USD', description: 'Full reading + 2026 destiny forecast + compatibility' },
+          { '@type': 'Offer', name: 'Full Oracle', price: '24.99', priceCurrency: 'USD', description: 'Complete reading — all 7 sections, life path calendar, birth chart & all traditions' },
         ],
         featureList: ['Natal chart calculation via Swiss Ephemeris', 'Personality archetype from Sun, Moon and Rising signs', 'Numerology Life Path calculation', '2026 astrology forecast', 'Western, Vedic, BaZi and Tarot traditions'],
       }),
@@ -385,9 +385,9 @@ const faqItems = [
   { question: 'Do I need to know my exact birth time?', answer: 'Birth time is optional. If you don\'t know it, we calculate your chart using solar noon as a default. The reading will still be accurate for your Sun, Moon, and most planetary positions — only your Rising sign and house placements require an exact time.' },
   { question: 'What traditions are included?', answer: 'Your reading covers six traditions: Western astrology, Vedic Nakshatra, Chinese BaZi (Four Pillars), Tarot archetypes, your Personality Archetype (synthesized from Sun, Moon, and Rising), and your Numerology Life Path number. Your initial reading is generated in one tradition — you can switch to any other tradition from the report page.' },
   { question: 'How long does it take?', answer: 'About 30 seconds to enter your birth details, then roughly 60 seconds for the AI to compute and write your full reading. The free preview is available immediately — no account, no subscription required.' },
-  { question: 'Is the free preview really free?', answer: 'Yes. Your personality archetype and the Identity section of your reading are unlocked at no cost. The full report — all seven sections including your 2026 forecast — is available for a one-time payment starting at $2.99.' },
+  { question: 'Is the free preview really free?', answer: 'Yes. Your personality archetype and the Identity section of your reading are unlocked at no cost. The full report — all seven sections including your 2026 forecast — is available for a one-time payment starting at $4.99.' },
   { question: 'Do two people born on the same day get the same reading?', answer: 'No. Birth time and city change every planetary position. Two people born on the same day but in different cities or at different hours will have meaningfully different charts, different archetypes, and different readings.' },
-  { question: 'Is there a subscription?', answer: 'The natal reading is a one-time payment — no subscription, no recurring charges. A separate Compatibility Plus subscription ($9.99/month) is available for unlimited compatibility readings and weekly relationship forecasts, but it is entirely optional.' },
+  { question: 'Is there a subscription?', answer: 'The natal reading is a one-time payment — no subscription, no recurring charges.' },
 ]
 
 onUnmounted(() => {

@@ -336,7 +336,7 @@ export default defineNuxtPlugin(() => {
               content_type: 'product',
               content_name: 'Compatibility Reading',
               content_id: 'compatibility_reading',
-              value: 17.99,
+              value: 9.99,
               currency: 'USD',
             })
           }

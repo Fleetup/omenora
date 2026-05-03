@@ -13,7 +13,7 @@
     <!-- Price banner -->
     <div class="price-banner">
       <span class="price-label label-caps">Personal Daily Horoscope</span>
-      <span class="price-amount font-serif">$4.99<span class="price-period">/month</span></span>
+      <span class="price-amount font-serif">$6.99<span class="price-period">/month</span></span>
     </div>
 
     <!-- Feature list -->
@@ -35,13 +35,6 @@
         <span class="birth-unlock-text">Real planetary transits calculated daily with Swiss Ephemeris</span>
       </div>
     </div>
-
-    <!-- Comparison note -->
-    <p class="sub-note">
-      Want compatibility readings too?
-      <NuxtLink to="/compatibility">Compatibility Plus</NuxtLink>
-      includes everything here — plus unlimited readings.
-    </p>
 
     <!-- Form -->
     <form class="form" novalidate @submit.prevent="handleSubmit">

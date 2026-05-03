@@ -563,7 +563,7 @@
             <h3 class="upsell-section__heading font-serif-italic">Personal Daily Horoscope</h3>
             <p class="annotation upsell-section__sub">Your natal chart read every morning</p>
           </div>
-          <span class="upsell-section__price font-serif">$4.99<span class="upsell-section__price-period">/mo</span></span>
+          <span class="upsell-section__price font-serif">$6.99<span class="upsell-section__price-period">/mo</span></span>
         </div>
         <p class="upsell-section__hook font-serif-italic">Everything in your report — delivered fresh every single day, tailored to your chart.</p>
         <div class="upsell-features">

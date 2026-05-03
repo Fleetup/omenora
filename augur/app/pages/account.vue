@@ -164,7 +164,7 @@
             </div>
             <div class="data-row">
               <span class="data-row__label">Billing</span>
-              <span class="data-row__value">{{ subscriptionPlanPrice || '$4.99' }} / month</span>
+              <span class="data-row__value">{{ subscriptionPlanPrice || '$6.99' }} / month</span>
             </div>
 
             <div class="plan-includes-block">
