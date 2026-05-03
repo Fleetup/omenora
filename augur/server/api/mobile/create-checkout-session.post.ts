@@ -20,13 +20,13 @@ const ALLOWED_TYPES = [
 type ProductType = (typeof ALLOWED_TYPES)[number]
 
 const PRODUCTS: Record<ProductType, { amount: number; name: string; description: string }> = {
-  report:        { amount: 199,  name: 'OMENORA Destiny Report — Basic',       description: 'Complete destiny analysis' },
+  report:        { amount: 499,  name: 'OMENORA Destiny Report — Basic',       description: 'Complete destiny analysis' },
   oracle:        { amount: 1299, name: 'OMENORA Full Oracle Bundle',           description: 'Report + Calendar + Compatibility + Birth Chart + 30 Daily Insights' },
   bundle:        { amount: 499,  name: 'OMENORA Most Popular Bundle',          description: 'Complete destiny report + 2026 Calendar + Compatibility Reading' },
-  calendar:      { amount: 299,  name: 'OMENORA 2026 Lucky Timing Calendar',   description: 'Complete month-by-month destiny forecast' },
-  compatibility: { amount: 299,  name: 'OMENORA Compatibility Reading',        description: 'Destiny Compatibility Analysis' },
+  calendar:      { amount: 499,  name: 'OMENORA 2026 Lucky Timing Calendar',   description: 'Complete month-by-month destiny forecast' },
+  compatibility: { amount: 999,  name: 'OMENORA Compatibility Reading',        description: 'Destiny Compatibility Analysis' },
   addon:         { amount: 99,   name: 'OMENORA Compatibility Add-on',         description: 'Add compatibility reading to your order' },
-  birth_chart:   { amount: 299,  name: 'OMENORA Full Birth Chart',             description: 'Rising sign · Moon sign · Houses · Planetary positions · 2026 forecast' },
+  birth_chart:   { amount: 499,  name: 'OMENORA Full Birth Chart',             description: 'Rising sign · Moon sign · Houses · Planetary positions · 2026 forecast' },
 }
 
 export default defineEventHandler(async (event) => {

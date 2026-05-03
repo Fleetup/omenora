@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
             name: 'OMENORA Full Birth Chart',
             description: 'Rising sign · Moon sign · Houses · Planetary positions · 2026 forecast',
           },
-          unit_amount: 299,
+          unit_amount: 499,
         },
         quantity: 1,
       }],

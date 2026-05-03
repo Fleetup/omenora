@@ -155,7 +155,7 @@
               <p class="tier__name label-caps">{{ t('basicReport') }}</p>
               <p class="annotation tier__desc">Full 7-section {{ archetypeShortName }} reading revealing why you operate the way you do</p>
             </div>
-            <p class="tier__price font-serif">$2.99</p>
+            <p class="tier__price font-serif">$4.99</p>
           </div>
 
           <!-- Tier 2: Most Popular (target) -->
@@ -202,7 +202,7 @@
 
         <!--
           PRICE VERIFICATION — last checked 2026-04-17
-          Basic:  display $2.99 = Stripe 299 ✓
+          Basic:  display $4.99 = Stripe 499 ✓
           Middle: display $4.99 = Stripe 499 ✓
           Oracle: display $12.99 = Stripe 1299 ✓
 
@@ -671,7 +671,7 @@ async function handlePayment() {
   if (isProcessingPayment.value) return
   if (!email.value) return
 
-  const tierValues: Record<number, number> = { 1: 2.99, 2: 4.99, 3: 12.99 }
+  const tierValues: Record<number, number> = { 1: 4.99, 2: 4.99, 3: 12.99 }
   $trackTierSelected({
     tier: selectedTier.value,
     price: tierValues[selectedTier.value] || 4.99,

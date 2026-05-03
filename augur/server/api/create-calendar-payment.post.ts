@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
             name: 'OMENORA 2026 Lucky Timing Calendar',
             description: 'Complete month-by-month destiny forecast',
           },
-          unit_amount: 299,
+          unit_amount: 499,
         },
         quantity: 1,
       }],

@@ -651,14 +651,14 @@ async function handleCheckout(tier: 'single') {
 
   try {
     $trackInitiateCheckout?.({
-      value: 17.99,
+      value: 9.99,
       currency: 'USD',
       content_name: 'Compatibility Reading',
     })
   } catch { /* never block UI */ }
   trackEvent('initiate_checkout', {
     tier,
-    value: 17.99,
+    value: 9.99,
   })
 
   isProcessing.value  = true
@@ -866,7 +866,7 @@ onMounted(async () => {
         const pixelKey = `omenora_purchase_tracked_${sessionId}`
         if (!sessionStorage.getItem(pixelKey)) {
           sessionStorage.setItem(pixelKey, '1')
-          const purchaseValue = paymentData.amountTotal ?? 17.99
+          const purchaseValue = paymentData.amountTotal ?? 9.99
           $trackPurchase?.({
             value: purchaseValue,
             currency: 'USD',

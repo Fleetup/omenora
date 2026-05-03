@@ -255,7 +255,7 @@ onMounted(async () => {
     if (!sessionStorage.getItem(ssKey)) {
       sessionStorage.setItem(ssKey, '1')
       const nuxtApp = useNuxtApp()
-      nuxtApp.$trackPurchase({ value: 2.99, currency: 'USD' })
+      nuxtApp.$trackPurchase({ value: 4.99, currency: 'USD' })
     }
 
     if (!store.email && store.tempId) {

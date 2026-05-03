@@ -203,7 +203,7 @@
         <p class="annotation upsell-inline__desc">{{ t('birthChartRequiresTime') }}</p>
       </div>
       <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
-        {{ isLoadingBirthChart ? t('loadingBirthChart') : '$2.99 — Unlock' }}
+        {{ isLoadingBirthChart ? t('loadingBirthChart') : '$4.99 — Unlock' }}
       </button>
     </div>
 
@@ -539,7 +539,7 @@
             <h3 class="upsell-section__heading font-serif-italic">Your 2026 Lucky Timing Calendar</h3>
             <p class="annotation upsell-section__sub">Month-by-month destiny forecast</p>
           </div>
-          <span class="upsell-section__price font-serif">$2.99</span>
+          <span class="upsell-section__price font-serif">$4.99</span>
         </div>
         <div class="upsell-features">
           <p class="annotation upsell-feature">Peak months for love &amp; money</p>
@@ -1381,7 +1381,7 @@ async function buyCalendar() {
       }
     )
     if (url) {
-      $trackUpsellAccepted({ type: 'calendar', price: 2.99, archetype: store.archetype, language: store.language })
+      $trackUpsellAccepted({ type: 'calendar', price: 4.99, archetype: store.archetype, language: store.language })
       window.location.href = url
     }
   } catch {
@@ -1452,7 +1452,7 @@ async function buyBirthChart() {
       }
     )
     if (url) {
-      $trackUpsellAccepted({ type: 'birthChart', price: 2.99, archetype: store.archetype, language: store.language })
+      $trackUpsellAccepted({ type: 'birthChart', price: 4.99, archetype: store.archetype, language: store.language })
       window.location.href = url
     }
   } catch {

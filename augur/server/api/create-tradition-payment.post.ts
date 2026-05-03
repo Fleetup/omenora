@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
           name: `OMENORA ${traditionLabel} Reading`,
           description: `Full destiny report re-generated through the ${traditionLabel} tradition`,
         },
-        unit_amount: 199,
+        unit_amount: 299,
       },
       quantity: 1,
     }],
