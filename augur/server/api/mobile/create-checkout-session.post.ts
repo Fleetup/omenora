@@ -14,18 +14,17 @@ import Stripe from 'stripe'
 
 const ALLOWED_TYPES = [
   'report', 'oracle', 'bundle', 'calendar',
-  'compatibility', 'addon', 'birth_chart',
+  'compatibility', 'birth_chart',
 ] as const
 
 type ProductType = (typeof ALLOWED_TYPES)[number]
 
 const PRODUCTS: Record<ProductType, { amount: number; name: string; description: string }> = {
   report:        { amount: 499,  name: 'OMENORA Destiny Report — Basic',       description: 'Complete destiny analysis' },
-  oracle:        { amount: 2499, name: 'OMENORA Full Oracle Bundle',           description: 'Report + Calendar + Compatibility + Birth Chart + 30 Daily Insights' },
-  bundle:        { amount: 999,  name: 'OMENORA Most Popular Bundle',          description: 'Complete destiny report + 2026 Calendar + Compatibility Reading' },
+  oracle:        { amount: 2499, name: 'OMENORA Full Oracle Bundle',           description: 'Destiny report + 2026 Calendar + Birth Chart + unlimited cultural readings' },
+  bundle:        { amount: 999,  name: 'OMENORA Most Popular Bundle',          description: 'Destiny report + 2026 Calendar' },
   calendar:      { amount: 499,  name: 'OMENORA 2026 Lucky Timing Calendar',   description: 'Complete month-by-month destiny forecast' },
   compatibility: { amount: 999,  name: 'OMENORA Compatibility Reading',        description: 'Destiny Compatibility Analysis' },
-  addon:         { amount: 99,   name: 'OMENORA Compatibility Add-on',         description: 'Add compatibility reading to your order' },
   birth_chart:   { amount: 499,  name: 'OMENORA Full Birth Chart',             description: 'Rising sign · Moon sign · Houses · Planetary positions · 2026 forecast' },
 }
 

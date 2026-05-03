@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
           currency: 'usd',
           product_data: {
             name: 'OMENORA Most Popular Bundle',
-            description: 'Complete destiny report + 2026 Calendar + Compatibility Reading',
+            description: 'Destiny report + 2026 Calendar',
           },
           unit_amount: 999,
         },

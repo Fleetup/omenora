@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
           currency: 'usd',
           product_data: {
             name: 'OMENORA Full Oracle Bundle',
-            description: 'Report + Calendar + Compatibility + Birth Chart + 30 Daily Insights',
+            description: 'Destiny report + 2026 Calendar + Birth Chart + unlimited cultural readings',
           },
           unit_amount: 2499,
         },
