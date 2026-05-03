@@ -48,18 +48,9 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // When the user has multiple active rows (e.g. bought both plans with the
-  // same email), surface the highest tier so they see the correct plan.
-  // Tier order: compatibility_plus > daily_horoscope
-  const subscriber = rows.find(r => r.plan_type === 'compatibility_plus') ?? rows[0]!
-
-  const planName = subscriber.plan_type === 'compatibility_plus'
-    ? 'Compatibility Plus'
-    : 'Personal Daily Horoscope'
-
-  const planPrice = subscriber.plan_type === 'compatibility_plus'
-    ? '$9.99'
-    : '$4.99'
+  const subscriber = rows[0]!
+  const planName  = 'Personal Daily Horoscope'
+  const planPrice = '$4.99'
 
   return {
     active: true,

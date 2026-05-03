@@ -314,7 +314,6 @@
       <h2 class="paywall__heading font-display-italic">{{ t('compatUnlockHeading') }}</h2>
       <p class="paywall__sub annotation">{{ t('compatUnlockSub') }}</p>
 
-      <p v-if="emailPrompt" class="compat-email-prompt annotation" role="alert">{{ t('compatEmailPrompt') }}</p>
       <div v-if="checkoutError" class="compat-checkout-error annotation" role="alert">
         {{ checkoutError }}
       </div>
@@ -324,7 +323,6 @@
 
       <!-- Option 1: Single (dominant) -->
       <div class="pay-card pay-card--primary">
-        <p class="label-caps pay-card__badge">{{ t('compatSubBadge') }}</p>
         <p class="pay-card__name">{{ t('compatSingleName') }}</p>
         <p class="pay-card__price font-serif">{{ t('compatSinglePrice') }}<span class="pay-card__freq annotation"> {{ t('compatSingleFreq') }}</span></p>
         <ul class="pay-card__bullets annotation">
@@ -342,31 +340,6 @@
           <span v-if="isProcessing && activeTier === 'single'">{{ t('compatProcessing') }}</span>
           <span v-else>{{ t('compatSingleCta') }}</span>
         </CTAButton>
-      </div>
-
-      <!-- Option 2: Subscription (secondary) -->
-      <div class="pay-card pay-card--secondary">
-        <p class="pay-card__name">{{ t('compatSubName') }}</p>
-        <p class="pay-card__price font-serif">{{ t('compatSubPrice') }}<span class="pay-card__freq annotation"> {{ t('compatSubFreq') }}</span></p>
-        <ul class="pay-card__bullets annotation">
-          <li>{{ t('compatSubBullet1') }}</li>
-          <li>{{ t('compatSubBullet2') }}</li>
-          <li>{{ t('compatSubBullet3') }}</li>
-          <li>{{ t('compatSubBullet4') }}</li>
-          <li>{{ t('compatSubBullet5') }}</li>
-        </ul>
-        <button
-          class="pay-card__btn pay-card__btn--secondary"
-          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'subscription' }"
-          :disabled="isProcessing"
-          @click="handleCheckout('subscription')"
-        >
-          <span v-if="isProcessing && activeTier === 'subscription'">{{ t('compatProcessing') }}</span>
-          <span v-else>{{ t('compatSubCta') }}</span>
-        </button>
-        <p class="annotation pay-card__footnote">{{ t('compatSubFootnote1') }}</p>
-        <p class="annotation pay-card__footnote">{{ t('compatSubFootnote2') }} {{ nextChargeDate }}</p>
-        <p class="annotation pay-card__footnote pay-card__footnote--muted">{{ t('compatSubFootnote3') }}</p>
       </div>
 
       <!-- Name + email capture -->
@@ -508,13 +481,6 @@ function formatDob(dob: string): string {
   } catch { return dob }
 }
 
-// ── Next charge date (30 days from today) ─────────────────────────────────────
-const nextChargeDate = computed(() => {
-  const d = new Date()
-  d.setDate(d.getDate() + 30)
-  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-})
-
 // ── Name + email capture ──────────────────────────────────────────────────────
 const isDownloadingCard = ref(false)
 const cardDownloadError = ref('')
@@ -556,7 +522,6 @@ const myNameInput         = ref(store.firstName   || '')
 const theirNameInput      = ref(store.partnerName || '')
 const emailInput          = ref(store.email       || '')
 const emailCaptureSubmitted = ref(false)
-const emailPrompt         = ref(false)
 const identifyFired       = ref(false)
 
 const isEmailValid = computed(() =>
@@ -565,7 +530,6 @@ const isEmailValid = computed(() =>
 
 watch(emailInput, () => {
   emailCaptureSubmitted.value = false
-  emailPrompt.value = false
   if (isEmailValid.value && !identifyFired.value) {
     identifyFired.value = true
     try { $identifyUser?.(emailInput.value) } catch { /* never block UI */ }
@@ -679,28 +643,22 @@ async function applyCompatFreeAccess() {
 
 // ── Checkout ──────────────────────────────────────────────────────────────────
 const isProcessing  = ref(false)
-const activeTier    = ref<'subscription' | 'single' | null>(null)
+const activeTier    = ref<'single' | null>(null)
 const checkoutError = ref('')
 
-async function handleCheckout(tier: 'subscription' | 'single') {
+async function handleCheckout(tier: 'single') {
   if (isProcessing.value) return
-
-  if (tier === 'subscription' && !emailInput.value) {
-    emailPrompt.value = true
-    return
-  }
-  emailPrompt.value = false
 
   try {
     $trackInitiateCheckout?.({
-      value: tier === 'subscription' ? 9.99 : 17.99,
+      value: 17.99,
       currency: 'USD',
-      content_name: tier === 'subscription' ? 'Compatibility Plus Subscription' : 'Compatibility Reading',
+      content_name: 'Compatibility Reading',
     })
   } catch { /* never block UI */ }
   trackEvent('initiate_checkout', {
     tier,
-    value: tier === 'subscription' ? 9.99 : 17.99,
+    value: 17.99,
   })
 
   isProcessing.value  = true
@@ -908,11 +866,11 @@ onMounted(async () => {
         const pixelKey = `omenora_purchase_tracked_${sessionId}`
         if (!sessionStorage.getItem(pixelKey)) {
           sessionStorage.setItem(pixelKey, '1')
-          const purchaseValue = paymentData.amountTotal ?? (meta.tier === 'subscription' ? 9.99 : (meta.tier === 'single' ? 17.99 : 2.99))
+          const purchaseValue = paymentData.amountTotal ?? 17.99
           $trackPurchase?.({
             value: purchaseValue,
             currency: 'USD',
-            content_name: meta.tier === 'subscription' ? 'Compatibility Plus Subscription' : 'Compatibility Reading',
+            content_name: 'Compatibility Reading',
           })
         }
       } catch { /* never block UI */ }

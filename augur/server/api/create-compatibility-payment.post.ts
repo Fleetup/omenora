@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 
-const VALID_TIERS = ['legacy', 'single', 'subscription'] as const
+const VALID_TIERS = ['legacy', 'single'] as const
 type Tier = typeof VALID_TIERS[number]
 
 export default defineEventHandler(async (event) => {
@@ -39,11 +39,6 @@ export default defineEventHandler(async (event) => {
     assertInput(isValidDateOfBirth(partnerDob), 'Invalid partnerDob — expected YYYY-MM-DD')
   }
 
-  // Subscription tier requires the price ID to be configured
-  if (tier === 'subscription') {
-    assertInput(!!config.stripeCompatPlusPriceId, 'Subscription price not configured')
-  }
-
   const base = safeOrigin(originRaw)
 
   // ── Shared metadata ───────────────────────────────────────────────────────
@@ -73,17 +68,7 @@ export default defineEventHandler(async (event) => {
 
   let sessionParams: Stripe.Checkout.SessionCreateParams
 
-  if (tier === 'subscription') {
-    sessionParams = {
-      payment_method_types: ['card'],
-      line_items: [{ price: config.stripeCompatPlusPriceId as string, quantity: 1 }],
-      mode: 'subscription',
-      success_url: `${base}/compatibility?session_id={CHECKOUT_SESSION_ID}&from=quiz`,
-      cancel_url:  `${base}/compatibility?canceled=1`,
-      customer_email: isValidEmail(email) ? email : undefined,
-      metadata,
-    }
-  } else if (tier === 'single') {
+  if (tier === 'single') {
     sessionParams = {
       payment_method_types: ['card'],
       line_items: [{

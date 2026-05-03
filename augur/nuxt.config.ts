@@ -21,7 +21,7 @@ export default defineNuxtConfig({
     supabaseUrl: '',
     supabaseServiceKey: '',
     stripeDailyPriceId: '',
-    stripeCompatPlusPriceId: '',
+    // stripeCompatPlusPriceId: '', // DEPRECATED — Compatibility Plus subscription removed (Phase 2)
     stripeCompatSinglePriceId: '',
     emailJobSecret: '',
     cronSecret: '',
