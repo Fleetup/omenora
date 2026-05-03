@@ -54,7 +54,6 @@ export const useAnalysisStore = defineStore('analysis', {
     subscriptionActive: false as boolean,
     bundlePurchased: false as boolean,
     oraclePurchased: false as boolean,
-    addonPurchased: false as boolean,
     reportSessionId: '' as string,
     timeOfBirth: '' as string,
     birthChartData: null as any,
@@ -130,9 +129,6 @@ export const useAnalysisStore = defineStore('analysis', {
     },
     setOraclePurchased(val: boolean) {
       this.oraclePurchased = val
-    },
-    setAddonPurchased(val: boolean) {
-      this.addonPurchased = val
     },
     setReportSessionId(id: string) {
       this.reportSessionId = id

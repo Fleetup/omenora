@@ -9,39 +9,6 @@
       </div>
     </div>
 
-    <!-- Impulse upsell during load -->
-    <div v-if="showAddon" class="addon-offer-box">
-      <span class="addon-badge label-caps">{{ t('oneTimeOffer') }}</span>
-      <p class="addon-title font-serif-italic">{{ t('addCompatibility') }}</p>
-      <p class="addon-desc annotation">{{ t('onlyWhileLoading') }}</p>
-      <div class="addon-price-row">
-        <span class="addon-original">$2.99</span>
-        <span class="addon-price">$0.99</span>
-        <span class="addon-note annotation">{{ t('todayOnly') }}</span>
-      </div>
-      <input
-        id="addon-partner-name"
-        v-model="addonPartnerName"
-        type="text"
-        name="addon-partner-name"
-        :placeholder="t('addonPartnerPlaceholder')"
-        class="addon-input editorial-input"
-        autocomplete="off"
-      >
-      <div class="addon-dob-row">
-        <input id="addon-birth-day" v-model="addonBirthDay" type="number" name="addon-birth-day" placeholder="DD" min="1" max="31" class="addon-input editorial-input addon-dob addon-day" autocomplete="off">
-        <input id="addon-birth-month" v-model="addonBirthMonth" type="number" name="addon-birth-month" placeholder="MM" min="1" max="12" class="addon-input editorial-input addon-dob addon-day" autocomplete="off">
-        <input id="addon-birth-year" v-model="addonBirthYear" type="number" name="addon-birth-year" placeholder="YYYY" min="1924" max="2010" class="addon-input editorial-input addon-dob addon-year" autocomplete="off">
-      </div>
-      <button
-        :disabled="!addonPartnerName || !addonBirthYear || isProcessingAddon"
-        class="addon-yes-btn"
-        @click="handleAddonPurchase"
-      >
-        {{ isProcessingAddon ? t('processingPayment') : t('yesAdd') }}
-      </button>
-      <p class="addon-no-link annotation" @click="showAddon = false">{{ t('noThanks') }}</p>
-    </div>
   </div>
 
   <!-- ── Error state ── -->
@@ -768,21 +735,11 @@ const baziData = ref<any>(null)
 const tarotData = ref<any>(null)
 const isLoadingRegional = ref(false)
 
-const showAddon = ref(false)
-const addonPartnerName = ref('')
-const addonBirthDay = ref('')
-const addonBirthMonth = ref('')
-const addonBirthYear = ref('')
-const isProcessingAddon = ref(false)
 const isGeneratingCalendar = ref(false)
 const isSendingEmail = ref(false)
 const emailSentToUser = ref(false)
 const bundleCompatibilityResult = ref<any>(null)
 const isGeneratingCompatibility = ref(false)
-const addonPartnerDob = computed(() => {
-  if (!addonBirthDay.value || !addonBirthMonth.value || !addonBirthYear.value) return ''
-  return `${addonBirthYear.value}-${addonBirthMonth.value.padStart(2, '0')}-${addonBirthDay.value.padStart(2, '0')}`
-})
 
 type SectionKey = 'identity' | 'science' | 'forecast' | 'love' | 'purpose' | 'gift' | 'affirmation'
 
@@ -1035,17 +992,11 @@ onMounted(async () => {
 
   isLoadingReport.value = true
 
-  setTimeout(() => {
-    if (isLoadingReport.value && !store.addonPurchased) {
-      showAddon.value = true
-    }
-  }, 1500)
 
   if (sessionId && _isTraditionSwitch) {
     // Tradition-switch return: the dedicated onMounted below handles everything.
     // Skip normal session-based report loading to avoid clobbering store state.
     isLoadingReport.value = false
-    showAddon.value = false
     return
   }
 
@@ -1128,7 +1079,6 @@ onMounted(async () => {
           trackPurchasePixel(sessionId, meta)
 
           isLoadingReport.value = false
-          showAddon.value = false
           nextTick(() => { $trackReportViewed({ archetype: store.archetype, lifePathNumber: store.lifePathNumber, language: store.language, region: store.region }) })
           if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
             await generateBirthChartAuto()
@@ -1165,7 +1115,6 @@ onMounted(async () => {
           }
 
           isLoadingReport.value = false
-          showAddon.value = false
           nextTick(() => { $trackReportViewed({ archetype: store.archetype, lifePathNumber: store.lifePathNumber, language: store.language, region: store.region }) })
           if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
             generateBirthChartAuto()
@@ -1260,7 +1209,6 @@ onMounted(async () => {
       }
 
       isLoadingReport.value = false
-      showAddon.value = false
       nextTick(() => { $trackReportViewed({ archetype: store.archetype, lifePathNumber: store.lifePathNumber, language: store.language, region: store.region }) })
       if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
         await generateBirthChartAuto()
@@ -1277,13 +1225,11 @@ onMounted(async () => {
     } catch {
       console.error('Report page load failed')
       isLoadingReport.value = false
-      showAddon.value = false
       hasError.value = true
     }
   } else {
     // No sessionId — show report from existing store state (promo / direct nav)
     isLoadingReport.value = false
-    showAddon.value = false
     nextTick(() => { $trackReportViewed({ archetype: store.archetype, lifePathNumber: store.lifePathNumber, language: store.language, region: store.region }) })
     if ((store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth && !store.birthChartData) {
       generateBirthChartAuto()
@@ -1397,33 +1343,6 @@ async function buyBundle() {
   }
 }
 
-async function handleAddonPurchase() {
-  if (!addonPartnerName.value || isProcessingAddon.value) return
-  isProcessingAddon.value = true
-  try {
-    store.setPartnerData({
-      name: addonPartnerName.value,
-      dob: addonPartnerDob.value,
-      city: '',
-    })
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-      '/api/create-addon-payment',
-      {
-        method: 'POST',
-        body: {
-          email: store.email,
-          firstName: store.firstName,
-          language: store.language,
-          origin: window.location.origin,
-        },
-      }
-    )
-    if (url) window.location.href = url
-  } catch {
-    console.error('Addon purchase failed')
-    isProcessingAddon.value = false
-  }
-}
 
 const isDownloading = ref(false)
 const cardDownloadError = ref('')
@@ -1781,7 +1700,6 @@ if (_isTraditionSwitch && _traditionSwitchSessionId) {
 
       store.setReportSessionId(meta.reportId)
       isLoadingReport.value = false
-      showAddon.value = false
 
       const newTradition = meta.newTradition
       isSwitchingTradition.value = true
@@ -1810,7 +1728,6 @@ if (_isTraditionSwitch && _traditionSwitchSessionId) {
     } catch {
       console.error('Tradition switch post-payment failed')
       isLoadingReport.value = false
-      showAddon.value = false
     } finally {
       isSwitchingTradition.value = false
     }
