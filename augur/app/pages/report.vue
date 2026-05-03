@@ -595,38 +595,6 @@
       <div class="editorial-rule" />
     </section>
 
-    <!-- Compatibility upsell (paid) -->
-    <section v-if="!store.bundlePurchased && !store.oraclePurchased" class="upsell-section compat-upsell-section">
-      <div class="upsell-section__inner">
-        <p class="label-caps upsell-section__eyebrow">Compatibility</p>
-        <h3 class="upsell-section__heading font-serif-italic">{{ t('howCompatible') }}</h3>
-        <p class="annotation upsell-section__sub">{{ t('enterDetails') }}</p>
-        <div class="compat-tags">
-          <span class="annotation compat-tag">{{ t('romanticPartners') }}</span>
-          <span class="annotation compat-tag">{{ t('bestFriends') }}</span>
-          <span class="annotation compat-tag">{{ t('businessPartners') }}</span>
-        </div>
-
-        <div v-if="!showCompatibilityForm">
-          <button class="upsell-cta-btn upsell-cta-btn--secondary" @click="showCompatibilityForm = true">
-            {{ t('discoverCompat') }}
-          </button>
-        </div>
-        <div v-else class="compat-form">
-          <p class="annotation compat-form__title">{{ t('compatFormTitle') }}</p>
-          <p class="annotation compat-form__sub">{{ t('compatFormSubtitle') }}</p>
-          <input id="compat-paid-partner-name" v-model="partnerName" type="text" name="compat-paid-partner-name" :placeholder="t('addonPartnerPlaceholder')" class="editorial-input compat-input" autocomplete="off">
-          <input id="compat-paid-partner-dob" v-model="partnerDob" type="date" name="compat-paid-partner-dob" class="editorial-input compat-input compat-input--date" autocomplete="off">
-          <input id="compat-paid-partner-city" v-model="partnerCity" type="text" name="compat-paid-partner-city" :placeholder="t('partnerCityPlaceholder')" class="editorial-input compat-input" autocomplete="off">
-          <div class="compat-form__actions">
-            <button class="upsell-cta-btn" :disabled="!partnerName || !partnerDob || isProcessingCompatibility" @click="buyCompatibilityReading">
-              {{ isProcessingCompatibility ? t('processingCompatibility') : t('getCompatReading') }}
-            </button>
-            <button class="upsell-cta-btn upsell-cta-btn--ghost" @click="showCompatibilityForm = false">{{ t('cancelLabel') }}</button>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- ── SHARE & EXPORT ── -->
     <section class="report-section share-section">
@@ -1391,47 +1359,6 @@ async function downloadCard() {
 const partnerName = ref('')
 const partnerDob = ref('')
 const partnerCity = ref('')
-const isProcessingCompatibility = ref(false)
-const showCompatibilityForm = ref(false)
-
-async function buyCompatibilityReading() {
-  if (isProcessingCompatibility.value) return
-  if (!partnerName.value || !partnerDob.value) return
-
-  $trackUpsellViewed({ type: 'compatibility', archetype: store.archetype, language: store.language })
-  isProcessingCompatibility.value = true
-
-  try {
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-      '/api/create-compatibility-payment',
-      {
-        method: 'POST',
-        body: {
-          email: store.email,
-          firstName: store.firstName,
-          partnerName: partnerName.value,
-          tempId: store.tempId,
-          language: store.language,
-          origin: window.location.origin,
-        },
-      }
-    )
-
-    store.setPartnerData({
-      name: partnerName.value,
-      dob: partnerDob.value,
-      city: partnerCity.value,
-    })
-
-    if (url) {
-      $trackUpsellAccepted({ type: 'compatibility', price: 0.99, archetype: store.archetype, language: store.language })
-      window.location.href = url
-    }
-  } catch {
-    console.error('Compatibility purchase failed')
-    isProcessingCompatibility.value = false
-  }
-}
 
 const isLoadingCalendar = ref(false)
 

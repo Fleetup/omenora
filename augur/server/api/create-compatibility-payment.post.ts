@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 
-const VALID_TIERS = ['legacy', 'single'] as const
+const VALID_TIERS = ['single'] as const
 type Tier = typeof VALID_TIERS[number]
 
 export default defineEventHandler(async (event) => {
@@ -23,11 +23,12 @@ export default defineEventHandler(async (event) => {
   const utmCampaign  = sanitizeString(body.utmCampaign  || '', 100)
   const utmMedium    = sanitizeString(body.utmMedium    || '', 100)
 
-  // tier: default to 'legacy' if missing or not a recognised value
   const rawTier = sanitizeString(body.tier ?? '', 20)
-  const tier: Tier = (VALID_TIERS as readonly string[]).includes(rawTier)
-    ? (rawTier as Tier)
-    : 'legacy'
+  assertInput(
+    (VALID_TIERS as readonly string[]).includes(rawTier),
+    'Invalid tier — must be "single"',
+  )
+  const tier: Tier = rawTier as Tier
 
   // ── Input validation ──────────────────────────────────────────────────────
 
@@ -68,41 +69,21 @@ export default defineEventHandler(async (event) => {
 
   let sessionParams: Stripe.Checkout.SessionCreateParams
 
-  if (tier === 'single') {
-    sessionParams = {
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: { name: 'OMENORA Compatibility Reading', description: 'Destiny Compatibility Analysis' },
-          unit_amount: 1799,
-        },
-        quantity: 1,
-      }],
-      mode: 'payment',
-      success_url: `${base}/compatibility?session_id={CHECKOUT_SESSION_ID}&from=quiz`,
-      cancel_url:  `${base}/compatibility?canceled=1`,
-      customer_email: isValidEmail(email) ? email : undefined,
-      metadata,
-    }
-  } else {
-    // tier === 'legacy' — identical to the original implementation
-    sessionParams = {
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: { name: 'OMENORA Compatibility Reading', description: 'Destiny Compatibility Analysis' },
-          unit_amount: 299,
-        },
-        quantity: 1,
-      }],
-      mode: 'payment',
-      success_url: `${base}/compatibility?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${base}/report`,
-      customer_email: isValidEmail(email) ? email : undefined,
-      metadata,
-    }
+  sessionParams = {
+    payment_method_types: ['card'],
+    line_items: [{
+      price_data: {
+        currency: 'usd',
+        product_data: { name: 'OMENORA Compatibility Reading', description: 'Destiny Compatibility Analysis' },
+        unit_amount: 1799,
+      },
+      quantity: 1,
+    }],
+    mode: 'payment',
+    success_url: `${base}/compatibility?session_id={CHECKOUT_SESSION_ID}&from=quiz`,
+    cancel_url:  `${base}/compatibility?canceled=1`,
+    customer_email: isValidEmail(email) ? email : undefined,
+    metadata,
   }
 
   let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>
