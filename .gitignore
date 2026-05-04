@@ -11,3 +11,6 @@
 
 # Railway
 .railway
+
+# Ad card generation output (local dev only)
+augur/scripts/ad-output/
