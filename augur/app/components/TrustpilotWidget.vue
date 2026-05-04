@@ -22,12 +22,27 @@ import { ref, onMounted } from 'vue'
 
 const widgetRef = ref<HTMLElement | null>(null)
 
-onMounted(() => {
+function initWidget () {
   const el = widgetRef.value
   if (!el) return
   const tp = (window as any).Trustpilot
   if (tp?.loadFromElement) {
     tp.loadFromElement(el, true)
+  }
+}
+
+onMounted(() => {
+  if ((window as any).Trustpilot?.loadFromElement) {
+    // Script already loaded (SPA navigation after first load)
+    initWidget()
+  } else {
+    // Script still loading — attach a one-time load listener
+    const scriptEl = document.querySelector<HTMLScriptElement>('#trustpilot-bootstrap')
+    if (scriptEl) {
+      scriptEl.addEventListener('load', initWidget, { once: true })
+    }
+    // Belt-and-suspenders: retry after 1.5 s in case the load event already fired
+    setTimeout(initWidget, 1500)
   }
 })
 </script>
