@@ -59,6 +59,11 @@ export const useAnalysisStore = defineStore('analysis', {
     birthChartData: null as any,
     birthChartPurchased: false as boolean,
     compatibilityData: null as any,
+    compatibilityTier: 'single' as string,
+    userBirthChartData: null as any,
+    partnerBirthChartData: null as any,
+    userBirthChartNoonFallback: false as boolean,
+    partnerBirthChartNoonFallback: false as boolean,
     language: 'en' as string,
     languageManualOverride: false as boolean,
     clarityFocus: '' as string,
@@ -141,6 +146,15 @@ export const useAnalysisStore = defineStore('analysis', {
     },
     setCompatibilityData(data: any) {
       this.compatibilityData = data
+    },
+    setCompatibilityTier(tier: string) {
+      this.compatibilityTier = tier
+    },
+    setUserBirthChartData(data: any) {
+      this.userBirthChartData = data
+    },
+    setPartnerBirthChartData(data: any) {
+      this.partnerBirthChartData = data
     },
     setLanguage(lang: string) {
       this.language = lang

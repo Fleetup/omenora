@@ -70,6 +70,85 @@
       </div>
     </div>
 
+    <!-- Birth Charts (T2 with_charts tier only) -->
+    <div v-if="userBirthChart || partnerBirthChart" class="compat-bc-body">
+
+      <div v-if="userBirthChart" class="compat-bc-section">
+        <div class="report-section__header">
+          <span class="report-section__num label-caps">❖</span>
+          <div class="report-section__rule" />
+        </div>
+        <p class="label-caps compat-bc-section__person">{{ store.firstName || 'You' }}'s Birth Chart</p>
+        <h2 class="report-section__heading font-display-italic">{{ userBirthChart.chartTitle }}</h2>
+        <div class="birth-chart-signs-grid">
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Rising</p>
+            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.risingSign }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Sun</p>
+            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.sunSign }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Moon</p>
+            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.moonSign }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Dominant</p>
+            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.dominantPlanet }}</p>
+          </div>
+          <div v-if="userBirthChart.powerHouse" class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Power House</p>
+            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.powerHouse }}</p>
+          </div>
+        </div>
+        <p class="report-section__body">{{ userBirthChart.reading }}</p>
+        <div v-if="userBirthChart.forecast2026" class="bc-forecast-box">
+          <p class="label-caps bc-forecast-box__label">2026 Planetary Forecast</p>
+          <p class="bc-forecast-box__text">{{ userBirthChart.forecast2026 }}</p>
+        </div>
+        <p v-if="userNoonFallback" class="annotation compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</p>
+      </div>
+
+      <div v-if="partnerBirthChart" class="compat-bc-section">
+        <div class="report-section__header">
+          <span class="report-section__num label-caps">❖</span>
+          <div class="report-section__rule" />
+        </div>
+        <p class="label-caps compat-bc-section__person">{{ store.partnerName || 'Them' }}'s Birth Chart</p>
+        <h2 class="report-section__heading font-display-italic">{{ partnerBirthChart.chartTitle }}</h2>
+        <div class="birth-chart-signs-grid">
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Rising</p>
+            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.risingSign }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Sun</p>
+            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.sunSign }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Moon</p>
+            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.moonSign }}</p>
+          </div>
+          <div class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Dominant</p>
+            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.dominantPlanet }}</p>
+          </div>
+          <div v-if="partnerBirthChart.powerHouse" class="bc-sign-cell">
+            <p class="label-caps bc-sign-cell__label">Power House</p>
+            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.powerHouse }}</p>
+          </div>
+        </div>
+        <p class="report-section__body">{{ partnerBirthChart.reading }}</p>
+        <div v-if="partnerBirthChart.forecast2026" class="bc-forecast-box">
+          <p class="label-caps bc-forecast-box__label">2026 Planetary Forecast</p>
+          <p class="bc-forecast-box__text">{{ partnerBirthChart.forecast2026 }}</p>
+        </div>
+        <p v-if="partnerNoonFallback" class="annotation compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</p>
+      </div>
+
+    </div>
+
     <!-- Calculation receipt -->
     <div v-if="compatibility.calculationReceipt" class="calc-receipt calc-receipt--full">
       <p class="label-caps calc-receipt__header">{{ t('compatHowCalculated') }}</p>
@@ -321,8 +400,31 @@
       <!-- Urgency line -->
       <p class="paywall__urgency annotation">Your reading is ready — unlock it before this session expires.</p>
 
-      <!-- Option 1: Single (dominant) -->
+      <!-- Option 1: With Charts (featured — primary) -->
       <div class="pay-card pay-card--primary">
+        <span class="pay-card__badge label-caps">❖ {{ t('compatWithChartsHeader') }}</span>
+        <p class="pay-card__name">{{ t('compatWithChartsName') }}</p>
+        <p class="pay-card__price font-serif">{{ t('compatWithChartsPrice') }}<span class="pay-card__freq annotation"> {{ t('compatWithChartsFreq') }}</span></p>
+        <ul class="pay-card__bullets annotation">
+          <li>{{ t('compatWithChartsBullet1') }}</li>
+          <li>{{ t('compatWithChartsBullet2') }}</li>
+          <li>{{ t('compatWithChartsBullet3') }}</li>
+          <li>{{ t('compatWithChartsBullet4') }}</li>
+        </ul>
+        <CTAButton
+          :arrow="false"
+          :disabled="isProcessing"
+          class="pay-card__btn"
+          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'with_charts' }"
+          @click="handleCheckout('with_charts')"
+        >
+          <span v-if="isProcessing && activeTier === 'with_charts'">{{ t('compatProcessing') }}</span>
+          <span v-else>{{ t('compatWithChartsCta') }}</span>
+        </CTAButton>
+      </div>
+
+      <!-- Option 2: Single reading only -->
+      <div class="pay-card pay-card--secondary">
         <p class="pay-card__name">{{ t('compatSingleName') }}</p>
         <p class="pay-card__price font-serif">{{ t('compatSinglePrice') }}<span class="pay-card__freq annotation"> {{ t('compatSingleFreq') }}</span></p>
         <ul class="pay-card__bullets annotation">
@@ -330,16 +432,14 @@
           <li>{{ t('compatSingleBullet2') }}</li>
           <li>{{ t('compatSingleBullet3') }}</li>
         </ul>
-        <CTAButton
-          :arrow="false"
+        <button
+          class="pay-card__btn--secondary"
           :disabled="isProcessing"
-          class="pay-card__btn"
-          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'single' }"
           @click="handleCheckout('single')"
         >
           <span v-if="isProcessing && activeTier === 'single'">{{ t('compatProcessing') }}</span>
           <span v-else>{{ t('compatSingleCta') }}</span>
-        </CTAButton>
+        </button>
       </div>
 
       <!-- Name + email capture -->
@@ -448,6 +548,12 @@ const isCanceled = computed(() => route.query.canceled === '1')
 const isLoading  = ref(false)
 const hasError   = ref(false)
 const compatibility = ref<any>(null)
+
+// ── T2 birth chart data (compat with_charts tier) ─────────────────────────────
+const userBirthChart    = ref<any>(null)
+const partnerBirthChart = ref<any>(null)
+const userNoonFallback    = ref(false)
+const partnerNoonFallback = ref(false)
 
 // ── Preview path data (read from Pinia store, not re-fetched) ─────────────────
 const previewData = computed(() => isPreviewMode.value ? store.compatibilityData : null)
@@ -643,22 +749,25 @@ async function applyCompatFreeAccess() {
 
 // ── Checkout ──────────────────────────────────────────────────────────────────
 const isProcessing  = ref(false)
-const activeTier    = ref<'single' | null>(null)
+const activeTier    = ref<'single' | 'with_charts' | null>(null)
 const checkoutError = ref('')
 
-async function handleCheckout(tier: 'single') {
+async function handleCheckout(tier: 'single' | 'with_charts') {
   if (isProcessing.value) return
+
+  const tierValue = tier === 'with_charts' ? 14.99 : 9.99
+  const tierLabel = tier === 'with_charts' ? 'Compatibility Reading + Birth Charts' : 'Compatibility Reading'
 
   try {
     $trackInitiateCheckout?.({
-      value: 9.99,
-      currency: 'USD',
-      content_name: 'Compatibility Reading',
+      value:        tierValue,
+      currency:     'USD',
+      content_name: tierLabel,
     })
   } catch { /* never block UI */ }
   trackEvent('initiate_checkout', {
     tier,
-    value: 9.99,
+    value: tierValue,
   })
 
   isProcessing.value  = true
@@ -687,7 +796,9 @@ async function handleCheckout(tier: 'single') {
           partnerName,
           dateOfBirth: store.dateOfBirth,
           partnerDob:  store.partnerDob,
-          partnerCity: store.partnerCity,
+          partnerCity:  store.partnerCity,
+          city:         store.city,
+          timeOfBirth:  store.timeOfBirth,
           email,
           tempId:      store.tempId || `compat_${Date.now()}`,
           language:    store.language || 'en',
@@ -752,6 +863,13 @@ onMounted(async () => {
         body: { sessionId },
       })
       compatibility.value = reading.compatibility_data
+      // T2 history: extract birth chart data nested inside the JSONB blob
+      if (reading.compatibility_data?.tier === 'with_charts') {
+        userBirthChart.value      = reading.compatibility_data.userBirthChart    ?? null
+        partnerBirthChart.value   = reading.compatibility_data.partnerBirthChart ?? null
+        userNoonFallback.value    = reading.compatibility_data.userBirthChartNoonFallback    ?? false
+        partnerNoonFallback.value = reading.compatibility_data.partnerBirthChartNoonFallback ?? false
+      }
       if (!store.firstName   && reading.first_name)   store.firstName   = reading.first_name
       if (!store.partnerName && reading.partner_name)  store.setPartnerData({ name: reading.partner_name, dob: reading.partner_dob || '', city: '' })
       isLoading.value = false
@@ -826,17 +944,61 @@ onMounted(async () => {
 
       compatibility.value = data
 
+      // T2: generate both birth charts in parallel before sending email/saving
+      if (meta.tier === 'with_charts') {
+        try {
+          const [userChartRes, partnerChartRes] = await Promise.all([
+            $fetch<{ success: boolean; birthChart: any; noonFallback: boolean }>(
+              '/api/generate-birth-chart',
+              {
+                method: 'POST',
+                body: {
+                  firstName:   store.firstName,
+                  dateOfBirth: store.dateOfBirth || meta.dateOfBirth || '',
+                  timeOfBirth: store.timeOfBirth || meta.timeOfBirth  || '',
+                  city:        store.city        || meta.city         || '',
+                  language:    store.language,
+                },
+              },
+            ),
+            $fetch<{ success: boolean; birthChart: any; noonFallback: boolean }>(
+              '/api/generate-birth-chart',
+              {
+                method: 'POST',
+                body: {
+                  firstName:   store.partnerName,
+                  dateOfBirth: store.partnerDob,
+                  timeOfBirth: meta.partnerTimeOfBirth || '',
+                  city:        store.partnerCity       || '',
+                  language:    store.language,
+                },
+              },
+            ),
+          ])
+          userBirthChart.value      = userChartRes.birthChart    ?? null
+          partnerBirthChart.value   = partnerChartRes.birthChart ?? null
+          userNoonFallback.value    = userChartRes.noonFallback    ?? false
+          partnerNoonFallback.value = partnerChartRes.noonFallback ?? false
+        } catch (chartErr) {
+          console.warn('[compatibility] T2 birth chart generation failed — degrading gracefully:', chartErr)
+        }
+      }
+
       if (store.email) {
         try {
           await $fetch('/api/send-compatibility-email', {
             method: 'POST',
             body: {
-              email:       store.email,
-              firstName:   store.firstName,
-              partnerName: store.partnerName,
+              email:         store.email,
+              firstName:     store.firstName,
+              partnerName:   store.partnerName,
               compatibility: data,
-              language:    store.language,
-              tier:        meta.tier || '',
+              language:      store.language,
+              tier:          meta.tier || '',
+              userBirthChart:                userBirthChart.value,
+              partnerBirthChart:             partnerBirthChart.value,
+              userBirthChartNoonFallback:    userNoonFallback.value,
+              partnerBirthChartNoonFallback: partnerNoonFallback.value,
             },
           })
         } catch {
@@ -858,6 +1020,11 @@ onMounted(async () => {
           partnerDob:        store.partnerDob || '',
           compatibilityData: compatibility.value,
           language:          store.language || 'en',
+          tier:              meta.tier || 'single',
+          userBirthChart:                userBirthChart.value,
+          partnerBirthChart:             partnerBirthChart.value,
+          userBirthChartNoonFallback:    userNoonFallback.value,
+          partnerBirthChartNoonFallback: partnerNoonFallback.value,
         },
       }).catch(() => {}) // fire-and-forget, never blocks reading render
 
@@ -870,7 +1037,7 @@ onMounted(async () => {
           $trackPurchase?.({
             value: purchaseValue,
             currency: 'USD',
-            content_name: 'Compatibility Reading',
+            content_name: meta.tier === 'with_charts' ? 'Compatibility Reading + Birth Charts' : 'Compatibility Reading',
           })
         }
       } catch { /* never block UI */ }
@@ -1651,6 +1818,81 @@ onMounted(async () => {
 
 .footer-sep {
   color: var(--color-ink-ghost);
+}
+
+/* ── Birth Chart Sections (T2 with_charts tier) ── */
+.compat-bc-body {
+  max-width: 1400px;
+  padding: 0 clamp(20px, 5vw, 80px);
+  margin: 0 auto;
+}
+
+.compat-bc-section {
+  padding: clamp(36px, 6vw, 56px) 0;
+  border-top: 1px solid var(--color-ink-ghost);
+}
+
+.compat-bc-section__person {
+  color: var(--color-ink-faint);
+  margin: 0 0 12px;
+  letter-spacing: 0.1em;
+}
+
+.birth-chart-signs-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin-bottom: 24px;
+  background: var(--color-ink-ghost);
+}
+
+.bc-sign-cell {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 14px;
+  background: var(--color-bone);
+}
+
+.bc-sign-cell__label {
+  margin: 0 0 4px;
+  color: var(--color-ink-faint);
+}
+
+.bc-sign-cell__value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.bc-forecast-box {
+  padding: 14px 16px;
+  border-left: 2px solid var(--color-ink-mid);
+  margin-top: 20px;
+}
+
+.bc-forecast-box__label {
+  margin: 0 0 6px;
+  color: var(--color-ink-faint);
+}
+
+.bc-forecast-box__text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(16px, 2.2vw, 18px);
+  font-weight: 300;
+  color: var(--color-ink-mid);
+  margin: 0;
+  line-height: 1.7;
+}
+
+.compat-bc-noon-note {
+  margin-top: 14px;
+  color: var(--color-ink-faint);
+  font-style: italic;
+  line-height: 1.5;
+  opacity: 0.7;
 }
 
 /* ── Responsive ── */
