@@ -47,8 +47,6 @@ function ensureFonts(): void {
   registerFont(resolvePublicAsset('fonts', 'Inter-Italic.ttf'),          { family: 'Inter',     weight: '400', style: 'italic' })
   registerFont(resolvePublicAsset('fonts', 'Cormorant-Light.ttf'),       { family: 'Cormorant', weight: '300', style: 'normal' })
   registerFont(resolvePublicAsset('fonts', 'Cormorant-LightItalic.ttf'), { family: 'Cormorant', weight: '300', style: 'italic' })
-  registerFont(resolvePublicAsset('fonts', 'Fraunces-Light.ttf'),        { family: 'Fraunces',  weight: '300', style: 'normal' })
-  registerFont(resolvePublicAsset('fonts', 'Fraunces-LightItalic.ttf'),  { family: 'Fraunces',  weight: '300', style: 'italic' })
   fontsRegistered = true
 }
 
@@ -155,11 +153,11 @@ export async function renderCompatibilityCard(data: CompatCardData): Promise<Buf
   const name2     = partnerName || 'Them'
   const namesText = `${name1} & ${name2}`
 
-  ctx.font      = 'italic 300 76px Fraunces'
+  ctx.font      = 'italic 300 76px Cormorant'
   ctx.fillStyle = INK
   ctx.textAlign = 'center'
   if (ctx.measureText(namesText).width > 920) {
-    ctx.font = 'italic 300 54px Fraunces'
+    ctx.font = 'italic 300 54px Cormorant'
   }
   ctx.fillText(namesText, cx, 540)
 
@@ -178,7 +176,7 @@ export async function renderCompatibilityCard(data: CompatCardData): Promise<Buf
   ctx.fillText(`${compatibilityScore}%`, cx, 730)
 
   // ── 8. COMPATIBILITY TITLE ───────────────────────────────────────────────────
-  ctx.font      = 'italic 300 38px Fraunces'
+  ctx.font      = 'italic 300 38px Cormorant'
   ctx.fillStyle = INK_MID
   ctx.textAlign = 'center'
   const titleBottom = drawWrappedText(ctx, compatibilityTitle, cx, 820, 840, 52)
