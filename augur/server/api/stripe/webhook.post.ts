@@ -323,6 +323,108 @@ export default defineEventHandler(async (event) => {
     return { received: true }
   }
 
+  // ── Handle compatibility checkout — server-side safety net ──────────────────
+  // Primary delivery path is client-side (compatibility.vue CASE A).
+  // This branch fires only if the client did not complete — e.g. browser crash post-redirect.
+  if (meta.type === 'compatibility') {
+    const compatSupabase = createSupabaseAdmin()
+    const { data: compatExisting } = await compatSupabase
+      .from('reports')
+      .select('email_sent')
+      .eq('session_id', sessionId)
+      .maybeSingle()
+
+    if (compatExisting?.email_sent) {
+      return { received: true, skipped: 'already_processed' }
+    }
+
+    const compatFirstName   = sanitizeString(meta.firstName   || '', 50)
+    const compatPartnerName = sanitizeString(meta.partnerName || '', 50)
+    const compatPartnerDob  = sanitizeString(meta.partnerDob  || '', 10)
+    const compatDateOfBirth = sanitizeString(meta.dateOfBirth || '', 10)
+    const compatPartnerCity = sanitizeString(meta.partnerCity || '', 100)
+    const compatLanguage    = sanitizeString(meta.language    || 'en', 5)
+    const compatEmail       = isValidEmail(customerEmail) ? sanitizeString(customerEmail, 254) : ''
+    const compatTier        = sanitizeString(meta.tier || 'single', 20)
+
+    if (!compatFirstName || !compatPartnerName || !compatPartnerDob) {
+      console.warn('[stripe-webhook] compat — incomplete metadata for session:', sessionId, {
+        hasFirstName:   !!compatFirstName,
+        hasPartnerName: !!compatPartnerName,
+        hasPartnerDob:  !!compatPartnerDob,
+      })
+      return { received: true, warning: 'compat_incomplete_metadata', sessionId }
+    }
+
+    let compatibilityData: unknown = null
+    try {
+      const compatResult = await $fetch<{ success: boolean; compatibility: unknown }>(
+        '/api/generate-compatibility',
+        {
+          method: 'POST',
+          body: {
+            firstName:   compatFirstName,
+            partnerName: compatPartnerName,
+            partnerDob:  compatPartnerDob,
+            dateOfBirth: compatDateOfBirth,
+            partnerCity: compatPartnerCity,
+            language:    compatLanguage,
+            previewMode: false,
+          },
+        },
+      )
+      compatibilityData = compatResult.compatibility
+    } catch (genErr: unknown) {
+      console.error('[stripe-webhook] compat generation failed for', sessionId, genErr instanceof Error ? genErr.message : String(genErr))
+      return { received: true, warning: 'compat_generation_failed', sessionId }
+    }
+
+    // STEP 1: Save first — sets email_sent: true before emailing, blocks any
+    // concurrent client-side flow from also sending if it arrives second.
+    try {
+      await $fetch('/api/save-compatibility-reading', {
+        method: 'POST',
+        body: {
+          sessionId,
+          email:             compatEmail,
+          firstName:         compatFirstName,
+          partnerName:       compatPartnerName,
+          partnerDob:        compatPartnerDob,
+          language:          compatLanguage,
+          compatibilityData,
+        },
+      })
+    } catch (saveErr: unknown) {
+      console.error('[stripe-webhook] compat save failed for', sessionId, saveErr instanceof Error ? saveErr.message : String(saveErr))
+      return { received: true, warning: 'compat_save_failed', sessionId }
+    }
+
+    // STEP 2: Send email — only after save has committed the email_sent flag
+    if (!isValidEmail(compatEmail)) {
+      console.warn('[stripe-webhook] compat — no valid email for session:', sessionId)
+      return { received: true, skipped: 'no_email', sessionId }
+    }
+
+    try {
+      await $fetch('/api/send-compatibility-email', {
+        method: 'POST',
+        body: {
+          email:         compatEmail,
+          firstName:     compatFirstName,
+          partnerName:   compatPartnerName,
+          compatibility: compatibilityData,
+          language:      compatLanguage,
+          tier:          compatTier,
+        },
+      })
+    } catch (emailErr: unknown) {
+      console.error('[stripe-webhook] compat email failed for', sessionId, emailErr instanceof Error ? emailErr.message : String(emailErr))
+      return { received: true, warning: 'compat_email_failed', sessionId }
+    }
+
+    return { received: true, processed: 'compatibility', sessionId }
+  }
+
   // ── Check idempotency: skip if report already saved & email sent ───────────
   const supabase = createSupabaseAdmin()
   const { data: existing } = await supabase
