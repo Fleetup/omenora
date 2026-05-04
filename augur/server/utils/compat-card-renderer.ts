@@ -25,8 +25,8 @@ function scoreColor(score: number): string {
 //   - Standalone tsx script  (import.meta.url → augur/server/utils/…)
 function resolvePublicAsset(...parts: string[]): string {
   const candidates = [
-    // production: .output/server/utils/ → ../../ → .output/ → public/
-    join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'public', ...parts),
+    // production: Nitro bundles to .output/server/index.mjs — one level up reaches .output/public/
+    join(dirname(fileURLToPath(import.meta.url)), '..', 'public', ...parts),
     // dev / script: cwd is the augur/ project root
     join(process.cwd(), 'public', ...parts),
   ]

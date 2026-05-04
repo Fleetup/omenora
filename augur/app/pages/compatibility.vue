@@ -813,8 +813,6 @@ onMounted(async () => {
 
   const isPromo = route.query.promo === '1'
 
-  console.warn('[compatibility] onMounted params', { sessionId: !!sessionId, isPreview, isCanceled, fromHistory, isPromo, hasStoreData: !!store.compatibilityData })
-
   // CASE P — promo free-access: compatibility data already in the ref (set before navigate)
   if (isPromo) {
     if (!compatibility.value && store.compatibilityData) {
@@ -876,6 +874,30 @@ onMounted(async () => {
 
   // CASE A — post-payment (only reachable when preview/canceled are both absent)
   if (!isPreview && !isCanceled && sessionId) {
+    // Refresh guard: Pinia is in-memory and wiped on full-page reload, but the
+    // session_id stays in the URL. Without this check every refresh re-generates
+    // the reading, re-sends the email, and re-saves to the DB.
+    // sessionStorage survives F5 within the same tab — use it as the cache.
+    const cacheKey  = `omenora_compat_result_${sessionId}`
+    const cachedRaw = sessionStorage.getItem(cacheKey)
+    if (cachedRaw) {
+      try {
+        const cached = JSON.parse(cachedRaw)
+        compatibility.value       = cached.compatibility
+        userBirthChart.value      = cached.userBirthChart    ?? null
+        partnerBirthChart.value   = cached.partnerBirthChart ?? null
+        userNoonFallback.value    = cached.userNoonFallback    ?? false
+        partnerNoonFallback.value = cached.partnerNoonFallback ?? false
+        if (cached.firstName)   store.setPersonalInfo(cached.firstName, store.dateOfBirth, store.city)
+        if (cached.partnerName) store.setPartnerData({ name: cached.partnerName, dob: store.partnerDob, city: store.partnerCity })
+        if (cached.email)       store.setEmail(cached.email)
+        if (cached.language)    store.setLanguage(cached.language)
+        return
+      } catch {
+        sessionStorage.removeItem(cacheKey)
+      }
+    }
+
     isLoading.value = true
     try {
       const paymentData = await $fetch<{
@@ -1021,6 +1043,22 @@ onMounted(async () => {
           })
         }
       } catch { /* never block UI */ }
+
+      // Persist result to sessionStorage so a page refresh restores from cache
+      // instead of triggering a full re-generation + duplicate email send.
+      try {
+        sessionStorage.setItem(`omenora_compat_result_${sessionId}`, JSON.stringify({
+          compatibility:       compatibility.value,
+          userBirthChart:      userBirthChart.value,
+          partnerBirthChart:   partnerBirthChart.value,
+          userNoonFallback:    userNoonFallback.value,
+          partnerNoonFallback: partnerNoonFallback.value,
+          firstName:           store.firstName,
+          partnerName:         store.partnerName,
+          email:               store.email,
+          language:            store.language,
+        }))
+      } catch { /* sessionStorage quota exceeded — non-critical */ }
 
       isLoading.value = false
     } catch {
