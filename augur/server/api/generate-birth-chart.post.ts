@@ -2,7 +2,10 @@ import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { BirthChartSchema, validateBirthChartTitle, type BirthChartType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
+import { calculateNatalChart, assignArchetypeFromChart } from '~~/app/utils/natalChart'
 
+// Archetype is OPTIONAL — derived from dateOfBirth when missing. Supports the compat T2
+// use case where archetype is not part of the compat quiz flow.
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
 
@@ -10,16 +13,26 @@ export default defineEventHandler(async (event) => {
 
   const firstName      = sanitizeString(body.firstName, 50)
   const dateOfBirth    = sanitizeString(body.dateOfBirth, 10)
-  const timeOfBirth    = sanitizeString(body.timeOfBirth || '', 10)
-  const city           = sanitizeString(body.city, 100)
-  const archetype      = sanitizeString(body.archetype, 30)
-  const lifePathNumber = Number(body.lifePathNumber)
+  const rawTimeOfBirth = sanitizeString(body.timeOfBirth || '', 10)
+  const city           = body.city != null ? sanitizeString(body.city, 100) : ''
+  const rawArchetype   = body.archetype != null ? sanitizeString(body.archetype, 30) : null
+  const lifePathNumber = body.lifePathNumber != null ? Number(body.lifePathNumber) : 0
   const language       = sanitizeString(body.language || 'en', 5)
 
+  const noonFallback = !rawTimeOfBirth
+  const timeOfBirth  = rawTimeOfBirth || '12:00'
+
   assertInput(!!firstName, 'firstName is required')
-  assertInput(isValidArchetype(archetype), 'Invalid archetype')
   assertInput(isValidDateOfBirth(dateOfBirth), 'Invalid dateOfBirth')
-  assertInput(!!city, 'city is required')
+
+  let archetype: string
+  if (rawArchetype && isValidArchetype(rawArchetype)) {
+    archetype = rawArchetype
+  } else {
+    // Standalone/compat T2: derive archetype from dateOfBirth (same pipeline as generate-compatibility standalone mode)
+    const chart = calculateNatalChart({ dateOfBirth, timeOfBirth: null, utcOffsetMinutes: 0, city: '', lat: 0, lon: 0 })
+    archetype   = assignArchetypeFromChart(chart)
+  }
 
   const languageInstructions: Record<string, string> = {
     en: 'Respond entirely in English.',
@@ -172,5 +185,5 @@ Return ONLY valid JSON with no markdown fences:
 
   const birthChart: BirthChartType = validateBirthChartTitle(zodResult.data, archetype)
 
-  return { success: true, birthChart }
+  return { success: true, birthChart, noonFallback }
 })

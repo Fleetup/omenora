@@ -1,5 +1,5 @@
 import { Resend } from 'resend'
-import { CompatibilitySchema } from '~~/server/utils/ai-schemas'
+import { CompatibilitySchema, BirthChartSchema, type BirthChartType } from '~~/server/utils/ai-schemas'
 import { he } from '~~/server/utils/report-email-builder'
 
 export default defineEventHandler(async (event) => {
@@ -11,6 +11,25 @@ export default defineEventHandler(async (event) => {
   const partnerName = sanitizeString(body.partnerName ?? '', 50)
   const language    = sanitizeString(body.language || 'en', 5)
   const tier        = sanitizeString(body.tier ?? '', 20)
+
+  const userBirthChartNoonFallback    = body.userBirthChartNoonFallback    === true
+  const partnerBirthChartNoonFallback = body.partnerBirthChartNoonFallback === true
+
+  let parsedUserBirthChart:    BirthChartType | null = null
+  let parsedPartnerBirthChart: BirthChartType | null = null
+
+  if (body.userBirthChart !== null && body.userBirthChart !== undefined) {
+    const r = BirthChartSchema.safeParse(body.userBirthChart)
+    if (r.success) { parsedUserBirthChart = r.data }
+    else { console.warn('[send-compatibility-email] userBirthChart validation failed:', r.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')) }
+  }
+  if (body.partnerBirthChart !== null && body.partnerBirthChart !== undefined) {
+    const r = BirthChartSchema.safeParse(body.partnerBirthChart)
+    if (r.success) { parsedPartnerBirthChart = r.data }
+    else { console.warn('[send-compatibility-email] partnerBirthChart validation failed:', r.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')) }
+  }
+
+  const hasBothCharts = parsedUserBirthChart !== null && parsedPartnerBirthChart !== null
 
   assertInput(isValidEmail(email), 'Valid email is required')
   assertInput(
@@ -39,6 +58,81 @@ export default defineEventHandler(async (event) => {
     : score >= 60
       ? '#c89632'
       : '#b45050'
+
+  const renderBirthChartBlock = (name: string, chart: BirthChartType, noonFallback: boolean): string => `
+    <div style="margin: 32px 0; padding: 24px;
+      background: rgba(80,120,255,0.05);
+      border: 1px solid rgba(100,140,255,0.15);
+      border-radius: 12px;">
+      <p style="font-size: 10px; font-weight: 500;
+        color: rgba(140,170,255,0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.1em; margin: 0 0 4px;">
+        &#10022; ${he(name)}'s Birth Chart
+      </p>
+      <p style="font-size: 16px; font-weight: 500;
+        color: white; margin: 0 0 16px;">${he(chart.chartTitle)}</p>
+      <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+        <div style="padding: 8px 14px; background: rgba(100,140,255,0.08);
+          border: 1px solid rgba(100,140,255,0.2); border-radius: 8px; text-align: center;">
+          <p style="font-size: 9px; color: rgba(160,190,255,0.5);
+            text-transform: uppercase; margin: 0 0 2px;">Rising</p>
+          <p style="font-size: 13px; font-weight: 500;
+            color: rgba(180,210,255,0.9); margin: 0;">${he(chart.risingSign)}</p>
+        </div>
+        <div style="padding: 8px 14px; background: rgba(100,140,255,0.08);
+          border: 1px solid rgba(100,140,255,0.2); border-radius: 8px; text-align: center;">
+          <p style="font-size: 9px; color: rgba(160,190,255,0.5);
+            text-transform: uppercase; margin: 0 0 2px;">Sun</p>
+          <p style="font-size: 13px; font-weight: 500;
+            color: rgba(180,210,255,0.9); margin: 0;">${he(chart.sunSign)}</p>
+        </div>
+        <div style="padding: 8px 14px; background: rgba(100,140,255,0.08);
+          border: 1px solid rgba(100,140,255,0.2); border-radius: 8px; text-align: center;">
+          <p style="font-size: 9px; color: rgba(160,190,255,0.5);
+            text-transform: uppercase; margin: 0 0 2px;">Moon</p>
+          <p style="font-size: 13px; font-weight: 500;
+            color: rgba(180,210,255,0.9); margin: 0;">${he(chart.moonSign)}</p>
+        </div>
+        <div style="padding: 8px 14px; background: rgba(100,140,255,0.08);
+          border: 1px solid rgba(100,140,255,0.2); border-radius: 8px; text-align: center;">
+          <p style="font-size: 9px; color: rgba(160,190,255,0.5);
+            text-transform: uppercase; margin: 0 0 2px;">Dominant</p>
+          <p style="font-size: 13px; font-weight: 500;
+            color: rgba(180,210,255,0.9); margin: 0;">${he(chart.dominantPlanet)}</p>
+        </div>
+      </div>
+      ${chart.powerHouse ? `
+      <p style="font-size: 11px; color: rgba(160,190,255,0.5);
+        text-transform: uppercase; letter-spacing: 0.08em;
+        margin: 0 0 6px;">Power House</p>
+      <p style="font-size: 13px; font-weight: 500;
+        color: rgba(180,210,255,0.8); margin: 0 0 16px;">
+        ${he(chart.powerHouse)}
+      </p>` : ''}
+      <p style="font-size: 14px; color: rgba(255,255,255,0.6);
+        line-height: 1.8; margin: 0 0 16px;">${he(chart.reading)}</p>
+      ${chart.forecast2026 ? `
+      <div style="padding: 12px 16px; background: rgba(100,140,255,0.06);
+        border-left: 2px solid rgba(140,170,255,0.4);
+        border-radius: 0 8px 8px 0;">
+        <p style="font-size: 9px; color: rgba(160,190,255,0.5);
+          text-transform: uppercase; margin: 0 0 4px;">2026 Planetary Forecast</p>
+        <p style="font-size: 13px; color: rgba(180,210,255,0.8);
+          font-style: italic; margin: 0;">${he(chart.forecast2026)}</p>
+      </div>` : ''}
+      ${noonFallback ? `
+      <p style="font-size: 11px; color: rgba(160,190,255,0.35);
+        font-style: italic; margin: 16px 0 0;">
+        Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.
+      </p>` : ''}
+    </div>
+  `
+
+  const birthChartsHtml = hasBothCharts
+    ? renderBirthChartBlock(firstName, parsedUserBirthChart!, userBirthChartNoonFallback)
+      + renderBirthChartBlock(partnerName, parsedPartnerBirthChart!, partnerBirthChartNoonFallback)
+    : ''
 
   const sectionsHtml = sectionOrder.map((key) => {
     const section = sections[key]
@@ -136,6 +230,9 @@ export default defineEventHandler(async (event) => {
     <!-- SECTIONS -->
     ${sectionsHtml}
 
+    <!-- BIRTH CHARTS (T2 tier only) -->
+    ${birthChartsHtml}
+
     <!-- FOOTER -->
     <div style="text-align: center; margin-top: 40px;
       padding-top: 24px;
@@ -176,7 +273,17 @@ export default defineEventHandler(async (event) => {
     ko: `${firstName} & ${partnerName} — 궁합 분석 결과`,
     zh: `${firstName} & ${partnerName} — 您的合盘分析`,
   }
-  const compatSubject = compatSubjects[language as string] ?? compatSubjects['en'] ?? `${firstName} & ${partnerName} — Your compatibility analysis`
+  const withChartsSubjects: Record<string, string> = {
+    en: `${firstName} & ${partnerName} — Compatibility Reading + Birth Charts`,
+    es: `${firstName} & ${partnerName} — Lectura de compatibilidad + cartas natales`,
+    pt: `${firstName} & ${partnerName} — Leitura de compatibilidade + mapas natais`,
+    hi: `${firstName} & ${partnerName} — अनुकूलता विश्लेषण + जन्म कुंडली`,
+    ko: `${firstName} & ${partnerName} — 궁합 분석 + 출생 차트`,
+    zh: `${firstName} & ${partnerName} — 合盘分析 + 星盘`,
+  }
+  const compatSubject = hasBothCharts
+    ? (withChartsSubjects[language as string] ?? withChartsSubjects['en'] ?? `${firstName} & ${partnerName} — Compatibility Reading + Birth Charts`)
+    : (compatSubjects[language as string] ?? compatSubjects['en'] ?? `${firstName} & ${partnerName} — Your compatibility analysis`)
 
   const compatPlainText = [
     `OMENORA — Compatibility Analysis`,
@@ -189,6 +296,26 @@ export default defineEventHandler(async (event) => {
       const s = sections[key]
       return s ? `${s.title}\n${s.content}` : ''
     }).filter(Boolean),
+    ...(hasBothCharts && parsedUserBirthChart ? [
+      `---`,
+      `${firstName}'s Birth Chart`,
+      `${parsedUserBirthChart.chartTitle}`,
+      `Rising: ${parsedUserBirthChart.risingSign} | Sun: ${parsedUserBirthChart.sunSign} | Moon: ${parsedUserBirthChart.moonSign} | Dominant: ${parsedUserBirthChart.dominantPlanet}`,
+      `Power House: ${parsedUserBirthChart.powerHouse}`,
+      parsedUserBirthChart.reading,
+      `2026 Forecast: ${parsedUserBirthChart.forecast2026}`,
+      ...(userBirthChartNoonFallback ? [`Note: Houses calculated using 12:00 PM as birth time.`] : []),
+    ] : []),
+    ...(hasBothCharts && parsedPartnerBirthChart ? [
+      `---`,
+      `${partnerName}'s Birth Chart`,
+      `${parsedPartnerBirthChart.chartTitle}`,
+      `Rising: ${parsedPartnerBirthChart.risingSign} | Sun: ${parsedPartnerBirthChart.sunSign} | Moon: ${parsedPartnerBirthChart.moonSign} | Dominant: ${parsedPartnerBirthChart.dominantPlanet}`,
+      `Power House: ${parsedPartnerBirthChart.powerHouse}`,
+      parsedPartnerBirthChart.reading,
+      `2026 Forecast: ${parsedPartnerBirthChart.forecast2026}`,
+      ...(partnerBirthChartNoonFallback ? [`Note: Houses calculated using 12:00 PM as birth time.`] : []),
+    ] : []),
     ``,
     `---`,
     `OMENORA · omenora.com`,

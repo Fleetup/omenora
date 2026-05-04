@@ -1,7 +1,8 @@
 import Stripe from 'stripe'
 
-const VALID_TIERS = ['single'] as const
-type Tier = typeof VALID_TIERS[number]
+const VALID_TIERS  = ['single', 'with_charts'] as const
+type Tier          = typeof VALID_TIERS[number]
+const TIER_PRICES: Record<Tier, number> = { single: 999, with_charts: 1499 }
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -15,10 +16,13 @@ export default defineEventHandler(async (event) => {
   const tempId      = sanitizeString(body.tempId, 100)
   const language    = sanitizeString(body.language || 'en', 5)
   const originRaw   = sanitizeString(body.origin, 300)
-  const partnerCity  = body.partnerCity  != null ? sanitizeString(body.partnerCity, 100)  : ''
-  const partnerDob   = body.partnerDob   != null ? sanitizeString(body.partnerDob, 10)   : ''
-  const dateOfBirth  = body.dateOfBirth  != null ? sanitizeString(body.dateOfBirth, 10)  : ''
-  const utmCreative  = sanitizeString(body.utmCreative  || '', 100)
+  const partnerCity        = body.partnerCity        != null ? sanitizeString(body.partnerCity, 100)        : ''
+  const partnerDob         = body.partnerDob         != null ? sanitizeString(body.partnerDob, 10)          : ''
+  const dateOfBirth        = body.dateOfBirth        != null ? sanitizeString(body.dateOfBirth, 10)         : ''
+  const city               = body.city               != null ? sanitizeString(body.city, 100)               : ''
+  const timeOfBirth        = body.timeOfBirth        != null ? sanitizeString(body.timeOfBirth, 10)         : ''
+  const partnerTimeOfBirth = body.partnerTimeOfBirth != null ? sanitizeString(body.partnerTimeOfBirth, 10)  : ''
+  const utmCreative        = sanitizeString(body.utmCreative  || '', 100)
   const utmSource    = sanitizeString(body.utmSource    || '', 100)
   const utmCampaign  = sanitizeString(body.utmCampaign  || '', 100)
   const utmMedium    = sanitizeString(body.utmMedium    || '', 100)
@@ -26,7 +30,7 @@ export default defineEventHandler(async (event) => {
   const rawTier = sanitizeString(body.tier ?? '', 20)
   assertInput(
     (VALID_TIERS as readonly string[]).includes(rawTier),
-    'Invalid tier — must be "single"',
+    'Invalid tier — must be "single" or "with_charts"',
   )
   const tier: Tier = rawTier as Tier
 
@@ -38,6 +42,9 @@ export default defineEventHandler(async (event) => {
 
   if (partnerDob) {
     assertInput(isValidDateOfBirth(partnerDob), 'Invalid partnerDob — expected YYYY-MM-DD')
+  }
+  if (tier === 'with_charts') {
+    assertInput(isValidDateOfBirth(dateOfBirth), 'dateOfBirth is required for with_charts tier')
   }
 
   const base = safeOrigin(originRaw)
@@ -52,10 +59,13 @@ export default defineEventHandler(async (event) => {
     language,
     type: 'compatibility',
     tier,
-    ...(partnerDob   ? { partnerDob }   : {}),
-    ...(partnerCity  ? { partnerCity }  : {}),
-    ...(dateOfBirth  ? { dateOfBirth }  : {}),
-    ...(utmCreative  ? { utm_creative: utmCreative } : {}),
+    ...(partnerDob         ? { partnerDob }                        : {}),
+    ...(partnerCity        ? { partnerCity }                       : {}),
+    ...(dateOfBirth        ? { dateOfBirth }                       : {}),
+    ...(city               ? { city }                              : {}),
+    ...(timeOfBirth        ? { timeOfBirth }                       : {}),
+    ...(partnerTimeOfBirth ? { partnerTimeOfBirth }                : {}),
+    ...(utmCreative        ? { utm_creative: utmCreative }         : {}),
     ...(utmSource    ? { utm_source:   utmSource }   : {}),
     ...(utmCampaign  ? { utm_campaign: utmCampaign } : {}),
     ...(utmMedium    ? { utm_medium:   utmMedium }   : {}),
@@ -74,8 +84,15 @@ export default defineEventHandler(async (event) => {
     line_items: [{
       price_data: {
         currency: 'usd',
-        product_data: { name: 'OMENORA Compatibility Reading', description: 'Destiny Compatibility Analysis' },
-        unit_amount: 999,
+        product_data: {
+          name: tier === 'with_charts'
+            ? 'OMENORA Compatibility Reading + Birth Charts'
+            : 'OMENORA Compatibility Reading',
+          description: tier === 'with_charts'
+            ? 'Destiny Compatibility Analysis — includes full natal birth charts for both you and your partner'
+            : 'Destiny Compatibility Analysis',
+        },
+        unit_amount: TIER_PRICES[tier],
       },
       quantity: 1,
     }],
