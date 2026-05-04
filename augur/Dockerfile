@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # ── Base: node:20-slim (Debian Bookworm, glibc) ───────────────────────────────
 # IMPORTANT: Do NOT use node:20-alpine here. The sweph native addon (.node file)
 # is pre-compiled against glibc (requires GLIBC_2.14+). Alpine uses musl libc
@@ -6,11 +5,7 @@
 # node:20-slim uses Debian which ships glibc, solving this permanently.
 FROM node:20-slim AS base
 WORKDIR /app
-# Cache apt packages across builds so repeated runs skip re-downloading.
-# No rm -rf needed — cache mounts are never committed to the image layer.
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 \
       make \
       g++ \
@@ -19,16 +14,16 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       libjpeg-dev \
       libgif-dev \
       librsvg2-dev \
-      libpixman-1-dev
+      libpixman-1-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# ── Deps: install node_modules (cached between builds) ───────────────────────
+# ── Deps: install node_modules ────────────────────────────────────────────────
+# Layer is cached by Docker when package-lock.json is unchanged — npm ci is
+# skipped entirely on rebuilds that only change application source code.
 FROM base AS deps
 WORKDIR /app
 COPY augur/package*.json ./
-# npm cache mount persists downloaded tarballs across builds on the same
-# Railway builder. Only re-fetches packages that changed in package-lock.json.
-RUN --mount=type=cache,id=npm-omenora,target=/root/.npm \
-    npm ci
+RUN npm ci
 
 # ── Builder: compile Nuxt app ─────────────────────────────────────────────────
 FROM base AS builder
@@ -40,16 +35,15 @@ RUN npm run build
 # ── Runner: minimal image — only runtime libs + built output ──────────────────
 FROM node:20-slim AS runner
 WORKDIR /app
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
       libcairo2 \
       libpango-1.0-0 \
       libpangocairo-1.0-0 \
       libjpeg62-turbo \
       libgif7 \
       librsvg2-2 \
-      libpixman-1-0
+      libpixman-1-0 \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
