@@ -24,7 +24,7 @@ const CSP = [
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
   "connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://cloudflareinsights.com https://analytics.tiktok.com https://analytics-ipv6.tiktokw.us https://connect.facebook.net https://www.facebook.com https://scvjjbgejmkomyciabex.supabase.co https://us.i.posthog.com https://us-assets.i.posthog.com https://maps.googleapis.com https://maps.gstatic.com https://places.googleapis.com https://widget.trustpilot.com https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net",
-  "frame-src https://js.stripe.com https://hooks.stripe.com",
+  "frame-src https://js.stripe.com https://hooks.stripe.com https://widget.trustpilot.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self' https://checkout.stripe.com",
