@@ -59,14 +59,24 @@ async function lookupCountry(ip: string): Promise<string> {
   const ipapiKey = process.env.IPAPI_KEY ? `?key=${process.env.IPAPI_KEY}` : ''
   try {
     const res  = await fetch(`https://ipapi.co/${ip}/json/${ipapiKey}`, { signal: AbortSignal.timeout(3000) })
-    const data = await res.json() as { country_code?: string; error?: boolean; reason?: string }
+    const text = await res.text()
+
+    // ipapi.co returns plain text (e.g. "Please consider upgrading your plan…")
+    // when the free-tier daily/monthly cap is hit — JSON.parse would throw a
+    // SyntaxError that bypasses the rate-limit guard below and spams the logs.
+    let data: { country_code?: string; error?: boolean; reason?: string }
+    try {
+      data = JSON.parse(text)
+    } catch {
+      throw new Error('ipapi.co rate limited')
+    }
 
     if (!data.error && data.country_code) {
       GEO_CACHE.set(cacheKey, { country: data.country_code, expiresAt: Date.now() + CACHE_TTL_MS })
       return data.country_code
     }
 
-    if (data.reason?.includes('RateLimited')) {
+    if (data.error || data.reason?.includes('RateLimited')) {
       throw new Error('ipapi.co rate limited')
     }
   } catch (primaryErr: any) {
