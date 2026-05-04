@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ── Base: node:20-slim (Debian Bookworm, glibc) ───────────────────────────────
 # IMPORTANT: Do NOT use node:20-alpine here. The sweph native addon (.node file)
 # is pre-compiled against glibc (requires GLIBC_2.14+). Alpine uses musl libc
@@ -5,47 +6,58 @@
 # node:20-slim uses Debian which ships glibc, solving this permanently.
 FROM node:20-slim AS base
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    make \
-    g++ \
-    libcairo2-dev \
-    libpango1.0-dev \
-    libjpeg-dev \
-    libgif-dev \
-    librsvg2-dev \
-    libpixman-1-dev \
-  && rm -rf /var/lib/apt/lists/*
+# Cache apt packages across builds so repeated runs skip re-downloading.
+# No rm -rf needed — cache mounts are never committed to the image layer.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+      python3 \
+      make \
+      g++ \
+      libcairo2-dev \
+      libpango1.0-dev \
+      libjpeg-dev \
+      libgif-dev \
+      librsvg2-dev \
+      libpixman-1-dev
 
+# ── Deps: install node_modules (cached between builds) ───────────────────────
 FROM base AS deps
+WORKDIR /app
 COPY augur/package*.json ./
-RUN npm ci
+# npm cache mount persists downloaded tarballs across builds on the same
+# Railway builder. Only re-fetches packages that changed in package-lock.json.
+RUN --mount=type=cache,id=npm-omenora,target=/root/.npm \
+    npm ci
 
+# ── Builder: compile Nuxt app ─────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY augur/ .
 RUN npm run build
 
-# ── Runner: node:20-slim (glibc — required for sweph native addon) ────────────
+# ── Runner: minimal image — only runtime libs + built output ──────────────────
 FROM node:20-slim AS runner
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libjpeg62-turbo \
-    libgif7 \
-    librsvg2-2 \
-    libpixman-1-0 \
-  && rm -rf /var/lib/apt/lists/*
-ENV NODE_ENV=production
-ENV HOST=0.0.0.0
-ENV PORT=3000
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+      libcairo2 \
+      libpango-1.0-0 \
+      libpangocairo-1.0-0 \
+      libjpeg62-turbo \
+      libgif7 \
+      librsvg2-2 \
+      libpixman-1-0
+
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=3000
 
 COPY --from=builder /app/.output ./.output
-# Fonts are copied to .output/public/fonts/ by nuxt build, but ensure they exist
-# in the runner image so generate-card.post.ts can resolve them at runtime.
+# Fonts are copied to .output/public/fonts/ by nuxt build, but ensure they
+# exist in the runner image so generate-card.post.ts can resolve them at runtime.
 COPY --from=builder /app/public/fonts ./.output/public/fonts
 COPY --from=builder /app/public/og-image.png ./.output/public/og-image.png
 

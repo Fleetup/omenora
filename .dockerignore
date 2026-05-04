@@ -1,18 +1,41 @@
+# ── VCS & IDE ─────────────────────────────────────────────────────────────────
 .git
 .gitignore
+.github
+.windsurf
+.claude
+.DS_Store
+
+# ── Monorepo: non-augur services & docs (not needed for build) ────────────────
 mobile-app/
+docs/
+scripts/
+QUERIES/
+README.md
+nixpacks.toml
+
+# ── Augur: generated / local-only build artifacts ────────────────────────────
 augur/node_modules/
 augur/.nuxt/
 augur/.output/
+augur/.nitro/
+augur/.cache/
 augur/dist/
+
+# ── Augur: secrets & local env ───────────────────────────────────────────────
 augur/.env
-augur/.env.local
-augur/.env.production
+augur/.env.*
+augur/*.env
+
+# ── Augur: test & CI artifacts ───────────────────────────────────────────────
+augur/tests/
+augur/test-results/
+augur/playwright-report/
+augur/playwright.config.ts
+augur/vitest.config.ts
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
 augur/*.log
 augur/.DS_Store
 augur/README.md
-augur/tests/
-augur/playwright.config.ts
-augur/vitest.config.ts
 *.log
-.DS_Store
