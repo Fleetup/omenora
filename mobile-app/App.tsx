@@ -23,6 +23,16 @@ import {
   Inter_400Regular,
   Inter_500Medium,
 } from '@expo-google-fonts/inter';
+import {
+  Fraunces_300Light,
+  Fraunces_300Light_Italic,
+  Fraunces_500Medium,
+} from '@expo-google-fonts/fraunces';
+import {
+  HankenGrotesk_400Regular,
+  HankenGrotesk_500Medium,
+  HankenGrotesk_600SemiBold,
+} from '@expo-google-fonts/hanken-grotesk';
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
@@ -41,6 +51,12 @@ export default function App() {
     Inter_300Light,
     Inter_400Regular,
     Inter_500Medium,
+    Fraunces_300Light,
+    Fraunces_300Light_Italic,
+    Fraunces_500Medium,
+    HankenGrotesk_400Regular,
+    HankenGrotesk_500Medium,
+    HankenGrotesk_600SemiBold,
   });
 
   // ── Payment deep-link handler ─────────────────────────────────────────────
