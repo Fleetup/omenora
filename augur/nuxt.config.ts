@@ -39,6 +39,7 @@ export default defineNuxtConfig({
       tiktokPixelId: '',
       metaPixelId: '',
       posthogKey: '',
+      clarityProjectId: '',
       googlePlacesKey: process.env.NUXT_PUBLIC_GOOGLE_PLACES_KEY || '',
     },
   },
