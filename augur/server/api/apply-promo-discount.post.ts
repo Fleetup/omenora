@@ -1,9 +1,9 @@
 import Stripe from 'stripe'
 
 const TIER_BASE_PRICES: Record<string, { cents: number; name: string }> = {
-  basic:  { cents: 299,  name: 'OMENORA Destiny Report — Basic' },
-  bundle: { cents: 499,  name: 'OMENORA Destiny Report + Bundle' },
-  oracle: { cents: 1299, name: 'OMENORA Full Oracle Bundle' },
+  basic:  { cents: 499,  name: 'OMENORA Destiny Report — Basic' },
+  bundle: { cents: 999,  name: 'OMENORA Destiny Report + Bundle' },
+  oracle: { cents: 2499, name: 'OMENORA Full Oracle Bundle' },
 }
 
 export default defineEventHandler(async (event) => {
