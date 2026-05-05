@@ -516,6 +516,34 @@ async function runApiCall() {
 }
 
 onMounted(() => {
+  // ── v2 handoff: resume at Step 2 with store-populated data ──
+  if (route.query.step === '2' && route.query.from === 'v2') {
+    const dob  = store.dateOfBirth
+    const city = store.city
+    if (dob && city) {
+      try {
+        mySunSign.value  = getSunSign(dob)
+        myLifePath.value = getLifePathNumber(dob).number
+      } catch {
+        console.warn('[compatibility-quiz] v2 handoff: sign/path computation failed — falling through to Step 1')
+        trackEvent('compatibility_quiz_started')
+        triggerReveal()
+        return
+      }
+      myDob.value     = dob
+      myCity.value    = city
+      myCityLat.value = store.cityLat
+      myCityLng.value = store.cityLng
+      hadLandingStep.value = false
+      currentStep.value    = 2
+      triggerReveal()
+      trackEvent('compatibility_quiz_step_1_complete', { sun_sign: mySunSign.value?.name, life_path: myLifePath.value })
+      return
+    }
+    console.warn('[compatibility-quiz] v2 handoff: store.dateOfBirth or store.city missing — falling through to Step 1')
+  }
+
+  // ── Default entry: UTM landing or direct ──
   const utmParams = {
     utm_source:   (route.query.utm_source   as string) || '',
     utm_campaign: (route.query.utm_campaign as string) || '',
