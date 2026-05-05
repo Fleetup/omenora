@@ -8,6 +8,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { fonts } from '../../theme/fonts';
+import { colors } from '../../theme/colors';
 
 interface EditorialInputProps extends TextInputProps {
   label?: string;
@@ -27,8 +28,8 @@ export const EditorialInput: React.FC<EditorialInputProps> = ({
       {label != null && <Text style={styles.label}>{label}</Text>}
       <TextInput
         style={[styles.input, style]}
-        placeholderTextColor="rgba(255, 255, 255, 0.22)"
-        selectionColor="rgba(255, 255, 255, 0.6)"
+        placeholderTextColor={colors.inkDim}
+        selectionColor={colors.inkMid}
         {...inputProps}
       />
       {hint != null && <Text style={styles.hint}>{hint}</Text>}
@@ -46,16 +47,16 @@ const styles = StyleSheet.create({
     fontSize:      11,
     letterSpacing: 2.5,
     textTransform: 'uppercase',
-    color:         'rgba(255, 255, 255, 0.35)',
+    color:         colors.inkFaint,
     marginBottom:  12,
   },
 
   input: {
     fontFamily:        fonts.cormorant,
     fontSize:          24,
-    color:             'rgba(255, 255, 255, 0.93)',
+    color:             colors.ink,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.25)',
+    borderBottomColor: colors.inkDim,
     borderRadius:      0,
     backgroundColor:   'transparent',
     paddingVertical:   14,
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     fontFamily:    fonts.hanken,
     fontSize:      11,
     letterSpacing: 0.5,
-    color:         'rgba(255, 255, 255, 0.28)',
+    color:         colors.inkDim,
     marginTop:     10,
   },
 });

@@ -211,8 +211,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                   value={firstName}
                   onChangeText={setFirstName}
                   placeholder="Enter your first name"
-                  placeholderTextColor="rgba(255,255,255,0.2)"
-                  selectionColor="rgba(255,255,255,0.6)"
+                  placeholderTextColor={colors.inkDim}
+                  selectionColor={colors.inkMid}
                   autoCapitalize="words"
                 />
               </View>
@@ -228,8 +228,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                       value={birthDay}
                       onChangeText={onDayInput}
                       placeholder="DD"
-                      placeholderTextColor="rgba(255,255,255,0.2)"
-                      selectionColor="rgba(255,255,255,0.6)"
+                      placeholderTextColor={colors.inkDim}
+                      selectionColor={colors.inkMid}
                       keyboardType="numeric"
                       maxLength={2}
                     />
@@ -242,8 +242,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                       value={birthMonth}
                       onChangeText={onMonthInput}
                       placeholder="MM"
-                      placeholderTextColor="rgba(255,255,255,0.2)"
-                      selectionColor="rgba(255,255,255,0.6)"
+                      placeholderTextColor={colors.inkDim}
+                      selectionColor={colors.inkMid}
                       keyboardType="numeric"
                       maxLength={2}
                     />
@@ -256,8 +256,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                       value={birthYear}
                       onChangeText={onYearInput}
                       placeholder="YYYY"
-                      placeholderTextColor="rgba(255,255,255,0.2)"
-                      selectionColor="rgba(255,255,255,0.6)"
+                      placeholderTextColor={colors.inkDim}
+                      selectionColor={colors.inkMid}
                       keyboardType="numeric"
                       maxLength={4}
                     />
@@ -274,8 +274,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                   value={city}
                   onChangeText={setCity}
                   placeholder="Enter your birth city"
-                  placeholderTextColor="rgba(255,255,255,0.2)"
-                  selectionColor="rgba(255,255,255,0.6)"
+                  placeholderTextColor={colors.inkDim}
+                  selectionColor={colors.inkMid}
                 />
                 <Text style={styles.fieldHint}>Used only to determine the horizon position at birth.</Text>
               </View>
@@ -294,8 +294,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                       value={birthHour}
                       onChangeText={onHourInput}
                       placeholder="HH"
-                      placeholderTextColor="rgba(255,255,255,0.2)"
-                      selectionColor="rgba(255,255,255,0.6)"
+                      placeholderTextColor={colors.inkDim}
+                      selectionColor={colors.inkMid}
                       keyboardType="numeric"
                       maxLength={2}
                     />
@@ -308,8 +308,8 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                       value={birthMinute}
                       onChangeText={onMinuteInput}
                       placeholder="MM"
-                      placeholderTextColor="rgba(255,255,255,0.2)"
-                      selectionColor="rgba(255,255,255,0.6)"
+                      placeholderTextColor={colors.inkDim}
+                      selectionColor={colors.inkMid}
                       keyboardType="numeric"
                       maxLength={2}
                     />
@@ -444,7 +444,7 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
 };
 
 const styles = StyleSheet.create({
-  container:    { flex: 1, backgroundColor: colors.background.main },
+  container:    { flex: 1, backgroundColor: colors.bone },
   keyboardView: { flex: 1 },
 
   // ── Top bar ──────────────────────────────────────────────────────────────
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
   backArrow: {
     fontFamily: fonts.cormorant,
     fontSize:   20,
-    color:      'rgba(255,255,255,0.55)',
+    color:      colors.inkMid,
     lineHeight: 22,
   },
   backLabel: {
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     fontSize:      10,
     letterSpacing: 2,
     textTransform: 'uppercase',
-    color:         'rgba(255,255,255,0.35)',
+    color:         colors.inkFaint,
   },
   brandLabel: {
     letterSpacing: 2.5,
@@ -485,12 +485,12 @@ const styles = StyleSheet.create({
   progressTrack: {
     height:          1,
     marginHorizontal: 24,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: colors.inkGhost,
     marginBottom:    44,
   },
   progressFill: {
     height:          1,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: colors.ink,
   },
 
   // ── Scroll content ────────────────────────────────────────────────────────
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     fontWeight:    '300',
     letterSpacing: -0.8,
     lineHeight:    SW < 375 ? 40 : 48,
-    color:         'rgba(255,255,255,0.93)',
+    color:         colors.ink,
   },
   headlineRule: {
     marginTop:    20,
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
     fontSize:      11,
     letterSpacing: 2.5,
     textTransform: 'uppercase',
-    color:         'rgba(255,255,255,0.35)',
+    color:         colors.inkFaint,
     marginBottom:  12,
   },
   fieldLabelRow: {
@@ -535,13 +535,13 @@ const styles = StyleSheet.create({
     marginBottom:   8,
   },
   optionalLabel: {
-    color: 'rgba(255,255,255,0.22)',
+    color: colors.inkDim,
   },
   fieldHint: {
     fontFamily:    fonts.hanken,
     fontSize:      11,
     letterSpacing: 0.5,
-    color:         'rgba(255,255,255,0.28)',
+    color:         colors.inkDim,
     marginBottom:  12,
   },
 
@@ -549,9 +549,9 @@ const styles = StyleSheet.create({
   editorialInput: {
     fontFamily:        fonts.cormorant,
     fontSize:          24,
-    color:             'rgba(255,255,255,0.93)',
+    color:             colors.ink,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.25)',
+    borderBottomColor: colors.inkDim,
     borderRadius:      0,
     backgroundColor:   'transparent',
     paddingVertical:   14,
@@ -576,10 +576,10 @@ const styles = StyleSheet.create({
   numInput: {
     fontFamily:        fonts.cormorant,
     fontSize:          22,
-    color:             'rgba(255,255,255,0.93)',
+    color:             colors.ink,
     textAlign:         'center',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.25)',
+    borderBottomColor: colors.inkDim,
     borderRadius:      0,
     backgroundColor:   'transparent',
     paddingVertical:   12,
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
     fontSize:      9,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color:         'rgba(255,255,255,0.22)',
+    color:         colors.inkDim,
     marginTop:     6,
   },
 
@@ -604,23 +604,23 @@ const styles = StyleSheet.create({
   },
   ampmBtn: {
     borderWidth:     1,
-    borderColor:     'rgba(255,255,255,0.12)',
+    borderColor:     colors.inkGhost,
     paddingVertical: 8,
     alignItems:      'center',
     borderRadius:    0,
   },
   ampmBtnActive: {
-    borderColor:     'rgba(255,255,255,0.55)',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderColor:     colors.inkMid,
+    backgroundColor: colors.inkTrace,
   },
   ampmBtnText: {
     fontFamily:    fonts.hankenSemiBold,
     fontSize:      10,
     letterSpacing: 1.5,
-    color:         'rgba(255,255,255,0.25)',
+    color:         colors.inkDim,
   },
   ampmBtnTextActive: {
-    color: 'rgba(255,255,255,0.88)',
+    color: colors.ink,
   },
 
   // ── Birth chart unlock ────────────────────────────────────────────────────
@@ -631,15 +631,15 @@ const styles = StyleSheet.create({
     marginTop:     14,
     paddingTop:    14,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
+    borderTopColor: colors.inkTrace,
   },
   unlockGlyph: {
     fontFamily: fonts.cormorant,
     fontSize:   12,
-    color:      'rgba(201,168,76,0.55)',
+    color:      colors.goldDim,
   },
   unlockText: {
-    color: 'rgba(201,168,76,0.65)',
+    color: colors.goldDim,
   },
 
   // ── Selection pills ───────────────────────────────────────────────────────
@@ -656,22 +656,22 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderWidth:     1,
-    borderColor:     'rgba(255,255,255,0.1)',
+    borderColor:     colors.inkGhost,
     borderRadius:    0,
     backgroundColor: 'transparent',
   },
   pillActive: {
-    borderColor:     'rgba(255,255,255,0.55)',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderColor:     colors.inkMid,
+    backgroundColor: colors.inkTrace,
   },
   pillText: {
     fontFamily:    fonts.hanken,
     fontSize:      11,
     letterSpacing: 0.8,
-    color:         'rgba(255,255,255,0.3)',
+    color:         colors.inkDim,
   },
   pillTextActive: {
-    color: 'rgba(255,255,255,0.88)',
+    color: colors.ink,
   },
   langFlag: {
     fontSize: 13,
@@ -693,7 +693,7 @@ const styles = StyleSheet.create({
     marginBottom:  20,
   },
   questionNum: {
-    color:    'rgba(201,168,76,0.45)',
+    color:    colors.goldDim,
     minWidth: 24,
     paddingTop: 3,
   },
@@ -702,7 +702,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.cormorant,
     fontSize:   22,
     fontWeight: '400',
-    color:      'rgba(255,255,255,0.88)',
+    color:      colors.ink,
     lineHeight: 30,
   },
   optionsList: {
@@ -719,6 +719,6 @@ const styles = StyleSheet.create({
     marginTop:   32,
     paddingTop:  24,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
+    borderTopColor: colors.inkTrace,
   },
 });

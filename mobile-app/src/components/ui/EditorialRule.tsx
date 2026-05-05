@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { fonts } from '../../theme/fonts';
+import { colors } from '../../theme/colors';
 
 interface EditorialRuleProps {
   ornament?: string;
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
   line: {
     flex:            1,
     height:          1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: colors.inkGhost,
   },
 
   ornament: {
@@ -41,6 +42,6 @@ const styles = StyleSheet.create({
     fontFamily:    fonts.hanken,
     fontSize:      11,
     letterSpacing: 1.5,
-    color:         'rgba(201, 168, 76, 0.55)',
+    color:         colors.goldDim,
   },
 });

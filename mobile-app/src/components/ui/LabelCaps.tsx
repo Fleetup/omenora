@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, StyleSheet, TextStyle } from 'react-native';
 import { fonts } from '../../theme/fonts';
+import { colors } from '../../theme/colors';
 
 interface LabelCapsProps {
   children: React.ReactNode;
@@ -17,6 +18,6 @@ const styles = StyleSheet.create({
     fontSize:      11,
     letterSpacing: 3,
     textTransform: 'uppercase',
-    color:         'rgba(255, 255, 255, 0.35)',
+    color:         colors.inkFaint,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,35 @@ import { useAnalysisStore } from '../stores/analysisStore';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { api, MobileProductType } from '../api/endpoints';
+import { PhoenixLoader, LockedPreview, TraitPill, GhostBadge, ScreenHeader, ProgressBar, LabelCaps } from '../components/ui';
+
+// Screen-internal color constants
+const PROGRESS_FILL_COLOR    = 'rgba(140, 110, 255, 0.88)';
+const ARCH_GLOW_COLOR        = 'rgba(201, 169, 97, 0.055)';
+const ARCH_BORDER_COLOR      = 'rgba(201, 169, 97, 0.40)';
+const ARCH_META_COLOR        = 'rgba(140, 110, 255, 0.65)';
+const TIER_SEL_BASIC_BORDER  = 'rgba(255, 255, 255, 0.20)';
+const TIER_POPULAR_BG        = 'rgba(140, 110, 255, 0.08)';
+const TIER_POPULAR_BORDER    = 'rgba(140, 110, 255, 0.20)';
+const TIER_POPULAR_LEFT      = 'rgba(201, 169, 97, 0.70)';
+const TIER_SEL_POP_BORDER    = 'rgba(140, 110, 255, 0.50)';
+const TIER_FEATURES_COLOR    = 'rgba(200, 180, 255, 0.70)';
+const TIER_STRIKE_ORACLE_CLR = 'rgba(201, 169, 97, 0.25)';
+const TIER_PRICE_POP_COLOR   = 'rgba(200, 180, 255, 1.00)';
+const TIER_PRICE_NOTE_COLOR  = 'rgba(140, 110, 255, 0.60)';
+const TIER_ORACLE_BG         = 'rgba(201, 169, 97, 0.04)';
+const TIER_ORACLE_BORDER     = 'rgba(201, 169, 97, 0.20)';
+const TIER_NAME_ORACLE_CLR   = 'rgba(255, 215, 130, 0.90)';
+const TIER_FEAT_ORACLE_CLR   = 'rgba(201, 169, 97, 0.55)';
+const TIER_PRICE_ORACLE_CLR  = 'rgba(201, 169, 97, 0.90)';
+const EMAIL_BORDER_COLOR     = 'rgba(255, 255, 255, 0.12)';
+const UNLOCK_ORACLE_TEXT     = 'rgba(201, 169, 97, 0.95)';
+const SOCIAL_STARS_COLOR     = 'rgba(201, 169, 97, 0.72)';
+const RETRY_BORDER_COLOR     = 'rgba(201, 169, 97, 0.35)';
+const RETRY_TEXT_COLOR       = 'rgba(201, 169, 97, 0.78)';
+const TRUST_DOT_COLOR        = 'rgba(255, 255, 255, 0.12)';
+const UNLOCK_BASIC_GRADIENT: [string, string] = ['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.06)'];
+const UNLOCK_ORACLE_GRADIENT: [string, string] = ['rgba(201,169,97,0.12)', 'rgba(201,169,97,0.18)'];
 
 const { width: SW } = Dimensions.get('window');
 
@@ -30,58 +59,6 @@ const LOADING_MESSAGES = [
   'Generating your report...',
 ];
 
-const AnimatedOrbitalMark: React.FC = () => {
-  const rotation = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(rotation, { toValue: 1, duration: 18000, useNativeDriver: true })
-    );
-    animation.start();
-    return () => animation.stop();
-  }, []);
-  const spin = rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
-  return (
-    <View style={orbitalStyles.container}>
-      <Animated.View style={[orbitalStyles.orbitOuter, { transform: [{ rotate: spin }] }]}>
-        <View style={orbitalStyles.orbitPlanet} />
-      </Animated.View>
-      <View style={orbitalStyles.orbitInner} />
-      <View style={orbitalStyles.orbitCenter} />
-    </View>
-  );
-};
-
-const orbitalStyles = StyleSheet.create({
-  container: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  orbitOuter: { position: 'absolute', width: 64, height: 64, borderRadius: 32, borderWidth: 1, borderColor: 'rgba(201, 168, 76, 0.3)', justifyContent: 'center', alignItems: 'center' },
-  orbitPlanet: { position: 'absolute', top: -3, width: 5, height: 5, borderRadius: 3, backgroundColor: 'rgba(201, 168, 76, 0.85)' },
-  orbitInner: { position: 'absolute', width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(140, 110, 255, 0.2)' },
-  orbitCenter: { width: 7, height: 7, borderRadius: 4, backgroundColor: 'rgba(200, 180, 255, 0.9)' },
-});
-
-const LockedPreview: React.FC<{ text: string }> = ({ text }) => (
-  <View style={lockStyles.wrapper}>
-    <Text style={lockStyles.text} numberOfLines={6}>{text}</Text>
-    <LinearGradient
-      colors={['transparent', 'rgba(5,4,16,0.92)', '#050410']}
-      style={lockStyles.fade}
-      pointerEvents="none"
-    />
-    <View style={lockStyles.badge}>
-      <Text style={lockStyles.badgeIcon}>🔒</Text>
-      <Text style={lockStyles.badgeText}>7 more sections in your full report</Text>
-    </View>
-  </View>
-);
-
-const lockStyles = StyleSheet.create({
-  wrapper:   { position: 'relative', overflow: 'hidden', borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
-  text:      { padding: 18, fontSize: 14, color: 'rgba(255,255,255,0.45)', lineHeight: 24 },
-  fade:      { position: 'absolute', bottom: 0, left: 0, right: 0, height: 80 },
-  badge:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
-  badgeIcon: { fontSize: 11 },
-  badgeText: { fontSize: 10, color: 'rgba(255,255,255,0.28)', letterSpacing: 0.5 },
-});
 
 export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -189,12 +166,10 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
       <SafeAreaView style={styles.container}>
         <LinearGradient colors={colors.gradients.cosmic} style={styles.gradient}>
           <View style={styles.loadingContainer}>
-            <AnimatedOrbitalMark />
-            <Text style={styles.brandTextSmall}>OMENORA</Text>
+            <PhoenixLoader size={64} style={{ marginBottom: 20 }} />
+            <LabelCaps style={{ marginBottom: 16 }}>OMENORA</LabelCaps>
             <Text key={currentMessageIndex} style={styles.loadingMessage}>{LOADING_MESSAGES[currentMessageIndex]}</Text>
-            <View style={styles.progressTrack}>
-              <Animated.View style={[styles.progressFill, { width: progressWidth.interpolate({ inputRange: [0, 1], outputRange: ['0%', '95%'] }) }]} />
-            </View>
+            <ProgressBar animatedValue={progressWidth} maxFill="95%" fillColor={PROGRESS_FILL_COLOR} style={{ width: 160, marginTop: 24 }} />
           </View>
         </LinearGradient>
       </SafeAreaView>
@@ -206,8 +181,8 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
       <SafeAreaView style={styles.container}>
         <LinearGradient colors={colors.gradients.cosmic} style={styles.gradient}>
           <View style={styles.errorContainer}>
-            <AnimatedOrbitalMark />
-            <Text style={styles.brandTextSmall}>OMENORA</Text>
+            <PhoenixLoader size={64} style={{ marginBottom: 20 }} />
+            <LabelCaps style={{ marginBottom: 16 }}>OMENORA</LabelCaps>
             <Text style={styles.errorText}>Something went wrong. Please try again.</Text>
             <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
               <Text style={styles.retryButtonText}>Try Again</Text>
@@ -225,13 +200,7 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
       <LinearGradient colors={colors.gradients.cosmic} style={styles.gradient}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-          {/* Top bar */}
-          <View style={styles.topBar}>
-            <Text style={styles.brandTextSmall}>OMENORA</Text>
-            <View style={styles.reportBadge}>
-              <Text style={styles.reportBadgeText}>Report Ready</Text>
-            </View>
-          </View>
+          <ScreenHeader right={<GhostBadge label="Report Ready" variant="purple" />} style={{ marginBottom: 20 }} />
 
           {/* Archetype hero */}
           <View style={styles.archetypeBlock}>
@@ -242,7 +211,7 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
             <Text style={styles.archetypeMeta}>{store.report?.element || 'Fire'} · Life Path {store.lifePathNumber || '7'}</Text>
             <View style={styles.traitsRow}>
               {(store.report?.powerTraits || ['Intuitive', 'Determined', 'Creative']).map((trait, i) => (
-                <View key={i} style={styles.traitPill}><Text style={styles.traitPillText}>{trait}</Text></View>
+                <TraitPill key={i} label={trait} />
               ))}
             </View>
           </View>
@@ -334,7 +303,7 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="your@email.com"
-                placeholderTextColor={colors.text.muted}
+                placeholderTextColor={colors.inkDim}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -355,15 +324,15 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
               <LinearGradient
                 colors={
                   selectedTier === 1
-                    ? ['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.06)']
+                    ? UNLOCK_BASIC_GRADIENT
                     : selectedTier === 3
-                    ? ['rgba(201,168,76,0.12)', 'rgba(201,168,76,0.18)']
+                    ? UNLOCK_ORACLE_GRADIENT
                     : colors.gradients.primary
                 }
                 style={styles.unlockGradient}
               >
                 {isProcessingPayment ? (
-                  <ActivityIndicator color={selectedTier === 3 ? colors.gold.medium : colors.text.primary} />
+                  <ActivityIndicator color={selectedTier === 3 ? colors.goldDim : colors.ink} />
                 ) : (
                   <Text style={[
                     styles.unlockButtonText,
@@ -400,102 +369,92 @@ export const PreviewScreen: React.FC<PreviewScreenProps> = (_props) => {
 };
 
 const styles = StyleSheet.create({
-  container:            { flex: 1, backgroundColor: colors.background.main },
+  container:            { flex: 1, backgroundColor: colors.bone },
   gradient:             { flex: 1 },
 
   // Loading / Error
   loadingContainer:     { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
-  brandTextSmall:       { fontFamily: fonts.inter, fontSize: 11, letterSpacing: 3, color: 'rgba(255,255,255,0.22)', marginBottom: 16 },
-  loadingMessage:       { fontFamily: fonts.cormorantItalic, fontSize: 16, fontWeight: '300', color: 'rgba(255,255,255,0.48)', textAlign: 'center', minHeight: 48, lineHeight: 24 },
-  progressTrack:        { width: 160, height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginTop: 24, overflow: 'hidden' },
-  progressFill:         { height: '100%', backgroundColor: colors.purple.full },
+  loadingMessage:       { fontFamily: fonts.cormorantItalic, fontSize: 16, fontWeight: '300', color: colors.inkFaint, textAlign: 'center', minHeight: 48, lineHeight: 24 },
   errorContainer:       { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
-  errorText:            { fontFamily: fonts.cormorantItalic, fontSize: 14, color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: 16, marginBottom: 24 },
-  retryButton:          { borderWidth: 1, borderColor: 'rgba(201,168,76,0.35)', borderRadius: 3, paddingVertical: 12, paddingHorizontal: 32 },
-  retryButtonText:      { fontFamily: fonts.inter, fontSize: 12, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(201,168,76,0.78)' },
+  errorText:            { fontFamily: fonts.cormorantItalic, fontSize: 14, color: colors.inkFaint, textAlign: 'center', marginTop: 16, marginBottom: 24 },
+  retryButton:          { borderWidth: 1, borderColor: RETRY_BORDER_COLOR, borderRadius: 3, paddingVertical: 12, paddingHorizontal: 32 },
+  retryButtonText:      { fontFamily: fonts.inter, fontSize: 12, letterSpacing: 2, textTransform: 'uppercase', color: RETRY_TEXT_COLOR },
 
   // Scroll
   scrollContent:        { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 60 },
 
-  // Top bar
-  topBar:               { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  reportBadge:          { borderWidth: 1, borderColor: 'rgba(140,110,255,0.3)', borderRadius: 2, paddingVertical: 3, paddingHorizontal: 10, backgroundColor: 'rgba(140,110,255,0.07)' },
-  reportBadgeText:      { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(140,110,255,0.7)' },
-
   // Archetype hero
-  archetypeBlock:       { position: 'relative', borderLeftWidth: 2, borderLeftColor: 'rgba(201,168,76,0.4)', paddingVertical: 20, paddingLeft: 24, paddingRight: 12, marginBottom: 16, overflow: 'hidden' },
-  archetypeGlow:        { position: 'absolute', top: 0, left: -60, width: 240, height: 160, backgroundColor: 'rgba(201,168,76,0.055)', borderRadius: 120 },
-  archetypeLabel:       { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(201,168,76,0.62)', marginBottom: 10 },
+  archetypeBlock:       { position: 'relative', borderLeftWidth: 2, borderLeftColor: ARCH_BORDER_COLOR, paddingVertical: 20, paddingLeft: 24, paddingRight: 12, marginBottom: 16, overflow: 'hidden' },
+  archetypeGlow:        { position: 'absolute', top: 0, left: -60, width: 240, height: 160, backgroundColor: ARCH_GLOW_COLOR, borderRadius: 120 },
+  archetypeLabel:       { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: colors.goldDim, marginBottom: 10 },
   archetypeSymbol:      { fontFamily: fonts.cormorant, fontSize: 36, marginBottom: 6, opacity: 0.85 },
-  archetypeName:        { fontFamily: fonts.cormorant, fontSize: 36, fontWeight: '300', color: 'rgba(255,255,255,0.95)', lineHeight: 44, marginBottom: 8, letterSpacing: -0.4 },
-  archetypeMeta:        { fontFamily: fonts.inter, fontSize: 12, color: 'rgba(140,110,255,0.65)', letterSpacing: 0.4 },
+  archetypeName:        { fontFamily: fonts.cormorant, fontSize: 36, fontWeight: '300', color: colors.ink, lineHeight: 44, marginBottom: 8, letterSpacing: -0.4 },
+  archetypeMeta:        { fontFamily: fonts.inter, fontSize: 12, color: ARCH_META_COLOR, letterSpacing: 0.4 },
   traitsRow:            { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 14 },
-  traitPill:            { borderWidth: 1, borderColor: 'rgba(255,255,255,0.09)', borderRadius: 2, paddingVertical: 4, paddingHorizontal: 10 },
-  traitPillText:        { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(255,255,255,0.38)' },
 
   // Social proof
   socialBar:            { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, paddingHorizontal: 2 },
-  socialStars:          { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(201,168,76,0.72)', letterSpacing: 1 },
-  socialText:           { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: 0.2 },
+  socialStars:          { fontFamily: fonts.inter, fontSize: 10, color: SOCIAL_STARS_COLOR, letterSpacing: 1 },
+  socialText:           { fontFamily: fonts.inter, fontSize: 11, color: colors.inkDim, letterSpacing: 0.2 },
 
   // Pricing
   pricingSection:       { marginTop: 24 },
-  pricingTitle:         { fontFamily: fonts.playfair, fontSize: 22, fontWeight: '400', color: 'rgba(255,255,255,0.92)', marginBottom: 6 },
-  pricingSubtitle:      { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.28)', lineHeight: 18, marginBottom: 20 },
+  pricingTitle:         { fontFamily: fonts.playfair, fontSize: 22, fontWeight: '400', color: colors.inkHigh, marginBottom: 6 },
+  pricingSubtitle:      { fontFamily: fonts.inter, fontSize: 11, color: colors.inkDim, lineHeight: 18, marginBottom: 20 },
 
   tierList:             { gap: 10 },
   tierCard:             { borderRadius: 8, padding: 14 },
   tierInfo:             { flex: 1 },
 
   // Basic
-  tierBasic:            { backgroundColor: 'rgba(255,255,255,0.02)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', flexDirection: 'row', alignItems: 'center', gap: 12 },
-  tierSelectedBasic:    { borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.04)' },
-  tierName:             { fontFamily: fonts.inter, fontSize: 13, fontWeight: '500', color: 'rgba(255,255,255,0.65)', marginBottom: 3 },
-  tierDesc:             { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.28)' },
-  tierPrice:            { fontFamily: fonts.cormorant, fontSize: 22, fontWeight: '300', color: 'rgba(255,255,255,0.45)' },
-  tierPriceSelected:    { color: 'rgba(255,255,255,0.72)' },
+  tierBasic:            { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.inkGhost, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  tierSelectedBasic:    { borderColor: TIER_SEL_BASIC_BORDER, backgroundColor: colors.inkTrace },
+  tierName:             { fontFamily: fonts.inter, fontSize: 13, fontWeight: '500', color: colors.inkMid, marginBottom: 3 },
+  tierDesc:             { fontFamily: fonts.inter, fontSize: 11, color: colors.inkDim },
+  tierPrice:            { fontFamily: fonts.cormorant, fontSize: 22, fontWeight: '300', color: colors.inkFaint },
+  tierPriceSelected:    { color: colors.inkMid },
 
   // Popular
-  tierPopular:          { backgroundColor: 'rgba(140,110,255,0.08)', borderWidth: 1, borderColor: 'rgba(140,110,255,0.2)', borderLeftWidth: 2, borderLeftColor: 'rgba(201,168,76,0.7)', paddingTop: 24 },
-  tierSelectedPopular:  { borderColor: 'rgba(140,110,255,0.5)', borderLeftColor: colors.gold.high, shadowColor: '#8C6EFF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 20, elevation: 10 },
-  tierBadge:            { position: 'absolute', top: -11, alignSelf: 'center', backgroundColor: 'rgba(201,168,76,0.95)', borderRadius: 2, paddingVertical: 3, paddingHorizontal: 14 },
-  tierBadgeText:        { fontFamily: fonts.inter, fontSize: 9, fontWeight: '700', color: '#050410', letterSpacing: 1.2 },
+  tierPopular:          { backgroundColor: TIER_POPULAR_BG, borderWidth: 1, borderColor: TIER_POPULAR_BORDER, borderLeftWidth: 2, borderLeftColor: TIER_POPULAR_LEFT, paddingTop: 24 },
+  tierSelectedPopular:  { borderColor: TIER_SEL_POP_BORDER, borderLeftColor: colors.gold, shadowColor: '#8C6EFF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 20, elevation: 10 },
+  tierBadge:            { position: 'absolute', top: -11, alignSelf: 'center', backgroundColor: colors.gold, borderRadius: 2, paddingVertical: 3, paddingHorizontal: 14 },
+  tierBadgeText:        { fontFamily: fonts.inter, fontSize: 9, fontWeight: '700', color: colors.bone, letterSpacing: 1.2 },
   tierPopularInner:     { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  tierNamePopular:      { fontFamily: fonts.playfair, fontSize: 14, color: 'rgba(255,255,255,0.95)', marginBottom: 10 },
-  tierFeatures:         { fontFamily: fonts.inter, fontSize: 12, color: 'rgba(200,180,255,0.7)', lineHeight: 22 },
+  tierNamePopular:      { fontFamily: fonts.playfair, fontSize: 14, color: colors.ink, marginBottom: 10 },
+  tierFeatures:         { fontFamily: fonts.inter, fontSize: 12, color: TIER_FEATURES_COLOR, lineHeight: 22 },
   tierPriceBlock:       { alignItems: 'flex-end', paddingTop: 2 },
-  tierStrike:           { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.2)', textDecorationLine: 'line-through', marginBottom: 1 },
-  tierStrikeOracle:     { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(201,168,76,0.25)', textDecorationLine: 'line-through', marginBottom: 1 },
-  tierPricePopular:     { fontFamily: fonts.cormorant, fontSize: 28, fontWeight: '300', color: 'rgba(200,180,255,1)' },
-  tierPriceNote:        { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(140,110,255,0.6)', marginTop: 2, fontWeight: '500' },
+  tierStrike:           { fontFamily: fonts.inter, fontSize: 11, color: colors.inkDim, textDecorationLine: 'line-through', marginBottom: 1 },
+  tierStrikeOracle:     { fontFamily: fonts.inter, fontSize: 11, color: TIER_STRIKE_ORACLE_CLR, textDecorationLine: 'line-through', marginBottom: 1 },
+  tierPricePopular:     { fontFamily: fonts.cormorant, fontSize: 28, fontWeight: '300', color: TIER_PRICE_POP_COLOR },
+  tierPriceNote:        { fontFamily: fonts.inter, fontSize: 10, color: TIER_PRICE_NOTE_COLOR, marginTop: 2, fontWeight: '500' },
 
   // Oracle
-  tierOracle:           { backgroundColor: 'rgba(201,168,76,0.04)', borderWidth: 1, borderColor: 'rgba(201,168,76,0.2)', borderRadius: 8 },
-  tierSelectedOracle:   { borderColor: 'rgba(201,168,76,0.45)', shadowColor: '#C9A84C', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.18, shadowRadius: 16, elevation: 8 },
+  tierOracle:           { backgroundColor: TIER_ORACLE_BG, borderWidth: 1, borderColor: TIER_ORACLE_BORDER, borderRadius: 8 },
+  tierSelectedOracle:   { borderColor: colors.goldDim, shadowColor: '#C9A84C', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.18, shadowRadius: 16, elevation: 8 },
   tierOracleInner:      { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  tierNameOracle:       { fontFamily: fonts.playfair, fontSize: 14, color: 'rgba(255,215,130,0.9)', marginBottom: 10 },
-  tierFeaturesOracle:   { fontFamily: fonts.inter, fontSize: 12, color: 'rgba(201,168,76,0.55)', lineHeight: 22 },
-  tierPriceOracle:      { fontFamily: fonts.cormorant, fontSize: 26, fontWeight: '300', color: 'rgba(201,168,76,0.9)' },
-  tierPriceNoteOracle:  { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(201,168,76,0.55)', marginTop: 2, fontWeight: '500' },
+  tierNameOracle:       { fontFamily: fonts.playfair, fontSize: 14, color: TIER_NAME_ORACLE_CLR, marginBottom: 10 },
+  tierFeaturesOracle:   { fontFamily: fonts.inter, fontSize: 12, color: TIER_FEAT_ORACLE_CLR, lineHeight: 22 },
+  tierPriceOracle:      { fontFamily: fonts.cormorant, fontSize: 26, fontWeight: '300', color: TIER_PRICE_ORACLE_CLR },
+  tierPriceNoteOracle:  { fontFamily: fonts.inter, fontSize: 10, color: TIER_FEAT_ORACLE_CLR, marginTop: 2, fontWeight: '500' },
 
   // Email
   emailWrapper:         { marginTop: 18 },
-  emailLabel:           { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', marginBottom: 8 },
-  emailInput:           { fontFamily: fonts.inter, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 8, paddingVertical: 14, paddingHorizontal: 14, color: 'rgba(255,255,255,0.9)', fontSize: 15 },
+  emailLabel:           { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: colors.inkDim, marginBottom: 8 },
+  emailInput:           { fontFamily: fonts.inter, backgroundColor: colors.inkTrace, borderWidth: 1, borderColor: EMAIL_BORDER_COLOR, borderRadius: 8, paddingVertical: 14, paddingHorizontal: 14, color: colors.ink, fontSize: 15 },
 
   // CTA
   unlockButton:         { borderRadius: 8, overflow: 'hidden', marginTop: 14 },
   unlockButtonBasic:    { },
-  unlockButtonOracle:   { borderWidth: 1, borderColor: 'rgba(201,168,76,0.4)' },
+  unlockButtonOracle:   { borderWidth: 1, borderColor: colors.goldDim },
   unlockButtonDisabled: { opacity: 0.45 },
   unlockGradient:       { paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
-  unlockButtonText:     { fontFamily: fonts.inter, fontSize: 15, fontWeight: '500', color: colors.text.primary, letterSpacing: 0.4 },
-  unlockButtonTextBasic:  { color: 'rgba(255,255,255,0.55)', fontWeight: '400' },
-  unlockButtonTextOracle: { color: 'rgba(201,168,76,0.95)' },
-  ctaSubNote:           { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: 10, letterSpacing: 0.2 },
+  unlockButtonText:     { fontFamily: fonts.inter, fontSize: 15, fontWeight: '500', color: colors.ink, letterSpacing: 0.4 },
+  unlockButtonTextBasic:  { color: colors.inkMid, fontWeight: '400' },
+  unlockButtonTextOracle: { color: UNLOCK_ORACLE_TEXT },
+  ctaSubNote:           { fontFamily: fonts.inter, fontSize: 10, color: colors.inkDim, textAlign: 'center', marginTop: 10, letterSpacing: 0.2 },
 
   // Trust
   trustRow:             { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16 },
-  trustItem:            { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(255,255,255,0.22)' },
-  trustDot:             { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(255,255,255,0.12)' },
+  trustItem:            { fontFamily: fonts.inter, fontSize: 10, color: colors.inkDim },
+  trustDot:             { fontFamily: fonts.inter, fontSize: 10, color: TRUST_DOT_COLOR },
 });

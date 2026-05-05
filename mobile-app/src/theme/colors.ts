@@ -1,65 +1,47 @@
 /**
- * OMENORA Design System — exact token mirror of the web app.
+ * OMENORA Mobile Design System — Color Tokens
  *
- * All values are sourced directly from the web app CSS so every screen
- * renders identically to its web counterpart.
+ * Token names mirror the web app's editorial.css / tailwind.config.ts exactly.
+ * Values are dark-theme equivalents — same visual roles, inverted palette.
+ *
+ * Web (light) → Mobile (dark):
+ *   --color-bone  #F2EBDD (page bg)   →  bone  #050410 (page bg)
+ *   --color-ink   #1A1612 (text)      →  ink   rgba(255,255,255,0.93) (text)
+ *   --color-gold  #C9A961 (accent)    →  gold  #C9A961 — IDENTICAL
+ *
+ * Rule: Never use inline color literals in components or screens.
+ *       Always reference a token from this file.
  */
 
 export const colors = {
   // ── Background ────────────────────────────────────────────────────────────
-  background: {
-    main:       '#050410',
-    card:       'rgba(255, 255, 255, 0.03)',
-    cardBorder: 'rgba(255, 255, 255, 0.08)',
-  },
+  bone: '#050410',                        // web: --color-bone (#F2EBDD)
 
-  // ── Text ──────────────────────────────────────────────────────────────────
-  text: {
-    primary:   'rgba(255, 255, 255, 0.93)',
-    secondary: 'rgba(255, 255, 255, 0.72)',
-    tertiary:  'rgba(255, 255, 255, 0.48)',
-    muted:     'rgba(255, 255, 255, 0.25)',
-    dim:       'rgba(255, 255, 255, 0.18)',
-  },
+  // ── Ink scale — text and UI hierarchy ────────────────────────────────────
+  ink:       'rgba(255, 255, 255, 0.93)', // web: --color-ink (#1A1612)              primary text, CTA fill
+  inkHigh:   'rgba(255, 255, 255, 0.88)', // mobile-only                             display headings, section titles
+  inkMid:    'rgba(255, 255, 255, 0.72)', // web: --color-ink-mid (#3D3530)          secondary text, active states
+  inkFaint:  'rgba(255, 255, 255, 0.45)', // web: --color-ink-faint rgba(26,22,18,0.45)  labels, captions
+  inkDim:    'rgba(255, 255, 255, 0.28)', // mobile-only                             hints, placeholders, sub-labels
+  inkGhost:  'rgba(255, 255, 255, 0.08)', // web: --color-ink-ghost rgba(26,22,18,0.18)  rules, tracks, borders
+  inkTrace:  'rgba(255, 255, 255, 0.04)', // mobile-only                             very faint dividers, tinted surfaces
 
-  // ── Gold accent (rgba(201, 168, 76, x)) ───────────────────────────────────
-  gold: {
-    full:    'rgba(201, 168, 76, 1)',
-    high:    'rgba(201, 168, 76, 0.92)',
-    medium:  'rgba(201, 168, 76, 0.62)',
-    low:     'rgba(201, 168, 76, 0.38)',
-    subtle:  'rgba(201, 168, 76, 0.22)',
-    ghost:   'rgba(201, 168, 76, 0.07)',
-  },
+  // ── Gold accent ───────────────────────────────────────────────────────────
+  gold:       '#C9A961',                   // web: --color-gold (#C9A961) — IDENTICAL
+  goldDim:    'rgba(201, 169, 97, 0.45)', // web: --color-gold-dim rgba(201,169,97,0.55)  muted gold text and icons
+  goldSubtle: 'rgba(201, 169, 97, 0.07)', // mobile-only                             selection tint backgrounds
 
-  // ── Purple accent (rgba(140, 110, 255, x)) ────────────────────────────────
-  purple: {
-    full:   'rgba(140, 110, 255, 0.88)',
-    high:   'rgba(140, 110, 255, 0.55)',
-    medium: 'rgba(140, 110, 255, 0.22)',
-    low:    'rgba(140, 110, 255, 0.08)',
-  },
-
-  // ── Purple light (rgba(200, 180, 255, x)) ─────────────────────────────────
-  purpleLight: {
-    high:   'rgba(200, 180, 255, 0.95)',
-    medium: 'rgba(200, 180, 255, 0.60)',
-    low:    'rgba(200, 180, 255, 0.42)',
-  },
+  // ── Elevated surfaces ─────────────────────────────────────────────────────
+  surface: 'rgba(255, 255, 255, 0.03)',   // card background above bone
 
   // ── Semantic ──────────────────────────────────────────────────────────────
-  semantic: {
-    error: '#FF5252',
-  },
+  error: '#FF5252',
 
-  // ── Gradient presets (LinearGradient colors arrays) ───────────────────────
+  // ── Gradients ─────────────────────────────────────────────────────────────
   gradients: {
-    // Dark background — used for SafeAreaView fill behind ScrollView
-    cosmic: ['#050410', '#050410'] as const,
-    // Primary action button (purple)
-    primary: ['rgba(140, 110, 255, 0.88)', 'rgba(140, 110, 255, 1)'] as const,
-    // Gold progress fill
-    goldPurple: ['rgba(140, 110, 255, 0.55)', 'rgba(201, 168, 76, 0.55)'] as const,
+    cosmic:     ['#050410', '#050410'] as const,
+    primary:    ['rgba(140, 110, 255, 0.88)', 'rgba(140, 110, 255, 1)'] as const,    // legacy — remove on PreviewScreen redesign
+    goldPurple: ['rgba(140, 110, 255, 0.55)', 'rgba(201, 168, 76, 0.55)'] as const, // legacy — remove on screen redesign
   },
 } as const;
 

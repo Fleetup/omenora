@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { fonts } from '../../theme/fonts';
+import { colors } from '../../theme/colors';
 
 interface CTAButtonProps {
   label: string;
@@ -50,7 +51,7 @@ export const CTAButton: React.FC<CTAButtonProps> = ({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={isSolid ? '#050410' : 'rgba(255,255,255,0.9)'}
+          color={isSolid ? colors.bone : colors.ink}
         />
       ) : (
         <>
@@ -91,14 +92,14 @@ const styles = StyleSheet.create({
   },
 
   solid: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: colors.ink,
     borderWidth:     0,
   },
 
   outline: {
     backgroundColor: 'transparent',
     borderWidth:     1,
-    borderColor:     'rgba(255, 255, 255, 0.35)',
+    borderColor:     colors.inkFaint,
   },
 
   full: {
@@ -117,11 +118,11 @@ const styles = StyleSheet.create({
   },
 
   labelSolid: {
-    color: '#050410',
+    color: colors.bone,
   },
 
   labelOutline: {
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: colors.ink,
   },
 
   arrow: {
@@ -132,10 +133,10 @@ const styles = StyleSheet.create({
   },
 
   arrowSolid: {
-    color: '#050410',
+    color: colors.bone,
   },
 
   arrowOutline: {
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: colors.ink,
   },
 });

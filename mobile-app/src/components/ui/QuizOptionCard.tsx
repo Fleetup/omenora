@@ -6,6 +6,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { fonts } from '../../theme/fonts';
+import { colors } from '../../theme/colors';
 
 const LETTER_PREFIXES = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
 
@@ -59,13 +60,13 @@ const styles = StyleSheet.create({
   },
 
   cardDefault: {
-    borderColor:     'rgba(255, 255, 255, 0.12)',
+    borderColor:     colors.inkGhost,
     backgroundColor: 'transparent',
   },
 
   cardSelected: {
-    borderColor:     'rgba(255, 255, 255, 0.7)',
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderColor:     colors.inkMid,
+    backgroundColor: colors.inkTrace,
   },
 
   prefix: {
@@ -73,13 +74,13 @@ const styles = StyleSheet.create({
     fontSize:      10,
     letterSpacing: 1,
     textTransform: 'uppercase',
-    color:         'rgba(201, 168, 76, 0.45)',
+    color:         colors.goldDim,
     marginTop:     3,
     minWidth:      14,
   },
 
   prefixSelected: {
-    color: 'rgba(201, 168, 76, 0.75)',
+    color: colors.gold,
   },
 
   label: {
@@ -87,11 +88,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.cormorant,
     fontSize:   18,
     fontWeight: '400',
-    color:      'rgba(255, 255, 255, 0.72)',
+    color:      colors.inkMid,
     lineHeight: 26,
   },
 
   labelSelected: {
-    color: 'rgba(255, 255, 255, 0.93)',
+    color: colors.ink,
   },
 });
