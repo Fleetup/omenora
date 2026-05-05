@@ -9,8 +9,9 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
+  Animated,
+  Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { AnalysisScreenProps } from '../navigation/types';
 import { useAnalysisStore } from '../stores/analysisStore';
 import { colors } from '../theme/colors';
@@ -18,27 +19,53 @@ import { fonts } from '../theme/fonts';
 import { QUESTIONS, LANGUAGES, REGION_OPTIONS } from '../constants/questions';
 import { calculateLifePathNumber } from '../utils/lifePathNumber';
 import { assignArchetype } from '../utils/archetypes';
+import {
+  CTAButton,
+  EditorialRule,
+  ShortRule,
+  LabelCaps,
+  AnnotationText,
+  QuizOptionCard,
+} from '../components/ui';
+
+const { width: SW } = Dimensions.get('window');
 
 export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
-  
+
   // Date of birth fields
   const [birthDay, setBirthDay] = useState('');
   const [birthMonth, setBirthMonth] = useState('');
   const [birthYear, setBirthYear] = useState('');
-  
+
   // Time of birth fields
   const [birthHour, setBirthHour] = useState('');
   const [birthMinute, setBirthMinute] = useState('');
   const [birthAmPm, setBirthAmPm] = useState<'AM' | 'PM'>('AM');
-  
+
   const monthInputRef = useRef<TextInput>(null);
-  const yearInputRef = useRef<TextInput>(null);
+  const yearInputRef  = useRef<TextInput>(null);
   const minuteInputRef = useRef<TextInput>(null);
-  
+
   const currentYear = new Date().getFullYear();
-  
+
+  // ── Animated hairline progress bar ───────────────────────────────────────
+  const progressAnim = useRef(new Animated.Value(0.5)).current;
+
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: currentStep === 1 ? 0.5 : 1,
+      duration: 350,
+      useNativeDriver: false,
+    }).start();
+  }, [currentStep]);
+
+  const progressWidth = progressAnim.interpolate({
+    inputRange:  [0, 1],
+    outputRange: [0, SW - 48],
+  });
+
+  // ── Store ─────────────────────────────────────────────────────────────────
   const {
     firstName,
     city,
@@ -57,6 +84,7 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
     setArchetype,
   } = useAnalysisStore();
 
+  // ── Computed DOB / time ───────────────────────────────────────────────────
   const computedDateOfBirth = React.useMemo(() => {
     const d = parseInt(birthDay || '0');
     const m = parseInt(birthMonth || '0');
@@ -81,17 +109,14 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
     if (computedTimeOfBirth) setTimeOfBirth(computedTimeOfBirth);
   }, [computedTimeOfBirth]);
 
-  const isStep1Valid = firstName.length > 0 && computedDateOfBirth.length > 0 && city.length > 0;
+  const isStep1Valid       = firstName.length > 0 && computedDateOfBirth.length > 0 && city.length > 0;
   const allQuestionsAnswered = QUESTIONS.every(q => answers[q.id]);
 
+  // ── Input handlers ────────────────────────────────────────────────────────
   const onDayInput = (text: string) => {
     const cleaned = text.replace(/\D/g, '').slice(0, 2);
     const num = parseInt(cleaned || '0');
-    if (cleaned.length > 0 && num > 31) {
-      setBirthDay('31');
-      monthInputRef.current?.focus();
-      return;
-    }
+    if (cleaned.length > 0 && num > 31) { setBirthDay('31'); monthInputRef.current?.focus(); return; }
     setBirthDay(cleaned);
     if (cleaned.length === 2 && num >= 1) monthInputRef.current?.focus();
   };
@@ -99,11 +124,7 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
   const onMonthInput = (text: string) => {
     const cleaned = text.replace(/\D/g, '').slice(0, 2);
     const num = parseInt(cleaned || '0');
-    if (cleaned.length > 0 && num > 12) {
-      setBirthMonth('12');
-      yearInputRef.current?.focus();
-      return;
-    }
+    if (cleaned.length > 0 && num > 12) { setBirthMonth('12'); yearInputRef.current?.focus(); return; }
     setBirthMonth(cleaned);
     if (cleaned.length === 2 && num >= 1) yearInputRef.current?.focus();
   };
@@ -118,11 +139,7 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
   const onHourInput = (text: string) => {
     const cleaned = text.replace(/\D/g, '').slice(0, 2);
     const num = parseInt(cleaned || '0');
-    if (cleaned.length > 0 && num > 12) {
-      setBirthHour('12');
-      minuteInputRef.current?.focus();
-      return;
-    }
+    if (cleaned.length > 0 && num > 12) { setBirthHour('12'); minuteInputRef.current?.focus(); return; }
     setBirthHour(cleaned);
     if (cleaned.length === 2 && num >= 1) minuteInputRef.current?.focus();
   };
@@ -130,13 +147,11 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
   const onMinuteInput = (text: string) => {
     const cleaned = text.replace(/\D/g, '').slice(0, 2);
     const num = parseInt(cleaned || '0');
-    if (cleaned.length > 0 && num > 59) {
-      setBirthMinute('59');
-      return;
-    }
+    if (cleaned.length > 0 && num > 59) { setBirthMinute('59'); return; }
     setBirthMinute(cleaned);
   };
 
+  // ── Navigation ────────────────────────────────────────────────────────────
   const goBack = () => {
     if (currentStep > 1) setCurrentStep(1);
     else navigation.goBack();
@@ -155,206 +170,555 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient colors={colors.gradients.cosmic} style={styles.gradient}>
-        <View style={styles.topBar}>
-          <TouchableOpacity onPress={goBack} style={styles.backButton}>
-            <Text style={styles.backButtonText}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.brandText}>OMENORA</Text>
-          <Text style={styles.stepIndicator}>{currentStep} of 2</Text>
-        </View>
 
-        <View style={styles.progressBar}>
-          <View style={[styles.progressSegment, currentStep >= 1 && styles.progressActive]} />
-          <View style={[styles.progressSegment, currentStep >= 2 && styles.progressActive]} />
-        </View>
+      {/* ── Top bar ────────────────────────────────────────────────────────── */}
+      <View style={styles.topBar}>
+        <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Text style={styles.backArrow}>←</Text>
+          <Text style={styles.backLabel}>Back</Text>
+        </TouchableOpacity>
+        <LabelCaps style={styles.brandLabel}>Omenora</LabelCaps>
+        <AnnotationText style={styles.stepLabel}>{currentStep} / 2</AnnotationText>
+      </View>
 
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {currentStep === 1 ? (
-              <>
-                <Text style={styles.heading}>Tell us about yourself</Text>
-                <Text style={styles.subheading}>Takes 10 seconds</Text>
+      {/* ── Hairline progress track ──────────────────────────────────────── */}
+      <View style={styles.progressTrack}>
+        <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
+      </View>
 
-                <View style={[styles.fieldWrapper, focusedField === 'firstName' && styles.fieldFocused]}>
-                  <Text style={styles.fieldLabel}>First Name</Text>
-                  <TextInput style={styles.fieldInput} value={firstName} onChangeText={setFirstName} placeholder="Enter your first name" placeholderTextColor={colors.text.muted} onFocus={() => setFocusedField('firstName')} onBlur={() => setFocusedField(null)} autoCapitalize="words" />
-                </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
 
-                <View style={styles.fieldWrapper}>
-                  <Text style={styles.fieldLabel}>Date of Birth</Text>
-                  <View style={styles.dateRow}>
-                    <View style={styles.dateField}>
-                      <TextInput style={styles.numInput} value={birthDay} onChangeText={onDayInput} placeholder="DD" placeholderTextColor={colors.text.muted} keyboardType="numeric" maxLength={2} />
-                      <Text style={styles.inputSubLabel}>Day</Text>
-                    </View>
-                    <View style={styles.dateField}>
-                      <TextInput ref={monthInputRef} style={styles.numInput} value={birthMonth} onChangeText={onMonthInput} placeholder="MM" placeholderTextColor={colors.text.muted} keyboardType="numeric" maxLength={2} />
-                      <Text style={styles.inputSubLabel}>Month</Text>
-                    </View>
-                    <View style={styles.yearField}>
-                      <TextInput ref={yearInputRef} style={styles.numInput} value={birthYear} onChangeText={onYearInput} placeholder="YYYY" placeholderTextColor={colors.text.muted} keyboardType="numeric" maxLength={4} />
-                      <Text style={styles.inputSubLabel}>Year</Text>
-                    </View>
+          {currentStep === 1 ? (
+            <>
+              {/* ── Step header ────────────────────────────────────────────── */}
+              <LabelCaps style={styles.stepNum}>Step 01</LabelCaps>
+              <Text style={styles.headline}>Tell us about you.</Text>
+              <ShortRule style={styles.headlineRule} />
+
+              {/* ── First name ─────────────────────────────────────────────── */}
+              <View style={styles.fieldSection}>
+                <Text style={styles.fieldLabel}>Your first name</Text>
+                <TextInput
+                  style={styles.editorialInput}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  placeholder="Enter your first name"
+                  placeholderTextColor="rgba(255,255,255,0.2)"
+                  selectionColor="rgba(255,255,255,0.6)"
+                  autoCapitalize="words"
+                />
+              </View>
+
+              {/* ── Date of birth ───────────────────────────────────────────── */}
+              <View style={styles.fieldSection}>
+                <Text style={styles.fieldLabel}>Date of birth</Text>
+                <Text style={styles.fieldHint}>Used only to calculate your planetary positions.</Text>
+                <View style={styles.dateRow}>
+                  <View style={styles.dateCol}>
+                    <TextInput
+                      style={styles.numInput}
+                      value={birthDay}
+                      onChangeText={onDayInput}
+                      placeholder="DD"
+                      placeholderTextColor="rgba(255,255,255,0.2)"
+                      selectionColor="rgba(255,255,255,0.6)"
+                      keyboardType="numeric"
+                      maxLength={2}
+                    />
+                    <Text style={styles.dateSubLabel}>Day</Text>
+                  </View>
+                  <View style={styles.dateCol}>
+                    <TextInput
+                      ref={monthInputRef}
+                      style={styles.numInput}
+                      value={birthMonth}
+                      onChangeText={onMonthInput}
+                      placeholder="MM"
+                      placeholderTextColor="rgba(255,255,255,0.2)"
+                      selectionColor="rgba(255,255,255,0.6)"
+                      keyboardType="numeric"
+                      maxLength={2}
+                    />
+                    <Text style={styles.dateSubLabel}>Month</Text>
+                  </View>
+                  <View style={[styles.dateCol, { flex: 1.6 }]}>
+                    <TextInput
+                      ref={yearInputRef}
+                      style={styles.numInput}
+                      value={birthYear}
+                      onChangeText={onYearInput}
+                      placeholder="YYYY"
+                      placeholderTextColor="rgba(255,255,255,0.2)"
+                      selectionColor="rgba(255,255,255,0.6)"
+                      keyboardType="numeric"
+                      maxLength={4}
+                    />
+                    <Text style={styles.dateSubLabel}>Year</Text>
                   </View>
                 </View>
+              </View>
 
-                <View style={[styles.fieldWrapper, focusedField === 'city' && styles.fieldFocused]}>
-                  <Text style={styles.fieldLabel}>City of Birth</Text>
-                  <TextInput style={styles.fieldInput} value={city} onChangeText={setCity} placeholder="Enter your birth city" placeholderTextColor={colors.text.muted} onFocus={() => setFocusedField('city')} onBlur={() => setFocusedField(null)} />
+              {/* ── City of birth ──────────────────────────────────────────── */}
+              <View style={styles.fieldSection}>
+                <Text style={styles.fieldLabel}>City of birth</Text>
+                <TextInput
+                  style={styles.editorialInput}
+                  value={city}
+                  onChangeText={setCity}
+                  placeholder="Enter your birth city"
+                  placeholderTextColor="rgba(255,255,255,0.2)"
+                  selectionColor="rgba(255,255,255,0.6)"
+                />
+                <Text style={styles.fieldHint}>Used only to determine the horizon position at birth.</Text>
+              </View>
+
+              {/* ── Birth time (optional) ──────────────────────────────────── */}
+              <View style={styles.fieldSection}>
+                <View style={styles.fieldLabelRow}>
+                  <Text style={styles.fieldLabel}>Birth time</Text>
+                  <AnnotationText style={styles.optionalLabel}>Optional</AnnotationText>
                 </View>
-
-                <View style={styles.fieldWrapper}>
-                  <View style={styles.fieldHeaderRow}>
-                    <Text style={styles.fieldLabel}>Time of Birth</Text>
-                    <Text style={styles.optionalBadge}>Optional</Text>
+                <Text style={styles.fieldHint}>Improves your Rising sign accuracy.</Text>
+                <View style={styles.timeRow}>
+                  <View style={styles.dateCol}>
+                    <TextInput
+                      style={styles.numInput}
+                      value={birthHour}
+                      onChangeText={onHourInput}
+                      placeholder="HH"
+                      placeholderTextColor="rgba(255,255,255,0.2)"
+                      selectionColor="rgba(255,255,255,0.6)"
+                      keyboardType="numeric"
+                      maxLength={2}
+                    />
+                    <Text style={styles.dateSubLabel}>Hour</Text>
                   </View>
-                  <View style={styles.timeRow}>
-                    <View style={styles.timeField}>
-                      <TextInput style={styles.numInput} value={birthHour} onChangeText={onHourInput} placeholder="HH" placeholderTextColor={colors.text.muted} keyboardType="numeric" maxLength={2} />
-                      <Text style={styles.inputSubLabel}>Hour</Text>
-                    </View>
-                    <View style={styles.timeField}>
-                      <TextInput ref={minuteInputRef} style={styles.numInput} value={birthMinute} onChangeText={onMinuteInput} placeholder="MM" placeholderTextColor={colors.text.muted} keyboardType="numeric" maxLength={2} />
-                      <Text style={styles.inputSubLabel}>Minute</Text>
-                    </View>
-                    <View style={styles.ampmContainer}>
-                      <TouchableOpacity style={[styles.ampmButton, birthAmPm === 'AM' && styles.ampmActive]} onPress={() => setBirthAmPm('AM')}>
-                        <Text style={[styles.ampmText, birthAmPm === 'AM' && styles.ampmTextActive]}>AM</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={[styles.ampmButton, birthAmPm === 'PM' && styles.ampmActive]} onPress={() => setBirthAmPm('PM')}>
-                        <Text style={[styles.ampmText, birthAmPm === 'PM' && styles.ampmTextActive]}>PM</Text>
-                      </TouchableOpacity>
-                      <Text style={styles.inputSubLabel}>AM / PM</Text>
-                    </View>
+                  <View style={styles.dateCol}>
+                    <TextInput
+                      ref={minuteInputRef}
+                      style={styles.numInput}
+                      value={birthMinute}
+                      onChangeText={onMinuteInput}
+                      placeholder="MM"
+                      placeholderTextColor="rgba(255,255,255,0.2)"
+                      selectionColor="rgba(255,255,255,0.6)"
+                      keyboardType="numeric"
+                      maxLength={2}
+                    />
+                    <Text style={styles.dateSubLabel}>Minute</Text>
                   </View>
-                  {computedTimeOfBirth ? (
-                    <View style={styles.unlockRow}>
-                      <Text style={styles.unlockIcon}>✦</Text>
-                      <Text style={styles.unlockText}>Birth Chart Unlocked</Text>
-                    </View>
-                  ) : null}
+                  <View style={styles.ampmGroup}>
+                    <TouchableOpacity
+                      style={[styles.ampmBtn, birthAmPm === 'AM' && styles.ampmBtnActive]}
+                      onPress={() => setBirthAmPm('AM')}
+                    >
+                      <Text style={[styles.ampmBtnText, birthAmPm === 'AM' && styles.ampmBtnTextActive]}>AM</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.ampmBtn, birthAmPm === 'PM' && styles.ampmBtnActive]}
+                      onPress={() => setBirthAmPm('PM')}
+                    >
+                      <Text style={[styles.ampmBtnText, birthAmPm === 'PM' && styles.ampmBtnTextActive]}>PM</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
+                {computedTimeOfBirth ? (
+                  <View style={styles.unlockRow}>
+                    <Text style={styles.unlockGlyph}>✦</Text>
+                    <AnnotationText style={styles.unlockText}>Birth chart unlocked</AnnotationText>
+                  </View>
+                ) : null}
+              </View>
 
-                <View style={styles.fieldWrapper}>
-                  <Text style={styles.fieldLabel}>Reading Tradition</Text>
-                  <View style={styles.regionRow}>
-                    {REGION_OPTIONS.map(opt => (
-                      <TouchableOpacity key={opt.value} style={[styles.regionButton, regionOverride === opt.value && styles.regionActive]} onPress={() => setRegionOverride(opt.value)}>
-                        <Text style={[styles.regionText, regionOverride === opt.value && styles.regionTextActive]}>{opt.label}</Text>
-                      </TouchableOpacity>
+              {/* ── Reading tradition ──────────────────────────────────────── */}
+              <View style={styles.fieldSection}>
+                <Text style={styles.fieldLabel}>Reading tradition</Text>
+                <View style={styles.pillRow}>
+                  {REGION_OPTIONS.map(opt => (
+                    <TouchableOpacity
+                      key={opt.value}
+                      style={[styles.pill, regionOverride === opt.value && styles.pillActive]}
+                      onPress={() => setRegionOverride(opt.value)}
+                    >
+                      <Text style={[styles.pillText, regionOverride === opt.value && styles.pillTextActive]}>
+                        {opt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* ── Language ───────────────────────────────────────────────── */}
+              <View style={styles.fieldSection}>
+                <Text style={styles.fieldLabel}>Language</Text>
+                <View style={styles.pillRow}>
+                  {LANGUAGES.map(lang => (
+                    <TouchableOpacity
+                      key={lang.code}
+                      style={[styles.pill, languageOverride === lang.code && styles.pillActive]}
+                      onPress={() => setLanguageOverride(lang.code)}
+                    >
+                      <Text style={styles.langFlag}>{lang.flag}</Text>
+                      <Text style={[styles.pillText, languageOverride === lang.code && styles.pillTextActive]}>
+                        {lang.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* ── Continue CTA ───────────────────────────────────────────── */}
+              <CTAButton
+                label="Continue"
+                onPress={continueToStep2}
+                variant="solid"
+                arrow
+                full
+                disabled={!isStep1Valid}
+                style={styles.ctaBtn}
+              />
+            </>
+          ) : (
+            <>
+              {/* ── Step header ────────────────────────────────────────────── */}
+              <LabelCaps style={styles.stepNum}>Step 02</LabelCaps>
+              <Text style={styles.headline}>Three questions.</Text>
+              <ShortRule style={styles.headlineRule} />
+
+              {/* ── Questions ──────────────────────────────────────────────── */}
+              {QUESTIONS.map((question, index) => (
+                <View key={question.id} style={styles.questionBlock}>
+                  <View style={styles.questionHeader}>
+                    <AnnotationText style={styles.questionNum}>
+                      {String(index + 1).padStart(2, '0')}
+                    </AnnotationText>
+                    <Text style={styles.questionText}>{question.text}</Text>
+                  </View>
+                  <View style={styles.optionsList}>
+                    {question.options.map((option, optIndex) => (
+                      <QuizOptionCard
+                        key={option.value}
+                        index={optIndex}
+                        label={option.label}
+                        selected={answers[question.id] === option.value}
+                        onPress={() => setAnswer(question.id, option.value)}
+                      />
                     ))}
                   </View>
+                  {index < QUESTIONS.length - 1 && (
+                    <EditorialRule style={styles.questionDivider} />
+                  )}
                 </View>
+              ))}
 
-                <View style={styles.fieldWrapper}>
-                  <Text style={styles.fieldLabel}>Language</Text>
-                  <View style={styles.languageRow}>
-                    {LANGUAGES.map(lang => (
-                      <TouchableOpacity key={lang.code} style={[styles.languageButton, languageOverride === lang.code && styles.languageActive]} onPress={() => setLanguageOverride(lang.code)}>
-                        <Text style={styles.languageFlag}>{lang.flag}</Text>
-                        <Text style={[styles.languageText, languageOverride === lang.code && styles.languageTextActive]}>{lang.label}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
+              {/* ── Submit CTA ─────────────────────────────────────────────── */}
+              <CTAButton
+                label="Reveal my destiny"
+                onPress={submitAnalysis}
+                variant="solid"
+                arrow
+                full
+                disabled={!allQuestionsAnswered}
+                style={styles.ctaBtn}
+              />
+            </>
+          )}
 
-                <TouchableOpacity style={[styles.continueButton, !isStep1Valid && styles.continueButtonDisabled]} onPress={continueToStep2} disabled={!isStep1Valid} activeOpacity={0.75}>
-                  <Text style={styles.continueText}>Continue ✦</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <Text style={styles.heading}>Answer 7 questions</Text>
-                <Text style={styles.subheading}>To personalize your reading</Text>
-                {QUESTIONS.map((question, index) => (
-                  <View key={question.id} style={styles.questionBlock}>
-                    <View style={styles.questionHeader}>
-                      <Text style={styles.questionNumber}>{String(index + 1).padStart(2, '0')}</Text>
-                      <Text style={styles.questionText}>{question.text}</Text>
-                    </View>
-                    <View style={styles.optionsRow}>
-                      {question.options.map(option => (
-                        <TouchableOpacity key={option.value} style={[styles.optionTile, answers[question.id] === option.value && styles.optionTileSelected]} onPress={() => setAnswer(question.id, option.value)}>
-                          <Text style={[styles.optionText, answers[question.id] === option.value && styles.optionTextSelected]}>{option.label}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                    {index < QUESTIONS.length - 1 && <View style={styles.divider} />}
-                  </View>
-                ))}
-                <TouchableOpacity style={[styles.continueButton, styles.submitButton, !allQuestionsAnswered && styles.continueButtonDisabled]} onPress={submitAnalysis} disabled={!allQuestionsAnswered} activeOpacity={0.75}>
-                  <Text style={[styles.continueText, styles.submitText]}>Reveal My Destiny ✦</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </LinearGradient>
+          {/* ── Trust footer ─────────────────────────────────────────────── */}
+          <View style={styles.trustFooter}>
+            <AnnotationText>🔒 Birth data used only to generate your reading. Never sold.</AnnotationText>
+          </View>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background.main },
-  gradient: { flex: 1 },
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 16 },
-  backButton: { padding: 8 },
-  backButtonText: { fontSize: 24, color: colors.text.primary },
-  brandText: { fontFamily: fonts.inter, fontSize: 11, letterSpacing: 2.5, color: 'rgba(255,255,255,0.22)' },
-  stepIndicator: { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.22)' },
-  progressBar: { flexDirection: 'row', paddingHorizontal: 20, gap: 6, marginBottom: 36 },
-  progressSegment: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.08)' },
-  progressActive: { backgroundColor: 'rgba(201,168,76,0.55)' },
+  container:    { flex: 1, backgroundColor: colors.background.main },
   keyboardView: { flex: 1 },
-  scrollContent: { paddingHorizontal: 24, paddingBottom: 40 },
-  heading: { fontFamily: fonts.cormorant, fontSize: 38, fontWeight: '300', color: 'rgba(255,255,255,0.92)', marginBottom: 6, lineHeight: 44, letterSpacing: -0.4 },
-  subheading: { fontFamily: fonts.cormorantItalic, fontSize: 15, color: 'rgba(255,255,255,0.3)', marginBottom: 32 },
-  fieldWrapper: { backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 8, padding: 16, marginBottom: 12 },
-  fieldFocused: { borderColor: 'rgba(201,168,76,0.4)', backgroundColor: 'rgba(201,168,76,0.025)' },
-  fieldLabel: { fontFamily: fonts.inter, fontSize: 9, color: 'rgba(255,255,255,0.22)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 2 },
-  fieldInput: { fontFamily: fonts.inter, fontSize: 15, color: 'rgba(255,255,255,0.88)', padding: 0 },
-  fieldHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  optionalBadge: { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(140,110,255,0.52)', letterSpacing: 0.3 },
-  dateRow: { flexDirection: 'row', gap: 12 },
-  timeRow: { flexDirection: 'row', gap: 12 },
-  dateField: { flex: 1 },
-  yearField: { flex: 1.5 },
-  timeField: { flex: 1 },
-  numInput: { fontFamily: fonts.cormorant, fontSize: 16, color: 'rgba(255,255,255,0.88)', textAlign: 'center', padding: 14, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  inputSubLabel: { fontFamily: fonts.inter, fontSize: 9, color: 'rgba(255,255,255,0.18)', textAlign: 'center', marginTop: 5, textTransform: 'uppercase', letterSpacing: 1.2 },
-  ampmContainer: { flex: 1, alignItems: 'center' },
-  ampmButton: { paddingVertical: 6, paddingHorizontal: 0, width: '100%', borderRadius: 5, backgroundColor: 'transparent', borderWidth: 0, marginVertical: 2, alignItems: 'center' },
-  ampmActive: { backgroundColor: 'rgba(140,110,255,0.2)' },
-  ampmText: { fontFamily: fonts.inter, fontSize: 12, fontWeight: '500', color: 'rgba(255,255,255,0.2)', letterSpacing: 1 },
-  ampmTextActive: { color: 'rgba(200,180,255,0.95)' },
-  unlockRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', gap: 7 },
-  unlockIcon: { fontFamily: fonts.inter, fontSize: 10, color: 'rgba(140,110,255,0.65)' },
-  unlockText: { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(140,110,255,0.65)', letterSpacing: 0.3 },
-  regionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  regionButton: { paddingVertical: 7, paddingHorizontal: 16, borderRadius: 3, backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  regionActive: { borderColor: 'rgba(201,168,76,0.42)', backgroundColor: 'rgba(201,168,76,0.07)' },
-  regionText: { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 },
-  regionTextActive: { color: 'rgba(201,168,76,0.88)' },
-  languageRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  languageButton: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 7, paddingHorizontal: 14, borderRadius: 3, backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  languageActive: { borderColor: 'rgba(201,168,76,0.42)', backgroundColor: 'rgba(201,168,76,0.07)' },
-  languageFlag: { fontSize: 14 },
-  languageText: { fontFamily: fonts.inter, fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 },
-  languageTextActive: { color: 'rgba(201,168,76,0.88)' },
-  questionBlock: { marginBottom: 4 },
-  questionHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, marginBottom: 14 },
-  questionNumber: { fontFamily: fonts.cormorant, fontSize: 22, fontWeight: '300', color: 'rgba(201,168,76,0.4)', lineHeight: 26, flexShrink: 0, minWidth: 28, letterSpacing: 0.3 },
-  questionText: { flex: 1, fontFamily: fonts.inter, fontSize: 16, color: 'rgba(255,255,255,0.72)', lineHeight: 24, fontWeight: '300', paddingTop: 2 },
-  optionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  optionTile: { flex: 1, minHeight: 52, paddingVertical: 13, paddingHorizontal: 16, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  optionTileSelected: { backgroundColor: 'rgba(201,168,76,0.08)', borderColor: 'rgba(201,168,76,0.42)' },
-  optionText: { fontFamily: fonts.inter, fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 18 },
-  optionTextSelected: { color: 'rgba(201,168,76,0.9)' },
-  divider: { height: 1, backgroundColor: 'transparent', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)', marginVertical: 24 },
-  continueButton: { borderRadius: 3, marginTop: 28, borderWidth: 1, borderColor: 'rgba(201,168,76,0.32)', backgroundColor: 'transparent', paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
-  continueButtonDisabled: { opacity: 0.22 },
-  continueText: { fontFamily: fonts.inter, fontSize: 12, fontWeight: '400', color: 'rgba(255,255,255,0.72)', letterSpacing: 1.8, textTransform: 'uppercase' },
-  submitButton: { marginTop: 40, backgroundColor: 'rgba(201,168,76,0.1)', borderColor: 'rgba(201,168,76,0.45)' },
-  submitText: { color: 'rgba(201,168,76,0.92)' },
+
+  // ── Top bar ──────────────────────────────────────────────────────────────
+  topBar: {
+    flexDirection:  'row',
+    alignItems:     'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical:   14,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:           6,
+  },
+  backArrow: {
+    fontFamily: fonts.cormorant,
+    fontSize:   20,
+    color:      'rgba(255,255,255,0.55)',
+    lineHeight: 22,
+  },
+  backLabel: {
+    fontFamily:    fonts.hankenSemiBold,
+    fontSize:      10,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color:         'rgba(255,255,255,0.35)',
+  },
+  brandLabel: {
+    letterSpacing: 2.5,
+  },
+  stepLabel: {
+    minWidth: 32,
+    textAlign: 'right',
+  },
+
+  // ── Hairline progress bar ─────────────────────────────────────────────────
+  progressTrack: {
+    height:          1,
+    marginHorizontal: 24,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    marginBottom:    44,
+  },
+  progressFill: {
+    height:          1,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+
+  // ── Scroll content ────────────────────────────────────────────────────────
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingBottom:     56,
+  },
+
+  // ── Step header ───────────────────────────────────────────────────────────
+  stepNum: {
+    marginBottom: 16,
+  },
+  headline: {
+    fontFamily:    fonts.frauncesItalic,
+    fontSize:      SW < 375 ? 34 : 42,
+    fontWeight:    '300',
+    letterSpacing: -0.8,
+    lineHeight:    SW < 375 ? 40 : 48,
+    color:         'rgba(255,255,255,0.93)',
+  },
+  headlineRule: {
+    marginTop:    20,
+    marginBottom: 36,
+  },
+
+  // ── Field sections ────────────────────────────────────────────────────────
+  fieldSection: {
+    marginBottom: 36,
+  },
+  fieldLabel: {
+    fontFamily:    fonts.hankenSemiBold,
+    fontSize:      11,
+    letterSpacing: 2.5,
+    textTransform: 'uppercase',
+    color:         'rgba(255,255,255,0.35)',
+    marginBottom:  12,
+  },
+  fieldLabelRow: {
+    flexDirection:  'row',
+    alignItems:     'center',
+    justifyContent: 'space-between',
+    marginBottom:   8,
+  },
+  optionalLabel: {
+    color: 'rgba(255,255,255,0.22)',
+  },
+  fieldHint: {
+    fontFamily:    fonts.hanken,
+    fontSize:      11,
+    letterSpacing: 0.5,
+    color:         'rgba(255,255,255,0.28)',
+    marginBottom:  12,
+  },
+
+  // Editorial text input (bottom-border only)
+  editorialInput: {
+    fontFamily:        fonts.cormorant,
+    fontSize:          24,
+    color:             'rgba(255,255,255,0.93)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.25)',
+    borderRadius:      0,
+    backgroundColor:   'transparent',
+    paddingVertical:   14,
+    paddingHorizontal: 0,
+  },
+
+  // ── Date / time row ───────────────────────────────────────────────────────
+  dateRow: {
+    flexDirection: 'row',
+    gap:           16,
+    marginTop:     4,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    gap:           16,
+    marginTop:     4,
+  },
+  dateCol: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  numInput: {
+    fontFamily:        fonts.cormorant,
+    fontSize:          22,
+    color:             'rgba(255,255,255,0.93)',
+    textAlign:         'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.25)',
+    borderRadius:      0,
+    backgroundColor:   'transparent',
+    paddingVertical:   12,
+    width:             '100%',
+  },
+  dateSubLabel: {
+    fontFamily:    fonts.hanken,
+    fontSize:      9,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color:         'rgba(255,255,255,0.22)',
+    marginTop:     6,
+  },
+
+  // ── AM / PM toggle ────────────────────────────────────────────────────────
+  ampmGroup: {
+    flex:          1,
+    flexDirection: 'column',
+    gap:           6,
+    justifyContent: 'flex-end',
+    paddingBottom: 4,
+  },
+  ampmBtn: {
+    borderWidth:     1,
+    borderColor:     'rgba(255,255,255,0.12)',
+    paddingVertical: 8,
+    alignItems:      'center',
+    borderRadius:    0,
+  },
+  ampmBtnActive: {
+    borderColor:     'rgba(255,255,255,0.55)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  ampmBtnText: {
+    fontFamily:    fonts.hankenSemiBold,
+    fontSize:      10,
+    letterSpacing: 1.5,
+    color:         'rgba(255,255,255,0.25)',
+  },
+  ampmBtnTextActive: {
+    color: 'rgba(255,255,255,0.88)',
+  },
+
+  // ── Birth chart unlock ────────────────────────────────────────────────────
+  unlockRow: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:           8,
+    marginTop:     14,
+    paddingTop:    14,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.06)',
+  },
+  unlockGlyph: {
+    fontFamily: fonts.cormorant,
+    fontSize:   12,
+    color:      'rgba(201,168,76,0.55)',
+  },
+  unlockText: {
+    color: 'rgba(201,168,76,0.65)',
+  },
+
+  // ── Selection pills ───────────────────────────────────────────────────────
+  pillRow: {
+    flexDirection: 'row',
+    flexWrap:      'wrap',
+    gap:           8,
+    marginTop:     4,
+  },
+  pill: {
+    flexDirection:   'row',
+    alignItems:      'center',
+    gap:             4,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderWidth:     1,
+    borderColor:     'rgba(255,255,255,0.1)',
+    borderRadius:    0,
+    backgroundColor: 'transparent',
+  },
+  pillActive: {
+    borderColor:     'rgba(255,255,255,0.55)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  pillText: {
+    fontFamily:    fonts.hanken,
+    fontSize:      11,
+    letterSpacing: 0.8,
+    color:         'rgba(255,255,255,0.3)',
+  },
+  pillTextActive: {
+    color: 'rgba(255,255,255,0.88)',
+  },
+  langFlag: {
+    fontSize: 13,
+  },
+
+  // ── CTA ───────────────────────────────────────────────────────────────────
+  ctaBtn: {
+    marginTop: 8,
+  },
+
+  // ── Question block ────────────────────────────────────────────────────────
+  questionBlock: {
+    marginBottom: 0,
+  },
+  questionHeader: {
+    flexDirection: 'row',
+    alignItems:    'flex-start',
+    gap:           16,
+    marginBottom:  20,
+  },
+  questionNum: {
+    color:    'rgba(201,168,76,0.45)',
+    minWidth: 24,
+    paddingTop: 3,
+  },
+  questionText: {
+    flex:       1,
+    fontFamily: fonts.cormorant,
+    fontSize:   22,
+    fontWeight: '400',
+    color:      'rgba(255,255,255,0.88)',
+    lineHeight: 30,
+  },
+  optionsList: {
+    gap: 0,
+  },
+  questionDivider: {
+    marginTop:    8,
+    marginBottom: 28,
+  },
+
+  // ── Trust footer ──────────────────────────────────────────────────────────
+  trustFooter: {
+    alignItems:  'center',
+    marginTop:   32,
+    paddingTop:  24,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.06)',
+  },
 });
