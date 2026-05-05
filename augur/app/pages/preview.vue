@@ -340,6 +340,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import type { ComputedRef } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
+import { useClarity } from '~/composables/useClarity'
 
 useSeoMeta({ title: 'Your Personality Archetype Reading', robots: 'noindex, nofollow' })
 
@@ -679,6 +680,7 @@ async function handlePayment() {
     currency: 'USD',
     content_name: 'Destiny Reading',
   })
+  useClarity().trackEvent('initiate_checkout')
 
   isProcessingPayment.value = true
 

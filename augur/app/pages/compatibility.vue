@@ -483,6 +483,7 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
 import { useAuth } from '~/composables/useAuth'
+import { useClarity } from '~/composables/useClarity'
 
 useSeoMeta({ title: 'Your Love Compatibility Reading', robots: 'noindex, nofollow' })
 
@@ -492,8 +493,11 @@ const { t } = useLanguage()
 const { provisionUser, session, restoreSession } = useAuth()
 const { $trackCustomEvent, $trackInitiateCheckout, $trackPurchase, $identifyUser, $trackCompatibilityPaywallView } = useNuxtApp() as any
 
+const { trackEvent: clarityTrack } = useClarity()
+
 function trackEvent(name: string, props?: Record<string, unknown>) {
   try { $trackCustomEvent?.(name, props ?? {}) } catch { /* never block UI */ }
+  clarityTrack(name)
 }
 
 // ── Shared section order ───────────────────────────────────────────────────────
@@ -869,6 +873,7 @@ onMounted(async () => {
       has_names: false,
     })
     try { $trackCompatibilityPaywallView?.({ score: store.compatibilityData?.compatibilityScore }) } catch { /* never block UI */ }
+    clarityTrack('compatibility_paywall_view')
     return
   }
 

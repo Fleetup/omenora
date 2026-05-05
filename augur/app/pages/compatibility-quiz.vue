@@ -247,6 +247,7 @@ import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import { getSunSign, getLifePathNumber, type SunSign } from '~/utils/quick-signs-client'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
+import { useClarity } from '~/composables/useClarity'
 
 useSeoMeta({ title: 'Free Compatibility Reading — OMENORA', robots: 'noindex, nofollow' })
 
@@ -254,9 +255,11 @@ const store = useAnalysisStore()
 const { t } = useLanguage()
 const route = useRoute()
 const { $trackCustomEvent, $trackCompatibilityQuizStart } = useNuxtApp() as any
+const { trackEvent: clarityTrack } = useClarity()
 
 function trackEvent(name: string, props?: Record<string, unknown>) {
   try { $trackCustomEvent?.(name, props ?? {}) } catch { /* never throw into the funnel */ }
+  clarityTrack(name)
 }
 
 // ── Date/time form state ───────────────────────────────────────────────────
