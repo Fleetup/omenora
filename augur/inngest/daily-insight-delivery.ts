@@ -158,7 +158,7 @@ export const dailyInsightWorker = inngest.createFunction(
     concurrency: {
       scope: 'account',
       key:   '"resend-api"',
-      limit: 10,
+      limit: 5,
     },
     idempotency: 'event.data.email + "-" + event.data.targetDate',
   },
