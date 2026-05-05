@@ -69,22 +69,34 @@ export default defineEventHandler(async (event) => {
   }
 
   const { inngest, abandonmentStarted } = await import('~~/inngest/client')
-  inngest.send(
-    abandonmentStarted.create({
-      email:            normalizedEmail,
-      sessionId:        sessionId || '',
-      firstName:        firstName || '',
-      archetypeName:    archetypeName || '',
-      archetypeEmoji:   archetypeEmoji || '',
-      archetypeElement: archetypeElement || '',
-      lifePath:         lifePath || '',
-      birthCity:        birthCity || '',
-      readingTradition: readingTradition || 'Western',
-      language:         (language || 'EN').toUpperCase(),
-    }),
-  ).catch((err: unknown) => {
-    console.error('[capture-email] inngest.send abandonment/started failed (non-blocking):', err instanceof Error ? err.message : String(err))
-  })
+  try {
+    const result = await inngest.send(
+      abandonmentStarted.create({
+        email:            normalizedEmail,
+        sessionId:        sessionId || '',
+        firstName:        firstName || '',
+        archetypeName:    archetypeName || '',
+        archetypeEmoji:   archetypeEmoji || '',
+        archetypeElement: archetypeElement || '',
+        lifePath:         lifePath || '',
+        birthCity:        birthCity || '',
+        readingTradition: readingTradition || 'Western',
+        language:         (language || 'EN').toUpperCase(),
+      }),
+    )
+    console.info('[capture-email] inngest.send abandonment/started succeeded', {
+      email:     normalizedEmail,
+      sessionId: sessionId || '',
+      ids:       result?.ids ?? null,
+    })
+  } catch (err) {
+    console.error('[capture-email] inngest.send abandonment/started FAILED', {
+      email:        normalizedEmail,
+      sessionId:    sessionId || '',
+      errorMessage: err instanceof Error ? err.message : String(err),
+      errorStack:   err instanceof Error ? err.stack  : undefined,
+    })
+  }
 
   return { success: true }
 })
