@@ -209,33 +209,55 @@
 
     <!-- ── CORE REPORT SECTIONS ── -->
     <div class="report-body">
-      <article
-        v-for="(key, idx) in SECTION_ORDER"
-        :key="key"
-        class="report-section"
-        :id="`section-${key}`"
-      >
-        <div class="report-section__header">
-          <span class="annotation report-section__num">{{ String(idx + 1).padStart(2, '0') }}</span>
-          <div>
-            <p class="label-caps report-section__tradition">
-              {{ sectionTraditionLabel(key) }}
-            </p>
-            <h2 class="report-section__heading font-serif">
-              {{ store.report.sections[key].title }}
-            </h2>
+      <template v-for="(key, idx) in SECTION_ORDER" :key="key">
+        <article
+          class="report-section"
+          :id="`section-${key}`"
+        >
+          <div class="report-section__header">
+            <span class="annotation report-section__num">{{ String(idx + 1).padStart(2, '0') }}</span>
+            <div>
+              <p class="label-caps report-section__tradition">
+                {{ sectionTraditionLabel(key) }}
+              </p>
+              <h2 class="report-section__heading font-serif">
+                {{ store.report.sections[key].title }}
+              </h2>
+            </div>
           </div>
-        </div>
-        <div class="editorial-rule" />
-        <div class="report-section__body">
-          <div v-if="key === 'affirmation'" class="affirmation-block">
-            <p class="affirmation-block__text font-serif-italic">
-              {{ store.report.sections[key].content }}
-            </p>
+          <div class="editorial-rule" />
+          <div class="report-section__body">
+            <div v-if="key === 'affirmation'" class="affirmation-block">
+              <p class="affirmation-block__text font-serif-italic">
+                {{ store.report.sections[key].content }}
+              </p>
+            </div>
+            <p v-else class="report-section__para">{{ store.report.sections[key].content }}</p>
           </div>
-          <p v-else class="report-section__para">{{ store.report.sections[key].content }}</p>
-        </div>
-      </article>
+        </article>
+
+        <!-- Mid-content subscription upsell — inline after forecast section -->
+        <section
+          v-if="key === 'forecast' && store.report && !store.subscriptionActive && !store.oraclePurchased"
+          class="upsell-section upsell-section--sub upsell-section--inline"
+        >
+          <div class="editorial-rule" />
+          <div class="upsell-section__inner">
+            <p class="label-caps upsell-section__eyebrow">What's next</p>
+            <h3 class="upsell-section__heading font-serif-italic">
+              Continue tomorrow, {{ store.firstName || store.report.archetypeName }}
+            </h3>
+            <p class="annotation upsell-section__sub">
+              Your forecast just covered the months ahead. See what tomorrow holds for the {{ store.report.archetypeName.replace('The ', '') }} in you, every morning.
+            </p>
+            <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription('mid_content')">
+              {{ isStartingSub ? 'Loading...' : 'Start my 7-day free trial' }}
+            </button>
+            <p class="annotation upsell-section__note">Free 7 days · Cancel anytime</p>
+          </div>
+          <div class="editorial-rule" />
+        </section>
+      </template>
     </div>
 
     <!-- ── REGIONAL SECTIONS ── -->
@@ -553,29 +575,30 @@
       </div>
     </section>
 
-    <!-- Subscription upsell -->
+    <!-- Subscription upsell — end of content -->
     <section v-if="store.report && !store.subscriptionActive && !store.oraclePurchased" class="upsell-section upsell-section--sub">
       <div class="editorial-rule" />
       <div class="upsell-section__inner">
         <div class="upsell-section__header-row">
           <div>
-            <p class="label-caps upsell-section__eyebrow">Daily</p>
-            <h3 class="upsell-section__heading font-serif-italic">Personal Daily Horoscope</h3>
-            <p class="annotation upsell-section__sub">Your natal chart read every morning</p>
+            <p class="label-caps upsell-section__eyebrow">Daily forecast</p>
+            <h3 class="upsell-section__heading font-serif-italic">Tomorrow, for {{ store.report.archetypeName }}</h3>
+            <p class="annotation upsell-section__sub">Your natal chart, read every morning at 6am</p>
           </div>
-          <span class="upsell-section__price font-serif">$6.99<span class="upsell-section__price-period">/mo</span></span>
+          <div class="upsell-section__price-block">
+            <p class="annotation upsell-section__trial-label">Free 7 days, then</p>
+            <span class="upsell-section__price font-serif">$6.99<span class="upsell-section__price-period">/mo</span></span>
+          </div>
         </div>
-        <p class="upsell-section__hook font-serif-italic">Everything in your report — delivered fresh every single day, tailored to your chart.</p>
         <div class="upsell-features">
-          <p class="annotation upsell-feature">✦ Personal daily horoscope — Love, Work &amp; Health</p>
-          <p class="annotation upsell-feature">✦ Based on real planetary positions through your natal chart</p>
-          <p class="annotation upsell-feature">✦ Delivered to your inbox every morning — no app needed</p>
-          <p class="annotation upsell-feature">✦ Delivered every morning at 7am</p>
+          <p class="annotation upsell-feature">✦ Tailored to your {{ store.report.archetypeName }} archetype</p>
+          <p class="annotation upsell-feature">✦ Delivered each morning, written by your stars</p>
+          <p class="annotation upsell-feature">✦ Cancel anytime — keep your reading</p>
         </div>
-        <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription">
-          {{ isStartingSub ? 'Loading...' : 'Start My Personal Horoscope →' }}
+        <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription('end_content')">
+          {{ isStartingSub ? 'Loading...' : 'Start my 7-day free trial' }}
         </button>
-        <p class="annotation upsell-section__note">Cancel anytime · No commitment</p>
+        <p class="annotation upsell-section__note">Cancel anytime · No charge until day 8 · Your card stays secure with Stripe</p>
       </div>
       <div class="editorial-rule" />
     </section>
@@ -661,7 +684,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import { useAuth } from '~/composables/useAuth'
 import { useLanguage } from '~/composables/useLanguage'
@@ -1449,9 +1472,10 @@ async function buyBirthChart() {
 
 const isStartingSub = ref(false)
 
-async function startSubscription() {
+async function startSubscription(placement: 'mid_content' | 'end_content' = 'end_content') {
   if (isStartingSub.value) return
   isStartingSub.value = true
+  $trackUpsellAccepted({ type: 'subscription', placement, price: 6.99, archetype: store.archetype, language: store.language })
   try {
     const { url } = await $fetch<{ sessionId: string; url: string | null }>('/api/create-subscription', {
       method: 'POST',
@@ -1469,6 +1493,22 @@ async function startSubscription() {
     isStartingSub.value = false
   }
 }
+
+watch(isLoadingReport, (loading) => {
+  if (loading) return
+  if (!store.report || store.subscriptionActive || store.oraclePurchased) return
+  const sessionKey = store.reportSessionId || store.tempId || 'anon'
+  const midKey = `omenora_sub_viewed_mid_${sessionKey}`
+  if (!sessionStorage.getItem(midKey)) {
+    sessionStorage.setItem(midKey, '1')
+    $trackUpsellViewed({ type: 'subscription', placement: 'mid_content', archetype: store.archetype, language: store.language })
+  }
+  const endKey = `omenora_sub_viewed_end_${sessionKey}`
+  if (!sessionStorage.getItem(endKey)) {
+    sessionStorage.setItem(endKey, '1')
+    $trackUpsellViewed({ type: 'subscription', placement: 'end_content', archetype: store.archetype, language: store.language })
+  }
+})
 
 // ── Tradition Switcher ────────────────────────────────────────────────────
 
@@ -2976,6 +3016,29 @@ async function downloadReportPDF() {
 .upsell-section__note {
   margin: 0;
   text-align: center;
+}
+
+.upsell-section__price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.upsell-section__trial-label {
+  margin: 0;
+  color: var(--color-gold);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.upsell-section--inline {
+  padding-bottom: 0;
+}
+
+.upsell-section--inline .upsell-section__inner {
+  gap: 12px;
 }
 
 .upsell-items {
