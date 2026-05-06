@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { Report } from '../stores/analysisStore';
+import type { Report } from '../stores/profileStore';
 
 // Types
 export interface GenerateReportRequest {

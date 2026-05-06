@@ -10,10 +10,10 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ReportScreenProps } from '../navigation/types';
-import { useAnalysisStore } from '../stores/analysisStore';
+import { useProfileStore } from '../stores/profileStore';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
-import { ScreenHeader, GhostBadge, TraitPill, InfoBanner, SectionBlock, LabelCaps } from '../components/ui';
+import { ScreenHeader, GhostBadge, TraitPill, SectionBlock, LabelCaps } from '../components/ui';
 
 // Screen-internal color constant
 const ARCHETYPE_META_COLOR = 'rgba(140, 110, 255, 0.55)';
@@ -39,7 +39,7 @@ const SECTION_ICONS: Record<string, string> = {
 };
 
 export const ReportScreen: React.FC<ReportScreenProps> = ({ navigation }) => {
-  const store = useAnalysisStore();
+  const store = useProfileStore();
   const report = store.report;
 
   const handleShare = async () => {
@@ -93,15 +93,6 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({ navigation }) => {
             </View>
           </View>
 
-          {(store.bundlePurchased || store.oraclePurchased) && (
-            <InfoBanner
-              icon="✦"
-              title={store.oraclePurchased ? 'Full Oracle unlocked' : 'Bundle unlocked'}
-              body={store.oraclePurchased
-                ? 'Calendar · Compatibility · Birth Chart · 30 Daily Insights — all included'
-                : 'Calendar · Compatibility Reading — included in your bundle'}
-            />
-          )}
 
           {SECTION_ORDER.map((key, idx) => {
             const section = report.sections[key];

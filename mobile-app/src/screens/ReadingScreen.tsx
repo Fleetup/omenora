@@ -8,23 +8,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ReadingScreenProps } from '../navigation/types';
-import { useAnalysisStore } from '../stores/analysisStore';
+import { useProfileStore } from '../stores/profileStore';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { LabelCaps, AnnotationText, ShortRule, CTAButton, PhoenixLoader } from '../components/ui';
 
 // Screen-internal color constants
-const CARD_BG_ACTIVE   = 'rgba(201, 169, 97, 0.06)';
-const CARD_BORDER_ACTIVE = 'rgba(201, 169, 97, 0.22)';
 const CARD_BG_EMPTY    = colors.surface;
 const CARD_BORDER_EMPTY = colors.inkGhost;
 const ARCHETYPE_COLOR  = 'rgba(201, 169, 97, 0.88)';
 const HINT_COLOR = 'rgba(140, 110, 255, 0.65)';
 
 export const ReadingScreen: React.FC<ReadingScreenProps> = ({ navigation }) => {
-  const { firstName, archetype, reportId, report, paymentComplete } = useAnalysisStore();
+  const { firstName, reportId } = useProfileStore();
 
-  const hasReport    = Boolean(paymentComplete && report);
   const hasStarted   = Boolean(firstName && !reportId);
   const isNew        = !firstName;
 
@@ -40,29 +37,11 @@ export const ReadingScreen: React.FC<ReadingScreenProps> = ({ navigation }) => {
         </View>
 
         <Text style={styles.heading}>
-          {hasReport ? 'Your chart is ready.' : 'Begin your destiny analysis.'}
+          Begin your destiny analysis.
         </Text>
         <ShortRule style={styles.rule} />
 
         {/* ── State card ───────────────────────────────────────────────── */}
-        {hasReport && (
-          <View style={[styles.card, { backgroundColor: CARD_BG_ACTIVE, borderColor: CARD_BORDER_ACTIVE }]}>
-            <AnnotationText style={styles.cardEyebrow}>Your Archetype</AnnotationText>
-            <Text style={styles.archetypeName}>{archetype ?? 'Your Reading'}</Text>
-            {firstName ? (
-              <Text style={styles.cardSub}>Reading prepared for {firstName}</Text>
-            ) : null}
-            <CTAButton
-              label="View full reading"
-              onPress={() => navigation.navigate('Report', { reportId: reportId! })}
-              variant="solid"
-              arrow
-              full
-              style={styles.cardCta}
-            />
-          </View>
-        )}
-
         {hasStarted && (
           <View style={[styles.card, { backgroundColor: CARD_BG_EMPTY, borderColor: CARD_BORDER_EMPTY }]}>
             <AnnotationText style={styles.cardEyebrow}>In Progress</AnnotationText>
@@ -100,28 +79,26 @@ export const ReadingScreen: React.FC<ReadingScreenProps> = ({ navigation }) => {
           </View>
         )}
 
-        {/* ── What's included ──────────────────────────────────────────── */}
-        {!hasReport && (
-          <View style={styles.includes}>
-            <LabelCaps style={styles.includesLabel}>What's included</LabelCaps>
-            {[
-              'Archetype identity & element',
-              'Power traits from 6 traditions',
-              'Life path & purpose section',
-              'Love & relationship forecast',
-              'Cosmic gift & shadow side',
-              'Daily affirmation',
-            ].map((item) => (
-              <View key={item} style={styles.includeRow}>
-                <Text style={styles.includeDot}>◉</Text>
-                <Text style={styles.includeText}>{item}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+        {/* ── What's included ────────────────────────────────────────────── */}
+        <View style={styles.includes}>
+          <LabelCaps style={styles.includesLabel}>What's included</LabelCaps>
+          {[
+            'Archetype identity & element',
+            'Power traits from 6 traditions',
+            'Life path & purpose section',
+            'Love & relationship forecast',
+            'Cosmic gift & shadow side',
+            'Daily affirmation',
+          ].map((item) => (
+            <View key={item} style={styles.includeRow}>
+              <Text style={styles.includeDot}>◉</Text>
+              <Text style={styles.includeText}>{item}</Text>
+            </View>
+          ))}
+        </View>
 
         {/* ── Start fresh ──────────────────────────────────────────────── */}
-        {(hasReport || hasStarted) && (
+        {hasStarted && (
           <TouchableOpacity
             style={styles.resetRow}
             onPress={() => navigation.navigate('Analysis')}

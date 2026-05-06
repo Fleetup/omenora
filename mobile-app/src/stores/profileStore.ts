@@ -24,55 +24,45 @@ export interface Report {
   };
 }
 
-export interface AnalysisState {
+export interface ProfileState {
   // User Input
   firstName: string;
   dateOfBirth: string;
   timeOfBirth: string;
   city: string;
-  email: string;
-  
+
   // Answers to personality questions
   answers: Record<string, string>;
-  
+
   // Calculated Results
   lifePathNumber: number | null;
   archetype: string | null;
   reportId: string | null;
   report: Report | null;
-  tempId: string;
-  
+  anonymousUserId: string;
+
   // Region
   regionOverride: string | null;
   languageOverride: string | null;
-  
-  // Purchase states
-  paymentComplete: boolean;
-  bundlePurchased: boolean;
-  oraclePurchased: boolean;
-  
+
   // Actions
   setFirstName: (name: string) => void;
   setDateOfBirth: (date: string) => void;
   setTimeOfBirth: (time: string) => void;
   setCity: (city: string) => void;
-  setEmail: (email: string) => void;
   setAnswer: (questionId: string, value: string) => void;
   setLifePathNumber: (number: number) => void;
   setArchetype: (archetype: string) => void;
   setReportId: (id: string) => void;
   setReport: (report: Report) => void;
-  setTempId: (id: string) => void;
+  setAnonymousUserId: (id: string) => void;
   setRegionOverride: (region: string) => void;
   setLanguageOverride: (lang: string) => void;
-  setPaymentComplete: (complete: boolean) => void;
-  setBundlePurchased: (purchased: boolean) => void;
-  setOraclePurchased: (purchased: boolean) => void;
-  
+
   // Reset
   resetAnalysis: () => void;
   resetAll: () => void;
-  
+
   // Initialize
   initialize: () => Promise<void>;
 }
@@ -82,49 +72,40 @@ const initialState = {
   dateOfBirth: '',
   timeOfBirth: '',
   city: '',
-  email: '',
   answers: {},
   lifePathNumber: null,
   archetype: null,
   reportId: null,
   report: null,
-  tempId: '',
+  anonymousUserId: '',
   regionOverride: null,
   languageOverride: null,
-  paymentComplete: false,
-  bundlePurchased: false,
-  oraclePurchased: false,
 };
 
-export const useAnalysisStore = create<AnalysisState>()(
+export const useProfileStore = create<ProfileState>()(
   persist(
     (set) => ({
       ...initialState,
-      
+
       setFirstName: (firstName) => set({ firstName }),
       setDateOfBirth: (dateOfBirth) => set({ dateOfBirth }),
       setTimeOfBirth: (timeOfBirth) => set({ timeOfBirth }),
       setCity: (city) => set({ city }),
-      setEmail: (email) => set({ email }),
-      
+
       setAnswer: (questionId, value) =>
         set((state) => ({
           answers: { ...state.answers, [questionId]: value },
         })),
-      
+
       setLifePathNumber: (lifePathNumber) => set({ lifePathNumber }),
       setArchetype: (archetype) => set({ archetype }),
       setReportId: (reportId) => set({ reportId }),
       setReport: (report) => set({ report }),
-      setTempId: (tempId) => set({ tempId }),
-      
+      setAnonymousUserId: (anonymousUserId) => set({ anonymousUserId }),
+
       setRegionOverride: (regionOverride) => set({ regionOverride }),
       setLanguageOverride: (languageOverride) => set({ languageOverride }),
-      
-      setPaymentComplete: (paymentComplete) => set({ paymentComplete }),
-      setBundlePurchased: (bundlePurchased) => set({ bundlePurchased }),
-      setOraclePurchased: (oraclePurchased) => set({ oraclePurchased }),
-      
+
       resetAnalysis: () =>
         set({
           answers: {},
@@ -132,14 +113,11 @@ export const useAnalysisStore = create<AnalysisState>()(
           archetype: null,
           reportId: null,
           report: null,
-          tempId: '',
-          paymentComplete: false,
-          bundlePurchased: false,
-          oraclePurchased: false,
+          anonymousUserId: '',
         }),
-      
+
       resetAll: () => set(initialState),
-      
+
       initialize: async () => {
         // Any async initialization logic
         // Store is automatically hydrated by persist middleware
@@ -153,17 +131,13 @@ export const useAnalysisStore = create<AnalysisState>()(
         dateOfBirth: state.dateOfBirth,
         timeOfBirth: state.timeOfBirth,
         city: state.city,
-        email: state.email,
         lifePathNumber: state.lifePathNumber,
         archetype: state.archetype,
         reportId: state.reportId,
         report: state.report,
-        tempId: state.tempId,
+        anonymousUserId: state.anonymousUserId,
         regionOverride: state.regionOverride,
         languageOverride: state.languageOverride,
-        paymentComplete: state.paymentComplete,
-        bundlePurchased: state.bundlePurchased,
-        oraclePurchased: state.oraclePurchased,
       }),
     }
   )

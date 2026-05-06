@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoreScreenProps } from '../navigation/types';
-import { useAnalysisStore } from '../stores/analysisStore';
+import { useProfileStore } from '../stores/profileStore';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { LabelCaps, ShortRule, AnnotationText } from '../components/ui';
@@ -28,12 +28,7 @@ type MenuItem = {
 };
 
 export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
-  const { firstName, bundlePurchased, oraclePurchased } = useAnalysisStore();
-
-  const planLabel =
-    oraclePurchased  ? 'Oracle Plan'  :
-    bundlePurchased  ? 'Bundle Plan'  :
-                       'Free';
+  const { firstName } = useProfileStore();
 
   const menuItems: MenuItem[] = [
     {
@@ -66,13 +61,11 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
           <View style={styles.planRow}>
             <View>
               <AnnotationText style={styles.planEyebrow}>Current Plan</AnnotationText>
-              <Text style={styles.planName}>{planLabel}</Text>
+              <Text style={styles.planName}>Free</Text>
             </View>
-            {planLabel === 'Free' && (
-              <View style={[styles.freeBadge, { backgroundColor: BADGE_FREE_BG, borderColor: BADGE_FREE_BORDER }]}>
-                <Text style={styles.freeBadgeText}>FREE</Text>
-              </View>
-            )}
+            <View style={[styles.freeBadge, { backgroundColor: BADGE_FREE_BG, borderColor: BADGE_FREE_BORDER }]}>
+              <Text style={styles.freeBadgeText}>FREE</Text>
+            </View>
           </View>
         </View>
 

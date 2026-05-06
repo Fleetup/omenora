@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { AnalysisScreenProps } from '../navigation/types';
-import { useAnalysisStore } from '../stores/analysisStore';
+import { useProfileStore } from '../stores/profileStore';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { QUESTIONS, LANGUAGES, REGION_OPTIONS } from '../constants/questions';
@@ -77,7 +77,7 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
     setAnswer,
     setRegionOverride,
     setLanguageOverride,
-  } = useAnalysisStore();
+  } = useProfileStore();
 
   // ── Computed DOB / time ───────────────────────────────────────────────────
   const computedDateOfBirth = React.useMemo(() => {
