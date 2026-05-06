@@ -5,11 +5,10 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CompatibilityScreenProps } from '../navigation/types';
-import { useAnalysisStore } from '../stores/analysisStore';
+import { useProfileStore } from '../stores/profileStore';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { ScreenHeader, GhostBadge, FeatureListItem } from '../components/ui';
@@ -28,8 +27,7 @@ const SIGN_PAIRS = [
 ];
 
 export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ navigation }) => {
-  const store = useAnalysisStore();
-  const hasAccess = store.bundlePurchased || store.oraclePurchased;
+  const store = useProfileStore();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,7 +36,7 @@ export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ naviga
 
           <ScreenHeader
             onBack={() => navigation.goBack()}
-            right={<GhostBadge label={hasAccess ? '✦ INCLUDED' : '🔒 LOCKED'} variant={hasAccess ? 'purple' : 'ghost'} />}
+            right={<GhostBadge label="🔒 LOCKED" variant="ghost" />}
           />
 
           <Text style={styles.eyebrow}>LOVE COMPATIBILITY READING</Text>
@@ -55,37 +53,24 @@ export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ naviga
               <Text style={styles.matchHeaderText}>ARCHETYPE COMPATIBILITY MAP</Text>
             </View>
             {SIGN_PAIRS.map((pair, i) => (
-              <View key={i} style={[styles.matchRow, hasAccess ? null : styles.matchRowLocked]}>
+              <View key={i} style={[styles.matchRow, styles.matchRowLocked]}>
                 <Text style={styles.matchElement}>{pair.a}</Text>
                 <View style={styles.matchBarWrap}>
-                  <View style={[styles.matchBar, { width: `${pair.pct}%`, opacity: hasAccess ? 1 : 0.2 }]} />
-                  <Text style={[styles.matchPct, hasAccess ? null : { opacity: 0 }]}>{pair.pct}%</Text>
+                  <View style={[styles.matchBar, { width: `${pair.pct}%`, opacity: 0.2 }]} />
+                  <Text style={[styles.matchPct, { opacity: 0 }]}>{pair.pct}%</Text>
                 </View>
-                <Text style={[styles.matchLabel, hasAccess ? null : { opacity: 0.15 }]}>{pair.label}</Text>
+                <Text style={[styles.matchLabel, { opacity: 0.15 }]}>{pair.label}</Text>
               </View>
             ))}
-            {!hasAccess && (
-              <LinearGradient
-                colors={LOCKED_FADE}
-                style={styles.matchFade}
-                pointerEvents="none"
-              />
-            )}
+            <LinearGradient
+              colors={LOCKED_FADE}
+              style={styles.matchFade}
+              pointerEvents="none"
+            />
           </View>
 
-          {hasAccess ? (
-            <View style={styles.purchasedBox}>
-              <Text style={styles.purchasedIcon}>♥</Text>
-              <Text style={styles.purchasedTitle}>Your Compatibility Reading is Ready</Text>
-              <Text style={styles.purchasedDesc}>
-                Your personalized love compatibility analysis — including your most compatible archetypes, relationship patterns, and timing for romance — has been sent to your email.
-              </Text>
-              <TouchableOpacity style={styles.reportBtn} onPress={() => navigation.navigate('Report')}>
-                <Text style={styles.reportBtnText}>← Back to Your Report</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.upgradeBox}>
+          {/* ── Upgrade state ── */}
+          <View style={styles.upgradeBox}>
               <Text style={styles.upgradeTitle}>Unlock Your Love Reading</Text>
               <Text style={styles.upgradeDesc}>
                 Discover which archetypes align with yours, your romantic patterns, and the exact timing windows for meaningful connections in 2026.
@@ -100,12 +85,8 @@ export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ naviga
                   <FeatureListItem key={f} label={f} icon="♥" />
                 ))}
               </View>
-              <TouchableOpacity style={styles.upgradeBtn} onPress={() => navigation.navigate('Preview')} activeOpacity={0.75}>
-                <Text style={styles.upgradeBtnText}>Unlock with Bundle — $4.99  ✦</Text>
-              </TouchableOpacity>
               <Text style={styles.upgradeNote}>Also included in Full Oracle · $12.99</Text>
             </View>
-          )}
         </ScrollView>
       </LinearGradient>
     </SafeAreaView>

@@ -13,12 +13,10 @@ import {
   Dimensions,
 } from 'react-native';
 import { AnalysisScreenProps } from '../navigation/types';
-import { useAnalysisStore } from '../stores/analysisStore';
+import { useProfileStore } from '../stores/profileStore';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { QUESTIONS, LANGUAGES, REGION_OPTIONS } from '../constants/questions';
-import { calculateLifePathNumber } from '../utils/lifePathNumber';
-import { assignArchetype } from '../utils/archetypes';
 import {
   CTAButton,
   EditorialRule,
@@ -70,7 +68,6 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
     firstName,
     city,
     answers,
-    dateOfBirth,
     regionOverride,
     languageOverride,
     setFirstName,
@@ -80,9 +77,7 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
     setAnswer,
     setRegionOverride,
     setLanguageOverride,
-    setLifePathNumber,
-    setArchetype,
-  } = useAnalysisStore();
+  } = useProfileStore();
 
   // ── Computed DOB / time ───────────────────────────────────────────────────
   const computedDateOfBirth = React.useMemo(() => {
@@ -110,8 +105,6 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
   }, [computedTimeOfBirth]);
 
   const isStep1Valid       = firstName.length > 0 && computedDateOfBirth.length > 0 && city.length > 0;
-  const allQuestionsAnswered = QUESTIONS.every(q => answers[q.id]);
-
   // ── Input handlers ────────────────────────────────────────────────────────
   const onDayInput = (text: string) => {
     const cleaned = text.replace(/\D/g, '').slice(0, 2);
@@ -158,15 +151,6 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
   };
 
   const continueToStep2 = () => { if (isStep1Valid) setCurrentStep(2); };
-
-  const submitAnalysis = () => {
-    if (!allQuestionsAnswered) return;
-    const lpn = calculateLifePathNumber(dateOfBirth);
-    const archetype = assignArchetype(answers);
-    setLifePathNumber(lpn);
-    setArchetype(archetype);
-    navigation.navigate('Preview');
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -419,16 +403,6 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation }) =>
                 </View>
               ))}
 
-              {/* ── Submit CTA ─────────────────────────────────────────────── */}
-              <CTAButton
-                label="Reveal my destiny"
-                onPress={submitAnalysis}
-                variant="solid"
-                arrow
-                full
-                disabled={!allQuestionsAnswered}
-                style={styles.ctaBtn}
-              />
             </>
           )}
 

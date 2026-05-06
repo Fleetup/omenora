@@ -40,8 +40,6 @@ export const colors = {
   // ── Gradients ─────────────────────────────────────────────────────────────
   gradients: {
     cosmic:     ['#050410', '#050410'] as const,
-    primary:    ['rgba(140, 110, 255, 0.88)', 'rgba(140, 110, 255, 1)'] as const,    // legacy — remove on PreviewScreen redesign
-    goldPurple: ['rgba(140, 110, 255, 0.55)', 'rgba(201, 168, 76, 0.55)'] as const, // legacy — remove on screen redesign
   },
 } as const;
 

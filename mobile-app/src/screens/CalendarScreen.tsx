@@ -5,11 +5,10 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CalendarScreenProps } from '../navigation/types';
-import { useAnalysisStore } from '../stores/analysisStore';
+import { useProfileStore } from '../stores/profileStore';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { ScreenHeader, GhostBadge, FeatureListItem } from '../components/ui';
@@ -24,8 +23,7 @@ const PREVIEW_BARS = [0.72, 0.45, 0.88, 0.55, 0.94, 0.63, 0.81, 0.5, 0.76, 0.42,
 const LABELS = ['Peak', 'Rest', 'Peak', 'Build', 'Peak', 'Build', 'High', 'Rest', 'High', 'Rest', 'Peak', 'High'];
 
 export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) => {
-  const store = useAnalysisStore();
-  const hasAccess = store.bundlePurchased || store.oraclePurchased;
+  const store = useProfileStore();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -34,7 +32,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
 
           <ScreenHeader
             onBack={() => navigation.goBack()}
-            right={<GhostBadge label={hasAccess ? '✦ INCLUDED' : '🔒 LOCKED'} variant={hasAccess ? 'purple' : 'ghost'} />}
+            right={<GhostBadge label="🔒 LOCKED" variant="ghost" />}
           />
 
           {/* Eyebrow */}
@@ -50,36 +48,21 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
               <View key={month} style={styles.calRow}>
                 <Text style={styles.calMonth}>{month}</Text>
                 <View style={styles.calBarTrack}>
-                  <View style={[styles.calBar, { width: `${PREVIEW_BARS[i] * 100}%`, opacity: hasAccess ? 1 : 0.3 }]} />
+                  <View style={[styles.calBar, { width: `${PREVIEW_BARS[i] * 100}%`, opacity: 0.3 }]} />
                 </View>
-                <Text style={[styles.calLabel, hasAccess ? null : styles.calLabelLocked]}>{LABELS[i]}</Text>
+                <Text style={[styles.calLabel, styles.calLabelLocked]}>{LABELS[i]}</Text>
               </View>
             ))}
 
-            {!hasAccess && (
-              <LinearGradient
-                colors={LOCKED_FADE}
-                style={styles.calFade}
-                pointerEvents="none"
-              />
-            )}
+            <LinearGradient
+              colors={LOCKED_FADE}
+              style={styles.calFade}
+              pointerEvents="none"
+            />
           </View>
 
-          {hasAccess ? (
-            /* ── Purchased state ── */
-            <View style={styles.purchasedBox}>
-              <Text style={styles.purchasedIcon}>✦</Text>
-              <Text style={styles.purchasedTitle}>Your Calendar is Being Prepared</Text>
-              <Text style={styles.purchasedDesc}>
-                Your full 12-month lucky timing forecast for 2026 — including optimal windows for love, career, and finances — has been sent to your email. Check your inbox.
-              </Text>
-              <TouchableOpacity style={styles.reportBtn} onPress={() => navigation.navigate('Report')}>
-                <Text style={styles.reportBtnText}>← Back to Your Report</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            /* ── Upgrade state ── */
-            <View style={styles.upgradeBox}>
+          {/* ── Upgrade state ── */}
+          <View style={styles.upgradeBox}>
               <Text style={styles.upgradeTitle}>Unlock Your 2026 Calendar</Text>
               <Text style={styles.upgradeDesc}>
                 Month-by-month lucky windows personalized to your archetype, life path, and birth city — for love, money, decisions, and rest.
@@ -89,12 +72,8 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
                   <FeatureListItem key={f} label={f} />
                 ))}
               </View>
-              <TouchableOpacity style={styles.upgradeBtn} onPress={() => navigation.navigate('Preview')} activeOpacity={0.75}>
-                <Text style={styles.upgradeBtnText}>Unlock with Bundle — $4.99  ✦</Text>
-              </TouchableOpacity>
               <Text style={styles.upgradeNote}>Also included in Full Oracle · $12.99</Text>
             </View>
-          )}
         </ScrollView>
       </LinearGradient>
     </SafeAreaView>

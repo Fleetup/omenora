@@ -7,11 +7,9 @@ import { TabNavigator } from './TabNavigator';
 
 // Stack-only screens (appear above the tab bar)
 import { AnalysisScreen } from '../screens/AnalysisScreen';
-import { PreviewScreen } from '../screens/PreviewScreen';
 import { ReportScreen } from '../screens/ReportScreen';
 import { CalendarScreen } from '../screens/CalendarScreen';
 import { CompatibilityScreen } from '../screens/CompatibilityScreen';
-import { SubscriptionScreen } from '../screens/SubscriptionScreen';
 import { PrivacyScreen } from '../screens/PrivacyScreen';
 import { TermsScreen } from '../screens/TermsScreen';
 
@@ -30,11 +28,9 @@ export const RootNavigator: React.FC = () => (
   >
     <Stack.Screen name="MainTabs"      component={TabNavigator}        options={{ animation: 'none' }} />
     <Stack.Screen name="Analysis"      component={AnalysisScreen} />
-    <Stack.Screen name="Preview"       component={PreviewScreen} />
     <Stack.Screen name="Report"        component={ReportScreen} />
     <Stack.Screen name="Calendar"      component={CalendarScreen} />
     <Stack.Screen name="Compatibility" component={CompatibilityScreen} />
-    <Stack.Screen name="Subscription"  component={SubscriptionScreen} />
     <Stack.Screen name="Privacy"       component={PrivacyScreen} />
     <Stack.Screen name="Terms"         component={TermsScreen} />
   </Stack.Navigator>
