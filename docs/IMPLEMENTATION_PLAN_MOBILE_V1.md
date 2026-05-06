@@ -71,15 +71,15 @@ These must be completed first. They are not code tasks.
 
 | # | Task | Blocking |
 |---|---|---|
-| P1 | **Apple Developer**: Enable "Sign in with Apple" capability, create Service ID, lock Team ID | Phase 0.5 |
-| P2 | **Google Cloud**: Create project, OAuth consent screen, 3 Client IDs (Web, iOS, Android) | Phase 0.5 |
-| P3 | **Supabase**: Enable Apple + Google + Email providers; configure Resend SMTP for magic links | Phase 0.5 |
-| P4 | **Resend**: Create SMTP credentials; add domain `omenora.com`; verify DNS | Phase 0.5 |
-| P5 | **App Store Connect**: Create app record, create products: `omenora_monthly`, `omenora_annual`, `omenora_calendar_2026` | Phase 1 |
-| P6 | **Google Play Console**: Create app record, complete identity verification (2-7 days), create matching products | Phase 1 |
-| P7 | **RevenueCat**: Create project, connect App Store + Play Console, create entitlements, offerings, placements, paywalls, webhook | Phase 1 |
-| P8 | **EAS Project**: Run `eas init` in `/mobile-app`, replace `[YOUR_EAS_PROJECT_ID]` in `app.json` | Phase 0 |
-| P9 | **Apple Small Business Program**: Enroll at appleid.apple.com (15% vs 30% commission — do not skip) | Before launch |
+| P1 | **Apple Developer**: Enable "Sign in with Apple" capability, create Service ID, lock Team ID | Phase 0.5 | ✅ Done |
+| P2 | **Google Cloud**: Create project, OAuth consent screen, 3 Client IDs (Web, iOS, Android) | Phase 0.5 | ✅ Web + iOS done · Android deferred |
+| P3 | **Supabase**: Enable Apple + Google + Email providers; configure Resend SMTP for magic links | Phase 0.5 | ✅ Done (Option B — no SMTP; reuses web endpoint) |
+| P4 | **Resend**: Create SMTP credentials; add domain `omenora.com`; verify DNS | Phase 0.5 | ✅ Collapsed — Option B uses existing `/api/auth/request-magic-link` |
+| P5 | **App Store Connect**: Create app record, create products: `omenora_monthly`, `omenora_annual`, `omenora_calendar_2026` | Phase 1 | ⏳ Waits for D-U-N-S + identity |
+| P6 | **Google Play Console**: Create app record, complete identity verification (2-7 days), create matching products | Phase 1 | ⏳ Identity verified · Android device verification in progress |
+| P7 | **RevenueCat**: Create project, connect App Store + Play Console, create entitlements, offerings, placements, paywalls, webhook | Phase 1 | ⏳ Depends on P5/P6 products |
+| P8 | **EAS Project**: Run `eas init` in `/mobile-app`, replace `[YOUR_EAS_PROJECT_ID]` in `app.json` | Phase 0 | ✅ Done · projectId: `8f7dfec9-fd02-4ed9-85b9-8cdbeba7c6d3` |
+| P9 | **Apple Small Business Program**: Enroll at appleid.apple.com (15% vs 30% commission — do not skip) | Before launch | ⏳ Anytime before launch |
 | P10 | **Sentry**: Create project, get DSN for iOS + Android | Phase DS |
 | P11 | **PostHog**: Create project, get API key | Phase DS |
 
@@ -157,7 +157,7 @@ Issues found during codebase analysis that would cause failures if not addressed
 | G8 | `daily_zodiac_cache` table referenced by Today tab — existence in Supabase unverified | Backend/Supabase | Verify before Phase 3; create migration if missing |
 | G9 | `transfer_anonymous_to_permanent(old_id, new_id)` RPC does not exist on backend | Railway backend | Phase 0.5: build on backend |
 | G10 | New auth-gated backend endpoints (`/api/reports/archetype`, `/api/counsel/message`, etc.) do not exist | Railway backend | Phase 1: build on backend |
-| G11 | `eas.json` submit config has `[YOUR_APPLE_APP_ID]` placeholders; EAS project not initialized | `eas.json`, `app.json` | Prerequisite P8 |
+| G11 | `eas.json` submit config has `[YOUR_APPLE_APP_ID]` placeholders; EAS project not initialized | `eas.json`, `app.json` | ✅ Resolved — P8 complete; `eas.json` submit placeholders remain (Apple App ID, ASC key) — fill when P5 done |
 | G12 | `app.json` `scheme: "omenora"` is currently wired to Stripe deep-link — must be preserved for Supabase auth callback on magic link | `app.json` | No change to scheme, but remove old Linking handler in `App.tsx` |
 | G13 | 3 fonts (Cormorant Garamond, Playfair Display, Inter) loaded in `App.tsx` + defined in `fonts.ts` — wasteful bundle weight | `App.tsx`, `src/theme/fonts.ts`, `package.json` | Phase DS: remove |
 | G14 | `OrbitalMark` component used in `HomeScreen.tsx` but NOT present in `src/components/ui/` listing — possible uncommitted or in wrong location | `src/screens/HomeScreen.tsx` | Phase 0: verify; create if missing |
@@ -2821,3 +2821,55 @@ These are post-launch phases. No implementation steps defined here. For full dec
 | Counsel positioning | Supporting feature | Headline differentiator | 7-day conversion + Counsel usage |
 
 > Prerequisite: Sentry + PostHog event data from minimum 500 users required for A/B statistical significance.
+
+---
+
+## Session Log
+
+### Session — 2026-05-06
+
+#### P3 — Step 4: Redirect URL allowlist
+
+`omenora://**` added to Supabase Auth → URL Configuration → Redirect URLs. Total URLs: 3 ✓. Toast confirmed "Successfully added 1 URL."
+
+#### P3 — Step 5: Final Sanity Check
+
+| Item | Required value | Status |
+|---|---|---|
+| Allow anonymous sign-ins | ON | ✅ |
+| Apple provider | Enabled | ✅ |
+| Apple Client IDs | `com.omenora.app,com.omenora.app.signin` | ✅ |
+| Apple Secret Key | empty (native-only) | ✅ |
+| Google provider | Enabled | ✅ |
+| Google Client IDs | Web ID + iOS ID | ✅ |
+| Google Client Secret | Web Secret | ✅ |
+| Email provider | Enabled (existing, untouched) | ✅ |
+| Site URL | `https://omenora.com` | ✅ |
+| Redirect URLs | `omenora://**` added | ✅ |
+
+**P3 complete.**
+
+#### Prerequisites — final state after this session
+
+| | Task | Status |
+|---|---|---|
+| **P8** | EAS init | ✅ projectId `8f7dfec9-fd02-4ed9-85b9-8cdbeba7c6d3` set in `app.json`; CLI constraint bumped to `>=18.0.0` |
+| **P1** | Apple Developer | ✅ Team ID, Bundle ID, Services ID, Sign-In Key all configured |
+| **P2** | Google Cloud OAuth | ✅ Web + iOS clients done · Android deferred |
+| **P4** | Resend SMTP | ✅ Collapsed — Option B uses existing web endpoint; no mobile-specific SMTP needed |
+| **P3** | Supabase Auth providers | ✅ Anonymous on, Apple + Google providers configured, redirect URL allowlist updated |
+| **P5** | App Store Connect | ⏳ Waits for D-U-N-S decision + identity |
+| **P6** | Google Play Console | ⏳ Identity verified · Android device verification still pending |
+| **P7** | RevenueCat | ⏳ Depends on P5/P6 products |
+| **P9** | Apple Small Business Program | ⏳ Anytime before launch |
+
+#### What we did this session
+
+- Cleared **P8**: `eas init` — bumped CLI constraint to `>=18.0.0`, linked project `8f7dfec9`, set `projectId` + `updates.url` in `app.json`
+- Cleared **P1**: Apple Developer — Team ID, Bundle ID, Services ID (`com.omenora.app.signin`), Sign-In Key
+- Cleared **P2**: Google Cloud — Web Client ID + iOS Client ID created; Android deferred
+- Identified **Option B** for magic link: mobile reuses web's `/api/auth/request-magic-link` — no Resend SMTP setup needed (P4 collapsed)
+- Cleared **P3**: anonymous sign-in on; Apple + Google providers configured; `omenora://**` added to redirect allowlist
+- Confirmed parallel work in progress: Google Play identity verification (P6), D-U-N-S (blocks P5)
+
+**Unblocked phases:** Phase 0 → DS → 0.5 → 2 → 3 → 4 → 6. P5 / P7 / P9 wait until closer to launch.
