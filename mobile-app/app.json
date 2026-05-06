@@ -100,12 +100,12 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "[YOUR_EAS_PROJECT_ID]"
+        "projectId": "8f7dfec9-fd02-4ed9-85b9-8cdbeba7c6d3"
       }
     },
-    "owner": "omenora",
+    "owner": "miroslavjokovic",
     "updates": {
-      "url": "https://u.expo.dev/[YOUR_EAS_PROJECT_ID]",
+      "url": "https://u.expo.dev/8f7dfec9-fd02-4ed9-85b9-8cdbeba7c6d3",
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
