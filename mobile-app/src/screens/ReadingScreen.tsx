@@ -25,7 +25,6 @@ export const ReadingScreen: React.FC<ReadingScreenProps> = ({ navigation }) => {
   const { firstName, archetype, reportId, report, paymentComplete } = useAnalysisStore();
 
   const hasReport    = Boolean(paymentComplete && report);
-  const hasUnlocked  = Boolean(reportId && !paymentComplete);
   const hasStarted   = Boolean(firstName && !reportId);
   const isNew        = !firstName;
 
@@ -56,22 +55,6 @@ export const ReadingScreen: React.FC<ReadingScreenProps> = ({ navigation }) => {
             <CTAButton
               label="View full reading"
               onPress={() => navigation.navigate('Report', { reportId: reportId! })}
-              variant="solid"
-              arrow
-              full
-              style={styles.cardCta}
-            />
-          </View>
-        )}
-
-        {hasUnlocked && (
-          <View style={[styles.card, { backgroundColor: CARD_BG_ACTIVE, borderColor: CARD_BORDER_ACTIVE }]}>
-            <AnnotationText style={styles.cardEyebrowHint}>Analysis Complete</AnnotationText>
-            <Text style={styles.cardHeadline}>Your reading is ready.</Text>
-            <Text style={styles.cardSub}>Unlock the full chart to reveal your archetype and destiny map.</Text>
-            <CTAButton
-              label="Unlock my reading"
-              onPress={() => navigation.navigate('Preview', { reportId: reportId ?? undefined })}
               variant="solid"
               arrow
               full
@@ -138,7 +121,7 @@ export const ReadingScreen: React.FC<ReadingScreenProps> = ({ navigation }) => {
         )}
 
         {/* ── Start fresh ──────────────────────────────────────────────── */}
-        {(hasReport || hasUnlocked || hasStarted) && (
+        {(hasReport || hasStarted) && (
           <TouchableOpacity
             style={styles.resetRow}
             onPress={() => navigation.navigate('Analysis')}

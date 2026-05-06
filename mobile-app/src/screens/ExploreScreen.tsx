@@ -96,9 +96,6 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({ navigation }) => (
         <Text style={styles.footerText}>
           Premium features require a bundle or oracle purchase.
         </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Subscription')}>
-          <Text style={styles.footerLink}>View plans →</Text>
-        </TouchableOpacity>
       </View>
 
     </ScrollView>

@@ -81,7 +81,6 @@ export default function App() {
         });
       }
     } catch {
-      // Silent — user can retry from PreviewScreen if needed
     }
   }, [store]);
 

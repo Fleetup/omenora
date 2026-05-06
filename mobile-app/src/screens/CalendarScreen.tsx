@@ -89,9 +89,6 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
                   <FeatureListItem key={f} label={f} />
                 ))}
               </View>
-              <TouchableOpacity style={styles.upgradeBtn} onPress={() => navigation.navigate('Preview')} activeOpacity={0.75}>
-                <Text style={styles.upgradeBtnText}>Unlock with Bundle — $4.99  ✦</Text>
-              </TouchableOpacity>
               <Text style={styles.upgradeNote}>Also included in Full Oracle · $12.99</Text>
             </View>
           )}

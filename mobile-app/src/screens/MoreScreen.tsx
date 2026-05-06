@@ -37,11 +37,6 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
 
   const menuItems: MenuItem[] = [
     {
-      label:   'Subscription Plans',
-      sub:     'Upgrade to unlock all features',
-      onPress: () => navigation.navigate('Subscription'),
-    },
-    {
       label:   'Privacy Policy',
       onPress: () => navigation.navigate('Privacy'),
     },
@@ -79,15 +74,6 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
               </View>
             )}
           </View>
-          {planLabel === 'Free' && (
-            <TouchableOpacity
-              style={styles.upgradeBtn}
-              onPress={() => navigation.navigate('Subscription')}
-              activeOpacity={0.75}
-            >
-              <Text style={styles.upgradeBtnText}>Upgrade plan →</Text>
-            </TouchableOpacity>
-          )}
         </View>
 
         {/* ── Menu items ─────────────────────────────────────────────── */}
