@@ -30,6 +30,7 @@ export default defineNuxtConfig({
     stripeWebhookSecret: '',
     resendWebhookSecret: '',
     redisUrl: '',
+    adminSecret: '',
     public: {
       stripePublishableKey: '',
       supabaseUrl: '',

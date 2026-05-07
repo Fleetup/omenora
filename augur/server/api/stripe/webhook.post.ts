@@ -238,6 +238,12 @@ export default defineEventHandler(async (event) => {
   const meta = session.metadata ?? {}
   const sessionId = session.id
 
+  // ── Admin self-payments — no fulfillment needed ───────────────────────────
+  if (meta.admin_payment === 'true') {
+    console.info('[stripe-webhook] Admin payment received — no fulfillment needed:', sessionId)
+    return { received: true, type: 'admin_payment' }
+  }
+
   // ── Suppress abandonment sequence immediately ──────────────────────────────
   const customerEmail = session.customer_email || meta.email || ''
   if (isValidEmail(customerEmail)) {
