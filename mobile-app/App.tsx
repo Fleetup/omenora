@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from './src/design/theme/ThemeProvider';
+import { AuthProvider } from './src/context/AuthProvider';
 import { RootNavigator, navigationRef } from './src/navigation/RootNavigator';
 import { useProfileStore } from './src/stores/profileStore';
 import {
@@ -84,10 +85,12 @@ export default function App() {
     <SafeAreaProvider onLayout={onLayoutRootView}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
-        <NavigationContainer ref={navigationRef}>
-          <RootNavigator />
-          <StatusBar style="light" />
-        </NavigationContainer>
+          <AuthProvider>
+            <NavigationContainer ref={navigationRef}>
+              <RootNavigator />
+              <StatusBar style="light" />
+            </NavigationContainer>
+          </AuthProvider>
         </ThemeProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
