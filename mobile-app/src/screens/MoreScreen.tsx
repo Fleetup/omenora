@@ -30,7 +30,7 @@ type MenuItem = {
 
 export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
   const { firstName } = useProfileStore();
-  const { showAuthGate } = useAuth();
+  const { showAuthGate, signOut, isAnonymous, user } = useAuth();
 
   const menuItems: MenuItem[] = [
     {
@@ -45,6 +45,11 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
       ? [
           { label: 'Component Gallery', sub: 'Dev only', onPress: () => navigation.navigate('Components') },
           { label: 'Test AuthGate', sub: 'Dev only', onPress: () => showAuthGate() },
+          {
+            label: isAnonymous ? 'Anonymous user' : `Signed in: ${user?.email ?? 'no email'}`,
+            sub: 'Dev only — tap to sign out',
+            onPress: () => signOut({ skipWarning: true }),
+          },
         ]
       : []),
   ];
