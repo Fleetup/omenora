@@ -16,6 +16,18 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
+  const requestedRedirect = sanitizeString(body.redirectTo ?? '', 200)
+
+  const ALLOWED_REDIRECT_PREFIXES = ['https://omenora.com/', 'omenora://']
+  let redirectTo = 'https://omenora.com/account'
+  if (requestedRedirect) {
+    const isAllowed = ALLOWED_REDIRECT_PREFIXES.some(p => requestedRedirect.startsWith(p))
+    if (!isAllowed) {
+      throw createError({ statusCode: 422, message: 'Invalid redirectTo' })
+    }
+    redirectTo = requestedRedirect
+  }
+
   const email = sanitizeString(body.email ?? '', 254)
 
   assertInput(isValidEmail(email), 'Valid email is required')
@@ -30,12 +42,13 @@ export default defineEventHandler(async (event) => {
     const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
-      options: { redirectTo: 'https://omenora.com/account' },
+      options: { redirectTo },
     })
 
     if (!linkErr && linkData?.properties?.hashed_token) {
-      const token = encodeURIComponent(linkData.properties.hashed_token)
-      magicLinkUrl = `https://omenora.com/account?token_hash=${token}`
+      const hashedToken = linkData.properties.hashed_token
+      const separator = redirectTo.includes('?') ? '&' : '?'
+      magicLinkUrl = `${redirectTo}${separator}token_hash=${encodeURIComponent(hashedToken)}`
       console.log('[request-magic-link] built URL:', magicLinkUrl)
     } else if (linkErr) {
       console.error('[request-magic-link] generateLink error:', linkErr.code, linkErr.message)
