@@ -39,6 +39,9 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
       label:   'Terms of Use',
       onPress: () => navigation.navigate('Terms'),
     },
+    ...(__DEV__
+      ? [{ label: 'Component Gallery', sub: 'Dev only', onPress: () => navigation.navigate('Components') }]
+      : []),
   ];
 
   return (

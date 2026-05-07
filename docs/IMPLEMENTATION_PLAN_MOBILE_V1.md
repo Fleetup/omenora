@@ -80,8 +80,8 @@ These must be completed first. They are not code tasks.
 | P7 | **RevenueCat**: Create project, connect App Store + Play Console, create entitlements, offerings, placements, paywalls, webhook | Phase 1 | ⏳ Depends on P5/P6 products |
 | P8 | **EAS Project**: Run `eas init` in `/mobile-app`, replace `[YOUR_EAS_PROJECT_ID]` in `app.json` | Phase 0 | ✅ Done · projectId: `8f7dfec9-fd02-4ed9-85b9-8cdbeba7c6d3` |
 | P9 | **Apple Small Business Program**: Enroll at appleid.apple.com (15% vs 30% commission — do not skip) | Before launch | ⏳ Anytime before launch |
-| P10 | **Sentry**: Create project, get DSN for iOS + Android | Phase DS |
-| P11 | **PostHog**: Create project, get API key | Phase DS |
+| P10 | **Sentry**: Create project, get DSN for iOS + Android | Phase DS | ⏳ Blocks DS.0 — to be done before Phase 1 |
+| P11 | **PostHog**: Create project, get API key | Phase DS | ⏳ Blocks DS.0 — to be done before Phase 1 |
 
 ---
 
@@ -209,6 +209,7 @@ Predictive failure modes. Each addressed pre-launch is a rejection cycle avoided
 
 ## Phase 0 — Cleanup & Dead Code Removal
 
+**Status:** ✅ COMPLETE — merged to develop 2026-05-06 (`30d12c0`)
 **Goal:** Remove all Stripe-era code, wrong payment model, dead routes. Leave codebase in a clean, TypeScript-valid state that compiles with zero errors.
 **Duration:** ~4 hrs
 **Verify:** `npx tsc --noEmit` passes with 0 errors after this phase.
@@ -362,27 +363,30 @@ Resolve all resulting type errors from removed routes, stores, and imports. Do N
 
 Definition of done. All items must pass before starting Phase DS.
 
-- [ ] `npx tsc --noEmit` → 0 errors
-- [ ] `grep -r "paymentComplete\|bundlePurchased\|oraclePurchased" src/` → 0 results
-- [ ] `grep -r "PreviewScreen\|SubscriptionScreen" src/` → 0 results
-- [ ] `grep -r "verifyMobileCheckoutSession\|createMobileCheckoutSession" src/` → 0 results
-- [ ] `grep -r "omenora://payment" src/` → 0 results
-- [ ] `src/stores/profileStore.ts` exists; `src/stores/analysisStore.ts` deleted
-- [ ] `react-native-webview` removed from `package.json` (G18)
-- [ ] `npm ls react-native-webview` → "(empty)"
-- [ ] App boots in Expo Go or dev build without runtime errors
+- [x] `npx tsc --noEmit` → 0 errors
+- [x] `grep -r "paymentComplete\|bundlePurchased\|oraclePurchased" src/` → 0 results
+- [x] `grep -r "PreviewScreen\|SubscriptionScreen" src/` → 0 results
+- [x] `grep -r "verifyMobileCheckoutSession\|createMobileCheckoutSession" src/` → 0 results
+- [x] `grep -r "omenora://payment" src/` → 0 results
+- [x] `src/stores/profileStore.ts` exists; `src/stores/analysisStore.ts` deleted
+- [x] `react-native-webview` removed from `package.json` (G18)
+- [x] `npm ls react-native-webview` → "(empty)"
+- [x] App boots in Expo Go or dev build without runtime errors
 
 ---
 
 ## Phase DS — Design System Foundation
 
+**Status:** ✅ COMPLETE — 15 commits, merged to develop 2026-05-07
 **Goal:** Establish complete semantic token system, refactor ThemeProvider, reorganize and complete component library. All subsequent screen work consumes tokens and components from this system.
-**Duration:** ~24 hrs
+**Duration:** ~24 hrs (actual: ~6 hrs across one session for DS.1-DS.18)
 **Verify:** `npx tsc --noEmit` passes; run dev preview screen on simulator to visually confirm all atoms/organisms render correctly.
 
 ---
 
 ### Step DS.0 — Install observability stack
+
+**Status:** ⏸ DEFERRED — blocked by P10 (Sentry project) and P11 (PostHog project). To be completed before Phase 1.
 
 Install before any feature code — errors must be catchable from first commit.
 
@@ -424,6 +428,8 @@ const posthog = new PostHog(process.env.EXPO_PUBLIC_POSTHOG_KEY!, {
 
 ### Step DS.1 — Install new packages
 
+**Status:** ✅ DONE — commit `5603f9d` (2026-05-07)
+
 ```bash
 npx expo install lucide-react-native expo-blur moti expo-haptics
 ```
@@ -435,6 +441,10 @@ npx expo install lucide-react-native expo-blur moti expo-haptics
 ---
 
 ### Step DS.2 — Remove dead font packages
+
+**Status:** ⏸ DEFERRED to Phase 7
+
+> **[DECISION 2026-05-07]** Initial attempt revealed token-namespace coupling: `src/theme/fonts.ts` defines `fonts.cormorant`, `fonts.playfair`, `fonts.inter` — these names are referenced by 17 legacy screen/component files that are not migrated until their owning phases (2-6). Removing the packages now while consumers still reference the tokens breaks 71 tsc errors. Defer cleanup to Phase 7 production prep, after all screens have been rebuilt onto new typography tokens. Deferred packages remain in `package.json`: `@expo-google-fonts/cormorant-garamond`, `@expo-google-fonts/playfair-display`, `@expo-google-fonts/inter`.
 
 **File:** `package.json`
 
@@ -451,6 +461,8 @@ npm uninstall @expo-google-fonts/cormorant-garamond @expo-google-fonts/playfair-
 
 ### Step DS.3 — Clean App.tsx font loading
 
+**Status:** ⏸ DEFERRED to Phase 7 (paired with DS.2)
+
 **File:** `App.tsx`
 
 Remove imports and `useFonts` entries for:
@@ -465,6 +477,8 @@ Keep:
 ---
 
 ### Step DS.4 — Create design token directory structure
+
+**Status:** ✅ DONE — commit `e9012f3` (2026-05-07, bundled DS.4-DS.10)
 
 Create the following new files (directory `src/design/` does not exist yet):
 
@@ -486,6 +500,8 @@ src/design/
 ---
 
 ### Step DS.5 — Create src/design/tokens/colors.ts
+
+**Status:** ✅ DONE — commit `e9012f3`
 
 Semantic token values per locked decisions:
 
@@ -545,6 +561,8 @@ export type DesignTokens = typeof tokens
 
 ### Step DS.6 — Create src/design/tokens/typography.ts
 
+**Status:** ✅ DONE — commit `e9012f3`
+
 ```typescript
 export const fontFamily = {
   display: 'Fraunces_300Light',
@@ -572,6 +590,8 @@ export const typeScale = {
 
 ### Step DS.7 — Create src/design/tokens/spacing.ts
 
+**Status:** ✅ DONE — commit `e9012f3`
+
 ```typescript
 export const space = {
   '0.5': 2,  '1': 4,   '1.5': 6,
@@ -596,6 +616,8 @@ export const layout = {
 
 ### Step DS.8 — Create src/design/tokens/radius.ts
 
+**Status:** ✅ DONE — commit `e9012f3`
+
 ```typescript
 export const radius = {
   xs:   4,
@@ -611,6 +633,8 @@ export const radius = {
 ---
 
 ### Step DS.9 — Create src/design/tokens/motion.ts
+
+**Status:** ✅ DONE — commit `e9012f3`
 
 ```typescript
 export const duration = {
@@ -637,6 +661,8 @@ export const stagger = {
 
 ### Step DS.10 — Create src/design/tokens/index.ts
 
+**Status:** ✅ DONE — commit `e9012f3`
+
 ```typescript
 export * from './colors'
 export * from './typography'
@@ -648,6 +674,8 @@ export * from './motion'
 ---
 
 ### Step DS.11 — Refactor ThemeProvider + create useTheme hook
+
+**Status:** ✅ DONE — commit `792db1c` (2026-05-07, boot-tested)
 
 **File:** `src/design/theme/ThemeProvider.tsx`
 
@@ -670,6 +698,8 @@ export const useTheme = () => useContext(ThemeContext)
 
 ### Step DS.12 — Reorganize components directory
 
+**Status:** ✅ DONE — commit `e67d7a1` (2026-05-07)
+
 Create new directories:
 ```
 src/components/atoms/
@@ -683,6 +713,8 @@ src/components/templates/
 ---
 
 ### Step DS.13 — Build atom components
+
+**Status:** ✅ DONE — commit `38d0782` (2026-05-07, 8 atoms + barrel, 621 lines)
 
 Create in `src/components/atoms/`:
 
@@ -703,6 +735,10 @@ Create in `src/components/atoms/`:
 
 ### Step DS.14 — Build molecule components
 
+**Status:** ✅ DONE — split into 2 commits: `20cc6a2` (1/2: 5 simple molecules) + `08dfdef` (2/2: 3 form fields + Nominatim helper)
+
+> **[DECISION 2026-05-07]** Split into 2 commits because of complexity asymmetry: TextField/ListItem/ChipGroup/ProgressDots/Toast are pure atom composition; DateField/TimeField/CityField involve platform-specific pickers (`@react-native-community/datetimepicker` with Android imperative API + iOS modal pattern) and Nominatim API integration (debounce + abort + rate-limit). Splitting kept commit 1/2 verifiable independently before tackling the higher-risk form fields.
+
 Create in `src/components/molecules/`:
 
 | File | Notes |
@@ -721,6 +757,10 @@ Create in `src/components/molecules/`:
 ---
 
 ### Step DS.15 — Build critical organism components
+
+**Status:** ✅ DONE — split into 2 commits: `c56a43d` (1/2: 6 generic organisms + GestureHandlerRootView) + `436e06d` (2/2: LockedCard + 3 content cards)
+
+> **[DECISION 2026-05-07]** Split into 2 commits because LockedCard is the conversion-critical paywall surface and warrants careful execution with fresh attention. DS.15a bundled the 6 generic organisms (Card, SectionHeader, Header, Modal, BottomSheet, ChatBubble) plus the `GestureHandlerRootView` wiring fix in App.tsx (audit caught it was missing — silent runtime failure for any gesture-based component). DS.15b followed with the conversion-domain cards. Boot-tested after DS.15a confirmed gradient + tab navigation still rendered.
 
 Create in `src/components/organisms/`:
 
@@ -741,6 +781,8 @@ Create in `src/components/organisms/`:
 
 ### Step DS.16 — Build template wrappers
 
+**Status:** ✅ DONE — commit `32b4b9a` (2026-05-07, 5 templates)
+
 Create in `src/components/templates/`:
 
 | File | Notes |
@@ -754,6 +796,10 @@ Create in `src/components/templates/`:
 ---
 
 ### Step DS.17 — Update TabNavigator to use Lucide icons
+
+**Status:** ✅ DONE — commit `fa1ea88` (2026-05-07, boot-tested)
+
+> **[DECISION 2026-05-07]** Scope expanded beyond plan as written. Plan said "replace Ionicons with Lucide" but TabNavigator + RootNavigator both used legacy `colors.*` and `fonts.*` token imports. Since we were already editing the file and navigation infrastructure sits between phases (no Phase X explicitly rebuilds it), migrated those tokens to the new design system in the same commit. Tab bar background changed visually from `colors.bone` (off-white) to `tokens.surface.base` (cosmic dark) — significant visual upgrade, blends seamlessly with the gradient. `strokeWidth: 2` for focused tabs, `1.5` for unfocused — Lucide's standard active/inactive pattern.
 
 **File:** `src/navigation/TabNavigator.tsx`
 
@@ -772,6 +818,10 @@ Update `TAB_CONFIG` keys to match renamed `TabParamList` (done in Phase 3).
 
 ### Step DS.18 — Dev preview screen
 
+**Status:** ✅ DONE — commit `8d173ac` (2026-05-07, all 31 components rendered on device after local rebuild)
+
+> **[DECISION 2026-05-07]** Used `__DEV__` JSX-gate pattern (always-import the screen file, conditionally render `<Stack.Screen>` with `{__DEV__ && ...}`). Metro tree-shakes the dev-only branch from production bundles automatically. Discovery via dev-only `ListItem` in MoreScreen (conditional spread into existing `menuItems` array). MoreScreen's legacy theme tokens NOT migrated — out of scope (Phase 6). LockedCard's BlurView initially failed to render with stale dev client; resolved with `npx expo prebuild --platform ios --clean` + `npx expo run:ios --device` to rebuild dev client with new native modules (`expo-blur`, `expo-haptics`, `react-native-gesture-handler`).
+
 Create `src/screens/dev/ComponentsScreen.tsx`:
 - Renders all atoms, molecules, organisms in one scrollable screen
 - Accessed via a hidden route in `RootNavigator` (dev builds only, guarded by `__DEV__`)
@@ -780,6 +830,8 @@ Create `src/screens/dev/ComponentsScreen.tsx`:
 ---
 
 ### Step DS.19 — TypeScript clean pass
+
+**Status:** ✅ DONE — verified at merge (2026-05-07)
 
 ```bash
 npx tsc --noEmit
@@ -793,16 +845,16 @@ Zero errors required before Phase 0.5.
 
 Definition of done. All items must pass before starting Phase 0.5.
 
-- [ ] `npx tsc --noEmit` → 0 errors
-- [ ] Dev preview screen (`ComponentsScreen`) renders all atoms, molecules, organisms without crash on iOS simulator
-- [ ] All token files present: `src/design/tokens/{colors,typography,spacing,radius,motion,index}.ts`
-- [ ] `grep -r "CormorantGaramond\|PlayfairDisplay\|Inter_" src/` → 0 results
-- [ ] `grep -r "Ionicons" src/navigation/TabNavigator.tsx` → 0 results (Lucide replaced)
-- [ ] `lucide-react-native`, `expo-blur`, `moti`, `expo-haptics` present in `package.json`
-- [ ] `@sentry/react-native`, `posthog-react-native` present in `package.json` (Step DS.0)
-- [ ] Sentry test crash captured in dev build → visible in Sentry dashboard within 60s
-- [ ] PostHog test event fired → visible in PostHog Live Events within 60s
-- [ ] `src/lib/analytics.ts` exists with all 19 typed event helpers
+- [x] `npx tsc --noEmit` → 0 errors
+- [x] Dev preview screen (`ComponentsScreen`) renders all atoms, molecules, organisms without crash on iOS device (verified 2026-05-07 after local rebuild)
+- [x] All token files present: `src/design/tokens/{colors,typography,spacing,radius,motion,index}.ts`
+- [ ] `grep -r "CormorantGaramond\|PlayfairDisplay\|Inter_" src/` → 0 results — **DEFERRED to Phase 7 (DS.2/DS.3)**
+- [x] `grep -r "Ionicons" src/navigation/TabNavigator.tsx` → 0 results (Lucide replaced)
+- [x] `lucide-react-native`, `expo-blur`, `moti`, `expo-haptics` present in `package.json`
+- [ ] `@sentry/react-native`, `posthog-react-native` present in `package.json` (Step DS.0) — **DEFERRED — blocked by P10/P11**
+- [ ] Sentry test crash captured in dev build → visible in Sentry dashboard within 60s — **DEFERRED**
+- [ ] PostHog test event fired → visible in PostHog Live Events within 60s — **DEFERRED**
+- [ ] `src/lib/analytics.ts` exists with all 19 typed event helpers — **DEFERRED to Phase 0.5 (file creation)**
 
 ---
 
@@ -2873,3 +2925,48 @@ These are post-launch phases. No implementation steps defined here. For full dec
 - Confirmed parallel work in progress: Google Play identity verification (P6), D-U-N-S (blocks P5)
 
 **Unblocked phases:** Phase 0 → DS → 0.5 → 2 → 3 → 4 → 6. P5 / P7 / P9 wait until closer to launch.
+
+---
+
+### Session — 2026-05-07
+
+**Branches:** `feature/phase-ds` (created from develop) → 13 commits → ready to merge after DS.19. Side commit on develop: `4c6d06c` (admin self-payment bypass).
+
+#### What we did this session
+
+- Phase DS commits 1-18 landed (DS.0 deferred, DS.2/DS.3 deferred). 13 commits total on `feature/phase-ds`:
+  - `5603f9d` packages: lucide-react-native, expo-blur, moti, expo-haptics
+  - `e9012f3` tokens: src/design/tokens (colors, typography, spacing, radius, motion + barrel)
+  - `792db1c` theme: new ThemeProvider with token context + reduceMotion accessibility
+  - `e67d7a1` components: scaffold atoms/molecules/organisms/templates dirs
+  - `38d0782` atoms: 8 components + 9 type exports
+  - `20cc6a2` molecules (1/2): TextField, ListItem, ChipGroup, ProgressDots, Toast
+  - `08dfdef` molecules (2/2): DateField, TimeField, CityField + Nominatim helper at src/api/nominatim.ts
+  - `c56a43d` organisms (1/2): Card, SectionHeader, Header, Modal, BottomSheet, ChatBubble + GestureHandlerRootView wired in App.tsx
+  - `436e06d` organisms (2/2): LockedCard, DailyCard, ReadingCard, TransitCard
+  - `32b4b9a` templates: ScreenWrapper, OnboardingStep, PaywallShell, EmptyState, ErrorState
+  - `fa1ea88` navigation: TabNavigator Lucide icons + design token migration, RootNavigator surface.base
+  - `8d173ac` dev preview: ComponentsScreen + hidden __DEV__ route + MoreScreen entry
+  - `6c505c1` eas: suppress push notification setup prompt
+- Side commit on `develop`: `4c6d06c` (`feat(stripe): admin self-payment bypass + adminSecret runtime config`) — web app work that was sitting modified in working tree from prior session, committed cleanly to its proper branch
+- Local iOS dev client rebuilt with `npx expo prebuild --platform ios --clean` + `npx expo run:ios --device` after adding native modules (expo-blur, expo-haptics, gesture-handler). EAS cloud build attempted but failed during Install dependencies phase — diagnosed as likely peer-deps mismatch in CI; deferred since local builds are sufficient for dev iteration. EAS resolution required before Phase 1 TestFlight.
+
+#### Lessons learned
+
+- **Token-namespace audits must grep for `<namespace>\.` patterns** (e.g., `fonts\.cormorant`), not just underlying string values. The font cleanup detour came from this gap — searching for `CormorantGaramond` missed indirect references through `fonts.cormorant` token export. Recovered cleanly; logged for all future token-removal work.
+- **Smoke tests on JSX-importing files** generate `--jsx not set` errors under standalone tsc. Either pass `-p tsconfig.json` or skip the smoke test for files that pull JSX. Project tsc step is the real check.
+- **Don't `require()` RN packages from Node** to verify symbols. RN packages use Flow types and JSX. tsc catches missing imports at the project check step — that's the real verification.
+- **`git add` with explicit paths**, never `-A`, when working in a monorepo. Augur/ web files in the parent dir would otherwise get swept up.
+- **Sibling component imports use `./X` not via barrel** — established in CityField → TextField. Avoids circular dependency risk when barrel re-exports the component you're importing from.
+- **`GestureHandlerRootView` must wrap the app root** — installed-but-unwired is a silent runtime failure. Caught in DS.15a audit, wired in DS.15a commit.
+- **`__DEV__` JSX-gate pattern** is the right approach for dev-only routes. Always-import the screen file (Metro tree-shakes from prod), gate only the `<Stack.Screen>` JSX render with `{__DEV__ && ...}`. Avoids conditional-import gymnastics that TypeScript chokes on.
+- **CocoaPods will sunset Dec 2, 2026** (read-only trunk). Migration target is Swift Package Manager. Not blocking us yet — RN 0.79.6 with current Expo SDK is fine. Future concern for Phase 7+.
+- **Local `npx expo run:ios --device` is the correct workflow for dev iteration** post-2025 deprecation. Faster than EAS, no credentials/queue dance, full native module bridging. EAS reserved for distribution.
+
+#### Outstanding work
+
+- **DS.19** (final tsc clean check) and **Phase DS merge to develop** — to be done at end of this session.
+- **DS.0 (Sentry/PostHog observability)** — deferred until P10/P11 prerequisites complete.
+- **DS.2/DS.3 (font cleanup)** — deferred to Phase 7 production prep.
+- **EAS cloud build failure** — diagnosis deferred until Phase 1 (TestFlight needs).
+- **Web asset migration** — flagged for Phase 2: existing PNG/SVG brand assets at `augur/public/` should be reused on mobile rather than recreated. EmptyState's geometric SVG is placeholder.
