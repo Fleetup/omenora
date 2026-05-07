@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { View, ActivityIndicator } from 'react-native'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import { Mail, ArrowLeft } from 'lucide-react-native'
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin'
 
 import { BottomSheet } from './BottomSheet'
 import { Text } from '../atoms/Text'
@@ -122,12 +123,20 @@ export const AuthGate: React.FC<AuthGateProps> = ({
               />
             )}
 
-            <Button
-              label="Continue with Google"
-              variant="secondary"
+            <GoogleSigninButton
+              size={GoogleSigninButton.Size.Wide}
+              color={GoogleSigninButton.Color.Light}
+              style={{ width: '100%', height: 50, marginBottom: space['3'] }}
               onPress={handleGoogle}
-              loading={googleLoading}
+              disabled={googleLoading}
             />
+            {googleLoading && (
+              <ActivityIndicator
+                size="small"
+                color={tokens.text.primary}
+                style={{ position: 'absolute', alignSelf: 'center', top: 100 }}
+              />
+            )}
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: space['4'] }}>
               <View style={{ flex: 1 }}>

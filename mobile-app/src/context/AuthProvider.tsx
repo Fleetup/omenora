@@ -111,9 +111,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true })
       const userInfo = await GoogleSignin.signIn()
+      console.log('[Auth] Google userInfo shape:', JSON.stringify(userInfo, null, 2))
       const idToken = userInfo?.data?.idToken ?? (userInfo as any)?.idToken
 
       if (!idToken) {
+        console.error('[Auth] Google sign-in: idToken missing. Full userInfo:', userInfo)
         throw new Error('Google Sign In: no ID token returned')
       }
 
