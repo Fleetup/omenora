@@ -9,7 +9,7 @@ import { Text } from '../atoms/Text'
 import { Button } from '../atoms/Button'
 import { TextField } from '../molecules/TextField'
 import { Divider } from '../atoms/Divider'
-import { useAuth } from '../../context/AuthProvider'
+import { useAuth } from '../../context/useAuth'
 import { useTheme } from '../../design/theme/useTheme'
 import { space } from '../../design/tokens'
 

@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoreScreenProps } from '../navigation/types';
 import { useProfileStore } from '../stores/profileStore';
-import { useAuth } from '../context/AuthProvider';
+import { useAuth } from '../context/useAuth';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { LabelCaps, ShortRule, AnnotationText } from '../components/ui';

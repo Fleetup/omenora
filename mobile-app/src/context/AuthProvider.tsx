@@ -1,26 +1,11 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Alert } from 'react-native'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
-import type { Session, User } from '@supabase/supabase-js'
+import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { AuthGate } from '../components/organisms/AuthGate'
-
-type AuthContextValue = {
-  session: Session | null
-  user: User | null
-  isAnonymous: boolean
-  isLoading: boolean
-  signInWithApple: () => Promise<void>
-  signInWithGoogle: () => Promise<void>
-  signInWithMagicLink: (email: string) => Promise<void>
-  signOut: (options?: { skipWarning?: boolean }) => Promise<void>
-  deleteAccount: () => Promise<void>
-  showAuthGate: (options?: { title?: string; body?: string }) => void
-  hideAuthGate: () => void
-}
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+import { AuthContext, type AuthContextValue } from './AuthContext'
 
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID
@@ -235,10 +220,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   )
 }
 
-export const useAuth = (): AuthContextValue => {
-  const ctx = useContext(AuthContext)
-  if (!ctx) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
-  return ctx
-}
