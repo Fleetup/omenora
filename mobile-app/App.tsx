@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import { NavigationContainer } from '@react-navigation/native';
-import { ThemeProvider } from './src/theme/ThemeProvider';
+import { ThemeProvider } from './src/design/theme/ThemeProvider';
 import { RootNavigator, navigationRef } from './src/navigation/RootNavigator';
 import { useProfileStore } from './src/stores/profileStore';
 import {
