@@ -12,6 +12,7 @@ import { CalendarScreen } from '../screens/CalendarScreen';
 import { CompatibilityScreen } from '../screens/CompatibilityScreen';
 import { PrivacyScreen } from '../screens/PrivacyScreen';
 import { TermsScreen } from '../screens/TermsScreen';
+import { ComponentsScreen } from '../screens/dev/ComponentsScreen';
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
@@ -33,5 +34,8 @@ export const RootNavigator: React.FC = () => (
     <Stack.Screen name="Compatibility" component={CompatibilityScreen} />
     <Stack.Screen name="Privacy"       component={PrivacyScreen} />
     <Stack.Screen name="Terms"         component={TermsScreen} />
+    {__DEV__ && (
+      <Stack.Screen name="Components" component={ComponentsScreen} />
+    )}
   </Stack.Navigator>
 );

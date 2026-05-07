@@ -19,6 +19,7 @@ export type RootStackParamList = {
   Compatibility: { reportId?: string } | undefined;
   Privacy:       undefined;
   Terms:         undefined;
+  Components:    undefined;
 };
 
 // ── Tab screen props (composite — can navigate to root stack screens too) ──────
