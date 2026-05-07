@@ -1,6 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { colors } from '../theme/colors';
+import { tokens } from '../design/tokens';
 import { createNavigationContainerRef } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { TabNavigator } from './TabNavigator';
@@ -22,7 +22,7 @@ export const RootNavigator: React.FC = () => (
     initialRouteName="MainTabs"
     screenOptions={{
       headerShown:  false,
-      contentStyle: { backgroundColor: colors.bone },
+      contentStyle: { backgroundColor: tokens.surface.base },
       animation:    'slide_from_right',
     }}
   >
