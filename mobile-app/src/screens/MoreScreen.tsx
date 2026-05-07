@@ -64,7 +64,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
         <View style={styles.header}>
           <LabelCaps>Account</LabelCaps>
           <Text style={styles.heading}>
-            {firstName ? `Hello, ${firstName}.` : 'Your account.'}
+            {isAnonymous || !firstName ? 'Account' : `Hello, ${firstName}.`}
           </Text>
           <ShortRule style={styles.rule} />
         </View>
