@@ -4,6 +4,7 @@ import * as AppleAuthentication from 'expo-apple-authentication'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { AuthGate } from '../components/organisms/AuthGate'
 
 type AuthContextValue = {
   session: Session | null
@@ -15,6 +16,8 @@ type AuthContextValue = {
   signInWithMagicLink: (email: string) => Promise<void>
   signOut: (options?: { skipWarning?: boolean }) => Promise<void>
   deleteAccount: () => Promise<void>
+  showAuthGate: (options?: { title?: string; body?: string }) => void
+  hideAuthGate: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -33,6 +36,11 @@ if (GOOGLE_IOS_CLIENT_ID && GOOGLE_WEB_CLIENT_ID) {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [authGateState, setAuthGateState] = useState<{
+    visible: boolean
+    title?: string
+    body?: string
+  }>({ visible: false })
 
   // Bootstrap: subscribe to auth changes, sign in anonymously if no session.
   useEffect(() => {
@@ -175,6 +183,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     )
   }, [])
 
+  const showAuthGate = useCallback((options?: { title?: string; body?: string }) => {
+    const currentSession = session
+    if (currentSession && !(currentSession.user as any).is_anonymous) {
+      console.warn('[Auth] showAuthGate called but user is already permanent')
+      return
+    }
+    setAuthGateState({ visible: true, title: options?.title, body: options?.body })
+  }, [session])
+
+  const hideAuthGate = useCallback(() => {
+    setAuthGateState({ visible: false })
+  }, [])
+
   const deleteAccount = useCallback(async () => {
     // Account deletion requires a backend endpoint with service-role access.
     // Phase 0.5.15 implements the actual flow. This stub keeps the contract
@@ -188,16 +209,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value: AuthContextValue = {
     session,
     user: session?.user ?? null,
-    isAnonymous: session?.user?.is_anonymous ?? false,
+    isAnonymous: (session?.user as any)?.is_anonymous ?? false,
     isLoading,
     signInWithApple,
     signInWithGoogle,
     signInWithMagicLink,
     signOut,
     deleteAccount,
+    showAuthGate,
+    hideAuthGate,
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      <AuthGate
+        visible={authGateState.visible}
+        title={authGateState.title}
+        body={authGateState.body}
+        onClose={hideAuthGate}
+      />
+    </AuthContext.Provider>
+  )
 }
 
 export const useAuth = (): AuthContextValue => {

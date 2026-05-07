@@ -1,3 +1,6 @@
+export { AuthGate } from './AuthGate'
+export type { AuthGateProps } from './AuthGate'
+
 export { Card } from './Card'
 export type { CardProps } from './Card'
 
