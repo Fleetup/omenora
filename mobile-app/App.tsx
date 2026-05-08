@@ -7,7 +7,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from './src/design/theme/ThemeProvider';
-import { AuthProvider } from './src/context/AuthProvider';
+import { AuthProvider } from './src/context/AuthProvider'
+import { PurchasesProvider } from './src/context/PurchasesProvider';
 import { RootNavigator, navigationRef } from './src/navigation/RootNavigator';
 import { useProfileStore } from './src/stores/profileStore';
 import {
@@ -119,10 +120,12 @@ export default function App() {
         <ThemeProvider>
           <AuthProvider>
             <DeepLinkHandler />
-            <NavigationContainer ref={navigationRef}>
-              <RootNavigator />
-              <StatusBar style="light" />
-            </NavigationContainer>
+            <PurchasesProvider>
+              <NavigationContainer ref={navigationRef}>
+                <RootNavigator />
+                <StatusBar style="light" />
+              </NavigationContainer>
+            </PurchasesProvider>
           </AuthProvider>
         </ThemeProvider>
       </GestureHandlerRootView>
