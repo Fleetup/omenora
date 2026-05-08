@@ -12,6 +12,16 @@ export type TabParamList = {
 
 // ── Root stack ─────────────────────────────────────────────────────────────────
 export type RootStackParamList = {
+  // Onboarding
+  Splash:             undefined;
+  Welcome:            undefined;
+  BirthInfo:          undefined;
+  BirthTimeLocation:  undefined;
+  Calculating:        undefined;
+  BigThreeReveal:     { sunSign: string; moonSign: string; risingSign: string; archetypeName: string };
+  OptionalQuestions:  undefined;
+  PremiumTeaser:      undefined;
+  // App
   MainTabs:      NavigatorScreenParams<TabParamList> | undefined;
   Analysis:      { step?: number } | undefined;
   Report:        { reportId: string } | undefined;
@@ -46,4 +56,5 @@ export type ReportScreenProps       = NativeStackScreenProps<RootStackParamList,
 export type CalendarScreenProps     = NativeStackScreenProps<RootStackParamList, 'Calendar'>;
 export type CompatibilityScreenProps = NativeStackScreenProps<RootStackParamList, 'Compatibility'>;
 export type PrivacyScreenProps      = NativeStackScreenProps<RootStackParamList, 'Privacy'>;
-export type TermsScreenProps        = NativeStackScreenProps<RootStackParamList, 'Terms'>;
+export type TermsScreenProps           = NativeStackScreenProps<RootStackParamList, 'Terms'>;
+export type BigThreeRevealScreenProps  = NativeStackScreenProps<RootStackParamList, 'BigThreeReveal'>;
