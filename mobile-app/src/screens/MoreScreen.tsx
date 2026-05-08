@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoreScreenProps } from '../navigation/types';
@@ -30,7 +31,28 @@ type MenuItem = {
 
 export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
   const { firstName } = useProfileStore();
-  const { showAuthGate, signOut, isAnonymous, user } = useAuth();
+  const { showAuthGate, signOut, isAnonymous, user, deleteAccount } = useAuth();
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account, birth chart, and all associated data. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount()
+            } catch {
+              // Error already alerted in deleteAccount
+            }
+          },
+        },
+      ]
+    )
+  }
 
   const menuItems: MenuItem[] = [
     {
@@ -103,6 +125,20 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* ── Delete Account ─────────────────────────────────────────── */}
+        {!isAnonymous && (
+          <View style={styles.deleteSection}>
+            <TouchableOpacity
+              onPress={handleDeleteAccount}
+              style={styles.deleteButton}
+              accessibilityRole="button"
+              accessibilityLabel="Delete account"
+            >
+              <Text style={styles.deleteText}>Delete Account</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* ── App info ───────────────────────────────────────────────── */}
         <View style={styles.appInfo}>
@@ -215,6 +251,24 @@ const styles = StyleSheet.create({
     fontFamily: fonts.hanken,
     fontSize:   20,
     marginLeft: 12,
+  },
+
+  // ── Delete Account ──────────────────────────────────────────────────────────
+  deleteSection: {
+    marginBottom: 32,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkGhost,
+    paddingTop: 24,
+  },
+  deleteButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  deleteText: {
+    fontFamily: fonts.hanken,
+    fontSize:   14,
+    color:      colors.error,
+    letterSpacing: 0.2,
   },
 
   // ── App info ──────────────────────────────────────────────────────────────

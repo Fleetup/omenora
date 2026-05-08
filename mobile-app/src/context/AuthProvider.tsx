@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { Alert } from 'react-native'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
@@ -26,6 +26,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     title?: string
     body?: string
   }>({ visible: false })
+
+  const previousAnonymousUserIdRef = useRef<string | null>(null)
 
   // Bootstrap: subscribe to auth changes, sign in anonymously if no session.
   useEffect(() => {
@@ -56,8 +58,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     bootstrap()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (mounted) setSession(newSession)
+
+      // Capture anonymous user ID when bootstrap completes
+      if (newSession?.user?.is_anonymous) {
+        previousAnonymousUserIdRef.current = newSession.user.id
+      }
+
+      // On sign-in transition: anonymous → permanent
+      if (
+        event === 'SIGNED_IN' &&
+        newSession?.user &&
+        !newSession.user.is_anonymous &&
+        previousAnonymousUserIdRef.current &&
+        previousAnonymousUserIdRef.current !== newSession.user.id
+      ) {
+        const sourceId = previousAnonymousUserIdRef.current
+        const targetId = newSession.user.id
+
+        try {
+          const { data, error } = await supabase.rpc('transfer_anonymous_user', {
+            source_user_id: sourceId,
+            target_user_id: targetId,
+          })
+
+          if (error) {
+            console.error('[Auth] transfer_anonymous_user failed:', error.message)
+            // Non-blocking: user is signed in regardless. Log to Sentry when wired.
+          } else {
+            console.log('[Auth] transfer succeeded:', data)
+            previousAnonymousUserIdRef.current = null
+          }
+        } catch (err: any) {
+          console.error('[Auth] transfer RPC threw:', err?.message)
+        }
+      }
     })
 
     return () => {
@@ -184,13 +220,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [])
 
   const deleteAccount = useCallback(async () => {
-    // Account deletion requires a backend endpoint with service-role access.
-    // Phase 0.5.15 implements the actual flow. This stub keeps the contract
-    // visible so consuming UI code can wire to it now.
-    Alert.alert(
-      'Account deletion',
-      'Account deletion is not yet implemented. This will be available before launch.',
-    )
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData?.session?.access_token
+
+      if (!token) {
+        throw new Error('No active session')
+      }
+
+      const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL
+      if (!apiBaseUrl) {
+        throw new Error('API base URL not configured')
+      }
+
+      const response = await fetch(`${apiBaseUrl}/api/auth/delete-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error((errorData as any).message || 'Account deletion failed')
+      }
+
+      // Sign out locally — auth.users is gone server-side, session is invalid
+      await supabase.auth.signOut()
+
+      // onAuthStateChange will fire SIGNED_OUT and bootstrap a new anonymous user
+    } catch (err: any) {
+      console.error('[Auth] deleteAccount failed:', err?.message)
+      Alert.alert(
+        'Account Deletion Failed',
+        err?.message ?? 'Could not delete your account. Please try again or contact support@omenora.com.'
+      )
+      throw err
+    }
   }, [])
 
   const handleMagicLinkUrl = useCallback(async (url: string) => {
