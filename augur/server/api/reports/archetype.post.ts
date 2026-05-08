@@ -5,8 +5,6 @@
  * increments usage. Real report generation (Claude API call with chart context)
  * deferred to Phase 3/4 when the archetype reading screens are built.
  */
-import { requirePremiumWithUsage, incrementUsage } from '~/server/utils/entitlements'
-
 export default defineEventHandler(async (event) => {
   const ctx = await requirePremiumWithUsage(event, 'archetype')
   await incrementUsage(ctx.userId, ctx.feature, ctx.period)
