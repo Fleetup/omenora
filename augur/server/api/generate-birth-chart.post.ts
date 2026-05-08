@@ -185,5 +185,5 @@ Return ONLY valid JSON with no markdown fences:
 
   const birthChart: BirthChartType = validateBirthChartTitle(zodResult.data, archetype)
 
-  return { success: true, birthChart, noonFallback }
+  return { success: true, noonFallback, birthChart: { ...birthChart, archetype } }
 })
