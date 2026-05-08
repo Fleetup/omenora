@@ -31,6 +31,32 @@ export interface DailyInsightRequest {
   zodiacSign?: string;
 }
 
+export interface GenerateBirthChartRequest {
+  firstName:       string
+  dateOfBirth:     string
+  timeOfBirth?:    string
+  city?:           string
+  archetype?:      string
+  lifePathNumber?: number
+  language?:       string
+}
+
+export interface GenerateBirthChartResponse {
+  success:      boolean
+  noonFallback: boolean
+  birthChart: {
+    risingSign:     string
+    sunSign:        string
+    moonSign:       string
+    dominantPlanet: string
+    powerHouse:     string
+    chartTitle:     string
+    reading:        string
+    forecast2026:   string
+    archetype:      string
+  }
+}
+
 // API Endpoints
 export const api = {
   // Report Generation
@@ -50,13 +76,8 @@ export const api = {
   },
 
   // Birth Chart
-  generateBirthChart: async (data: {
-    firstName: string;
-    dateOfBirth: string;
-    timeOfBirth: string;
-    city: string;
-  }) => {
-    const response = await apiClient.post('/api/generate-birth-chart', data);
+  generateBirthChart: async (data: GenerateBirthChartRequest): Promise<GenerateBirthChartResponse> => {
+    const response = await apiClient.post<GenerateBirthChartResponse>('/api/generate-birth-chart', data);
     return response.data;
   },
 

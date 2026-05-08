@@ -10,6 +10,9 @@ import WelcomeScreen            from '../screens/onboarding/WelcomeScreen';
 import BirthInfoScreen          from '../screens/onboarding/BirthInfoScreen';
 import BirthTimeLocationScreen  from '../screens/onboarding/BirthTimeLocationScreen';
 import CalculatingScreen        from '../screens/onboarding/CalculatingScreen';
+import BigThreeRevealScreen     from '../screens/onboarding/BigThreeRevealScreen';
+import OptionalQuestionsScreen  from '../screens/onboarding/OptionalQuestionsScreen';
+import PremiumTeaserScreen      from '../screens/onboarding/PremiumTeaserScreen';
 
 // Stack-only screens (appear above the tab bar)
 import { AnalysisScreen } from '../screens/AnalysisScreen';
@@ -42,6 +45,9 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen name="BirthInfo"         component={BirthInfoScreen} />
       <Stack.Screen name="BirthTimeLocation" component={BirthTimeLocationScreen} options={{ presentation: 'modal' }} />
       <Stack.Screen name="Calculating"       component={CalculatingScreen}       options={{ animation: 'fade', gestureEnabled: false }} />
+      <Stack.Screen name="BigThreeReveal"     component={BigThreeRevealScreen}     options={{ animation: 'fade', gestureEnabled: false }} />
+      <Stack.Screen name="OptionalQuestions"  component={OptionalQuestionsScreen} />
+      <Stack.Screen name="PremiumTeaser"      component={PremiumTeaserScreen}      options={{ gestureEnabled: false }} />
       <Stack.Screen name="MainTabs"      component={TabNavigator}        options={{ animation: 'none' }} />
       <Stack.Screen name="Analysis"      component={AnalysisScreen} />
       <Stack.Screen name="Report"        component={ReportScreen} />

@@ -7,86 +7,64 @@ import { ErrorState } from '../../components/templates'
 import { PhoenixLoader } from '../../components/ui/PhoenixLoader'
 import { useProfileStore } from '../../stores/profileStore'
 import { surface } from '../../design/tokens'
-import apiClient from '../../api/client'
+import { api } from '../../api/endpoints'
 import { RootStackParamList } from '../../navigation/types'
 
 type CalculatingNavProp = NativeStackNavigationProp<RootStackParamList, 'Calculating'>
 
-interface BirthChartResponse {
-  success:      boolean
-  noonFallback: boolean
-  birthChart: {
-    risingSign:     string
-    sunSign:        string
-    moonSign:       string
-    dominantPlanet: string
-    powerHouse:     string
-    chartTitle:     string
-    reading:        string
-    forecast2026:   string
-  }
-}
-
 export default function CalculatingScreen() {
   const navigation = useNavigation<CalculatingNavProp>()
 
-  const firstName      = useProfileStore((s) => s.firstName)
-  const dateOfBirth    = useProfileStore((s) => s.dateOfBirth)
-  const timeOfBirth    = useProfileStore((s) => s.timeOfBirth)
-  const city           = useProfileStore((s) => s.city)
-  const lifePathNumber = useProfileStore((s) => s.lifePathNumber)
+  const firstName        = useProfileStore((s) => s.firstName)
+  const dateOfBirth      = useProfileStore((s) => s.dateOfBirth)
+  const timeOfBirth      = useProfileStore((s) => s.timeOfBirth)
+  const city             = useProfileStore((s) => s.city)
+  const lifePathNumber   = useProfileStore((s) => s.lifePathNumber)
   const languageOverride = useProfileStore((s) => s.languageOverride)
-  const setSunSign     = useProfileStore((s) => s.setSunSign)
-  const setMoonSign    = useProfileStore((s) => s.setMoonSign)
-  const setRisingSign  = useProfileStore((s) => s.setRisingSign)
-  const setArchetype   = useProfileStore((s) => s.setArchetype)
+  const setSunSign       = useProfileStore((s) => s.setSunSign)
+  const setMoonSign      = useProfileStore((s) => s.setMoonSign)
+  const setRisingSign    = useProfileStore((s) => s.setRisingSign)
+  const setArchetype     = useProfileStore((s) => s.setArchetype)
 
   const [localError, setLocalError] = useState<string | null>(null)
   const [retryBump, setRetryBump]   = useState(0)
-  const abortRef = useRef<AbortController | null>(null)
+  const mountedRef = useRef(true)
 
   useEffect(() => {
+    mountedRef.current = true
     setLocalError(null)
-
-    const controller = new AbortController()
-    abortRef.current = controller
 
     const language = languageOverride ?? 'en'
 
     ;(async () => {
       try {
-        const response = await apiClient.post<BirthChartResponse>(
-          '/api/generate-birth-chart',
-          {
-            firstName,
-            dateOfBirth,
-            timeOfBirth: timeOfBirth || undefined,
-            city:        city || undefined,
-            lifePathNumber: lifePathNumber ?? 0,
-            language,
-          },
-          { signal: controller.signal },
-        )
+        const { birthChart } = await api.generateBirthChart({
+          firstName,
+          dateOfBirth,
+          timeOfBirth:    timeOfBirth    || undefined,
+          city:           city           || undefined,
+          lifePathNumber: lifePathNumber ?? 0,
+          language,
+        })
 
-        const { birthChart } = response.data
+        if (!mountedRef.current) return
 
         setSunSign(birthChart.sunSign)
         setMoonSign(birthChart.moonSign)
         setRisingSign(birthChart.risingSign)
-        // TODO (Cluster C): endpoint does not return a discrete archetype name.
-        // Using chartTitle as proxy until the API contract is extended.
-        setArchetype(birthChart.chartTitle ?? '')
+        setArchetype(birthChart.archetype)
 
-        // BigThreeReveal is not registered until Cluster C — reaching this in a
-        // Cluster B device test will produce an expected unhandled-route warning.
+        const archetypeName =
+          `The ${birthChart.archetype.charAt(0).toUpperCase()}${birthChart.archetype.slice(1)}`
+
         navigation.replace('BigThreeReveal', {
-          sunSign:       birthChart.sunSign,
-          moonSign:      birthChart.moonSign,
-          risingSign:    birthChart.risingSign,
-          archetypeName: birthChart.chartTitle ?? '',
+          sunSign:  birthChart.sunSign,
+          moonSign: birthChart.moonSign,
+          risingSign: birthChart.risingSign,
+          archetypeName,
         })
       } catch (err: unknown) {
-        if (controller.signal.aborted) return
+        if (!mountedRef.current) return
         const message =
           err instanceof Error ? err.message : 'Please check your connection and try again'
         setLocalError(message)
@@ -94,7 +72,7 @@ export default function CalculatingScreen() {
     })()
 
     return () => {
-      controller.abort()
+      mountedRef.current = false
     }
   }, [retryBump])
 
