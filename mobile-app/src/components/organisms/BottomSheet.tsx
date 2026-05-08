@@ -108,7 +108,6 @@ const styles = StyleSheet.create({
     marginBottom:    space['3'],
   },
   content: {
-    flex:              1,
     paddingHorizontal: layout.screenPadding,
     paddingBottom:     space['6'],
   },
