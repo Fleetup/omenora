@@ -51,7 +51,9 @@ export const ReadingScreen: React.FC<ReadingScreenProps> = ({ navigation }) => {
             </Text>
             <CTAButton
               label="Continue analysis"
-              onPress={() => navigation.navigate('Analysis')}
+              // Phase 2 bridge: all "redo analysis" actions route to onboarding entry.
+              // ReadingScreen is deleted in Phase 3 (merged into ReadingsScreen tab).
+              onPress={() => navigation.navigate('BirthInfo')}
               variant="outline"
               arrow
               full
@@ -70,7 +72,7 @@ export const ReadingScreen: React.FC<ReadingScreenProps> = ({ navigation }) => {
             </Text>
             <CTAButton
               label="Begin the reading"
-              onPress={() => navigation.navigate('Analysis')}
+              onPress={() => navigation.navigate('BirthInfo')}
               variant="solid"
               arrow
               full
@@ -101,7 +103,7 @@ export const ReadingScreen: React.FC<ReadingScreenProps> = ({ navigation }) => {
         {hasStarted && (
           <TouchableOpacity
             style={styles.resetRow}
-            onPress={() => navigation.navigate('Analysis')}
+            onPress={() => navigation.navigate('BirthInfo')}
           >
             <Text style={styles.resetText}>Start a new reading →</Text>
           </TouchableOpacity>

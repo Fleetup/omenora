@@ -23,7 +23,6 @@ export type RootStackParamList = {
   PremiumTeaser:      undefined;
   // App
   MainTabs:      NavigatorScreenParams<TabParamList> | undefined;
-  Analysis:      { step?: number } | undefined;
   Report:        { reportId: string } | undefined;
   Calendar:      { calendarId?: string } | undefined;
   Compatibility: { reportId?: string } | undefined;
@@ -51,7 +50,6 @@ export type MoreScreenProps = CompositeScreenProps<
 >;
 
 // ── Stack-only screen props ────────────────────────────────────────────────────
-export type AnalysisScreenProps     = NativeStackScreenProps<RootStackParamList, 'Analysis'>;
 export type ReportScreenProps       = NativeStackScreenProps<RootStackParamList, 'Report'>;
 export type CalendarScreenProps     = NativeStackScreenProps<RootStackParamList, 'Calendar'>;
 export type CompatibilityScreenProps = NativeStackScreenProps<RootStackParamList, 'Compatibility'>;
