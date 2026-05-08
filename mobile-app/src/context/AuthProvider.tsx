@@ -129,7 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          redirectTo: 'omenora://auth-callback',
+          redirectTo: 'https://omenora.com/auth-callback',
         }),
       })
 
