@@ -5,10 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoreScreenProps } from '../navigation/types';
 import { useProfileStore } from '../stores/profileStore';
+import { useAuth } from '../context/useAuth';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { LabelCaps, ShortRule, AnnotationText } from '../components/ui';
@@ -29,6 +31,28 @@ type MenuItem = {
 
 export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
   const { firstName } = useProfileStore();
+  const { showAuthGate, signOut, isAnonymous, user, deleteAccount } = useAuth();
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account, birth chart, and all associated data. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount()
+            } catch {
+              // Error already alerted in deleteAccount
+            }
+          },
+        },
+      ]
+    )
+  }
 
   const menuItems: MenuItem[] = [
     {
@@ -40,7 +64,15 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
       onPress: () => navigation.navigate('Terms'),
     },
     ...(__DEV__
-      ? [{ label: 'Component Gallery', sub: 'Dev only', onPress: () => navigation.navigate('Components') }]
+      ? [
+          { label: 'Component Gallery', sub: 'Dev only', onPress: () => navigation.navigate('Components') },
+          { label: 'Test AuthGate', sub: 'Dev only', onPress: () => showAuthGate() },
+          {
+            label: isAnonymous ? 'Anonymous user' : `Signed in: ${user?.email ?? 'no email'}`,
+            sub: 'Dev only — tap to sign out',
+            onPress: () => signOut({ skipWarning: true }),
+          },
+        ]
       : []),
   ];
 
@@ -54,7 +86,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
         <View style={styles.header}>
           <LabelCaps>Account</LabelCaps>
           <Text style={styles.heading}>
-            {firstName ? `Hello, ${firstName}.` : 'Your account.'}
+            {isAnonymous || !firstName ? 'Account' : `Hello, ${firstName}.`}
           </Text>
           <ShortRule style={styles.rule} />
         </View>
@@ -93,6 +125,20 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* ── Delete Account ─────────────────────────────────────────── */}
+        {!isAnonymous && (
+          <View style={styles.deleteSection}>
+            <TouchableOpacity
+              onPress={handleDeleteAccount}
+              style={styles.deleteButton}
+              accessibilityRole="button"
+              accessibilityLabel="Delete account"
+            >
+              <Text style={styles.deleteText}>Delete Account</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* ── App info ───────────────────────────────────────────────── */}
         <View style={styles.appInfo}>
@@ -205,6 +251,24 @@ const styles = StyleSheet.create({
     fontFamily: fonts.hanken,
     fontSize:   20,
     marginLeft: 12,
+  },
+
+  // ── Delete Account ──────────────────────────────────────────────────────────
+  deleteSection: {
+    marginBottom: 32,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkGhost,
+    paddingTop: 24,
+  },
+  deleteButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  deleteText: {
+    fontFamily: fonts.hanken,
+    fontSize:   14,
+    color:      colors.error,
+    letterSpacing: 0.2,
   },
 
   // ── App info ──────────────────────────────────────────────────────────────

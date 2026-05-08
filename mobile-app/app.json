@@ -34,7 +34,6 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "appStoreUrl": "https://apps.apple.com/app/omenora/id[YOUR_APPLE_ID]",
       "associatedDomains": [
         "applinks:omenora.com"
       ]
@@ -79,9 +78,15 @@
     },
     "plugins": [
       "expo-apple-authentication",
+      ["@react-native-google-signin/google-signin", {
+        "iosUrlScheme": "com.googleusercontent.apps.586013412793-e502c19tepphvu4ldqr62d28l9vi8sir"
+      }],
       "expo-font",
       "expo-localization",
-      "expo-notifications",
+      ["expo-notifications", {
+        "icon": "./assets/notification-icon.png",
+        "color": "#7B61FF"
+      }],
       "expo-splash-screen",
       "expo-system-ui",
       "expo-updates",
@@ -96,7 +101,8 @@
             "newArchEnabled": true
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {
@@ -113,13 +119,6 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "notification": {
-      "icon": "./assets/notification-icon.png",
-      "color": "#7B61FF",
-      "iosDisplayInForeground": true,
-      "androidMode": "default"
-    },
-    "scheme": "omenora",
-    "deepLinking": true
+    "scheme": "omenora"
   }
 }
