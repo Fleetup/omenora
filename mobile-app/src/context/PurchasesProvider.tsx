@@ -4,7 +4,9 @@ import Purchases, {
   LOG_LEVEL,
   type CustomerInfo,
   type PurchasesError,
+  type PurchasesOffering,
 } from 'react-native-purchases'
+import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui'
 import { useAuth } from './useAuth'
 import { PurchasesContext } from './PurchasesContext'
 
@@ -31,6 +33,7 @@ export function PurchasesProvider({ children }: Props) {
   const { user, isAnonymous } = useAuth()
   const [isReady, setIsReady] = useState(false)
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null)
+  const [currentOffering, setCurrentOffering] = useState<PurchasesOffering | null>(null)
 
   // Initialize SDK once
   useEffect(() => {
@@ -61,6 +64,14 @@ export function PurchasesProvider({ children }: Props) {
         // Initial customer info fetch
         const info = await Purchases.getCustomerInfo()
         setCustomerInfo(info)
+
+        // Fetch current offering
+        try {
+          const offerings = await Purchases.getOfferings()
+          setCurrentOffering(offerings.current)
+        } catch (offeringsErr) {
+          console.warn('[Purchases] failed to fetch offerings:', offeringsErr)
+        }
 
         // Subscribe to live updates
         Purchases.addCustomerInfoUpdateListener((updatedInfo) => {
@@ -95,6 +106,14 @@ export function PurchasesProvider({ children }: Props) {
         const { customerInfo: updatedInfo } = await Purchases.logIn(user.id)
         setCustomerInfo(updatedInfo)
         console.log('[Purchases] logged in as:', user.id)
+
+        // Refresh offerings after login (entitlements may differ per user)
+        try {
+          const offerings = await Purchases.getOfferings()
+          setCurrentOffering(offerings.current)
+        } catch (offeringsErr) {
+          console.warn('[Purchases] failed to fetch offerings after logIn:', offeringsErr)
+        }
       } catch (err: any) {
         console.error('[Purchases] logIn failed:', err?.message ?? err)
       }
@@ -112,12 +131,44 @@ export function PurchasesProvider({ children }: Props) {
     }
   }, [])
 
+  const presentPaywall = useCallback(async (): Promise<PAYWALL_RESULT> => {
+    try {
+      const result = await RevenueCatUI.presentPaywall()
+      console.log('[Purchases] paywall result:', result)
+      return result
+    } catch (e) {
+      console.error('[Purchases] paywall error:', e)
+      return PAYWALL_RESULT.ERROR
+    }
+  }, [])
+
+  const presentPaywallIfNeeded = useCallback(async (entitlement = 'premium'): Promise<PAYWALL_RESULT> => {
+    try {
+      const result = await RevenueCatUI.presentPaywallIfNeeded({
+        requiredEntitlementIdentifier: entitlement,
+      })
+      console.log('[Purchases] paywallIfNeeded result:', result)
+      return result
+    } catch (e) {
+      console.error('[Purchases] paywallIfNeeded error:', e)
+      return PAYWALL_RESULT.ERROR
+    }
+  }, [])
+
   const isPremium =
     customerInfo?.entitlements?.active?.[PREMIUM_ENTITLEMENT_ID] !== undefined
 
   return (
     <PurchasesContext.Provider
-      value={{ isReady, isPremium, customerInfo, refreshCustomerInfo }}
+      value={{
+        isReady,
+        isPremium,
+        customerInfo,
+        currentOffering,
+        refreshCustomerInfo,
+        presentPaywall,
+        presentPaywallIfNeeded,
+      }}
     >
       {children}
     </PurchasesContext.Provider>
