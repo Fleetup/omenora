@@ -11,6 +11,7 @@ export type AuthContextValue = {
   signInWithMagicLink: (email: string) => Promise<void>
   signOut: (options?: { skipWarning?: boolean }) => Promise<void>
   deleteAccount: () => Promise<void>
+  handleMagicLinkUrl: (url: string) => Promise<void>
   showAuthGate: (options?: { title?: string; body?: string }) => void
   hideAuthGate: () => void
 }

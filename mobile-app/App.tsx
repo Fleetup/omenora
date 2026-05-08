@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import * as Linking from 'expo-linking'
+import { useAuth } from './src/context/useAuth'
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -36,6 +38,36 @@ import {
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
+
+function DeepLinkHandler() {
+  const { handleMagicLinkUrl } = useAuth()
+
+  useEffect(() => {
+    // Handle URL when app is already open
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      console.log('[DeepLink] Received URL:', url)
+      if (url.includes('token_hash=')) {
+        handleMagicLinkUrl(url)
+      }
+    })
+
+    // Handle URL when app is opened cold from a link
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        console.log('[DeepLink] Initial URL:', url)
+        if (url.includes('token_hash=')) {
+          handleMagicLinkUrl(url)
+        }
+      }
+    })
+
+    return () => {
+      subscription.remove()
+    }
+  }, [handleMagicLinkUrl])
+
+  return null
+}
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -86,6 +118,7 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
           <AuthProvider>
+            <DeepLinkHandler />
             <NavigationContainer ref={navigationRef}>
               <RootNavigator />
               <StatusBar style="light" />

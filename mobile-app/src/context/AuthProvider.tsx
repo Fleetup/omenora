@@ -193,6 +193,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     )
   }, [])
 
+  const handleMagicLinkUrl = useCallback(async (url: string) => {
+    try {
+      // Parse the url for token_hash query param
+      // Supports both omenora://auth-callback?token_hash=... and https://omenora.com/account?token_hash=...
+      const queryStart = url.indexOf('?')
+      if (queryStart === -1) {
+        console.warn('[Auth] magic link URL has no query string:', url)
+        return
+      }
+
+      const queryString = url.substring(queryStart + 1)
+      const params = new URLSearchParams(queryString)
+      const tokenHash = params.get('token_hash')
+
+      if (!tokenHash) {
+        console.warn('[Auth] magic link URL missing token_hash:', url)
+        return
+      }
+
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: 'magiclink',
+      })
+
+      if (error) {
+        console.error('[Auth] verifyOtp failed:', error.message)
+        Alert.alert('Sign In Failed', error.message)
+      }
+      // On success, onAuthStateChange will fire and update session.
+    } catch (err: any) {
+      console.error('[Auth] handleMagicLinkUrl error:', err)
+      Alert.alert('Sign In Failed', err?.message ?? 'Could not complete sign-in.')
+    }
+  }, [])
+
   const value: AuthContextValue = {
     session,
     user: session?.user ?? null,
@@ -203,6 +238,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithMagicLink,
     signOut,
     deleteAccount,
+    handleMagicLinkUrl,
     showAuthGate,
     hideAuthGate,
   }
