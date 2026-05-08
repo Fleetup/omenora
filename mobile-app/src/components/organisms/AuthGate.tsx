@@ -94,7 +94,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
 
   return (
     <BottomSheet visible={visible} onClose={onClose}>
-      <View style={{ paddingBottom: space['6'] }}>
+      <View>
         {gateState === 'idle' && (
           <>
             <Text variant="heading2" color="primary" style={{ textAlign: 'center' }}>

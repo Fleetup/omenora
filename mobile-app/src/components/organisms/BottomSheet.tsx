@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Dimensions, Keyboard, Platform, Pressable, View, StyleSheet } from 'react-native'
+import { Dimensions, Pressable, View, StyleSheet } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  useAnimatedKeyboard,
   withSpring,
   withTiming,
   runOnJS,
@@ -23,28 +24,13 @@ export interface BottomSheetProps {
 export const BottomSheet: React.FC<BottomSheetProps> = ({
   visible,
   onClose,
-  height = SCREEN_HEIGHT * 0.5,
+  height,
   children,
 }) => {
   const { reduceMotion } = useTheme()
   const translateY = useSharedValue(SCREEN_HEIGHT)
   const [shouldRender, setShouldRender] = useState(visible)
-  const [keyboardHeight, setKeyboardHeight] = useState(0)
-
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
-    const showSub = Keyboard.addListener(showEvent, (e) => {
-      setKeyboardHeight(e.endCoordinates.height)
-    })
-    const hideSub = Keyboard.addListener(hideEvent, () => {
-      setKeyboardHeight(0)
-    })
-    return () => {
-      showSub.remove()
-      hideSub.remove()
-    }
-  }, [])
+  const keyboard = useAnimatedKeyboard()
 
   useEffect(() => {
     if (visible) {
@@ -77,7 +63,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     })
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value - keyboardHeight }],
+    transform: [{ translateY: translateY.value }],
+    marginBottom: keyboard.height.value,
   }))
 
   if (!shouldRender) return null
@@ -86,7 +73,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     <View style={styles.overlay}>
       <Pressable style={styles.backdrop} onPress={onClose} />
       <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.sheet, { height }, animatedStyle]}>
+        <Animated.View style={[styles.sheet, height != null && { height }, animatedStyle]}>
           <View style={styles.handle} />
           <View style={styles.content}>
             {children}

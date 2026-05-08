@@ -80,7 +80,9 @@ const styles = StyleSheet.create({
     marginBottom: space['1'],
   },
   input: {
-    ...typeScale.bodyLarge,
+    fontFamily:        typeScale.bodyLarge.fontFamily,
+    fontSize:          typeScale.bodyLarge.fontSize,
+    letterSpacing:     typeScale.bodyLarge.letterSpacing,
     color:             tokens.text.primary,
     paddingVertical:   space['3'],
     paddingHorizontal: space['4'],
