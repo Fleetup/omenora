@@ -3,6 +3,7 @@ import { Alert } from 'react-native'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
 import type { Session } from '@supabase/supabase-js'
+import Purchases from 'react-native-purchases'
 import { supabase } from '../lib/supabase'
 import { AuthGate } from '../components/organisms/AuthGate'
 import { AuthContext, type AuthContextValue } from './AuthContext'
@@ -97,6 +98,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             console.log('[Auth] transfer succeeded:', data)
             previousAnonymousUserIdRef.current = null
+
+            // Set RC custom attributes with profile data
+            try {
+              const { data: profile } = await supabase
+                .from('users')
+                .select('first_name, last_name, email')
+                .eq('id', targetId)
+                .single()
+
+              if (profile) {
+                await Purchases.setAttributes({
+                  $email: profile.email ?? '',
+                  $displayName: profile.first_name
+                    ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}`.trim()
+                    : '',
+                })
+              }
+            } catch (e) {
+              console.warn('[Auth] failed to set RC attributes:', e)
+            }
           }
         } catch (err: any) {
           console.error('[Auth] transfer RPC threw:', err?.message)
