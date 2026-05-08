@@ -1,5 +1,21 @@
+/**
+ * Serves /.well-known/apple-app-site-association
+ *
+ * Required for iOS Universal Links. Nuxt's file-based routing skips
+ * dot-prefixed directories in server/routes/ AND public/, so this
+ * runs as middleware that intercepts the path explicitly.
+ *
+ * Must be served as application/json with no redirect.
+ */
 export default defineEventHandler((event) => {
-  const aasa = {
+  if (event.path !== '/.well-known/apple-app-site-association') {
+    return
+  }
+
+  setHeader(event, 'Content-Type', 'application/json')
+  setHeader(event, 'Cache-Control', 'public, max-age=3600')
+
+  return {
     applinks: {
       details: [
         {
@@ -19,10 +35,4 @@ export default defineEventHandler((event) => {
       ],
     },
   }
-
-  const res = event.node.res
-  res.setHeader('Content-Type', 'application/json')
-  res.setHeader('Cache-Control', 'public, max-age=3600')
-  res.statusCode = 200
-  res.end(JSON.stringify(aasa, null, 2))
 })
