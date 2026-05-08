@@ -77,7 +77,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     })
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
+    transform: [{ translateY: translateY.value - keyboardHeight }],
   }))
 
   if (!shouldRender) return null
@@ -88,7 +88,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.sheet, { height }, animatedStyle]}>
           <View style={styles.handle} />
-          <View style={[styles.content, { paddingBottom: keyboardHeight > 0 ? keyboardHeight : space['6'] }]}>
+          <View style={styles.content}>
             {children}
           </View>
         </Animated.View>
