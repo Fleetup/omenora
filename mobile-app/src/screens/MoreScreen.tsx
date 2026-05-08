@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoreScreenProps } from '../navigation/types';
 import { useProfileStore } from '../stores/profileStore';
+import { useAuth } from '../context/useAuth';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { LabelCaps, ShortRule, AnnotationText } from '../components/ui';
@@ -29,6 +30,7 @@ type MenuItem = {
 
 export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
   const { firstName } = useProfileStore();
+  const { showAuthGate, signOut, isAnonymous, user } = useAuth();
 
   const menuItems: MenuItem[] = [
     {
@@ -40,7 +42,15 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
       onPress: () => navigation.navigate('Terms'),
     },
     ...(__DEV__
-      ? [{ label: 'Component Gallery', sub: 'Dev only', onPress: () => navigation.navigate('Components') }]
+      ? [
+          { label: 'Component Gallery', sub: 'Dev only', onPress: () => navigation.navigate('Components') },
+          { label: 'Test AuthGate', sub: 'Dev only', onPress: () => showAuthGate() },
+          {
+            label: isAnonymous ? 'Anonymous user' : `Signed in: ${user?.email ?? 'no email'}`,
+            sub: 'Dev only — tap to sign out',
+            onPress: () => signOut({ skipWarning: true }),
+          },
+        ]
       : []),
   ];
 
@@ -54,7 +64,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({ navigation }) => {
         <View style={styles.header}>
           <LabelCaps>Account</LabelCaps>
           <Text style={styles.heading}>
-            {firstName ? `Hello, ${firstName}.` : 'Your account.'}
+            {isAnonymous || !firstName ? 'Account' : `Hello, ${firstName}.`}
           </Text>
           <ShortRule style={styles.rule} />
         </View>

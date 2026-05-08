@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { API_BASE_URL } from '../constants/config';
+import { supabase } from '../lib/supabase';
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -12,19 +13,17 @@ const apiClient: AxiosInstance = axios.create({
 });
 
 // Request interceptor
-apiClient.interceptors.request.use(
-  async (config) => {
-    // Add any auth tokens here if needed
-    // const token = await AsyncStorage.getItem('authToken');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+apiClient.interceptors.request.use(async (config) => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.access_token) {
+      config.headers.Authorization = `Bearer ${session.access_token}`
+    }
+  } catch (err) {
+    console.warn('[api] Failed to attach auth token:', err)
   }
-);
+  return config
+})
 
 // Response interceptor
 apiClient.interceptors.response.use(
