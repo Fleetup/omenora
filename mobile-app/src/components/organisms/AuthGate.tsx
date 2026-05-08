@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { View, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, ActivityIndicator } from 'react-native'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import { Mail, ArrowLeft } from 'lucide-react-native'
 import { GoogleSigninButton } from '@react-native-google-signin/google-signin'
@@ -94,11 +94,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
 
   return (
     <BottomSheet visible={visible} onClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
-      >
-        <View style={{ paddingHorizontal: space['5'], paddingBottom: space['6'] }}>
+      <View style={{ paddingHorizontal: space['5'], paddingBottom: space['6'] }}>
         {gateState === 'idle' && (
           <>
             <Text variant="heading2" color="primary" style={{ textAlign: 'center' }}>
@@ -221,8 +217,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
             <Button label="Got it" onPress={onClose} />
           </>
         )}
-        </View>
-      </KeyboardAvoidingView>
+      </View>
     </BottomSheet>
   )
 }

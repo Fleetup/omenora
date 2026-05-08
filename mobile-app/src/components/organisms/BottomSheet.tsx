@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Dimensions, Pressable, View, StyleSheet } from 'react-native'
+import { Dimensions, Keyboard, Platform, Pressable, View, StyleSheet } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   useSharedValue,
@@ -29,6 +29,22 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   const { reduceMotion } = useTheme()
   const translateY = useSharedValue(SCREEN_HEIGHT)
   const [shouldRender, setShouldRender] = useState(visible)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height)
+    })
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0)
+    })
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [])
 
   useEffect(() => {
     if (visible) {
@@ -72,7 +88,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.sheet, { height }, animatedStyle]}>
           <View style={styles.handle} />
-          <View style={styles.content}>
+          <View style={[styles.content, { paddingBottom: keyboardHeight > 0 ? keyboardHeight : space['6'] }]}>
             {children}
           </View>
         </Animated.View>
