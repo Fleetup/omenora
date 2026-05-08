@@ -84,8 +84,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           })
 
           if (error) {
-            console.error('[Auth] transfer_anonymous_user failed:', error.message)
-            // Non-blocking: user is signed in regardless. Log to Sentry when wired.
+            if (error.message?.includes('source user does not exist')) {
+              // Anonymous user was cleaned up by Supabase (30-day expiry) or
+              // deleted in a previous session. Non-fatal — permanent sign-in
+              // already succeeded. Clear ref so we don't retry.
+              console.warn('[Auth] transfer_anonymous_user: source already gone, skipping')
+              previousAnonymousUserIdRef.current = null
+            } else {
+              console.error('[Auth] transfer_anonymous_user failed:', error.message)
+              // Non-blocking: user is signed in regardless. Log to Sentry when wired.
+            }
           } else {
             console.log('[Auth] transfer succeeded:', data)
             previousAnonymousUserIdRef.current = null

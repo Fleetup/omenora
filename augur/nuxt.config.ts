@@ -29,6 +29,7 @@ export default defineNuxtConfig({
     inngestSigningKey: '',
     stripeWebhookSecret: '',
     resendWebhookSecret: '',
+    revenuecatWebhookSecret: '',
     redisUrl: '',
     adminSecret: '',
     public: {
