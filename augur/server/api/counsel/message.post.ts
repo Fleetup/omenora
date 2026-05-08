@@ -5,8 +5,6 @@
  * increments usage. Real Claude streaming chat deferred to Phase 4 when
  * the Counsel chat screen is built.
  */
-import { requirePremiumWithUsage, incrementUsage } from '~/server/utils/entitlements'
-
 export default defineEventHandler(async (event) => {
   const ctx = await requirePremiumWithUsage(event, 'counsel')
   await incrementUsage(ctx.userId, ctx.feature, ctx.period)
