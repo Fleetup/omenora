@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { Alert } from 'react-native'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
@@ -26,6 +26,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     title?: string
     body?: string
   }>({ visible: false })
+
+  const previousAnonymousUserIdRef = useRef<string | null>(null)
 
   // Bootstrap: subscribe to auth changes, sign in anonymously if no session.
   useEffect(() => {
@@ -56,8 +58,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     bootstrap()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (mounted) setSession(newSession)
+
+      // Capture anonymous user ID when bootstrap completes
+      if (newSession?.user?.is_anonymous) {
+        previousAnonymousUserIdRef.current = newSession.user.id
+      }
+
+      // On sign-in transition: anonymous → permanent
+      if (
+        event === 'SIGNED_IN' &&
+        newSession?.user &&
+        !newSession.user.is_anonymous &&
+        previousAnonymousUserIdRef.current &&
+        previousAnonymousUserIdRef.current !== newSession.user.id
+      ) {
+        const sourceId = previousAnonymousUserIdRef.current
+        const targetId = newSession.user.id
+
+        try {
+          const { data, error } = await supabase.rpc('transfer_anonymous_user', {
+            source_user_id: sourceId,
+            target_user_id: targetId,
+          })
+
+          if (error) {
+            console.error('[Auth] transfer_anonymous_user failed:', error.message)
+            // Non-blocking: user is signed in regardless. Log to Sentry when wired.
+          } else {
+            console.log('[Auth] transfer succeeded:', data)
+            previousAnonymousUserIdRef.current = null
+          }
+        } catch (err: any) {
+          console.error('[Auth] transfer RPC threw:', err?.message)
+        }
+      }
     })
 
     return () => {
