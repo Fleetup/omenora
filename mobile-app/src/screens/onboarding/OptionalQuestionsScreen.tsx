@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
+import { MotiView } from 'moti'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { OnboardingStep } from '../../components/templates'
@@ -110,7 +111,7 @@ export default function OptionalQuestionsScreen() {
       progress={<ProgressDots total={QUESTIONS.length} current={questionIndex} />}
       heading={currentQ.question}
       footer={
-        <View style={{ gap: space['3'] }}>
+        <View style={styles.footerActions}>
           <Button
             label={isLast ? 'Finish' : 'Continue'}
             variant="primary"
@@ -122,12 +123,17 @@ export default function OptionalQuestionsScreen() {
             label="Skip for now"
             variant="tertiary"
             fullWidth
-            onPress={() => navigation.replace('PremiumTeaser')}
+            onPress={saveAllAndNavigate}
           />
         </View>
       }
     >
-      <View>
+      <MotiView
+        key={questionIndex}
+        from={{ opacity: 0, translateX: 8 }}
+        animate={{ opacity: 1, translateX: 0 }}
+        transition={{ type: 'timing', duration: 220 }}
+      >
         {currentQ.type === 'multi' ? (
           <ChipGroup
             mode="multi"
@@ -147,7 +153,13 @@ export default function OptionalQuestionsScreen() {
             }
           />
         )}
-      </View>
+      </MotiView>
     </OnboardingStep>
   )
 }
+
+const styles = StyleSheet.create({
+  footerActions: {
+    gap: space['3'],
+  },
+})

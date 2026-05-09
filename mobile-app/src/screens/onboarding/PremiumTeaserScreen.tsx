@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import { View, StyleSheet, SafeAreaView, ScrollView } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { View, StyleSheet, ScrollView } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { MotiView } from 'moti'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Text } from '../../components/atoms'
@@ -22,6 +24,7 @@ const BENEFITS = [
 
 export default function PremiumTeaserScreen() {
   const navigation = useNavigation<PremiumTeaserNavProp>()
+  const insets = useSafeAreaInsets()
 
   const archetype  = useProfileStore((s) => s.archetype)
   const archetypeName =
@@ -34,16 +37,16 @@ export default function PremiumTeaserScreen() {
 
   const [awaitingAuth, setAwaitingAuth] = useState(false)
 
-  const proceedToPaywall = () => {
+  const proceedToPaywall = useCallback(() => {
     presentPaywall().finally(() => navigation.replace('MainTabs'))
-  }
+  }, [presentPaywall, navigation])
 
   useEffect(() => {
     if (awaitingAuth && !isAnonymous) {
       setAwaitingAuth(false)
       proceedToPaywall()
     }
-  }, [awaitingAuth, isAnonymous])
+  }, [awaitingAuth, isAnonymous, proceedToPaywall])
 
   const handleUnlock = () => {
     if (isAnonymous) {
@@ -58,14 +61,18 @@ export default function PremiumTeaserScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root} edges={['top']}>
       <View style={styles.glow} pointerEvents="none" />
 
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        <SafeAreaView>
+        <MotiView
+          from={{ opacity: 0, translateY: 12 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 400, delay: 100 }}
+        >
           <View style={styles.hero}>
             <Text variant="micro" color="secondary" style={styles.heroEyebrow}>
               You are
@@ -74,20 +81,32 @@ export default function PremiumTeaserScreen() {
               {archetypeName}
             </Text>
           </View>
+        </MotiView>
 
-          <Text variant="display2" color="primary" style={styles.heading}>
+        <MotiView
+          from={{ opacity: 0, translateY: 12 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 400, delay: 260 }}
+        >
+          <Text variant="display2" color="primary" style={styles.heading} accessibilityRole="header">
             Your full reading awaits
           </Text>
+        </MotiView>
 
+        <MotiView
+          from={{ opacity: 0, translateY: 12 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 400, delay: 420 }}
+        >
           <View style={styles.bullets}>
             {BENEFITS.map((b) => (
               <FeatureListItem key={b.label} icon={b.icon} label={b.label} />
             ))}
           </View>
-        </SafeAreaView>
+        </MotiView>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(space['8'], insets.bottom + space['4']) }]}>
         <Button
           label="Unlock Premium"
           variant="primary"
@@ -102,7 +121,7 @@ export default function PremiumTeaserScreen() {
           style={styles.maybeLater}
         />
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 
@@ -148,7 +167,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: layout.screenPadding,
-    paddingBottom:     space['8'],
     gap:               space['3'],
   },
   maybeLater: {

@@ -32,6 +32,9 @@ export const Chip: React.FC<ChipProps> = (props) => {
     return (
       <Pressable
         onPress={handlePress}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: selected }}
+        accessibilityLabel={label}
         style={[
           styles.base,
           selected ? styles.selectionSelected : styles.selectionDefault,

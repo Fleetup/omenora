@@ -54,7 +54,7 @@ export const OnboardingStep: React.FC<OnboardingStepProps> = ({
           {eyebrow}
         </Text>
       )}
-      <Text variant="display2" color="primary">
+      <Text variant="display2" color="primary" accessibilityRole="header">
         {heading}
       </Text>
       {subheading != null && (

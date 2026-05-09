@@ -1,9 +1,10 @@
 import React from 'react'
-import { View } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { OnboardingStep } from '../../components/templates'
 import { Button } from '../../components/atoms'
+import { PhoenixLoader } from '../../components/ui/PhoenixLoader'
 import { RootStackParamList } from '../../navigation/types'
 
 type WelcomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>
@@ -27,7 +28,17 @@ export default function WelcomeScreen() {
         />
       }
     >
-      <View />
+      <View style={styles.visual}>
+        <PhoenixLoader size={88} />
+      </View>
     </OnboardingStep>
   )
 }
+
+const styles = StyleSheet.create({
+  visual: {
+    flex:           1,
+    alignItems:     'center',
+    justifyContent: 'center',
+  },
+})

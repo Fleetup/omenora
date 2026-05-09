@@ -1,5 +1,5 @@
-import React from 'react'
-import { Pressable, StyleSheet, View } from 'react-native'
+import React, { useEffect, useRef } from 'react'
+import { Animated, Pressable, StyleSheet, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { MapPin } from 'lucide-react-native'
@@ -38,9 +38,28 @@ export default function BirthInfoScreen() {
 
   const canContinue = firstName.trim().length > 0 && dateOfBirth.length > 0 && city.length > 0
 
+  const progressAnim = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue:         1,
+      duration:        500,
+      useNativeDriver: false,
+    }).start()
+  }, [])
+
   const stepProgress = (
     <View style={styles.stepTrack}>
-      <View style={[styles.stepFill, { width: `${(1 / 7) * 100}%` }]} />
+      <Animated.View
+        style={[
+          styles.stepFill,
+          {
+            width: progressAnim.interpolate({
+              inputRange:  [0, 1],
+              outputRange: ['0%', `${Math.round((1 / 7) * 100)}%`],
+            }),
+          },
+        ]}
+      />
     </View>
   )
 
@@ -84,14 +103,22 @@ export default function BirthInfoScreen() {
 
         <Pressable
           onPress={() => navigation.navigate('BirthTimeLocation')}
+          accessibilityRole="button"
+          accessibilityLabel="Set birth time and location"
+          accessibilityHint={city.length > 0 ? 'City confirmed. Tap to change.' : 'City is required to continue'}
           style={styles.locationRow}
         >
           <MapPin size={18} color={tokens.accent.primary} />
           <Text variant="body" color="accent" style={styles.locationLabel}>
-            Set birth time &amp; location
+            Set birth time & location
           </Text>
         </Pressable>
 
+        {city.length === 0 && (
+          <Text variant="caption" color="tertiary" style={styles.caption}>
+            Location is required
+          </Text>
+        )}
         {timeOfBirth.length > 0 && city.length > 0 && (
           <Text variant="caption" color="secondary" style={styles.caption}>
             {timeOfBirth} · {city}

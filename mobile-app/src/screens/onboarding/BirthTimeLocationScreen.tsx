@@ -36,7 +36,11 @@ export default function BirthTimeLocationScreen() {
   const setTimeOfBirth = useProfileStore((s) => s.setTimeOfBirth)
   const setCity        = useProfileStore((s) => s.setCity)
 
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(
+    city.length > 0
+      ? { id: '', name: city, country: '', countryCode: '', lat: 0, lon: 0, displayName: city }
+      : null
+  )
 
   const handleTimeChange = (date: Date | null) => {
     setTimeOfBirth(dateToTimeString(date))
@@ -52,8 +56,8 @@ export default function BirthTimeLocationScreen() {
   return (
     <OnboardingStep
       onBack={() => navigation.goBack()}
-      heading="Birth time &amp; place"
-      subheading="Birth time is optional but improves accuracy"
+      heading="Birth time & place"
+      subheading="City is required. Birth time is optional but improves accuracy."
       footer={
         <Button
           label="Confirm"

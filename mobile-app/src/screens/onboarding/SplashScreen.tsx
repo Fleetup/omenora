@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { View, StyleSheet } from 'react-native'
+import { Animated, Dimensions, View, StyleSheet } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import Svg, { Circle } from 'react-native-svg'
@@ -9,15 +9,21 @@ import { RootStackParamList } from '../../navigation/types'
 
 type SplashNavProp = NativeStackNavigationProp<RootStackParamList, 'Splash'>
 
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window')
+
 const STAR_POSITIONS = (() => {
-  const result: { cx: number; cy: number }[] = []
+  const result: { cx: number; cy: number; r: number; opacity: number }[] = []
   let seed = 42
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 40; i++) {
     seed = (seed * 1664525 + 1013904223) & 0x7fffffff
-    const cx = (seed % 370) + 10
+    const cx = (seed % Math.floor(SCREEN_W - 20)) + 10
     seed = (seed * 1664525 + 1013904223) & 0x7fffffff
-    const cy = (seed % 820) + 12
-    result.push({ cx, cy })
+    const cy = (seed % Math.floor(SCREEN_H - 24)) + 12
+    seed = (seed * 1664525 + 1013904223) & 0x7fffffff
+    const r  = (seed % 5 === 0) ? 2 : 1
+    seed = (seed * 1664525 + 1013904223) & 0x7fffffff
+    const opacity = 0.08 + ((seed % 10) / 10) * 0.17
+    result.push({ cx, cy, r, opacity })
   }
   return result
 })()
@@ -25,6 +31,15 @@ const STAR_POSITIONS = (() => {
 export default function SplashScreen() {
   const navigation = useNavigation<SplashNavProp>()
   const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fadeAnim   = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue:         1,
+      duration:        700,
+      useNativeDriver: true,
+    }).start()
+  }, [])
 
   useEffect(() => {
     timerRef.current = setTimeout(() => {
@@ -39,14 +54,16 @@ export default function SplashScreen() {
     <View style={styles.container}>
       <Svg
         style={StyleSheet.absoluteFill}
-        viewBox="0 0 390 844"
+        viewBox={`0 0 ${SCREEN_W} ${SCREEN_H}`}
         preserveAspectRatio="xMidYMid slice"
       >
         {STAR_POSITIONS.map((s, i) => (
-          <Circle key={i} cx={s.cx} cy={s.cy} r={1} fill="rgba(255,255,255,0.04)" />
+          <Circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill={`rgba(255,255,255,${s.opacity.toFixed(2)})`} />
         ))}
       </Svg>
-      <Text variant="display2" style={styles.wordmark}>OMENORA</Text>
+      <Animated.View style={{ opacity: fadeAnim }}>
+        <Text variant="display2" style={styles.wordmark}>OMENORA</Text>
+      </Animated.View>
     </View>
   )
 }

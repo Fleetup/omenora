@@ -1,10 +1,10 @@
 import React from 'react'
-import { View, StyleSheet, SafeAreaView } from 'react-native'
+import { View, StyleSheet } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { MotiView } from 'moti'
-import { Text } from '../../components/atoms'
-import { Button } from '../../components/atoms'
+import { Button, Text } from '../../components/atoms'
 import { tokens, space, layout } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
 
@@ -25,6 +25,7 @@ export default function BigThreeRevealScreen() {
   const navigation = useNavigation<BigThreeRevealNavProp>()
   const route      = useRoute<BigThreeRevealRouteProp>()
   const { sunSign, moonSign, risingSign, archetypeName } = route.params
+  const insets = useSafeAreaInsets()
 
   const cards = PLACEMENTS(sunSign, moonSign, risingSign)
 
@@ -32,7 +33,7 @@ export default function BigThreeRevealScreen() {
     <View style={styles.root}>
       <View style={styles.glow} pointerEvents="none" />
 
-      <SafeAreaView style={styles.content}>
+      <SafeAreaView style={styles.content} edges={['top']}>
         <View style={styles.cards}>
           {cards.map((card, i) => (
             <MotiView
@@ -41,6 +42,8 @@ export default function BigThreeRevealScreen() {
               animate={{ opacity: 1, translateY: 0 }}
               transition={{ type: 'timing', duration: CARD_DURATION, delay: CARD_STAGGER * i }}
               style={styles.card}
+              accessible={true}
+              accessibilityLabel={`${card.label} sign: ${card.sign}`}
             >
               <Text variant="heading2" style={styles.symbol}>
                 {card.symbol}
@@ -66,20 +69,25 @@ export default function BigThreeRevealScreen() {
           <Text variant="micro" color="secondary" style={styles.eyebrow}>
             You are
           </Text>
-          <Text variant="display1" color="primary" style={styles.archetypeName}>
+          <Text variant="display1" color="primary" style={styles.archetypeName} accessibilityRole="header">
             {archetypeName}
           </Text>
         </MotiView>
       </SafeAreaView>
 
-      <View style={styles.footer}>
+      <MotiView
+        from={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ type: 'timing', duration: 300, delay: ARCHETYPE_DELAY + 400 }}
+        style={[styles.footer, { paddingBottom: Math.max(space['8'], insets.bottom + space['4']) }]}
+      >
         <Button
           label="Continue to deeper reading"
           variant="primary"
           fullWidth
           onPress={() => navigation.navigate('OptionalQuestions')}
         />
-      </View>
+      </MotiView>
     </View>
   )
 }
@@ -145,6 +153,5 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: layout.screenPadding,
-    paddingBottom:     space['8'],
   },
 })
