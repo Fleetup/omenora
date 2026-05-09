@@ -1,10 +1,12 @@
 import React from 'react'
-import { Platform, View, ViewStyle } from 'react-native'
+import { Platform, Pressable, StyleSheet, View, ViewStyle } from 'react-native'
+import { ChevronLeft } from 'lucide-react-native'
 import { Text } from '../atoms'
 import { ScreenWrapper } from './ScreenWrapper'
-import { space } from '../../design/tokens'
+import { space, layout, tokens } from '../../design/tokens'
 
 export interface OnboardingStepProps {
+  onBack?: () => void
   progress?: React.ReactNode
   eyebrow?: string
   heading: string
@@ -15,6 +17,7 @@ export interface OnboardingStepProps {
 }
 
 export const OnboardingStep: React.FC<OnboardingStepProps> = ({
+  onBack,
   progress,
   eyebrow,
   heading,
@@ -30,6 +33,17 @@ export const OnboardingStep: React.FC<OnboardingStepProps> = ({
       keyboardBehavior={Platform.OS === 'ios' ? 'padding' : 'none'}
       style={style}
     >
+      {onBack != null && (
+        <Pressable
+          onPress={onBack}
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
+          hitSlop={12}
+          style={styles.backButton}
+        >
+          <ChevronLeft size={24} color={tokens.text.secondary} />
+        </Pressable>
+      )}
       {progress != null && (
         <View style={{ marginBottom: space['6'] }}>
           {progress}
@@ -40,7 +54,7 @@ export const OnboardingStep: React.FC<OnboardingStepProps> = ({
           {eyebrow}
         </Text>
       )}
-      <Text variant="display2" color="primary">
+      <Text variant="display2" color="primary" accessibilityRole="header">
         {heading}
       </Text>
       {subheading != null && (
@@ -59,3 +73,14 @@ export const OnboardingStep: React.FC<OnboardingStepProps> = ({
     </ScreenWrapper>
   )
 }
+
+const styles = StyleSheet.create({
+  backButton: {
+    alignSelf:      'flex-start',
+    minWidth:       layout.tapTarget,
+    minHeight:      layout.tapTarget,
+    alignItems:     'flex-start',
+    justifyContent: 'center',
+    marginBottom:   space['2'],
+  },
+})

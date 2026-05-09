@@ -37,6 +37,9 @@ export interface ProfileState {
   // Calculated Results
   lifePathNumber: number | null;
   archetype: string | null;
+  sunSign:    string | null;
+  moonSign:   string | null;
+  risingSign: string | null;
   reportId: string | null;
   report: Report | null;
   anonymousUserId: string;
@@ -52,7 +55,10 @@ export interface ProfileState {
   setCity: (city: string) => void;
   setAnswer: (questionId: string, value: string) => void;
   setLifePathNumber: (number: number) => void;
-  setArchetype: (archetype: string) => void;
+  setArchetype:  (archetype: string) => void;
+  setSunSign:    (sunSign: string | null) => void;
+  setMoonSign:   (moonSign: string | null) => void;
+  setRisingSign: (risingSign: string | null) => void;
   setReportId: (id: string) => void;
   setReport: (report: Report) => void;
   setAnonymousUserId: (id: string) => void;
@@ -75,6 +81,9 @@ const initialState = {
   answers: {},
   lifePathNumber: null,
   archetype: null,
+  sunSign:    null,
+  moonSign:   null,
+  risingSign: null,
   reportId: null,
   report: null,
   anonymousUserId: '',
@@ -98,7 +107,10 @@ export const useProfileStore = create<ProfileState>()(
         })),
 
       setLifePathNumber: (lifePathNumber) => set({ lifePathNumber }),
-      setArchetype: (archetype) => set({ archetype }),
+      setArchetype:  (archetype)  => set({ archetype }),
+      setSunSign:    (sunSign)    => set({ sunSign }),
+      setMoonSign:   (moonSign)   => set({ moonSign }),
+      setRisingSign: (risingSign) => set({ risingSign }),
       setReportId: (reportId) => set({ reportId }),
       setReport: (report) => set({ report }),
       setAnonymousUserId: (anonymousUserId) => set({ anonymousUserId }),
@@ -111,6 +123,9 @@ export const useProfileStore = create<ProfileState>()(
           answers: {},
           lifePathNumber: null,
           archetype: null,
+          sunSign:    null,
+          moonSign:   null,
+          risingSign: null,
           reportId: null,
           report: null,
           anonymousUserId: '',
@@ -132,7 +147,10 @@ export const useProfileStore = create<ProfileState>()(
         timeOfBirth: state.timeOfBirth,
         city: state.city,
         lifePathNumber: state.lifePathNumber,
-        archetype: state.archetype,
+        archetype:  state.archetype,
+        sunSign:    state.sunSign,
+        moonSign:   state.moonSign,
+        risingSign: state.risingSign,
         reportId: state.reportId,
         report: state.report,
         anonymousUserId: state.anonymousUserId,

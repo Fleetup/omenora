@@ -67,7 +67,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => (
       <View style={styles.ctaBlock}>
         <CTAButton
           label="Begin the reading"
-          onPress={() => navigation.navigate('Analysis')}
+          // Phase 2 bridge: redirects to onboarding entry. HomeScreen itself is deleted in Phase 3.
+          onPress={() => navigation.navigate('BirthInfo')}
           variant="solid"
           arrow
           full
