@@ -13,6 +13,12 @@ const PHOENIX_PATHS: readonly string[] = [
   'M90.69,177.39c2.92.58,7.88,3.47,9.59,6.08-26.95-5.14-53.42-15.39-71.78-36.82,19.04,13.62,38.17,25.96,62.19,30.74Z',
 ];
 
+// react-native-svg 15 supports pathLength at runtime but its type defs omit it
+const ExtendedPath = Path as React.ComponentType<
+  React.ComponentProps<typeof Path> & { pathLength?: number }
+>;
+const AnimatedPath = Animated.createAnimatedComponent(ExtendedPath);
+
 interface PhoenixLoaderProps {
   size?: number;
   color?: string;
@@ -26,37 +32,72 @@ export const PhoenixLoader: React.FC<PhoenixLoaderProps> = ({
   duration = 3600,
   style,
 }) => {
-  const opacity = useRef(new Animated.Value(1)).current;
+  const strokeDashoffset = useRef(new Animated.Value(1)).current;
+  const fillOpacity      = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    const draw    = Math.round(duration * 0.45);
+    const fill    = Math.round(duration * 0.25);
+    const hold    = Math.round(duration * 0.18);
+    const fadeOut = Math.round(duration * 0.12);
+
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, {
-          toValue:         0.28,
-          duration:        Math.round(duration * 0.45),
+        Animated.timing(strokeDashoffset, {
+          toValue:         0,
+          duration:        draw,
           easing:          Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
-        Animated.timing(opacity, {
+        Animated.timing(fillOpacity, {
           toValue:         1,
-          duration:        Math.round(duration * 0.55),
+          duration:        fill,
           easing:          Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
+        Animated.delay(hold),
+        Animated.parallel([
+          Animated.timing(strokeDashoffset, {
+            toValue:         1,
+            duration:        fadeOut,
+            easing:          Easing.in(Easing.ease),
+            useNativeDriver: false,
+          }),
+          Animated.timing(fillOpacity, {
+            toValue:         0,
+            duration:        fadeOut,
+            easing:          Easing.in(Easing.ease),
+            useNativeDriver: false,
+          }),
+        ]),
       ])
     );
     anim.start();
     return () => anim.stop();
-  }, []);
+  }, [duration]);
 
   return (
-    <Animated.View style={[{ width: size, height: size, opacity }, style]}>
-      <Svg width={size} height={size} viewBox="0 0 499.55 483.23">
+    <Animated.View style={[{ width: size, height: size }, style]}>
+      <Svg
+        width={size}
+        height={size}
+        viewBox="0 0 499.55 483.23"
+        accessibilityLabel="Loading"
+        accessibilityRole="image"
+      >
         {PHOENIX_PATHS.map((d, i) => (
-          <Path
+          <AnimatedPath
             key={i}
             d={d}
             fill={color}
+            fillOpacity={fillOpacity as unknown as number}
+            stroke={color}
+            strokeWidth={1.5}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            strokeDasharray={[1]}
+            strokeDashoffset={strokeDashoffset as unknown as number}
+            pathLength={1}
           />
         ))}
       </Svg>
