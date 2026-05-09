@@ -1384,6 +1384,8 @@ if (!hasPremium && !hasCalendar) {
 
 ### Step 1.10 — Run Supabase schema migrations (RC tables)
 
+> **[DECISION 2026-05-08 — supersedes original Step 1.10 spec]** users.is_premium columns NOT added. Replaced with public.subscriptions table as source of truth: RLS-enabled, status enum, indexed on user_id/expires_at/status. Webhook upserts on (user_id, entitlement_id) with rc_event_id for idempotency. Cleaner architecture: history-friendly, no cross-table sync logic, RLS-aware. The revenuecat_events log table from original plan also skipped — webhook idempotency via rc_event_id makes it redundant. Migration: 20260508174952_subscriptions_table.sql.
+
 ```sql
 ALTER TABLE users ADD COLUMN IF NOT EXISTS revenuecat_user_id TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN DEFAULT FALSE;
@@ -1538,6 +1540,8 @@ Add new screens with `animation: 'slide_from_right'`:
 <Stack.Screen name="AuthGate"          component={AuthGateScreen}        options={{ presentation: 'transparentModal' }} />
 ```
 
+> **[DECISION 2026-05-08 — supersedes original Step 2.2 spec]** AuthGate is NOT a screen route. Built as a BottomSheet organism at src/components/organisms/AuthGate.tsx, mounted inside AuthProvider, controlled via authGateState. Triggered by `showAuthGate({ title?, body? })` exposed via useAuth() hook. PremiumTeaser does NOT call navigation.navigate('AuthGate') — it calls showAuthGate() then watches isAnonymous transition via useEffect to fire presentPaywall on success. Better UX: no full-screen route transition, dismissable bottom sheet, no nav stack pollution.
+
 Set initial route:
 - First install (no session data + no profile) → `Splash`
 - Has profile data (returning user, already did onboarding) → `MainTabs`
@@ -1668,6 +1672,8 @@ Presented as `presentation: 'modal'` from `BirthInfoScreen`.
 - `[Unlock Premium]` (primary Button, gold gradient):
   1. If `isAnonymous` → navigate to `AuthGate`
   2. AuthGate succeeds → `presentPaywall({ placement: 'onboarding_end' })`
+
+> **[DECISION 2026-05-09 — Phase 7 amendment]** PurchasesProvider.presentPaywall is currently zero-arg (no placement parameter). Live implementation calls bare presentPaywall(). Phase 7 restoration item: extend PurchasesContext to accept { offering, displayCloseButton, fontFamily } per RC v10, pass placement-derived offering for analytics differentiation across paywall trigger points (onboarding_end vs feature_gate vs settings_upsell). Single-offering ships fine for v1.0; analytics blind spot is acceptable launch debt.
   3. On purchase → navigate to `MainTabs` (Today tab)
   4. On dismiss → navigate to `MainTabs` (free tier, Today tab)
 - `[Maybe later]` (tertiary Button) → navigate to `MainTabs` (free tier)
@@ -1685,6 +1691,8 @@ Remove from `RootNavigator.tsx`:
 Remove from `types.ts`:
 - `Analysis: { step?: number } | undefined`
 - `AnalysisScreenProps` export
+
+> **[CORRECTION 2026-05-09]** Deletion is NOT just file removal. AnalysisScreen had 7 references across 4 files (types.ts, RootNavigator.tsx, HomeScreen.tsx, ReadingScreen.tsx ×3). All 4 files require updates: types.ts removes Analysis route + AnalysisScreenProps export; RootNavigator removes import + Stack.Screen; HomeScreen + ReadingScreen redirect navigate('Analysis') → navigate('BirthInfo') as Phase 2 bridge until Phase 3 deletes the host screens entirely. Bridges marked with inline comments referencing Phase 3 cleanup.
 
 ---
 
@@ -1711,7 +1719,7 @@ Definition of done. All items must pass before starting Phase 3.
 - [ ] `profileStore.archetype` populated after Calculating completes
 - [ ] Returning user (has `dateOfBirth` in store) navigates directly to `MainTabs` on app launch (skips Splash + onboarding)
 - [ ] Analytics events fired: `onboarding_started`, `birth_info_submitted`, `big_three_revealed`, `optional_questions_completed` OR `optional_questions_skipped`
-- [ ] All 8 onboarding screens use `<OnboardingStep>` template
+- ~~All 8 onboarding screens use `<OnboardingStep>` template~~ — **[CORRECTION 2026-05-09]** Only 4 of 8 onboarding screens use OnboardingStep template (BirthInfo, BirthTimeLocation, OptionalQuestions, plus WelcomeScreen). Splash, Calculating, BigThreeReveal, PremiumTeaser are NOT step screens by design — they are transitional, reveal, or teaser screens with bespoke layouts. Original spec was incorrect.
 
 ---
 
@@ -2302,6 +2310,10 @@ Definition of done. All items must pass before starting Phase 7.
 
 ---
 
+> **[ARCHITECTURAL DECISION 2026-05-09 — RC ↔ Supabase identity]** PurchasesProvider intentionally skips Purchases.logIn for anonymous Supabase users (PurchasesProvider.tsx lines 99-103). RC manages its own anonymous identity ($RCAnonymousID:xxx) until permanent sign-in fires logIn(permanentSupabaseId), at which point RC aliases the anonymous purchases to the permanent ID. This is RC's documented best practice for anonymous-first auth flows. Avoids polluting RC dashboard with short-lived Supabase anonymous UUIDs (30-day expiry). Any future "anonymous purchase" feature must rely on RC's automatic aliasing, NOT pre-identifying with the Supabase anonymous UUID — pre-identifying would orphan purchases at the 30-day boundary.
+
+---
+
 ### Step 7.1 — Finalize app assets
 
 Required files (check existence, create if missing):
@@ -2651,6 +2663,20 @@ npx tsc --noEmit
 ```
 
 Zero errors. No warnings in EAS build output. All asset files present.
+
+---
+
+> **[DECISION 2026-05-09 — Onboarding visual polish deferral]** Phase 2 ships functional onboarding without S-tier visual elevation. Deferred to dedicated post-Phase-7 polish pass (~6-10hr, self-contained against existing tokens). Reasoning: maintaining phase momentum > visual perfection mid-build. Polish targets: WelcomeScreen orbital phoenix + star field animation, BirthInfoScreen constellation-themed inputs, BigThreeRevealScreen constellation backdrop + foil shimmer on archetype, PremiumTeaserScreen gold gradient buttons + animated benefit reveals + social proof line. No architectural changes — exercises existing design tokens.
+
+> **[DECISION 2026-05-09 — Today tab post-onboarding state]** Today tab currently shows generic "Begin the reading" / "Check Compatibility" CTAs aimed at users who haven't done a reading. After Phase 2, returning users land on Today with a completed reading already in profileStore. Phase 3 must redesign Today tab content for the "user has reading" state: show their archetype, their big three, their next forecast — not re-pitch them to start a reading they already completed.
+
+> **[BUILD STATE TROUBLESHOOTING 2026-05-09]** Stale DerivedData + stale ios/build/ can cause RC native module load failures (e.g. `Cannot read property 'setLogLevel' of null`) even when CocoaPods state is consistent. CocoaPods path-pods (`:path => '../node_modules/...'` for autolinked RN modules) compile in-place from node_modules and never appear in ios/Pods/ — their absence is correct, NOT corruption. Full reset sequence when native module load fails:
+> 1. `rm -rf ios/Pods ios/Podfile.lock ios/build`
+> 2. `rm -rf ~/Library/Developer/Xcode/DerivedData/OMENORA-*`
+> 3. `cd ios && pod install --repo-update`
+> 4. `cd .. && npx expo run:ios --device`
+>
+> Time cost: ~10 minutes including cold rebuild. Recommended after any native module install/upgrade or when JS sees a "property of null" error from a native module.
 
 ---
 
