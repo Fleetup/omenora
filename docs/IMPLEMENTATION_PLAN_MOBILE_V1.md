@@ -2123,9 +2123,123 @@ Definition of done. All items must pass before starting Phase 5.
 > **[SCOPE EXPANSION 2026-05-10]** Phase 5 was originally scoped as "Counsel chat" only. Phase 3 build revealed `/api/reports/*` endpoints (archetype, natal-chart, forecast) currently return STUB responses with no content. Phase 5 backend track now also includes wiring real LLM-generated content for these three endpoints. ReadingsScreen premium sections currently render placeholder text "Your full reading is being prepared" — this becomes real LLM responses in Phase 5. Scope estimate adjusted accordingly: original Phase 5 ~12 hours (Counsel chat only), revised estimate ~16-18 hours (Counsel chat + 3 LLM endpoint wiring + content prompt engineering). The 3 endpoint stubs in `augur/server/api/reports/` already have the entitlement gates wired (Phase 1 Cluster C); Phase 5 only needs to add content generation.
 
 **Goal:** Build the full Counsel chat experience — compliance disclosure modal, chat UI, message counter, crisis detection, crisis resources screen.
-**Duration:** ~8 hrs
+**Duration:** ~16-18 hrs (per SCOPE EXPANSION 2026-05-10 amendment — original ~8 hrs Counsel-only, +3 LLM endpoint wiring + prompt engineering)
 **Prerequisites:** Phase 1 complete (`isPremium` from RC). Phase 3 complete (`CounselTab` premium state wired).
 **Verify:** Compliance modal shows on first premium session. Chat sends/receives messages via `/api/counsel/message`. Message counter decrements correctly. Crisis keywords show resources instead of forwarding to Claude.
+
+---
+
+> **[ARCHITECTURAL DECISIONS 2026-05-10 — Phase 5 recon]**
+> 
+> Six decisions and three drift corrections captured during Phase 5 pre-flight
+> recon. Apply throughout Phase 5 cluster work.
+> 
+> **Decision 1 — Counsel daily cap.** Accept the existing
+> `FEATURE_CAPS.counsel = { cap: 30, period: 'daily' }` (already wired in
+> `augur/server/utils/entitlements.ts`). No change required. 30 conversations/day
+> at Sonnet 4.6 pricing bounds power-user API cost at ~$2/day worst-case —
+> well within the $10.49/sub/mo net revenue envelope.
+> 
+> **Decision 2 — Conversation retention: stateless per-request.** Mobile client
+> maintains conversation history in local state. Each turn ships full
+> `{ message, conversation_history }` to `/api/counsel/message`. No server-side
+> storage. No new Supabase tables for v1. Trade-off: history lost on
+> app uninstall — acceptable for v1. v1.1 can add server persistence if data
+> shows demand for cross-device sync or longer history retention.
+> 
+> **Decision 3 — CounselDisclosureModal uses `Modal` organism, NOT BottomSheet.**
+> Recon surfaced contradiction: plan Step 5.1 says BottomSheet, plan QG says
+> "cannot be dismissed without accepting." Current BottomSheet has pan-dismiss
+> and backdrop-tap dismiss with no `preventClose` prop. Decision: use Modal
+> organism which natively supports blocking-modal semantics. BottomSheet
+> preserves its dismissible product semantic for non-blocking use cases.
+> 
+> **Decision 4 — answers keys remapping: Solution A (frontend remap).** Mobile
+> maps `{ life_focus → p1, tone_pref → p2, astro_familiarity → p3 }` at send
+> sites (`CalendarScreen` and any future caller). Backend keys (`p1`, `p2`,
+> `p3`) unchanged. `current_season` answer remains unused on backend (v1.1
+> cleanup). Solution B (backend rename) rejected — `generate-report.post.ts`
+> is also used by the Nuxt web funnel where backend fallbacks already work;
+> zero-reward change.
+> 
+> **Decision 5 — Counsel response: plain JSON, not streaming.** Zero streaming
+> infrastructure exists across the 7 current LLM endpoints. Counsel responses
+> are typically 100-400 tokens (~2-5 seconds at Sonnet speeds) — acceptable
+> with a "thinking" loading indicator. v1.1 can add SSE streaming if user
+> testing shows perceived latency hurts engagement.
+> 
+> **Decision 6 — Disclosure modal copy: two-screen pattern locked.**
+> Screen 1 (Introduction): legal/safety framing — substitute language for
+> medical/legal/financial/crisis support, crisis resources backstop.
+> Screen 2 (Consent): AI-specific consent — AI is not human, may be wrong,
+> data sent to Anthropic and not stored after session/never used to train.
+> Footer: "You can revisit these guidelines anytime under More → Counsel
+> guidelines." Active-voice consent button: "I understand — Start chatting".
+> Full copy captured in CounselDisclosureModal implementation spec.
+> 
+> **Drift correction 1 — Counsel endpoint NOT greenfield.**
+> `augur/server/api/counsel/message.post.ts` stub already exists. Auth,
+> usage tracking, and 30/day cap all wired. Phase 5 only adds real Claude
+> call + conversation_history context. ~1hr work, not the ~3hr originally
+> estimated. Plan Cluster 0 prerequisite for "build Counsel endpoint" is
+> REMOVED.
+> 
+> **Drift correction 2 — Analytics moved to Phase 7 (already decided).**
+> Phase 5 Quality Gate item listing `counsel_chat_started`,
+> `counsel_message_sent`, `daily_limit_hit` analytics events conflicts with
+> Phase 4 Decision 5 (analytics infrastructure deferred to Phase 7). Phase 5
+> QG analytics item REMOVED. Replaced by Cluster 0 verification item per
+> Phase 4 amendment pattern.
+> 
+> **Drift correction 3 — Phase 5 duration: ~16-18 hrs, not ~8 hrs.** Plan
+> header for Phase 5 says ~8 hrs (Counsel-only original scope). The SCOPE
+> EXPANSION 2026-05-10 amendment already revised to ~16-18 hrs to include
+> the 3 report endpoint LLM wiring. Header amended for consistency with the
+> expansion amendment.
+
+> **Cluster 0 — Phase 5 prerequisite (~1.5hr)**
+> 
+> Pre-screen-build prerequisite work. Must complete before Clusters 1-4 can
+> proceed.
+> 
+> 0.1 — Add `hasAcceptedCounselDisclosure: boolean` to `profileStore`.
+>   Default false. Persisted in partialize.
+> 
+> 0.2 — Add `CounselChat: undefined` and `CrisisResources: undefined` to
+>   `RootStackParamList`. Add composite screen prop exports
+>   (`CounselChatScreenProps`, `CrisisResourcesScreenProps`).
+> 
+> 0.3 — Add new Zod schemas to `augur/server/utils/ai-schemas.ts` for the
+>   3 in-app reading endpoints:
+>     - `ArchetypeReadingSchema` — full archetype reading response shape
+>     - `NatalChartReadingSchema` — full natal chart response shape
+>     - `ForecastReadingSchema` — 90-day forecast response shape
+>   Reuse `ReportSchema` subsections where applicable. Mobile-side types
+>   in `endpoints.ts` mirror these schemas.
+> 
+> 0.4 — answers keys remapping helper in mobile (per Decision 4):
+>   Add `remapAnswersForBackend(answers)` utility OR inline `{ p1:
+>   answers.life_focus, p2: answers.tone_pref, p3: answers.astro_familiarity }`
+>   at send sites. Apply in `CalendarScreen.tsx` (currently sends raw
+>   `profileStore.answers` per Phase 4 Cluster 3 TODO comment).
+> 
+> 0.5 — Update `endpoints.ts` types for the 3 report endpoints:
+>   - `GetArchetypeReadingRequest`, `GetArchetypeReadingResponse`
+>   - `GetNatalChartReadingRequest`, `GetNatalChartReadingResponse`
+>   - `GetForecastReadingRequest`, `GetForecastReadingResponse`
+>   All currently typed as returning `ReportStubResponse` — replace with
+>   real types matching Cluster 0.3 schemas.
+> 
+> Cluster 0 ships before any screen rewrite or backend LLM wiring. Quality
+> Gate addition: all 5 prerequisite items verified.
+
+> **Plan-vs-reality verified by recon 2026-05-10:**
+> - Counsel endpoint stub already exists (`augur/server/api/counsel/message.post.ts`) — auth + cap + usage all wired. Phase 5 only adds real Claude call.
+> - `counsel: {cap: 30, daily}` already in `FEATURE_CAPS` — no change needed.
+> - Zero Supabase migrations required for v1 stateless model.
+> - `ChatBubble` organism ready (user/counsel/system variants, all token-clean).
+> - `Modal` organism ready (supports blocking-modal semantic for CounselDisclosureModal).
+> - MoreScreen "Counsel guidelines" + "Crisis resources" rows already in place as `disabled` — Phase 5 enables them.
 
 ---
 
@@ -2133,14 +2247,7 @@ Definition of done. All items must pass before starting Phase 5.
 
 **File:** `src/screens/counsel/CounselDisclosureModal.tsx` (new)
 
-Presented as `BottomSheet` organism on first premium Counsel session only.
-Shown once — persist `hasAcceptedCounselDisclosure: boolean` in `profileStore`.
-
-Content:
-- Headline: "Before you begin"
-- Body: "Counsel is AI-generated based on your chart. It is for self-reflection and personal growth only — not medical, legal, or psychological advice."
-- `[I understand, start chatting]` → dismiss modal + open chat
-- Link: "View full Counsel guidelines" → `Linking.openURL('https://omenora.com/counsel-guidelines')`
+Uses `Modal` organism (NOT BottomSheet, per [DECISION 2026-05-10 #3]). Two-screen pattern (introduction → consent) per [DECISION 2026-05-10 #6]. Shown once on first premium Counsel access; `hasAcceptedCounselDisclosure` persisted in `profileStore`. Cannot be dismissed without accepting (Modal organism supports this natively — no swipe-to-dismiss, no backdrop-tap close on the disclosure flow).
 
 ---
 
@@ -2224,6 +2331,17 @@ Zero errors before Phase 6.
 
 ---
 
+> **Vestigial endpoint cleanup (Phase 5 backend track):**
+> `augur/server/api/reports/compatibility.post.ts` (stub) is DELETED in
+> Phase 5. Recon confirmed zero callers — `endpoints.ts` calls
+> `/api/generate-compatibility` (live LLM endpoint, guarded by
+> requirePremiumWithUsage per Phase 4 backend hotfix 6addcfc). The stub
+> deletion is a single file removal in `augur/server/api/reports/`.
+> Per [DECISION 1 in Phase 4 amendments]. Captured here as a Phase 5
+> backend deliverable.
+
+---
+
 ### Phase 5 — Quality Gate
 
 Definition of done. All items must pass before starting Phase 6.
@@ -2237,7 +2355,13 @@ Definition of done. All items must pass before starting Phase 6.
 - [ ] Crisis keyword detection: typing "suicide", "kill myself", or similar → makes NO API call → system bubble shows 988 link → tapping link navigates to `CrisisResourcesScreen`
 - [ ] Free user tapping "Start chatting" CTA → `<LockedCard>` blocks access → paywall presented (placement: `feature_counsel`)
 - [ ] Compliance text visible at all times in chat footer: "AI-generated based on your chart" + "For self-reflection only — not medical or legal advice"
-- [ ] Analytics events fired: `counsel_chat_started`, `counsel_message_sent`, `daily_limit_hit` (when triggered)
+- [ ] **Analytics events:** ~~counsel_chat_started, counsel_message_sent, daily_limit_hit~~ — **MOVED to Phase 7** per [DECISION 2026-05-10 #5 in Phase 4 amendments]. No analytics infrastructure in mobile codebase.
+- [ ] Cluster 0 prerequisites verified:
+  - `hasAcceptedCounselDisclosure` field in `profileStore` with persistence
+  - `CounselChat` + `CrisisResources` routes in `RootStackParamList`
+  - 3 new Zod schemas in `ai-schemas.ts` (ArchetypeReading, NatalChartReading, ForecastReading)
+  - answers remapping applied at all mobile send sites (currently `CalendarScreen`; expand if Phase 5 introduces new callers)
+  - `endpoints.ts` types updated for 3 report endpoints (no longer `ReportStubResponse`)
 
 ---
 
