@@ -23,7 +23,6 @@ export type RootStackParamList = {
   PremiumTeaser:      undefined;
   // App
   MainTabs:      NavigatorScreenParams<TabParamList> | undefined;
-  Report:        { reportId: string } | undefined;
   Calendar:      { calendarId?: string } | undefined;
   Compatibility: { reportId?: string } | undefined;
   Privacy:       undefined;
@@ -49,13 +48,11 @@ export type MoreScreenProps = CompositeScreenProps<
   NativeStackScreenProps<RootStackParamList>
 >;
 
-// Bridge aliases — legacy screens (ReadingScreen, ExploreScreen) import
-// these old names. Removed in Clusters 3-4 when the legacy screens are deleted.
-export type ReadingScreenProps = ReadingsScreenProps;
+// Bridge aliases — legacy screens (ExploreScreen) import this old name.
+// Removed in Cluster 4 when ExploreScreen is deleted.
 export type ExploreScreenProps = CounselScreenProps;
 
 // ── Stack-only screen props ────────────────────────────────────────────────────
-export type ReportScreenProps       = NativeStackScreenProps<RootStackParamList, 'Report'>;
 export type CalendarScreenProps     = NativeStackScreenProps<RootStackParamList, 'Calendar'>;
 export type CompatibilityScreenProps = NativeStackScreenProps<RootStackParamList, 'Compatibility'>;
 export type PrivacyScreenProps      = NativeStackScreenProps<RootStackParamList, 'Privacy'>;

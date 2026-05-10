@@ -1,4 +1,3 @@
-export { CTAButton } from './CTAButton';
 export { EditorialRule } from './EditorialRule';
 export { ShortRule } from './ShortRule';
 export { LabelCaps } from './LabelCaps';
@@ -9,8 +8,6 @@ export { PhoenixLoader } from './PhoenixLoader';
 export { ScreenHeader } from './ScreenHeader';
 export { GhostBadge } from './GhostBadge';
 export type { GhostBadgeVariant } from './GhostBadge';
-export { TraitPill } from './TraitPill';
-export { SectionBlock } from './SectionBlock';
 export { InfoBanner } from './InfoBanner';
 export { ProgressBar } from './ProgressBar';
 export { LockedPreview } from './LockedPreview';

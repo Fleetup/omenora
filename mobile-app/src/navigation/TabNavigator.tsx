@@ -5,7 +5,7 @@ import { Sun, BookOpen, MessageCircle, MoreHorizontal, type LucideIcon } from 'l
 import { TabParamList } from './types';
 import { tokens, typeScale } from '../design/tokens';
 import TodayScreen from '../screens/tabs/TodayScreen';
-import { ReadingScreen } from '../screens/ReadingScreen';
+import ReadingsScreen from '../screens/tabs/ReadingsScreen';
 import { ExploreScreen } from '../screens/ExploreScreen';
 import { MoreScreen } from '../screens/MoreScreen';
 
@@ -37,7 +37,7 @@ export const TabNavigator: React.FC = () => (
     }}
   >
     <Tab.Screen name="TodayTab"    component={TodayScreen} />
-    <Tab.Screen name="ReadingsTab" component={ReadingScreen} />
+    <Tab.Screen name="ReadingsTab" component={ReadingsScreen} />
     <Tab.Screen name="CounselTab"  component={ExploreScreen} />
     <Tab.Screen name="MoreTab"     component={MoreScreen} />
   </Tab.Navigator>

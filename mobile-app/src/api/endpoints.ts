@@ -57,6 +57,13 @@ export interface GenerateBirthChartResponse {
   }
 }
 
+export interface ReportStubResponse {
+  ok:      boolean
+  feature: string
+  usage:   { count: number; cap: number; period: string; resets_at: string }
+  note?:   string
+}
+
 export interface GetDailyCacheRequest {
   date:      string   // ISO YYYY-MM-DD
   language?: string   // 'en' | 'es' | 'pt' | 'hi' | 'ko' | 'zh'
@@ -149,6 +156,22 @@ export const api = {
   // Region Detection
   detectRegion: async () => {
     const response = await apiClient.get('/api/detect-region');
+    return response.data;
+  },
+
+  // Reports (stubs — real LLM content wired in Phase 5)
+  getArchetypeReading: async (): Promise<ReportStubResponse> => {
+    const response = await apiClient.post<ReportStubResponse>('/api/reports/archetype', {});
+    return response.data;
+  },
+
+  getNatalChart: async (): Promise<ReportStubResponse> => {
+    const response = await apiClient.post<ReportStubResponse>('/api/reports/natal-chart', {});
+    return response.data;
+  },
+
+  getForecast: async (): Promise<ReportStubResponse> => {
+    const response = await apiClient.post<ReportStubResponse>('/api/reports/forecast', {});
     return response.data;
   },
 
