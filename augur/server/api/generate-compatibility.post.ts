@@ -53,6 +53,8 @@ function computeCompatibilityTitle(archetypeA: string, archetypeB: string, eleme
 }
 
 export default defineEventHandler(async (event) => {
+  const ctx = await requirePremiumWithUsage(event, 'compatibility')
+
   const config = useRuntimeConfig()
 
   const body = await readBody(event)
@@ -502,6 +504,8 @@ Return ONLY valid JSON, no markdown:
     calculationSource: 'Swiss Ephemeris',
     generatedAt:       new Date().toISOString(),
   }
+
+  await incrementUsage(ctx.userId, ctx.feature, ctx.period)
 
   return {
     success: true,
