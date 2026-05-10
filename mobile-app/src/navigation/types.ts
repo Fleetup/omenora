@@ -24,8 +24,9 @@ export type RootStackParamList = {
   // App
   MainTabs:      NavigatorScreenParams<TabParamList> | undefined;
   Calendar:      { calendarId?: string } | undefined;
-  Compatibility: { reportId?: string } | undefined;
-  Privacy:       undefined;
+  Compatibility:       { reportId?: string } | undefined;
+  TraditionSwitcher:   undefined;
+  Privacy:             undefined;
   Terms:         undefined;
   Components:    undefined;
 };
@@ -53,5 +54,6 @@ export type MoreScreenProps = CompositeScreenProps<
 export type CalendarScreenProps     = NativeStackScreenProps<RootStackParamList, 'Calendar'>;
 export type CompatibilityScreenProps = NativeStackScreenProps<RootStackParamList, 'Compatibility'>;
 export type PrivacyScreenProps      = NativeStackScreenProps<RootStackParamList, 'Privacy'>;
-export type TermsScreenProps           = NativeStackScreenProps<RootStackParamList, 'Terms'>;
-export type BigThreeRevealScreenProps  = NativeStackScreenProps<RootStackParamList, 'BigThreeReveal'>;
+export type TermsScreenProps                = NativeStackScreenProps<RootStackParamList, 'Terms'>;
+export type BigThreeRevealScreenProps       = NativeStackScreenProps<RootStackParamList, 'BigThreeReveal'>;
+export type TraditionSwitcherScreenProps    = NativeStackScreenProps<RootStackParamList, 'TraditionSwitcher'>;
