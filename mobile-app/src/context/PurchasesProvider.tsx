@@ -158,11 +158,18 @@ export function PurchasesProvider({ children }: Props) {
   const isPremium =
     customerInfo?.entitlements?.active?.[PREMIUM_ENTITLEMENT_ID] !== undefined
 
+  const hasCalendar = isPremium || (
+    customerInfo?.nonSubscriptionTransactions?.some(
+      t => t.productIdentifier === 'omenora_calendar_2026'
+    ) ?? false
+  )
+
   return (
     <PurchasesContext.Provider
       value={{
         isReady,
         isPremium,
+        hasCalendar,
         customerInfo,
         currentOffering,
         refreshCustomerInfo,

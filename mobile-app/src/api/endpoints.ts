@@ -1,5 +1,6 @@
 import apiClient from './client';
 import type { Report } from '../stores/profileStore';
+import type { CalendarData } from '../types/calendar';
 
 // Types
 export interface GenerateReportRequest {
@@ -55,6 +56,21 @@ export interface GenerateBirthChartResponse {
     forecast2026:   string
     archetype:      string
   }
+}
+
+export interface GenerateCalendarRequest {
+  firstName:      string
+  archetype:      string
+  element:        string
+  lifePathNumber: number
+  dateOfBirth:    string
+  language:       string
+  answers:        Record<string, string>   // keys: p1, p2, p3
+}
+
+export interface GenerateCalendarResponse {
+  success:  boolean
+  calendar: CalendarData
 }
 
 export interface ReportStubResponse {
@@ -127,17 +143,13 @@ export const api = {
   },
 
   // Calendar
-  generateCalendar: async (data: {
-    firstName: string;
-    dateOfBirth: string;
-    year: number;
-  }) => {
-    const response = await apiClient.post('/api/generate-calendar', data);
+  generateCalendar: async (data: GenerateCalendarRequest): Promise<GenerateCalendarResponse> => {
+    const response = await apiClient.post<GenerateCalendarResponse>('/api/generate-calendar', data);
     return response.data;
   },
 
-  getCalendar: async (calendarId: string) => {
-    const response = await apiClient.post('/api/get-calendar', { calendarId });
+  getCalendar: async (sessionId: string) => {
+    const response = await apiClient.post('/api/get-calendar', { sessionId });
     return response.data;
   },
 
