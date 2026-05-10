@@ -1,116 +1,408 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { CalendarScreenProps } from '../navigation/types';
-import { useProfileStore } from '../stores/profileStore';
-import { colors } from '../theme/colors';
-import { fonts } from '../theme/fonts';
-import { ScreenHeader, GhostBadge, FeatureListItem } from '../components/ui';
+import React, { useState, useCallback, useMemo } from 'react'
+import { ScrollView, View, Pressable, ActivityIndicator, Alert, Dimensions, StyleSheet } from 'react-native'
+import { X, AlertTriangle } from 'lucide-react-native'
+import { Text, Button, Chip } from '../components/atoms'
+import { Card, LockedCard, Header, BottomSheet } from '../components/organisms'
+import { ScreenWrapper, ErrorState } from '../components/templates'
+import { useProfileStore } from '../stores/profileStore'
+import { usePurchases } from '../context/usePurchases'
+import api from '../api/endpoints'
+import { tokens, space, layout, radius } from '../design/tokens'
+import type { CalendarScreenProps } from '../navigation/types'
+import type { CalendarData, CalendarMonth } from '../types/calendar'
 
-// Screen-internal color constants
-const CAL_BAR_COLOR    = 'rgba(140, 110, 255, 0.88)';
-const LOCKED_FADE: [string, string, string] = ['transparent', 'rgba(5, 4, 16, 0.82)', colors.bone];
-const UPGRADE_BTN_BORDER = 'rgba(201, 169, 97, 0.32)';
+// ── Module-level constants ────────────────────────────────────────────────────
 
-const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-const PREVIEW_BARS = [0.72, 0.45, 0.88, 0.55, 0.94, 0.63, 0.81, 0.5, 0.76, 0.42, 0.85, 0.68];
-const LABELS = ['Peak', 'Rest', 'Peak', 'Build', 'Peak', 'Build', 'High', 'Rest', 'High', 'Rest', 'Peak', 'High'];
+const MONTH_ABBREVS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'] as const
+const SHEET_HEIGHT  = Math.round(Dimensions.get('window').height * 0.75)
+
+// ── State machine ─────────────────────────────────────────────────────────────
+
+type ScreenState =
+  | { kind: 'initial' }
+  | { kind: 'loading' }
+  | { kind: 'result'; data: CalendarData }
+  | { kind: 'error'; message: string }
+
+// ── Month detail (rendered inside BottomSheet) ────────────────────────────────
+
+function MonthDetail({ month, onClose }: { month: CalendarMonth; onClose: () => void }) {
+  return (
+    <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+      <View style={detail.header}>
+        <Text variant="display2" style={detail.monthName}>{month.month}</Text>
+        <Pressable onPress={onClose} hitSlop={12}>
+          <X size={24} color={tokens.text.secondary} />
+        </Pressable>
+      </View>
+
+      <Text variant="micro" style={detail.label}>THEME</Text>
+      <Text variant="body" style={detail.value}>{month.theme}</Text>
+
+      <View style={detail.energyRow}>
+        <Text variant="micro" style={detail.label}>ENERGY</Text>
+        <View style={detail.energyBarWrap}>
+          <View
+            style={[
+              detail.energyBarFill,
+              { width: `${month.energyLevel}%`, backgroundColor: month.color },
+            ]}
+          />
+        </View>
+      </View>
+
+      <Card variant="default" padding="compact" style={detail.dimCard}>
+        <Text variant="micro" style={detail.label}>LOVE</Text>
+        <Text variant="body" style={detail.cardBody}>{month.love}</Text>
+      </Card>
+      <Card variant="default" padding="compact" style={detail.dimCard}>
+        <Text variant="micro" style={detail.label}>MONEY</Text>
+        <Text variant="body" style={detail.cardBody}>{month.money}</Text>
+      </Card>
+      <Card variant="default" padding="compact" style={detail.dimCard}>
+        <Text variant="micro" style={detail.label}>CAREER</Text>
+        <Text variant="body" style={detail.cardBody}>{month.career}</Text>
+      </Card>
+
+      {month.warning != null && (
+        <Card variant="default" padding="compact" style={detail.warningCard}>
+          <View style={detail.warningHeader}>
+            <AlertTriangle size={14} color={tokens.state.warning} />
+            <Text variant="micro" style={[detail.label, detail.warningLabel]}>WARNING</Text>
+          </View>
+          <Text variant="body" style={detail.warningBody}>{month.warning}</Text>
+        </Card>
+      )}
+
+      <Text variant="micro" style={[detail.label, detail.luckyLabel]}>LUCKY DAYS</Text>
+      <View style={detail.luckyDaysRow}>
+        {month.luckyDays.map((day) => (
+          <Chip key={day} variant="label" label={String(day)} />
+        ))}
+      </View>
+    </ScrollView>
+  )
+}
+
+const detail = StyleSheet.create({
+  header:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: space['3'] },
+  monthName:    { color: tokens.text.primary },
+  label:        { color: tokens.text.accent, marginBottom: space['1'] },
+  value:        { color: tokens.text.secondary, marginBottom: space['4'] },
+  energyRow:    { marginBottom: space['4'] },
+  energyBarWrap: {
+    height:          6,
+    backgroundColor: tokens.surface.overlay,
+    borderRadius:    radius.xs,
+    overflow:        'hidden',
+  },
+  energyBarFill: {
+    height:       '100%',
+    borderRadius: radius.xs,
+  },
+  dimCard:       { marginBottom: space['2'] },
+  cardBody:      { color: tokens.text.secondary },
+  warningCard:   { marginBottom: space['2'] },
+  warningHeader: { flexDirection: 'row', alignItems: 'center', gap: space['1'], marginBottom: space['1'] },
+  warningLabel:  { color: tokens.state.warning },
+  warningBody:   { color: tokens.state.warning },
+  luckyLabel:    { marginTop: space['2'] },
+  luckyDaysRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: space['2'] },
+})
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) => {
-  const store = useProfileStore();
+  const firstName        = useProfileStore((s) => s.firstName)
+  const dateOfBirth      = useProfileStore((s) => s.dateOfBirth)
+  const lifePathNumber   = useProfileStore((s) => s.lifePathNumber)
+  const archetype        = useProfileStore((s) => s.archetype)
+  const languageOverride = useProfileStore((s) => s.languageOverride)
+  const report           = useProfileStore((s) => s.report)
+  const answers          = useProfileStore((s) => s.answers)
+  const calendarData     = useProfileStore((s) => s.calendarData)
+  const setCalendarData  = useProfileStore((s) => s.setCalendarData)
+
+  const { hasCalendar, presentPaywall } = usePurchases()
+
+  const [state, setState] = useState<ScreenState>(
+    // TODO: v1.1 — detect calendar.year mismatch vs current year and prompt
+    // regeneration instead of using potentially stale cached data.
+    calendarData != null ? { kind: 'result', data: calendarData } : { kind: 'initial' }
+  )
+  const [expandedMonth, setExpandedMonth] = useState<number | null>(null)
+
+  const expandedMonthData = useMemo<CalendarMonth | null>(() => {
+    if (state.kind !== 'result' || expandedMonth === null) return null
+    return state.data.months.find((m) => m.number === expandedMonth) ?? null
+  }, [state, expandedMonth])
+
+  const handleGenerate = useCallback(async () => {
+    if (!firstName || !archetype || !report?.element || lifePathNumber === null || !dateOfBirth) {
+      setState({ kind: 'error', message: 'Complete your profile first to generate a calendar.' })
+      return
+    }
+
+    setExpandedMonth(null)
+    setState({ kind: 'loading' })
+
+    try {
+      const response = await api.generateCalendar({
+        firstName,
+        archetype,
+        element:        report.element,
+        lifePathNumber,
+        dateOfBirth,
+        language:       languageOverride ?? 'en',
+        // TODO Phase 5: profileStore.answers uses keys (life_focus, current_season,
+        // tone_pref, astro_familiarity) from OptionalQuestionsScreen, but backend
+        // reads (p1, p2, p3) with fallbacks ('growth', 'direct', 'self'). Backend
+        // uses fallback defaults since keys don't match. Resolve in Phase 5 LLM
+        // consolidation by either remapping keys here or updating the backend prompt
+        // to accept the actual keys from OptionalQuestionsScreen.
+        answers: answers ?? {},
+      })
+
+      if (response.success && response.calendar) {
+        setCalendarData(response.calendar)
+        setState({ kind: 'result', data: response.calendar })
+      } else {
+        setState({ kind: 'error', message: 'Something went wrong. Please try again.' })
+      }
+    } catch (err: unknown) {
+      const status   = (err as { response?: { status?: number } })?.response?.status
+      const errorKey = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      if (status === 429 || errorKey === 'monthly_limit_reached') {
+        setState({ kind: 'error', message: "You've reached your monthly calendar limit. Resets next month." })
+      } else if (status === 403 || errorKey === 'subscription_required') {
+        setState({ kind: 'error', message: 'Calendar requires Premium. Tap below to unlock.' })
+      } else {
+        setState({ kind: 'error', message: "Couldn't generate the calendar. Please try again." })
+      }
+    }
+  }, [firstName, archetype, report, lifePathNumber, dateOfBirth, languageOverride, answers, setCalendarData])
+
+  const handleUnlockPress = useCallback(async () => {
+    try {
+      await presentPaywall()
+    } catch (err) {
+      console.warn('[Calendar] presentPaywall threw:', err)
+    }
+  }, [presentPaywall])
+
+  const handleRegeneratePress = useCallback(() => {
+    Alert.alert(
+      'Regenerate calendar?',
+      'Your current calendar will be replaced.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Regenerate', style: 'destructive', onPress: handleGenerate },
+      ]
+    )
+  }, [handleGenerate])
 
   return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient colors={colors.gradients.cosmic} style={styles.gradient}>
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <View style={styles.root}>
+      <ScreenWrapper scroll={false} padded={false} background="base">
+        <Header title="Lucky Timing 2026" onBack={() => navigation.goBack()} />
 
-          <ScreenHeader
-            onBack={() => navigation.goBack()}
-            right={<GhostBadge label="🔒 LOCKED" variant="ghost" />}
-          />
-
-          {/* Eyebrow */}
-          <Text style={styles.eyebrow}>YOUR 2026 DESTINY CALENDAR</Text>
-          <Text style={styles.heading}>Lucky Timing{'\n'}Forecast</Text>
-          <Text style={styles.subheading}>
-            {store.firstName ? `Calculated for ${store.firstName}` : 'Personalized to your birth data'}
-          </Text>
-
-          {/* Calendar preview (always shown, blurred overlay if locked) */}
-          <View style={styles.calendarCard}>
-            {MONTHS.map((month, i) => (
-              <View key={month} style={styles.calRow}>
-                <Text style={styles.calMonth}>{month}</Text>
-                <View style={styles.calBarTrack}>
-                  <View style={[styles.calBar, { width: `${PREVIEW_BARS[i] * 100}%`, opacity: 0.3 }]} />
-                </View>
-                <Text style={[styles.calLabel, styles.calLabelLocked]}>{LABELS[i]}</Text>
-              </View>
-            ))}
-
-            <LinearGradient
-              colors={LOCKED_FADE}
-              style={styles.calFade}
-              pointerEvents="none"
-            />
+        {state.kind === 'loading' ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color={tokens.accent.primary} />
+            <Text variant="body" style={styles.loadingText}>Mapping 2026 for you…</Text>
+            <Text variant="caption" style={styles.loadingHint}>
+              Reading planetary alignments through the year.
+            </Text>
           </View>
 
-          {/* ── Upgrade state ── */}
-          <View style={styles.upgradeBox}>
-              <Text style={styles.upgradeTitle}>Unlock Your 2026 Calendar</Text>
-              <Text style={styles.upgradeDesc}>
-                Month-by-month lucky windows personalized to your archetype, life path, and birth city — for love, money, decisions, and rest.
-              </Text>
-              <View style={styles.featureList}>
-                {['Optimal action windows by month', 'Love & relationship timing', 'Career & financial cycles', 'Rest & recovery periods'].map(f => (
-                  <FeatureListItem key={f} label={f} />
-                ))}
-              </View>
-              <Text style={styles.upgradeNote}>Also included in Full Oracle · $12.99</Text>
-            </View>
-        </ScrollView>
-      </LinearGradient>
-    </SafeAreaView>
-  );
-};
+        ) : state.kind === 'error' ? (
+          <ErrorState
+            heading="Couldn't generate the calendar"
+            body={state.message}
+            actionLabel="Try again"
+            onActionPress={() => setState({ kind: 'initial' })}
+          />
+
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text variant="body" style={styles.intro}>
+              See the energy of every month in 2026 — when to push, when to pause,{' '}
+              when luck favors you.
+            </Text>
+
+            {state.kind === 'result' ? (
+              <>
+                <Card variant="premium" padding="premium">
+                  <Text variant="heading2" style={styles.themeHeading}>
+                    {state.data.overallTheme}
+                  </Text>
+                  <View style={styles.themeMeta}>
+                    <Text variant="caption" style={styles.peakText}>
+                      Peak months: {state.data.peakMonths.join(', ')}
+                    </Text>
+                    <Text variant="caption" style={styles.cautionText}>
+                      Caution months: {state.data.cautionMonths.join(', ')}
+                    </Text>
+                  </View>
+                </Card>
+
+                <View style={styles.grid}>
+                  {state.data.months.map((month) => (
+                    <Pressable
+                      key={month.number}
+                      style={({ pressed }) => [styles.cellWrap, pressed && styles.cellPressed]}
+                      onPress={() => setExpandedMonth(month.number)}
+                    >
+                      <Card variant="default" padding="compact" style={styles.cell}>
+                        <View style={styles.cellTop}>
+                          <Text variant="micro" style={styles.cellMonth}>
+                            {month.month.slice(0, 3).toUpperCase()}
+                          </Text>
+                          {month.warning != null && (
+                            <AlertTriangle size={10} color={tokens.state.warning} />
+                          )}
+                        </View>
+                        <View style={styles.energyTrack}>
+                          <View
+                            style={[
+                              styles.energyFill,
+                              { width: `${month.energyLevel}%`, backgroundColor: month.color },
+                            ]}
+                          />
+                        </View>
+                      </Card>
+                    </Pressable>
+                  ))}
+                </View>
+
+                <Button
+                  label="Regenerate calendar"
+                  variant="secondary"
+                  fullWidth
+                  onPress={handleRegeneratePress}
+                />
+                {/* TODO: v1.1 — detect calendar.year mismatch vs current year and
+                    prompt regeneration instead of using stale cached data. */}
+              </>
+
+            ) : hasCalendar ? (
+              <>
+                <Button
+                  label="Generate your 2026 calendar"
+                  variant="primary"
+                  fullWidth
+                  onPress={handleGenerate}
+                />
+                <Text variant="caption" style={styles.generateHint}>
+                  Takes about 30 seconds. We'll cache the result so you can return anytime.
+                </Text>
+              </>
+
+            ) : (
+              <LockedCard
+                placement="feature_calendar"
+                lockMessage="Unlock your 2026 lucky timing"
+                unlockCtaLabel="Unlock"
+                onUnlockPress={handleUnlockPress}
+                preview={
+                  <Text variant="caption">
+                    12 months • peak periods • caution dates • lucky days
+                  </Text>
+                }
+              >
+                <View style={styles.decorativeGrid}>
+                  {MONTH_ABBREVS.map((abbr) => (
+                    <View key={abbr} style={styles.decorativeCellWrap}>
+                      <View style={styles.decorativeCell}>
+                        <Text variant="micro" style={styles.decorativeCellText}>{abbr}</Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              </LockedCard>
+            )}
+          </ScrollView>
+        )}
+      </ScreenWrapper>
+
+      <BottomSheet
+        visible={expandedMonth !== null}
+        onClose={() => setExpandedMonth(null)}
+        height={SHEET_HEIGHT}
+      >
+        {expandedMonthData != null && (
+          <MonthDetail month={expandedMonthData} onClose={() => setExpandedMonth(null)} />
+        )}
+      </BottomSheet>
+    </View>
+  )
+}
 
 const styles = StyleSheet.create({
-  container:          { flex: 1, backgroundColor: colors.bone },
-  gradient:           { flex: 1 },
-  scroll:             { paddingHorizontal: 22, paddingTop: 16, paddingBottom: 56 },
-
-  eyebrow:            { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', color: colors.goldDim, marginBottom: 10 },
-  heading:            { fontFamily: fonts.cormorant, fontSize: 36, fontWeight: '300', color: colors.ink, lineHeight: 44, marginBottom: 8 },
-  subheading:         { fontFamily: fonts.cormorantItalic, fontSize: 13, color: colors.inkFaint, marginBottom: 24 },
-
-  calendarCard:       { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.inkGhost, borderRadius: 10, padding: 16, marginBottom: 24, overflow: 'hidden', position: 'relative' },
-  calRow:             { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
-  calMonth:           { fontFamily: fonts.inter, fontSize: 10, fontWeight: '500', color: colors.inkDim, width: 30, letterSpacing: 0.5 },
-  calBarTrack:        { flex: 1, height: 4, backgroundColor: colors.inkTrace, borderRadius: 2, overflow: 'hidden' },
-  calBar:             { height: '100%', backgroundColor: CAL_BAR_COLOR, borderRadius: 2 },
-  calLabel:           { fontFamily: fonts.inter, fontSize: 9, color: colors.goldDim, width: 32, textAlign: 'right', letterSpacing: 0.3 },
-  calLabelLocked:     { opacity: 0.25 },
-  calFade:            { position: 'absolute', bottom: 0, left: 0, right: 0, height: 100 },
-
-  purchasedBox:       { alignItems: 'center', paddingTop: 8 },
-  purchasedIcon:      { fontSize: 24, color: colors.goldDim, marginBottom: 14 },
-  purchasedTitle:     { fontFamily: fonts.playfair, fontSize: 18, color: colors.ink, textAlign: 'center', marginBottom: 12 },
-  purchasedDesc:      { fontFamily: fonts.inter, fontSize: 14, color: colors.inkFaint, textAlign: 'center', lineHeight: 22, marginBottom: 28 },
-  reportBtn:          { borderWidth: 1, borderColor: colors.goldSubtle, borderRadius: 3, paddingVertical: 12, paddingHorizontal: 28 },
-  reportBtnText:      { fontFamily: fonts.inter, fontSize: 12, letterSpacing: 1.5, textTransform: 'uppercase', color: colors.goldDim },
-
-  upgradeBox:         { paddingTop: 4 },
-  upgradeTitle:       { fontFamily: fonts.playfair, fontSize: 22, color: colors.ink, marginBottom: 10 },
-  upgradeDesc:        { fontFamily: fonts.inter, fontSize: 14, color: colors.inkFaint, lineHeight: 22, marginBottom: 20 },
-  featureList:        { gap: 10, marginBottom: 24 },
-  upgradeBtn:         { borderRadius: 3, overflow: 'hidden', marginBottom: 12, borderWidth: 1, borderColor: UPGRADE_BTN_BORDER, backgroundColor: 'transparent', paddingVertical: 16, alignItems: 'center' },
-  upgradeBtnGradient: { paddingVertical: 17, alignItems: 'center', width: '100%' },
-  upgradeBtnText:     { fontFamily: fonts.inter, fontSize: 12, fontWeight: '400', color: colors.inkMid, letterSpacing: 1.5, textTransform: 'uppercase' },
-  upgradeNote:        { fontFamily: fonts.inter, fontSize: 11, color: colors.inkDim, textAlign: 'center' },
-});
+  root: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: layout.screenPadding,
+    paddingTop:        space['4'],
+    paddingBottom:     space['8'],
+    gap:               space['4'],
+  },
+  intro:        { color: tokens.text.secondary },
+  centered: {
+    flex:              1,
+    alignItems:        'center',
+    justifyContent:    'center',
+    paddingHorizontal: layout.screenPadding,
+    gap:               space['4'],
+  },
+  loadingText:  { color: tokens.text.secondary, textAlign: 'center' },
+  loadingHint:  { color: tokens.text.tertiary,  textAlign: 'center' },
+  generateHint: { color: tokens.text.tertiary,  textAlign: 'center' },
+  themeHeading: { color: tokens.text.primary },
+  themeMeta:    { gap: space['1'], marginTop: space['2'] },
+  peakText:     { color: tokens.text.accent },
+  cautionText:  { color: tokens.state.warning },
+  grid: {
+    flexDirection:  'row',
+    flexWrap:       'wrap',
+    justifyContent: 'space-between',
+    rowGap:         space['2'],
+  },
+  cellWrap:    { width: '31.5%' },
+  cellPressed: { opacity: 0.7 },
+  cell:        { gap: space['1'] },
+  cellTop: {
+    flexDirection:  'row',
+    justifyContent: 'space-between',
+    alignItems:     'center',
+  },
+  cellMonth:   { color: tokens.text.secondary },
+  energyTrack: {
+    height:          4,
+    backgroundColor: tokens.surface.overlay,
+    borderRadius:    radius.xs,
+    overflow:        'hidden',
+  },
+  energyFill: {
+    height:       '100%',
+    borderRadius: radius.xs,
+  },
+  decorativeGrid: {
+    flexDirection:   'row',
+    flexWrap:        'wrap',
+    justifyContent:  'space-between',
+    rowGap:          space['2'],
+    opacity:         0.35,
+    paddingVertical: space['2'],
+  },
+  decorativeCellWrap: { width: '31.5%' },
+  decorativeCell: {
+    backgroundColor: tokens.surface.overlay,
+    borderRadius:    radius.sm,
+    paddingVertical: space['3'],
+    alignItems:      'center',
+  },
+  decorativeCellText: { color: tokens.text.secondary },
+})
