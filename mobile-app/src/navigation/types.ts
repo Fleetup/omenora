@@ -4,10 +4,10 @@ import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/n
 
 // ── Tab navigator ──────────────────────────────────────────────────────────────
 export type TabParamList = {
-  HomeTab:    undefined;
-  ReadingTab: undefined;
-  ExploreTab: undefined;
-  MoreTab:    undefined;
+  TodayTab:    undefined;
+  ReadingsTab: undefined;
+  CounselTab:  undefined;
+  MoreTab:     undefined;
 };
 
 // ── Root stack ─────────────────────────────────────────────────────────────────
@@ -23,7 +23,6 @@ export type RootStackParamList = {
   PremiumTeaser:      undefined;
   // App
   MainTabs:      NavigatorScreenParams<TabParamList> | undefined;
-  Report:        { reportId: string } | undefined;
   Calendar:      { calendarId?: string } | undefined;
   Compatibility: { reportId?: string } | undefined;
   Privacy:       undefined;
@@ -32,16 +31,16 @@ export type RootStackParamList = {
 };
 
 // ── Tab screen props (composite — can navigate to root stack screens too) ──────
-export type HomeScreenProps = CompositeScreenProps<
-  BottomTabScreenProps<TabParamList, 'HomeTab'>,
+export type TodayScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'TodayTab'>,
   NativeStackScreenProps<RootStackParamList>
 >;
-export type ReadingScreenProps = CompositeScreenProps<
-  BottomTabScreenProps<TabParamList, 'ReadingTab'>,
+export type ReadingsScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'ReadingsTab'>,
   NativeStackScreenProps<RootStackParamList>
 >;
-export type ExploreScreenProps = CompositeScreenProps<
-  BottomTabScreenProps<TabParamList, 'ExploreTab'>,
+export type CounselScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'CounselTab'>,
   NativeStackScreenProps<RootStackParamList>
 >;
 export type MoreScreenProps = CompositeScreenProps<
@@ -49,8 +48,8 @@ export type MoreScreenProps = CompositeScreenProps<
   NativeStackScreenProps<RootStackParamList>
 >;
 
+
 // ── Stack-only screen props ────────────────────────────────────────────────────
-export type ReportScreenProps       = NativeStackScreenProps<RootStackParamList, 'Report'>;
 export type CalendarScreenProps     = NativeStackScreenProps<RootStackParamList, 'Calendar'>;
 export type CompatibilityScreenProps = NativeStackScreenProps<RootStackParamList, 'Compatibility'>;
 export type PrivacyScreenProps      = NativeStackScreenProps<RootStackParamList, 'Privacy'>;

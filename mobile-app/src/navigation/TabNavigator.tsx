@@ -4,18 +4,18 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Sun, BookOpen, MessageCircle, MoreHorizontal, type LucideIcon } from 'lucide-react-native';
 import { TabParamList } from './types';
 import { tokens, typeScale } from '../design/tokens';
-import { HomeScreen } from '../screens/HomeScreen';
-import { ReadingScreen } from '../screens/ReadingScreen';
-import { ExploreScreen } from '../screens/ExploreScreen';
-import { MoreScreen } from '../screens/MoreScreen';
+import TodayScreen from '../screens/tabs/TodayScreen';
+import ReadingsScreen from '../screens/tabs/ReadingsScreen';
+import CounselScreen from '../screens/tabs/CounselScreen';
+import MoreScreen from '../screens/tabs/MoreScreen';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const TAB_CONFIG: Record<keyof TabParamList, { label: string; icon: LucideIcon }> = {
-  HomeTab:    { label: 'Today',    icon: Sun },
-  ReadingTab: { label: 'Readings', icon: BookOpen },
-  ExploreTab: { label: 'Counsel',  icon: MessageCircle },
-  MoreTab:    { label: 'More',     icon: MoreHorizontal },
+  TodayTab:    { label: 'Today',    icon: Sun },
+  ReadingsTab: { label: 'Readings', icon: BookOpen },
+  CounselTab:  { label: 'Counsel',  icon: MessageCircle },
+  MoreTab:     { label: 'More',     icon: MoreHorizontal },
 };
 
 export const TabNavigator: React.FC = () => (
@@ -36,10 +36,10 @@ export const TabNavigator: React.FC = () => (
       };
     }}
   >
-    <Tab.Screen name="HomeTab"    component={HomeScreen} />
-    <Tab.Screen name="ReadingTab" component={ReadingScreen} />
-    <Tab.Screen name="ExploreTab" component={ExploreScreen} />
-    <Tab.Screen name="MoreTab"    component={MoreScreen} />
+    <Tab.Screen name="TodayTab"    component={TodayScreen} />
+    <Tab.Screen name="ReadingsTab" component={ReadingsScreen} />
+    <Tab.Screen name="CounselTab"  component={CounselScreen} />
+    <Tab.Screen name="MoreTab"     component={MoreScreen} />
   </Tab.Navigator>
 );
 

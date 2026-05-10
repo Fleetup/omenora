@@ -15,7 +15,6 @@ import OptionalQuestionsScreen  from '../screens/onboarding/OptionalQuestionsScr
 import PremiumTeaserScreen      from '../screens/onboarding/PremiumTeaserScreen';
 
 // Stack-only screens (appear above the tab bar)
-import { ReportScreen } from '../screens/ReportScreen';
 import { CalendarScreen } from '../screens/CalendarScreen';
 import { CompatibilityScreen } from '../screens/CompatibilityScreen';
 import { PrivacyScreen } from '../screens/PrivacyScreen';
@@ -48,7 +47,6 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen name="OptionalQuestions"  component={OptionalQuestionsScreen} />
       <Stack.Screen name="PremiumTeaser"      component={PremiumTeaserScreen}      options={{ gestureEnabled: false }} />
       <Stack.Screen name="MainTabs"      component={TabNavigator}        options={{ animation: 'none' }} />
-      <Stack.Screen name="Report"        component={ReportScreen} />
       <Stack.Screen name="Calendar"      component={CalendarScreen} />
       <Stack.Screen name="Compatibility" component={CompatibilityScreen} />
       <Stack.Screen name="Privacy"       component={PrivacyScreen} />

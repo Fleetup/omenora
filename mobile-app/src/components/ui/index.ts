@@ -1,16 +1,10 @@
-export { CTAButton } from './CTAButton';
 export { EditorialRule } from './EditorialRule';
-export { ShortRule } from './ShortRule';
-export { LabelCaps } from './LabelCaps';
-export { AnnotationText } from './AnnotationText';
 export { EditorialInput } from './EditorialInput';
 export { QuizOptionCard } from './QuizOptionCard';
 export { PhoenixLoader } from './PhoenixLoader';
 export { ScreenHeader } from './ScreenHeader';
 export { GhostBadge } from './GhostBadge';
 export type { GhostBadgeVariant } from './GhostBadge';
-export { TraitPill } from './TraitPill';
-export { SectionBlock } from './SectionBlock';
 export { InfoBanner } from './InfoBanner';
 export { ProgressBar } from './ProgressBar';
 export { LockedPreview } from './LockedPreview';
