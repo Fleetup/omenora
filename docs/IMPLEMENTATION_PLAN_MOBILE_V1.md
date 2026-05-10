@@ -1911,6 +1911,44 @@ Definition of done. All items must pass before starting Phase 4.
 
 ## Phase 4 — Feature Screens
 
+> **[ARCHITECTURAL DECISIONS 2026-05-10 — Phase 4 recon]**
+> 
+> Five decisions captured during Phase 4 pre-flight recon. Apply throughout Phase 4 cluster work.
+> 
+> **Decision 1 — Compatibility endpoint strategy.** Mobile keeps calling
+> `/api/generate-compatibility` (live, full LLM). Backend hotfix adds
+> `requirePremiumWithUsage(event, 'compatibility')` server-side guard to that
+> endpoint. The stub at `/api/reports/compatibility` becomes vestigial and is
+> deleted in Phase 5 when LLM consolidation happens. Plan Step 4.3 (which said
+> to move mobile call to the stub) is REMOVED — see Edit 2.
+> 
+> **Decision 2 — Calendar buy CTA deferred to Phase 6.** Phase 4 implements
+> entitlement gating and `hasCalendar` helper only. The standalone $4.99
+> `omenora_calendar_2026` IAP purchase flow is Phase 6 scope (with full RC
+> customer center). For Phase 4: free users tap Calendar → presentPaywall() →
+> subscription unlocks. Phase 6 wires the IAP path; the OR-clause in
+> `hasCalendar` (`isPremium || hasNonSubCalendar`) is plumbing for Phase 6
+> but evaluates false until then.
+> 
+> **Decision 3 — TraditionSwitcher local-only.** No backend call from mobile
+> Phase 4. User picks tradition → save to `profileStore.regionOverride` →
+> next content fetch sends new tradition. The existing
+> `augur/server/api/switch-tradition.post.ts` is OMENORA-web-only (Stripe
+> session ID auth). The "regenerate existing reading under new tradition"
+> feature is v1.1 enhancement, not v1 launch.
+> 
+> **Decision 4 — Compatibility ephemeral.** No `compatibilityHistory` in
+> profileStore for Phase 4. CompatibilityScreen renders reading from API
+> response in component state, shows it, doesn't persist. Server-side
+> `requirePremiumWithUsage` cap from Decision 1 bounds API cost regardless
+> of caching. v1.1 can add history if data shows demand.
+> 
+> **Decision 5 — Analytics moved to Phase 7.** QG item 7 (`feature_locked_tapped`
+> analytics) removed from Phase 4 Quality Gate. No analytics infrastructure
+> exists in mobile codebase. Sentry/PostHog SDK integration + event taxonomy +
+> dashboard config belongs in Phase 7 production-readiness scope. See Edit 6
+> for QG item removal.
+
 **Goal:** Rewire `CalendarScreen` and `CompatibilityScreen` to use RC entitlements. Build `TraditionSwitcherScreen`. Add all new routes to navigation.
 **Duration:** ~13 hrs
 **Prerequisites:** Phase 1 complete (`isPremium`, `hasCalendar` available from `PurchasesProvider`). Phase 3 complete (MoreTab wired).
@@ -1941,6 +1979,13 @@ Remove all old `UPGRADE_BTN_BORDER`, `LOCKED_FADE` logic that showed upgrade pro
 
 Update route in `RootStackParamList` — keep `Calendar: { calendarId?: string } | undefined` ✅ (no change needed).
 
+> **[CORRECTION 2026-05-10 — bundlePurchased/paymentComplete grep]** Plan
+> implies CalendarScreen has existing `bundlePurchased`/`paymentComplete`
+> checks to remove. Recon confirms neither field exists — the legacy screen
+> never had any entitlement check. The QG grep for these will trivially pass
+> but not because they were removed. This QG item is informational, not
+> behavioral.
+
 ---
 
 ### Step 4.2 — Rewire CompatibilityScreen entitlement check
@@ -1962,19 +2007,13 @@ Remove all old `UPGRADE_BTN_BORDER`, `LOCKED_FADE`, `MATCH_BAR_COLOR` hardcoded 
 
 ---
 
-### Step 4.3 — Update CompatibilityScreen API call
+### Step 4.3 — ~~Update CompatibilityScreen API call~~ [DEPRECATED]
 
-**File:** `src/api/endpoints.ts`
-
-Update `generateCompatibility` to use new endpoint:
-```typescript
-generateCompatibility: async (data: CompatibilityRequest): Promise<...> => {
-  const response = await apiClient.post('/api/reports/compatibility', data)
-  return response.data
-},
-```
-
-Old endpoint was `/api/generate-compatibility` (Stripe-era, no JWT check). New endpoint is `/api/reports/compatibility` (requires Supabase JWT — injected by interceptor from Phase 0.5.7).
+> **Step 4.3 — DEPRECATED.** Per [DECISION 2026-05-10 #1], mobile keeps
+> calling `/api/generate-compatibility`. Server-side `requirePremiumWithUsage`
+> guard added to that endpoint as Cluster 0 backend hotfix. No mobile URL
+> change. The stub at `/api/reports/compatibility` is vestigial; deleted in
+> Phase 5.
 
 ---
 
@@ -2010,6 +2049,12 @@ Add:
 
 > `Compatibility` and `Calendar` routes already exist in `RootStackParamList` ✅ — verify names match exactly.
 
+> **Verified by recon:** `Compatibility` and `Calendar` routes already exist in
+> both `RootStackParamList` and `RootNavigator`. Only `TraditionSwitcher` is
+> missing. Step 4.5 scope is therefore narrow: add `TraditionSwitcher: undefined`
+> to `RootStackParamList` + `<Stack.Screen name="TraditionSwitcher" ...>` to
+> RootNavigator. Then enable the disabled MoreScreen row.
+
 ---
 
 ### Step 4.6 — TypeScript clean pass
@@ -2022,6 +2067,42 @@ Zero errors before Phase 5.
 
 ---
 
+> **Cluster 0 — Phase 4 prerequisite (NEW, ~2hr)**
+> 
+> Pre-screen-build prerequisite work. Must complete before Clusters 1-3 can
+> proceed. No screen work in this cluster.
+> 
+> 0.1 — Add `hasCalendar` to `PurchasesContext` and `PurchasesProvider`:
+>   `hasCalendar: boolean` derived from
+>   `isPremium === true || customerInfo?.nonSubscriptionTransactions?.some(t => t.productIdentifier === 'omenora_calendar_2026')`
+>   For Phase 4, the second OR-clause evaluates false (no IAP yet). Phase 6
+>   activates it.
+> 
+> 0.2 — Add `CalendarData` interface to mobile (mirror of backend `CalendarType`):
+>   `interface CalendarData { overallTheme, peakMonths, cautionMonths, months[12] }`
+>   Place in `src/types/calendar.ts` or inline in `endpoints.ts`. Each month:
+>   `{ month, number, energyLevel, theme, love, money, career, warning, luckyDays[], color }`.
+> 
+> 0.3 — Add `calendarData` + `setCalendarData` to `profileStore`:
+>   `calendarData: CalendarData | null` (default null), persisted in partialize.
+>   Caches generated calendar to avoid re-calling LLM on every CalendarScreen open.
+> 
+> 0.4 — Fix `endpoints.ts` request shape mismatches:
+>   - `generateCalendar` request must be `{ firstName, archetype, element, lifePathNumber, dateOfBirth, language, answers }` — currently sends `{ firstName, dateOfBirth, year }`. The `year` field doesn't exist in backend.
+>   - `getCalendar` request body uses `sessionId` not `calendarId`.
+>   These are pre-existing bugs predating Phase 4; fix now since CalendarScreen
+>   build depends on them.
+> 
+> 0.5 — Backend hotfix on `augur/server/api/generate-compatibility.post.ts`:
+>   Add `requirePremiumWithUsage(event, 'compatibility')` server-side guard.
+>   Per Decision 1. Single edit, no other backend changes.
+>   Backend hotfix lands as a separate commit on develop after Cluster 0 mobile
+>   commit; pattern matches Phase 2 backend hotfix flow.
+> 
+> Cluster 0 ships before any screen rewrite. Quality Gate addition:
+> `hasCalendar` helper exists, `calendarData` profileStore field exists,
+> `endpoints.ts generateCalendar/getCalendar` request shapes match backend.
+
 ### Phase 4 — Quality Gate
 
 Definition of done. All items must pass before starting Phase 5.
@@ -2032,7 +2113,8 @@ Definition of done. All items must pass before starting Phase 5.
 - [ ] `grep -r "bundlePurchased\|paymentComplete" src/screens/CalendarScreen.tsx src/screens/CompatibilityScreen.tsx` → 0 results
 - [ ] TraditionSwitcherScreen: selection persists to `profileStore.regionOverride` after save
 - [ ] Premium user: tradition switcher available; free user: switcher locked or hidden per locked decision
-- [ ] Analytics: `feature_locked_tapped` (with `feature` attribute) fires on every LockedCard tap
+- [ ] ~~`feature_locked_tapped` analytics fires on every LockedCard tap~~ — **MOVED to Phase 7** per [DECISION 2026-05-10 #5]. No analytics infrastructure in mobile codebase. SDK integration belongs in Phase 7 production prep.
+- [ ] Cluster 0 prerequisites verified: `hasCalendar` exposed by `PurchasesContext`, `CalendarData` type defined, `calendarData` field in `profileStore`, `endpoints.ts` request shapes match backend, `/api/generate-compatibility` has server-side `requirePremiumWithUsage` guard.
 
 ---
 
