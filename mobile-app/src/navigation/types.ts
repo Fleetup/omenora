@@ -4,10 +4,10 @@ import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/n
 
 // ── Tab navigator ──────────────────────────────────────────────────────────────
 export type TabParamList = {
-  HomeTab:    undefined;
-  ReadingTab: undefined;
-  ExploreTab: undefined;
-  MoreTab:    undefined;
+  TodayTab:    undefined;
+  ReadingsTab: undefined;
+  CounselTab:  undefined;
+  MoreTab:     undefined;
 };
 
 // ── Root stack ─────────────────────────────────────────────────────────────────
@@ -32,22 +32,28 @@ export type RootStackParamList = {
 };
 
 // ── Tab screen props (composite — can navigate to root stack screens too) ──────
-export type HomeScreenProps = CompositeScreenProps<
-  BottomTabScreenProps<TabParamList, 'HomeTab'>,
+export type TodayScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'TodayTab'>,
   NativeStackScreenProps<RootStackParamList>
 >;
-export type ReadingScreenProps = CompositeScreenProps<
-  BottomTabScreenProps<TabParamList, 'ReadingTab'>,
+export type ReadingsScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'ReadingsTab'>,
   NativeStackScreenProps<RootStackParamList>
 >;
-export type ExploreScreenProps = CompositeScreenProps<
-  BottomTabScreenProps<TabParamList, 'ExploreTab'>,
+export type CounselScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'CounselTab'>,
   NativeStackScreenProps<RootStackParamList>
 >;
 export type MoreScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'MoreTab'>,
   NativeStackScreenProps<RootStackParamList>
 >;
+
+// Bridge aliases — legacy screens (HomeScreen, ReadingScreen, ExploreScreen) import
+// these old names. Removed in Clusters 2-4 when the legacy screens are deleted.
+export type HomeScreenProps    = TodayScreenProps;
+export type ReadingScreenProps = ReadingsScreenProps;
+export type ExploreScreenProps = CounselScreenProps;
 
 // ── Stack-only screen props ────────────────────────────────────────────────────
 export type ReportScreenProps       = NativeStackScreenProps<RootStackParamList, 'Report'>;
