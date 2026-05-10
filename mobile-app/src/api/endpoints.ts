@@ -21,9 +21,62 @@ export interface GenerateReportResponse {
 }
 
 export interface CompatibilityRequest {
-  partnerName: string;
-  partnerDateOfBirth: string;
-  userReportId: string;
+  firstName:      string
+  partnerName:    string
+  partnerDob:     string            // ISO YYYY-MM-DD
+  partnerCity:    string | null
+  language:       string
+  previewMode:    boolean
+  archetype:      string
+  element:        string
+  lifePathNumber: number
+  powerTraits:    string[]
+  dateOfBirth:    string
+}
+
+export interface CompatibilitySection {
+  title:   string
+  content: string
+}
+
+export interface CompatibilityReading {
+  compatibilityScore: number
+  compatibilityTitle: string
+  sections: {
+    bond:          CompatibilitySection
+    strength:      CompatibilitySection
+    challenge:     CompatibilitySection
+    communication: CompatibilitySection
+    powerDynamic:  CompatibilitySection
+    forecast:      CompatibilitySection
+    advice:        CompatibilitySection
+  }
+  calculationReceipt: {
+    person1: {
+      name:           string
+      dateOfBirth:    string
+      sunSign:        string
+      element:        string
+      lifePathNumber: number | null
+      archetype:      string | null
+    }
+    person2: {
+      name:           string
+      dateOfBirth:    string
+      sunSign:        string
+      element:        string
+      lifePathNumber: number
+    }
+    synastryNotes:    string[]
+    tradition:        string
+    calculationSource: string
+    generatedAt:      string
+  }
+}
+
+export interface CompatibilityResponse {
+  success:       boolean
+  compatibility: CompatibilityReading
 }
 
 export interface DailyInsightRequest {
@@ -137,9 +190,9 @@ export const api = {
   },
 
   // Compatibility
-  generateCompatibility: async (data: CompatibilityRequest) => {
-    const response = await apiClient.post('/api/generate-compatibility', data);
-    return response.data;
+  generateCompatibility: async (data: CompatibilityRequest): Promise<CompatibilityResponse> => {
+    const response = await apiClient.post<CompatibilityResponse>('/api/generate-compatibility', data)
+    return response.data
   },
 
   // Calendar
