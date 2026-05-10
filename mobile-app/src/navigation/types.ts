@@ -49,9 +49,8 @@ export type MoreScreenProps = CompositeScreenProps<
   NativeStackScreenProps<RootStackParamList>
 >;
 
-// Bridge aliases — legacy screens (HomeScreen, ReadingScreen, ExploreScreen) import
-// these old names. Removed in Clusters 2-4 when the legacy screens are deleted.
-export type HomeScreenProps    = TodayScreenProps;
+// Bridge aliases — legacy screens (ReadingScreen, ExploreScreen) import
+// these old names. Removed in Clusters 3-4 when the legacy screens are deleted.
 export type ReadingScreenProps = ReadingsScreenProps;
 export type ExploreScreenProps = CounselScreenProps;
 

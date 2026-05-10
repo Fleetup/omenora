@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Sun, BookOpen, MessageCircle, MoreHorizontal, type LucideIcon } from 'lucide-react-native';
 import { TabParamList } from './types';
 import { tokens, typeScale } from '../design/tokens';
-import { HomeScreen } from '../screens/HomeScreen';
+import TodayScreen from '../screens/tabs/TodayScreen';
 import { ReadingScreen } from '../screens/ReadingScreen';
 import { ExploreScreen } from '../screens/ExploreScreen';
 import { MoreScreen } from '../screens/MoreScreen';
@@ -36,7 +36,7 @@ export const TabNavigator: React.FC = () => (
       };
     }}
   >
-    <Tab.Screen name="TodayTab"    component={HomeScreen} />
+    <Tab.Screen name="TodayTab"    component={TodayScreen} />
     <Tab.Screen name="ReadingsTab" component={ReadingScreen} />
     <Tab.Screen name="CounselTab"  component={ExploreScreen} />
     <Tab.Screen name="MoreTab"     component={MoreScreen} />
