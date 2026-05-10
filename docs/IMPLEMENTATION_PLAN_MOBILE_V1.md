@@ -1858,6 +1858,8 @@ Organized sections using `ListItem` molecules:
 - Notifications → navigate to `NotificationsScreen` (Phase 6)
 - Language
 
+> **[INTERIM 2026-05-10 — Subscription row]** Phase 6 wires `RevenueCatUI.presentCustomerCenter()` for full customer center (refunds, downgrades, history). Until then, Phase 3 ships a working interim: Subscription row uses `Linking.openURL('https://apps.apple.com/account/subscriptions')` to open Apple's subscription management page. This is the iOS-canonical place users expect subscription controls. Working pattern available immediately. Phase 6 swaps to `presentCustomerCenter()` for richer functionality.
+
 **Trust & Compliance:**
 - Privacy & Data → `Linking.openURL('https://omenora.com/privacy')`
 - Terms of Service → `Linking.openURL('https://omenora.com/terms')`
@@ -1866,12 +1868,18 @@ Organized sections using `ListItem` molecules:
 - Account deletion → navigate to `DeleteAccountScreen` (Phase 6)
 - Sign out → calls `AuthProvider.signOut()` with confirmation
 
+> **[DECISION 2026-05-10 — signOut double-Alert prevention]** AuthProvider.signOut() has its own internal confirmation Alert ("You'll be signed back in anonymously…"). Calling signOut() bare from a parent Alert handler produces TWO confirmation dialogs (parent's Alert.alert + signOut's internal Alert). Always call `signOut({ skipWarning: true })` when invoking from a parent screen's own Alert handler (e.g., MoreScreen). The internal Alert remains useful for direct/standalone invocation contexts.
+
 **Support:**
 - Help / FAQ → `Linking.openURL('https://omenora.com/faq')`
 - Contact support → `Linking.openURL('mailto:support@omenora.com')`
 - About OMENORA / version from `Constants.expoConfig.version`
 
 Delete old `src/screens/MoreScreen.tsx` after migration.
+
+> **[CORRECTION 2026-05-10 — plan badge wiring]** Legacy MoreScreen had plan badge hardcoded to "Free". Phase 3 rebuild correctly wires the badge to `isPremium` from `usePurchases()` — renders "Free" when `isPremium === false`, "Premium" when true. This was a latent display bug surfaced during recon. Apply the same pattern in any future screen that displays subscription status (Profile screen in Phase 6, etc).
+
+> **[DECISION 2026-05-10 — disabled-row pattern]** ListItem rows whose target route is not yet built (Phase 4-6 work) render with `disabled: true` + `meta: 'Coming soon'` rather than being hidden from the menu. Preview-value over hidden-value: visible-but-disabled rows tell users what the app will offer, hidden rows obscure the upgrade path. Applies to MoreScreen and any future settings screens. Pattern: `<ListItem label="..." icon={X} disabled meta="Coming soon" />`. When the corresponding phase ships the route, swap to `onPress={() => navigation.navigate('...')}` and remove `disabled` + `meta`.
 
 ---
 
@@ -2029,6 +2037,8 @@ Definition of done. All items must pass before starting Phase 5.
 ---
 
 ## Phase 5 — Counsel Chat
+
+> **[SCOPE EXPANSION 2026-05-10]** Phase 5 was originally scoped as "Counsel chat" only. Phase 3 build revealed `/api/reports/*` endpoints (archetype, natal-chart, forecast) currently return STUB responses with no content. Phase 5 backend track now also includes wiring real LLM-generated content for these three endpoints. ReadingsScreen premium sections currently render placeholder text "Your full reading is being prepared" — this becomes real LLM responses in Phase 5. Scope estimate adjusted accordingly: original Phase 5 ~12 hours (Counsel chat only), revised estimate ~16-18 hours (Counsel chat + 3 LLM endpoint wiring + content prompt engineering). The 3 endpoint stubs in `augur/server/api/reports/` already have the entitlement gates wired (Phase 1 Cluster C); Phase 5 only needs to add content generation.
 
 **Goal:** Build the full Counsel chat experience — compliance disclosure modal, chat UI, message counter, crisis detection, crisis resources screen.
 **Duration:** ~8 hrs
@@ -2311,6 +2321,8 @@ Definition of done. All items must pass before starting Phase 7.
 ---
 
 > **[ARCHITECTURAL DECISION 2026-05-09 — RC ↔ Supabase identity]** PurchasesProvider intentionally skips Purchases.logIn for anonymous Supabase users (PurchasesProvider.tsx lines 99-103). RC manages its own anonymous identity ($RCAnonymousID:xxx) until permanent sign-in fires logIn(permanentSupabaseId), at which point RC aliases the anonymous purchases to the permanent ID. This is RC's documented best practice for anonymous-first auth flows. Avoids polluting RC dashboard with short-lived Supabase anonymous UUIDs (30-day expiry). Any future "anonymous purchase" feature must rely on RC's automatic aliasing, NOT pre-identifying with the Supabase anonymous UUID — pre-identifying would orphan purchases at the 30-day boundary.
+
+> **[METHODOLOGY 2026-05-10 — no-op Quality Gates]** When all prior clusters in a phase have left zero technical debt (clean barrels, no orphaned components, no stale references, all bridge aliases removed inline as each cluster lands), the closing Quality Gate cluster may produce zero commits. This is a SUCCESS pattern — better than a Quality Gate that finds debt the prior clusters should have caught. Phase 3 Cluster 5 produced no commit because Clusters 1-4 cleaned up incrementally. When this happens, document the no-op outcome in the phase's squash commit message rather than treating it as missed work.
 
 ---
 
