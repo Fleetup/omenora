@@ -6,8 +6,8 @@ import { TabParamList } from './types';
 import { tokens, typeScale } from '../design/tokens';
 import TodayScreen from '../screens/tabs/TodayScreen';
 import ReadingsScreen from '../screens/tabs/ReadingsScreen';
-import { ExploreScreen } from '../screens/ExploreScreen';
-import { MoreScreen } from '../screens/MoreScreen';
+import CounselScreen from '../screens/tabs/CounselScreen';
+import MoreScreen from '../screens/tabs/MoreScreen';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -38,7 +38,7 @@ export const TabNavigator: React.FC = () => (
   >
     <Tab.Screen name="TodayTab"    component={TodayScreen} />
     <Tab.Screen name="ReadingsTab" component={ReadingsScreen} />
-    <Tab.Screen name="CounselTab"  component={ExploreScreen} />
+    <Tab.Screen name="CounselTab"  component={CounselScreen} />
     <Tab.Screen name="MoreTab"     component={MoreScreen} />
   </Tab.Navigator>
 );

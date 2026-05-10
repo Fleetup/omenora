@@ -48,9 +48,6 @@ export type MoreScreenProps = CompositeScreenProps<
   NativeStackScreenProps<RootStackParamList>
 >;
 
-// Bridge aliases — legacy screens (ExploreScreen) import this old name.
-// Removed in Cluster 4 when ExploreScreen is deleted.
-export type ExploreScreenProps = CounselScreenProps;
 
 // ── Stack-only screen props ────────────────────────────────────────────────────
 export type CalendarScreenProps     = NativeStackScreenProps<RootStackParamList, 'Calendar'>;
