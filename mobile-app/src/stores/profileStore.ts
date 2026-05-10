@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { CalendarData } from '../types/calendar';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -48,6 +49,10 @@ export interface ProfileState {
   regionOverride: string | null;
   languageOverride: string | null;
 
+  // Calendar cache
+  calendarData: CalendarData | null;
+  setCalendarData: (data: CalendarData | null) => void;
+
   // Actions
   setFirstName: (name: string) => void;
   setDateOfBirth: (date: string) => void;
@@ -89,6 +94,7 @@ const initialState = {
   anonymousUserId: '',
   regionOverride: null,
   languageOverride: null,
+  calendarData: null,
 };
 
 export const useProfileStore = create<ProfileState>()(
@@ -117,6 +123,7 @@ export const useProfileStore = create<ProfileState>()(
 
       setRegionOverride: (regionOverride) => set({ regionOverride }),
       setLanguageOverride: (languageOverride) => set({ languageOverride }),
+      setCalendarData: (calendarData) => set({ calendarData }),
 
       resetAnalysis: () =>
         set({
@@ -156,6 +163,7 @@ export const useProfileStore = create<ProfileState>()(
         anonymousUserId: state.anonymousUserId,
         regionOverride: state.regionOverride,
         languageOverride: state.languageOverride,
+        calendarData: state.calendarData,
       }),
     }
   )

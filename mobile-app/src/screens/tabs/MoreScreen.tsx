@@ -119,12 +119,11 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
               showChevron
             />
             <View style={styles.divider} />
-            {/* TraditionSwitcher route not yet registered — Phase 4 */}
             <ListItem
               icon={Compass}
               label="Tradition switcher"
-              meta="Coming soon"
-              disabled
+              onPress={() => navigation.navigate('TraditionSwitcher')}
+              showChevron
             />
           </Card>
         </View>

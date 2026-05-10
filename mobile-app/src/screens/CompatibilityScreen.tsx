@@ -1,132 +1,316 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { CompatibilityScreenProps } from '../navigation/types';
-import { useProfileStore } from '../stores/profileStore';
-import { colors } from '../theme/colors';
-import { fonts } from '../theme/fonts';
-import { ScreenHeader, GhostBadge, FeatureListItem } from '../components/ui';
+import React, { useState, useCallback } from 'react'
+import { ScrollView, View, ActivityIndicator, StyleSheet } from 'react-native'
+import { ScreenWrapper, ErrorState } from '../components/templates'
+import { Header, Card, LockedCard } from '../components/organisms'
+import { Text, Button } from '../components/atoms'
+import { TextField, DateField } from '../components/molecules'
+import { useProfileStore } from '../stores/profileStore'
+import { usePurchases } from '../context/usePurchases'
+import api from '../api/endpoints'
+import { tokens, layout, space } from '../design/tokens'
+import type { CompatibilityScreenProps } from '../navigation/types'
+import type { CompatibilityReading } from '../api/endpoints'
 
-// Screen-internal color constants
-const MATCH_BAR_COLOR   = 'rgba(201, 169, 97, 0.60)';
-const MATCH_LABEL_COLOR = 'rgba(200, 180, 255, 0.55)';
-const LOCKED_FADE: [string, string, string] = ['transparent', 'rgba(5, 4, 16, 0.85)', colors.bone];
-const UPGRADE_BTN_BORDER = 'rgba(201, 169, 97, 0.32)';
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const SIGN_PAIRS = [
-  { a: 'Fire',  b: 'Air',   pct: 94, label: 'Soul Mirrors' },
-  { a: 'Earth', b: 'Water', pct: 88, label: 'Deep Roots' },
-  { a: 'Fire',  b: 'Fire',  pct: 76, label: 'Twin Flames' },
-  { a: 'Air',   b: 'Earth', pct: 62, label: 'Growth Bond' },
-];
+function dateToIso(d: Date): string {
+  const y  = d.getFullYear()
+  const m  = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${dd}`
+}
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const SECTION_ORDER: Array<keyof CompatibilityReading['sections']> = [
+  'bond', 'strength', 'challenge', 'communication', 'powerDynamic', 'forecast', 'advice',
+]
+
+// ── State machine ─────────────────────────────────────────────────────────────
+
+type ScreenState =
+  | { kind: 'initial' }
+  | { kind: 'loading' }
+  | { kind: 'result'; reading: CompatibilityReading }
+  | { kind: 'error'; message: string }
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ navigation }) => {
-  const store = useProfileStore();
+  const firstName        = useProfileStore((s) => s.firstName)
+  const dateOfBirth      = useProfileStore((s) => s.dateOfBirth)
+  const lifePathNumber   = useProfileStore((s) => s.lifePathNumber)
+  const archetype        = useProfileStore((s) => s.archetype)
+  const languageOverride = useProfileStore((s) => s.languageOverride)
+  const report           = useProfileStore((s) => s.report)
+
+  const { isPremium, presentPaywall } = usePurchases()
+
+  const [screenState, setScreenState]       = useState<ScreenState>({ kind: 'initial' })
+  const [partnerName, setPartnerName]       = useState('')
+  const [partnerCity, setPartnerCity]       = useState('')
+  const [partnerDobDate, setPartnerDobDate] = useState<Date | null>(null)
+
+  const canSubmit = partnerName.trim().length > 0 && partnerDobDate != null
+
+  const handleSubmit = useCallback(async () => {
+    if (!canSubmit) return
+
+    if (!archetype || !report) {
+      setScreenState({
+        kind:    'error',
+        message: 'Complete your birth chart profile first before generating a compatibility reading.',
+      })
+      return
+    }
+
+    setScreenState({ kind: 'loading' })
+
+    try {
+      const response = await api.generateCompatibility({
+        firstName,
+        partnerName:    partnerName.trim(),
+        partnerDob:     dateToIso(partnerDobDate!),
+        partnerCity:    partnerCity.trim() || null,
+        language:       languageOverride ?? 'en',
+        previewMode:    false,
+        archetype,
+        element:        report.element,
+        lifePathNumber: lifePathNumber ?? 0,
+        powerTraits:    report.powerTraits,
+        dateOfBirth,
+      })
+
+      if (response.success && response.compatibility) {
+        setScreenState({ kind: 'result', reading: response.compatibility })
+      } else {
+        setScreenState({ kind: 'error', message: 'Something went wrong. Please try again.' })
+      }
+    } catch (err) {
+      const httpStatus = (err as { response?: { status?: number } })?.response?.status
+      if (httpStatus === 429) {
+        setScreenState({ kind: 'error', message: "You've reached your monthly compatibility limit. Resets next month." })
+      } else if (httpStatus === 403) {
+        setScreenState({ kind: 'error', message: 'Compatibility requires Premium. Tap below to unlock.' })
+      } else {
+        setScreenState({ kind: 'error', message: "Couldn't generate the reading. Please try again." })
+      }
+    }
+  }, [canSubmit, archetype, report, firstName, partnerName, partnerDobDate, partnerCity, languageOverride, lifePathNumber, dateOfBirth])
+
+  const handleUnlockPress = useCallback(async () => {
+    try {
+      await presentPaywall()
+    } catch (err) {
+      console.warn('[Compatibility] presentPaywall threw:', err)
+    }
+  }, [presentPaywall])
+
+  const handleReset = useCallback(() => {
+    setPartnerName('')
+    setPartnerCity('')
+    setPartnerDobDate(null)
+    setScreenState({ kind: 'initial' })
+  }, [])
 
   return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient colors={colors.gradients.cosmic} style={styles.gradient}>
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <ScreenWrapper scroll={false} padded={false} background="base">
+      <Header title="Compatibility" onBack={() => navigation.goBack()} />
 
-          <ScreenHeader
-            onBack={() => navigation.goBack()}
-            right={<GhostBadge label="🔒 LOCKED" variant="ghost" />}
-          />
+      {screenState.kind === 'loading' ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={tokens.accent.primary} />
+          <Text variant="body" style={styles.loadingText}>
+            Reading the connection between you and {partnerName}…
+          </Text>
+          <Text variant="caption" style={styles.loadingHint}>
+            This usually takes about 20 seconds.
+          </Text>
+        </View>
 
-          <Text style={styles.eyebrow}>LOVE COMPATIBILITY READING</Text>
-          <Text style={styles.heading}>Who Is Your{'\n'}Perfect Match?</Text>
-          <Text style={styles.subheading}>
-            {store.report?.archetypeName
-              ? `Calculated for ${store.report.archetypeName}`
-              : 'Based on your destiny archetype'}
+      ) : screenState.kind === 'error' ? (
+        <ErrorState
+          heading="Couldn't generate the reading"
+          body={screenState.message}
+          actionLabel="Try again"
+          onActionPress={handleReset}
+        />
+
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text variant="body" style={styles.intro}>
+            See how your chart connects with someone else's. Two birth dates, one reading.
           </Text>
 
-          {/* Match preview card */}
-          <View style={styles.matchCard}>
-            <View style={styles.matchHeader}>
-              <Text style={styles.matchHeaderText}>ARCHETYPE COMPATIBILITY MAP</Text>
-            </View>
-            {SIGN_PAIRS.map((pair, i) => (
-              <View key={i} style={[styles.matchRow, styles.matchRowLocked]}>
-                <Text style={styles.matchElement}>{pair.a}</Text>
-                <View style={styles.matchBarWrap}>
-                  <View style={[styles.matchBar, { width: `${pair.pct}%`, opacity: 0.2 }]} />
-                  <Text style={[styles.matchPct, { opacity: 0 }]}>{pair.pct}%</Text>
-                </View>
-                <Text style={[styles.matchLabel, { opacity: 0.15 }]}>{pair.label}</Text>
-              </View>
-            ))}
-            <LinearGradient
-              colors={LOCKED_FADE}
-              style={styles.matchFade}
-              pointerEvents="none"
-            />
-          </View>
+          {screenState.kind === 'result' ? (
+            <>
+              <Card variant="premium" padding="premium" style={styles.scoreCard}>
+                <Text variant="display1" style={styles.scoreNumber}>
+                  {screenState.reading.compatibilityScore}%
+                </Text>
+                <Text variant="body" style={styles.scoreTitle}>
+                  {screenState.reading.compatibilityTitle}
+                </Text>
+                <Text variant="caption" style={styles.scoreNames}>
+                  {firstName} × {partnerName}
+                </Text>
+              </Card>
 
-          {/* ── Upgrade state ── */}
-          <View style={styles.upgradeBox}>
-              <Text style={styles.upgradeTitle}>Unlock Your Love Reading</Text>
-              <Text style={styles.upgradeDesc}>
-                Discover which archetypes align with yours, your romantic patterns, and the exact timing windows for meaningful connections in 2026.
-              </Text>
-              <View style={styles.featureList}>
-                {[
-                  'Most compatible destiny archetypes',
-                  'Your love language pattern',
-                  '2026 romance timing windows',
-                  'Relationship red flags to watch',
-                ].map(f => (
-                  <FeatureListItem key={f} label={f} icon="♥" />
-                ))}
+              {SECTION_ORDER.map((key) => {
+                const section = screenState.reading.sections[key]
+                return (
+                  <Card key={key} variant="default" style={styles.sectionCard}>
+                    <Text variant="label" style={styles.sectionTitle}>
+                      {section.title}
+                    </Text>
+                    <Text variant="body" style={styles.sectionContent}>
+                      {section.content}
+                    </Text>
+                  </Card>
+                )
+              })}
+
+              <Button
+                label="Read someone else"
+                variant="secondary"
+                fullWidth
+                onPress={handleReset}
+              />
+              {/* TODO: Phase 5 — add "Share this reading" button */}
+            </>
+
+          ) : isPremium ? (
+            <>
+              <View style={styles.form}>
+                <TextField
+                  label="Partner's name"
+                  required
+                  type="name"
+                  value={partnerName}
+                  onChangeText={setPartnerName}
+                  placeholder="Enter name"
+                />
+                <DateField
+                  label="Partner's date of birth"
+                  required
+                  value={partnerDobDate}
+                  onChange={setPartnerDobDate}
+                  maximumDate={new Date()}
+                  placeholder="Select date of birth"
+                />
+                <TextField
+                  label="Partner's birth city (optional)"
+                  value={partnerCity}
+                  onChangeText={setPartnerCity}
+                  placeholder="e.g. London"
+                  autoCapitalize="words"
+                />
               </View>
-              <Text style={styles.upgradeNote}>Also included in Full Oracle · $12.99</Text>
-            </View>
+              <Button
+                label="See your compatibility"
+                variant="primary"
+                fullWidth
+                disabled={!canSubmit}
+                onPress={handleSubmit}
+              />
+            </>
+
+          ) : (
+            <LockedCard
+              placement="feature_compatibility"
+              lockMessage="Unlock compatibility readings"
+              unlockCtaLabel="Unlock"
+              onUnlockPress={handleUnlockPress}
+              preview={
+                <Text variant="caption">
+                  7 sections: bond, strength, challenge, communication, dynamic, forecast, advice
+                </Text>
+              }
+            >
+              <View style={styles.decorativeScore}>
+                <Text variant="display1" style={styles.decorativeScorePct}>??%</Text>
+                <Text variant="caption" style={styles.decorativeScoreLabel}>
+                  compatibility score
+                </Text>
+              </View>
+            </LockedCard>
+          )}
         </ScrollView>
-      </LinearGradient>
-    </SafeAreaView>
-  );
-};
+      )}
+    </ScreenWrapper>
+  )
+}
 
 const styles = StyleSheet.create({
-  container:          { flex: 1, backgroundColor: colors.bone },
-  gradient:           { flex: 1 },
-  scroll:             { paddingHorizontal: 22, paddingTop: 16, paddingBottom: 56 },
-
-  eyebrow:            { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', color: colors.goldDim, marginBottom: 10 },
-  heading:            { fontFamily: fonts.cormorant, fontSize: 36, fontWeight: '300', color: colors.ink, lineHeight: 44, marginBottom: 8 },
-  subheading:         { fontFamily: fonts.cormorantItalic, fontSize: 13, color: colors.inkFaint, marginBottom: 24 },
-
-  matchCard:          { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.inkGhost, borderRadius: 10, overflow: 'hidden', marginBottom: 24, position: 'relative' },
-  matchHeader:        { borderBottomWidth: 1, borderBottomColor: colors.inkTrace, paddingVertical: 10, paddingHorizontal: 16 },
-  matchHeaderText:    { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2, color: colors.inkDim, textTransform: 'uppercase' },
-  matchRow:           { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 10, borderBottomWidth: 1, borderBottomColor: colors.inkTrace },
-  matchRowLocked:     { },
-  matchElement:       { fontFamily: fonts.inter, fontSize: 11, color: colors.inkFaint, width: 38, fontWeight: '500' },
-  matchBarWrap:       { flex: 1, height: 3, backgroundColor: colors.inkTrace, borderRadius: 2, overflow: 'hidden', position: 'relative' },
-  matchBar:           { height: '100%', backgroundColor: MATCH_BAR_COLOR, borderRadius: 2 },
-  matchPct:           { fontFamily: fonts.inter, position: 'absolute', right: 4, top: -5, fontSize: 9, color: colors.goldDim },
-  matchLabel:         { fontFamily: fonts.inter, fontSize: 10, color: MATCH_LABEL_COLOR, width: 68, textAlign: 'right', letterSpacing: 0.2 },
-  matchFade:          { position: 'absolute', bottom: 0, left: 0, right: 0, height: 80 },
-
-  purchasedBox:       { alignItems: 'center', paddingTop: 8 },
-  purchasedIcon:      { fontSize: 28, color: colors.goldDim, marginBottom: 14 },
-  purchasedTitle:     { fontFamily: fonts.playfair, fontSize: 18, color: colors.ink, textAlign: 'center', marginBottom: 12 },
-  purchasedDesc:      { fontFamily: fonts.inter, fontSize: 14, color: colors.inkFaint, textAlign: 'center', lineHeight: 22, marginBottom: 28 },
-  reportBtn:          { borderWidth: 1, borderColor: colors.goldSubtle, borderRadius: 3, paddingVertical: 12, paddingHorizontal: 28 },
-  reportBtnText:      { fontFamily: fonts.inter, fontSize: 12, letterSpacing: 1.5, textTransform: 'uppercase', color: colors.goldDim },
-
-  upgradeBox:         { paddingTop: 4 },
-  upgradeTitle:       { fontFamily: fonts.playfair, fontSize: 22, color: colors.ink, marginBottom: 10 },
-  upgradeDesc:        { fontFamily: fonts.inter, fontSize: 14, color: colors.inkFaint, lineHeight: 22, marginBottom: 20 },
-  featureList:        { gap: 10, marginBottom: 24 },
-  upgradeBtn:         { borderRadius: 3, overflow: 'hidden', marginBottom: 12, borderWidth: 1, borderColor: UPGRADE_BTN_BORDER, backgroundColor: 'transparent', paddingVertical: 16, alignItems: 'center' },
-  upgradeBtnGradient: { paddingVertical: 17, alignItems: 'center', width: '100%' },
-  upgradeBtnText:     { fontFamily: fonts.inter, fontSize: 12, fontWeight: '400', color: colors.inkMid, letterSpacing: 1.5, textTransform: 'uppercase' },
-  upgradeNote:        { fontFamily: fonts.inter, fontSize: 11, color: colors.inkDim, textAlign: 'center' },
-});
+  scrollContent: {
+    paddingHorizontal: layout.screenPadding,
+    paddingTop:        space['4'],
+    paddingBottom:     space['8'],
+    gap:               space['4'],
+  },
+  intro: {
+    color: tokens.text.secondary,
+  },
+  form: {
+    gap: space['4'],
+  },
+  centered: {
+    flex:              1,
+    alignItems:        'center',
+    justifyContent:    'center',
+    paddingHorizontal: layout.screenPadding,
+    gap:               space['4'],
+  },
+  loadingText: {
+    color:     tokens.text.secondary,
+    textAlign: 'center',
+  },
+  loadingHint: {
+    color:     tokens.text.tertiary,
+    textAlign: 'center',
+  },
+  scoreCard: {
+    alignItems: 'center',
+    gap:        space['2'],
+  },
+  scoreNumber: {
+    color: tokens.text.accent,
+  },
+  scoreTitle: {
+    color:     tokens.text.primary,
+    textAlign: 'center',
+  },
+  scoreNames: {
+    color:     tokens.text.tertiary,
+    textAlign: 'center',
+  },
+  sectionCard: {
+    gap: space['2'],
+  },
+  sectionTitle: {
+    color:         tokens.text.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  sectionContent: {
+    color: tokens.text.secondary,
+  },
+  decorativeScore: {
+    alignItems:      'center',
+    justifyContent:  'center',
+    paddingVertical: space['6'],
+    opacity:         0.4,
+  },
+  decorativeScorePct: {
+    color: tokens.text.primary,
+  },
+  decorativeScoreLabel: {
+    color:         tokens.text.secondary,
+    marginTop:     space['1'],
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+})

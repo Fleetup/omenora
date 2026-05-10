@@ -1,5 +1,6 @@
 import apiClient from './client';
 import type { Report } from '../stores/profileStore';
+import type { CalendarData } from '../types/calendar';
 
 // Types
 export interface GenerateReportRequest {
@@ -20,9 +21,62 @@ export interface GenerateReportResponse {
 }
 
 export interface CompatibilityRequest {
-  partnerName: string;
-  partnerDateOfBirth: string;
-  userReportId: string;
+  firstName:      string
+  partnerName:    string
+  partnerDob:     string            // ISO YYYY-MM-DD
+  partnerCity:    string | null
+  language:       string
+  previewMode:    boolean
+  archetype:      string
+  element:        string
+  lifePathNumber: number
+  powerTraits:    string[]
+  dateOfBirth:    string
+}
+
+export interface CompatibilitySection {
+  title:   string
+  content: string
+}
+
+export interface CompatibilityReading {
+  compatibilityScore: number
+  compatibilityTitle: string
+  sections: {
+    bond:          CompatibilitySection
+    strength:      CompatibilitySection
+    challenge:     CompatibilitySection
+    communication: CompatibilitySection
+    powerDynamic:  CompatibilitySection
+    forecast:      CompatibilitySection
+    advice:        CompatibilitySection
+  }
+  calculationReceipt: {
+    person1: {
+      name:           string
+      dateOfBirth:    string
+      sunSign:        string
+      element:        string
+      lifePathNumber: number | null
+      archetype:      string | null
+    }
+    person2: {
+      name:           string
+      dateOfBirth:    string
+      sunSign:        string
+      element:        string
+      lifePathNumber: number
+    }
+    synastryNotes:    string[]
+    tradition:        string
+    calculationSource: string
+    generatedAt:      string
+  }
+}
+
+export interface CompatibilityResponse {
+  success:       boolean
+  compatibility: CompatibilityReading
 }
 
 export interface DailyInsightRequest {
@@ -55,6 +109,21 @@ export interface GenerateBirthChartResponse {
     forecast2026:   string
     archetype:      string
   }
+}
+
+export interface GenerateCalendarRequest {
+  firstName:      string
+  archetype:      string
+  element:        string
+  lifePathNumber: number
+  dateOfBirth:    string
+  language:       string
+  answers:        Record<string, string>   // keys: p1, p2, p3
+}
+
+export interface GenerateCalendarResponse {
+  success:  boolean
+  calendar: CalendarData
 }
 
 export interface ReportStubResponse {
@@ -121,23 +190,19 @@ export const api = {
   },
 
   // Compatibility
-  generateCompatibility: async (data: CompatibilityRequest) => {
-    const response = await apiClient.post('/api/generate-compatibility', data);
-    return response.data;
+  generateCompatibility: async (data: CompatibilityRequest): Promise<CompatibilityResponse> => {
+    const response = await apiClient.post<CompatibilityResponse>('/api/generate-compatibility', data)
+    return response.data
   },
 
   // Calendar
-  generateCalendar: async (data: {
-    firstName: string;
-    dateOfBirth: string;
-    year: number;
-  }) => {
-    const response = await apiClient.post('/api/generate-calendar', data);
+  generateCalendar: async (data: GenerateCalendarRequest): Promise<GenerateCalendarResponse> => {
+    const response = await apiClient.post<GenerateCalendarResponse>('/api/generate-calendar', data);
     return response.data;
   },
 
-  getCalendar: async (calendarId: string) => {
-    const response = await apiClient.post('/api/get-calendar', { calendarId });
+  getCalendar: async (sessionId: string) => {
+    const response = await apiClient.post('/api/get-calendar', { sessionId });
     return response.data;
   },
 
