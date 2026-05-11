@@ -32,30 +32,9 @@ import type { MoreScreenProps } from '../../navigation/types'
 
 export default function MoreScreen({ navigation }: MoreScreenProps) {
   const { firstName, languageOverride } = useProfileStore()
-  const { isPremium } = usePurchases()
-  const { signOut, deleteAccount, showAuthGate, isAnonymous } = useAuth()
+  const { isPremium, presentCustomerCenter } = usePurchases()
+  const { signOut, showAuthGate, isAnonymous } = useAuth()
   const version = Constants.expoConfig?.version ?? 'unknown'
-
-  const handleDeleteAccount = useCallback(() => {
-    Alert.alert(
-      'Delete account',
-      'This permanently deletes your account, profile, and reading history. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteAccount()
-            } catch {
-              // Error already alerted inside deleteAccount
-            }
-          },
-        },
-      ],
-    )
-  }, [deleteAccount])
 
   const handleSignOut = useCallback(() => {
     Alert.alert(
@@ -138,15 +117,15 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
             <ListItem
               icon={User}
               label="Profile"
-              meta="Coming soon"
-              disabled
+              onPress={() => navigation.navigate('Profile')}
+              showChevron
             />
             <View style={styles.divider} />
             {/* Subscription route not in RootStackParamList — open iOS subscription management */}
             <ListItem
               icon={CreditCard}
               label="Subscription"
-              onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
+              onPress={presentCustomerCenter}
               showChevron
             />
             <View style={styles.divider} />
@@ -154,16 +133,17 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
             <ListItem
               icon={Bell}
               label="Notifications"
-              meta="Coming soon"
-              disabled
+              onPress={() => navigation.navigate('Notifications')}
+              showChevron
             />
             <View style={styles.divider} />
             {/* Language selector — Phase 6 */}
             <ListItem
               icon={Globe}
               label="Language"
-              meta={`${languageOverride ?? 'English'} \u00b7 Coming soon`}
-              disabled
+              meta={languageOverride ?? 'English'}
+              onPress={() => navigation.navigate('Language')}
+              showChevron
             />
           </Card>
         </View>
@@ -178,7 +158,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
             <ListItem
               icon={Shield}
               label="Privacy & Data"
-              onPress={() => navigation.navigate('Privacy')}
+              onPress={() => navigation.navigate('PrivacySettings')}
               showChevron
             />
             <View style={styles.divider} />
@@ -210,7 +190,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
                   icon={Trash2}
                   label="Account deletion"
                   destructive
-                  onPress={handleDeleteAccount}
+                  onPress={() => navigation.navigate('DeleteAccount')}
                 />
               </>
             )}
