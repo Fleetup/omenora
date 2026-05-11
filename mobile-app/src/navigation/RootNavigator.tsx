@@ -20,8 +20,9 @@ import { CompatibilityScreen } from '../screens/CompatibilityScreen';
 import { PrivacyScreen } from '../screens/PrivacyScreen';
 import { TermsScreen } from '../screens/TermsScreen';
 import TraditionSwitcherScreen from '../screens/settings/TraditionSwitcherScreen';
-import CounselChatScreen      from '../screens/counsel/CounselChatScreen';
 import CrisisResourcesScreen  from '../screens/settings/CrisisResourcesScreen';
+import ProfileScreen          from '../screens/settings/ProfileScreen';
+import CounselChatScreen      from '../screens/counsel/CounselChatScreen';
 import { ComponentsScreen } from '../screens/dev/ComponentsScreen';
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
@@ -53,8 +54,9 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen name="Calendar"      component={CalendarScreen} />
       <Stack.Screen name="Compatibility"     component={CompatibilityScreen} />
       <Stack.Screen name="TraditionSwitcher" component={TraditionSwitcherScreen} />
-      <Stack.Screen name="CounselChat"       component={CounselChatScreen} />
       <Stack.Screen name="CrisisResources"   component={CrisisResourcesScreen} />
+      <Stack.Screen name="Profile"           component={ProfileScreen} />
+      <Stack.Screen name="CounselChat"       component={CounselChatScreen} />
       <Stack.Screen name="Privacy"           component={PrivacyScreen} />
       <Stack.Screen name="Terms"         component={TermsScreen} />
       {__DEV__ && (
