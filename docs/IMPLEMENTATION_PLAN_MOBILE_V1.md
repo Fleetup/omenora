@@ -2531,6 +2531,16 @@ Picker UI listing 10 supported languages with native names and flag emoji. Selec
 
 CalendarScreen `!hasCalendar` locked state adds secondary "Buy 2026 Calendar — $4.99" button below the existing LockedCard. `onPress` → `purchaseCalendar()` (Cluster 0 method) → on success `setCalendarData(null)` (forces re-fetch) → screen re-renders with `hasCalendar = true`.
 
+**Decisions captured at implementation time (Cluster 3, commit `573a6ef`):**
+
+- **CTA placement: sibling below LockedCard, NOT inside it.** LockedCard is consumed by 7 call sites (CalendarScreen, CompatibilityScreen, TraditionSwitcherScreen, TodayScreen ×2, ReadingsScreen ×3, ComponentsScreen). Only CalendarScreen has a non-subscription alternative purchase path; Compatibility / Readings / Today are subscription-gated only. Extending LockedCard with a footer slot would have forced migration of 7 call sites for a behavior 1 needs — wrong cost/benefit. CalendarScreen's `!hasCalendar` branch wraps the existing `<LockedCard>` and the new `<Pressable>` in a React fragment; LockedCard's `onUnlockPress` continues to call `presentPaywall()` (primary CTA, subscription path), the new sibling button calls `purchaseCalendar()` (secondary CTA, IAP path).
+
+- **Price source: RC `priceString` with `"$4.99"` fallback.** Hardcoding "$4.99" violates Apple Guideline 2.3.8 — a non-USD user sees "$4.99" in the button label but Apple charges them in their local currency per Apple's regional pricing tier (€4.99 / ¥600 / £4.99 / etc.). `PurchasesContext` extended with a new field `calendarProduct: PurchasesStoreProduct | null`. `PurchasesProvider` fetches the product via `Purchases.getProducts(['omenora_calendar_2026'], NON_SUBSCRIPTION)` in a `useEffect` keyed on `isReady`, with cancelled-flag cleanup. Errors `console.warn`, state stays `null`. CalendarScreen reads `calendarProduct?.priceString ?? '$4.99'` for the button label. The fallback handles both pre-launch (ASC product doesn't exist yet, `getProducts` returns `[]`) and runtime network failure — graceful degradation, no broken UI state.
+
+- **Purchase error handling.** RC `PurchasesError.userCancelled: boolean | null` checked strictly as `=== true` to exclude the `null` case some SDK versions return on non-purchase errors. User-cancelled = silent no-op (industry standard, the user just dismissed the sheet). All other errors → native `Alert.alert` with non-technical copy pointing to `support@omenora.com`. Double-tap guarded by local `isPurchasingCalendar` state.
+
+- **Out of Cluster 3 scope, flagged for follow-up:** (1) MoreScreen Help / FAQ row still shows `meta="Coming soon"` — only remaining stub on MoreScreen, capture in v1 hardening or Phase 7. (2) Contact Support row uses `Linking.openURL('mailto:...')` with no `canOpenURL` guard — fine for v1 since Mail is preinstalled on iOS, but iPad-only users without a Mail account configured see a blank screen on tap. v1.1 polish item.
+
 ---
 
 ### Step 6.5 — TypeScript clean pass
