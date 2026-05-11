@@ -2756,6 +2756,29 @@ Before submission, verify each item:
 **Account deletion (Apple requirement since June 2022):**
 - [ ] `DeleteAccountScreen` reachable without contacting support
 - [ ] Deletion is complete — not just deactivation
+- [ ] **Apple Sign-In token revocation per Guideline 5.1.1(v).** When a
+      user signed in with Apple deletes their account, the app MUST
+      revoke their Apple refresh token via `POST https://appleid.apple.com/auth/revoke`.
+      `expo-apple-authentication` ~7.2.4 exposes no `revokeAsync` API,
+      so this is a server-side requirement, NOT a mobile code change.
+      Implementation owner: backend `/api/auth/delete-account` handler
+      in the augur web repo. Steps: (1) on delete-account request,
+      retrieve Apple `provider_refresh_token` from Supabase
+      `auth.identities` for the user where `provider = 'apple'`;
+      (2) generate a client_secret JWT signed with the Apple Sign-In
+      Key (.p8) using Team ID `[TEAM_ID]` as iss, Service ID
+      `com.omenora.app.signin` as sub, ES256, exp ≤ 6 months;
+      (3) POST to Apple revoke endpoint with `client_id`,
+      `client_secret`, `token`, `token_type_hint=refresh_token`;
+      (4) accept 200 OK as success, log any other response without
+      blocking deletion (Apple's revoke is idempotent and best-effort
+      per their spec). Code marker for mobile-side acknowledgment:
+      `AuthProvider.tsx:290-292` (post-Cluster-2 line numbers, may
+      shift). Severity: medium — pre-App-Review blocker, not a
+      runtime bug; users can delete accounts today, but App Review
+      will reject the build if this isn't wired before submission.
+      Tracking: this checklist item. Effort estimate: 2–3 hrs
+      backend + 1 hr device test.
 
 **Privacy:**
 - [ ] Privacy policy link in `AuthGate` before sign-in
