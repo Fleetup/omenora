@@ -292,6 +292,11 @@ export default function CounselChatScreen({ navigation, route }: CounselChatScre
         )}
       </View>
 
+      {/* Compliance footer — always visible; every-turn reminder per QG C9 */}
+      <Text variant="micro" color="tertiary" style={styles.complianceFooter}>
+        Counsel is AI — not a substitute for professional support.
+      </Text>
+
       {/* ── Disclosure overlay — visible on first access or via MoreScreen ── */}
       <CounselDisclosureModal
         visible={disclosureVisible}
@@ -346,5 +351,11 @@ const styles = StyleSheet.create({
   },
   crisisButtonText: {
     color: tokens.accent.primary,
+  },
+  complianceFooter: {
+    textAlign:         'center',
+    paddingHorizontal: layout.screenPadding,
+    paddingTop:        space['1'],
+    paddingBottom:     space['3'],
   },
 })
