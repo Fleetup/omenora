@@ -25,7 +25,7 @@ export type RootStackParamList = {
   MainTabs:      NavigatorScreenParams<TabParamList> | undefined;
   Calendar:      { calendarId?: string } | undefined;
   Compatibility:       { reportId?: string } | undefined;
-  CounselChat:         undefined;
+  CounselChat:         { showDisclosure?: boolean } | undefined;
   CrisisResources:     undefined;
   TraditionSwitcher:   undefined;
   Privacy:             undefined;
