@@ -2368,9 +2368,63 @@ Definition of done. All items must pass before starting Phase 6.
 ## Phase 6 — More Tab & Settings
 
 **Goal:** Build all settings screens wired from More tab. Complete account deletion. Wire subscription management via RC customer center.
-**Duration:** ~6 hrs
+**Duration:** ~14-16 hrs (recon-revised; original 6hr estimate predates LanguageScreen, Calendar IAP, push notifications backend work, and language mismatch fix)
 **Prerequisites:** Phase 3 complete (MoreScreen built). Phase 0.5 complete (auth context for sign out and deletion).
 **Verify:** Profile screen shows correct user data. Subscription screen opens RC customer center. Account deletion completes end-to-end. Sign out clears all state.
+
+> **[ARCHITECTURAL DECISIONS 2026-05-11 — Phase 6 recon]**
+>
+> Six decisions and six drift corrections captured during Phase 6 pre-flight recon. Apply throughout Phase 6 cluster work.
+>
+> **Decision 1 — Calendar buy CTA inline on CalendarScreen.** No separate PurchaseCalendarScreen. In CalendarScreen's !hasCalendar locked state, primary LockedCard triggers subscription paywall as today; secondary button below offers "or buy 2026 Calendar separately — $4.99" → purchaseCalendar() → on success, clear calendarData and re-render with hasCalendar = true. Subscription is primary value; one-time IAP is alternative for non-commitment buyers.
+>
+> **Decision 2 — Profile edit in-place with Save button.** ProfileScreen renders read-only view by default; tap "Edit" → form mode with TextField / DateField inline; tap "Save changes" → validate → call existing setters. DOB change triggers warning dialog: "Your archetype, chart readings, and 2026 calendar will be regenerated next time you view them." User confirms → save → invalidate report, archetypeReading, natalChartReading, forecastReading, calendarData (5 cache fields). firstName change: no warning, no invalidation. No separate BirthInfoEditScreen — inline edit on ProfileScreen.
+>
+> **Decision 3 — Notifications settings-only opt-in.** No hard permission ask on app launch or MoreScreen visit. User must manually navigate to NotificationsScreen and toggle "Daily horoscope at 6 AM" → iOS native permission prompt fires AT THAT TOGGLE → grant → token registered with backend. App Store Review-friendly pattern; users who don't want notifications never see the prompt.
+>
+> **Decision 4 — Language change clears caches automatically.** setLanguageOverride wrapper also calls setReport(null), setArchetypeReading(null), setNatalChartReading(null), setForecastReading(null), setCalendarData(null). Toast confirms "Readings will be regenerated in {new language}." No warning dialog (low-stakes presentational change, not chart-changing edit).
+>
+> **Decision 5 — Customer center uses RevenueCatUI.presentCustomerCenter().** No custom screen. MoreScreen "Subscription" row onPress directly invokes RC native modal. Replaces current Linking.openURL to Apple's generic subscription page. RC's customer center handles status display, restore, cancel, manage in App Store deep link.
+>
+> **Decision 6 — Step 6.3a analytics: UI + store field only in Phase 6.** analyticsEnabled: boolean added to profileStore (default true). Toggle UI shipped in Phase 6 NotificationsScreen (or dedicated Privacy section). SDK runtime calls (posthog.optOut, Sentry disable) DEFERRED to Phase 7 alongside PostHog + Sentry SDK installs. Toggle has no effect until Phase 7 — acceptable because no analytics are firing pre-Phase-7.
+
+> **[DRIFT CORRECTIONS 2026-05-11]**
+>
+> Six plan-vs-reality drift items surfaced by recon. Corrections applied below.
+>
+> **Drift 1 — LanguageScreen formalized as Step 6.6.** Previously deferred work with no formal step. Plan now adds Step 6.6.
+>
+> **Drift 2 — Calendar IAP buy CTA formalized as Step 6.7.** Phase 4 amendments (Decision 2) said "deferred to Phase 6" but no Phase 6 step existed. Plan now adds Step 6.7.
+>
+> **Drift 3 — Privacy/Terms rows external links.** Plan QG correctly says rows link to omenora.com/privacy and omenora.com/terms externally. Current MoreScreen navigates to in-app Privacy + Terms screens — those screens become orphaned. Phase 6 changes MoreScreen onPress to Linking.openURL. In-app screens deleted as Phase 6 cleanup.
+>
+> **Drift 4 — DeleteAccountScreen replaces inline flow.** Current MoreScreen has inline Alert → deleteAccount() handler. Plan Step 6.4 specifies a dedicated DeleteAccountScreen with confirmation UX. MoreScreen Account deletion row becomes navigation.navigate('DeleteAccount').
+>
+> **Drift 5 — Step 6.3a SDK calls deferred (see Decision 6).** Plan Step 6.3a as written references posthog.optOut() and Sentry.getClient() but those SDKs are Phase 7 installs. Phase 6 ships UI + store field only.
+>
+> **Drift 6 — Language mismatch bug (Cluster 0 backend work).** Mobile LANGUAGES constant lists 8 codes (en, es, fr, de, pt, it, ru, zh). Backend languageInstructions map covers 6 (en, es, pt, hi, ko, zh). Non-overlap: mobile-only fr/de/it/ru silently fall back to English; backend-only hi/ko unpickable. Cluster 0 expands backend to 10 languages (en, es, fr, de, pt, it, ru, zh, hi, ko) and adds hi/ko to mobile LANGUAGES. Fixes a real bug affecting all non-English users since Phase 5.
+
+> **[Cluster 0 — Phase 6 prerequisite (~3hr)]**
+>
+> Pre-screen-build prerequisite work. Must complete before Clusters 1-N.
+>
+> 0.1 — Add analyticsEnabled: boolean to profileStore (default true). Setter + persistence via partialize. SDK calls deferred to Phase 7 per Decision 6.
+>
+> 0.2 — Add purchaseCalendar(): Promise<{ success: boolean }> method to PurchasesContext + PurchasesProvider. Wraps Purchases.purchaseStoreProduct for omenora_calendar_2026. On success: refreshCustomerInfo() so hasCalendar re-derives. Error handling: user cancel, network failure, product not available.
+>
+> 0.3 — Add presentCustomerCenter(): Promise<void> method to PurchasesContext + PurchasesProvider. Wraps RevenueCatUI.presentCustomerCenter(). RevenueCatUI is already imported per recon — zero new imports.
+>
+> 0.4 — Add 4 missing language instructions to backend endpoint languageInstructions maps: fr (French), de (German), it (Italian), ru (Russian). Each instruction is a 1-2 sentence directive to Claude to generate the response in that language with culturally appropriate phrasing. Pattern matches existing entries for es / pt / hi / ko / zh. Apply to all 3 report endpoints (archetype, natal-chart, forecast).
+>
+> 0.5 — Add hi + ko to mobile LANGUAGES constant (mobile-app/src/constants/questions.ts). Final list: en, es, fr, de, pt, it, ru, zh, hi, ko (10 codes).
+>
+> 0.6 — Add route registrations: Profile, Notifications, Language, DeleteAccount to RootStackParamList. Composite screen prop exports.
+>
+> 0.7 — Supabase migration: push_tokens table (user_id, token, platform: 'ios' | 'android', created_at). Foreign key to auth.users with cascade delete on user removal.
+>
+> 0.8 — Backend endpoint scaffold: POST /api/notifications/register. Body: { token, platform }. Auth: requireAuth. Inserts into push_tokens. Upserts on (user_id, platform) so same user re-registering replaces old token. (Cron daily-push dispatch deferred to a later Phase 6 cluster.)
+>
+> Cluster 0 ships before any screen builds. ~3hr work spans mobile + backend + Supabase migration.
 
 ---
 
@@ -2393,18 +2447,9 @@ Content:
 
 ---
 
-### Step 6.2 — Wire Subscription management
+### Step 6.2 — Subscription management
 
-**In MoreScreen (Step 3.6 already shells this):**
-
-```typescript
-import RevenueCatUI from 'react-native-purchases-ui'
-
-// In Subscription list item onPress:
-await RevenueCatUI.presentCustomerCenter()
-```
-
-> RC customer center handles: upgrade, downgrade, cancellation, restore. No custom screen needed.
+Replace MoreScreen "Subscription" row's `Linking.openURL` with `onPress: () => presentCustomerCenter()` (Cluster 0 method). Removes the deep link to Apple's generic subscription page; RC native modal handles cancel, restore, manage entirely in-app.
 
 ---
 
@@ -2417,11 +2462,7 @@ Add to `RootStackParamList`:
 Notifications: undefined
 ```
 
-Content:
-- `Header` + title "Notifications"
-- Toggle: Daily cosmic insight (7am default) — request `expo-notifications` permission on enable
-- Time picker for notification time (uses `@react-native-community/datetimepicker` ✅)
-- Toggle: New transit alerts
+Per Decision 3, iOS permission prompt fires WHEN USER TOGGLES ON (not earlier). Toggle on success: `registerForPushNotificationsAsync` → `getExpoPushTokenAsync` → `POST /api/notifications/register` (Cluster 0 endpoint) → toast confirms. Toggle off: cancel scheduled notifications (push_tokens row retained until account deletion). v1: daily horoscope only. "New transit alerts" deferred to v1.1.
 
 Notification scheduling uses `expo-notifications` (already installed `~0.31.5`) ✅.
 
@@ -2472,20 +2513,23 @@ Add to `RootStackParamList`:
 DeleteAccount: undefined
 ```
 
-Content:
-- `Header` + title "Delete Account"
-- Warning body: "This will permanently delete your chart, readings, and account. This cannot be undone."
-- List of what is deleted: chart data, reading history, active subscription (cancelled immediately)
-- `[Delete my account]` (danger Button variant):
-  1. Confirm dialog: "Are you sure? This is permanent."
-  2. `DELETE /api/auth/account` (built in Phase 0.5.15)
-  3. `supabase.auth.signOut()`
-  4. `Purchases.logOut()`
-  5. `AsyncStorage.clear()`
-  6. Navigate to `Splash` (reset stack)
-- `[Cancel]` → navigate back
+Replaces current MoreScreen inline Alert flow (Drift 4). UX: warning paragraph about permanence + checkbox "I understand this cannot be undone" + primary destructive button "Delete my account permanently." On confirm: `DELETE /api/auth/account` → `signOut` → `Purchases.logOut` → `AsyncStorage.clear` → navigate Splash. MoreScreen Account deletion row becomes `navigation.navigate('DeleteAccount')`.
 
 > Apple App Store requires in-app account deletion since June 2022. This screen must be reachable without contacting support.
+
+---
+
+### Step 6.6 — LanguageScreen
+
+**File:** `src/screens/settings/LanguageScreen.tsx` (new)
+
+Picker UI listing 10 supported languages with native names and flag emoji. Selection calls `setLanguageOverride` wrapper which clears all reading caches per Decision 4 and shows a toast confirming the language change. MoreScreen Language row enabled and navigates here.
+
+---
+
+### Step 6.7 — Calendar IAP buy CTA
+
+CalendarScreen `!hasCalendar` locked state adds secondary "Buy 2026 Calendar — $4.99" button below the existing LockedCard. `onPress` → `purchaseCalendar()` (Cluster 0 method) → on success `setCalendarData(null)` (forces re-fetch) → screen re-renders with `hasCalendar = true`.
 
 ---
 
@@ -2507,7 +2551,7 @@ Definition of done. All items must pass before starting Phase 7.
 - [ ] ProfileScreen: firstName, birth date, city, archetype, sign-in method all displayed correctly
 - [ ] Subscription row → RevenueCat customer center modal opens
 - [ ] NotificationsScreen: enabling daily insight → permission prompt → notification scheduled at user-specified time
-- [ ] Analytics opt-out toggle (Step 6.3a): off state → `posthog.optOut()` called, Sentry disabled
+- [ ] Analytics opt-out toggle (Step 6.3a): store field exists, toggle UI renders. SDK runtime hookup verified in Phase 7.
 - [ ] DeleteAccountScreen: full flow completes → backend RPC succeeds → session cleared → app navigates to Splash → new anonymous session created on next launch
 - [ ] Sign out (anonymous user): warning dialog "data will be lost" shown; on confirm: session cleared, app navigates to Splash
 - [ ] Sign out (permanent user): no warning dialog; session cleared, app navigates to Splash
@@ -2515,6 +2559,8 @@ Definition of done. All items must pass before starting Phase 7.
 - [ ] Privacy & Data row links to `omenora.com/privacy` in external browser
 - [ ] Terms of Service row links to `omenora.com/terms` in external browser
 - [ ] Analytics event fired: `account_deleted` on successful deletion
+- [ ] LanguageScreen: 10 languages display with native names. Selection clears caches and shows toast.
+- [ ] Calendar IAP buy CTA: free-state CalendarScreen renders secondary $4.99 button. purchaseCalendar() success path triggers cache clear + hasCalendar transition.
 
 ---
 
