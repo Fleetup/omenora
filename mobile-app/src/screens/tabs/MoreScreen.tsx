@@ -52,9 +52,13 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
             onPress: async () => {
               try {
                 await signOut({ skipWarning: true })
-                navigation.getParent()?.dispatch(
-                  CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }),
-                )
+                const parent = navigation.getParent()
+                if (parent) {
+                  parent.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+                } else {
+                  console.warn('[MoreScreen] sign-out: getParent() returned null, falling back to navigation.dispatch — investigate navigator nesting')
+                  navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+                }
               } catch (err) {
                 Alert.alert('Could not sign out', String(err))
               }
@@ -66,9 +70,13 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
       // Permanent users: sign-out is recoverable — skip the dialog, one tap.
       try {
         await signOut({ skipWarning: true })
-        navigation.getParent()?.dispatch(
-          CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }),
-        )
+        const parent = navigation.getParent()
+        if (parent) {
+          parent.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+        } else {
+          console.warn('[MoreScreen] sign-out: getParent() returned null, falling back to navigation.dispatch — investigate navigator nesting')
+          navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+        }
       } catch (err) {
         Alert.alert('Could not sign out', String(err))
       }

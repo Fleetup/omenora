@@ -37,11 +37,14 @@ const STAR_POSITIONS = (() => {
 export default function SplashScreen() {
   const navigation = useNavigation<SplashNavProp>()
   const { session, isLoading } = useAuth()
-  const archetype = useProfileStore((s) => s.archetype)
-  const fadeAnim  = useRef(new Animated.Value(0)).current
+  const archetype   = useProfileStore((s) => s.archetype)
+  const dateOfBirth = useProfileStore((s) => s.dateOfBirth)
+  const fadeAnim    = useRef(new Animated.Value(0)).current
 
   const [minDisplayElapsed, setMinDisplayElapsed] = useState(false)
   const [sessionTimedOut,   setSessionTimedOut]   = useState(false)
+  const [retrying,          setRetrying]          = useState(false)
+  const [storeHydrated,     setStoreHydrated]     = useState(false)
   const sessionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Fade-in animation (unchanged)
@@ -57,6 +60,16 @@ export default function SplashScreen() {
   useEffect(() => {
     const timer = setTimeout(() => setMinDisplayElapsed(true), MIN_DISPLAY_MS)
     return () => clearTimeout(timer)
+  }, [])
+
+  // Wait for Zustand persist to hydrate from AsyncStorage before reading profile fields.
+  useEffect(() => {
+    if (useProfileStore.persist.hasHydrated()) {
+      setStoreHydrated(true)
+      return
+    }
+    const unsub = useProfileStore.persist.onFinishHydration(() => setStoreHydrated(true))
+    return unsub
   }, [])
 
   // Session-wait timeout: show retry UI if no session materialises after min display +
@@ -77,13 +90,15 @@ export default function SplashScreen() {
     }
   }, [session])
 
-  // Routing decision — fires once min display elapsed, bootstrap done, and session stable.
-  // Permanent user with complete profile → MainTabs (skip re-onboarding).
-  // Anonymous or incomplete profile → Welcome.
+  // Routing decision — fires once all guards pass: min display, auth bootstrap, session
+  // stable, and store hydrated. Profile complete requires archetype: set AND dateOfBirth: set.
+  // Mid-onboarding users (either null) route back to Welcome to resume safely.
   useEffect(() => {
-    if (!minDisplayElapsed || isLoading || !session) return
-    navigation.replace(archetype ? 'MainTabs' : 'Welcome')
-  }, [minDisplayElapsed, isLoading, session, archetype, navigation])
+    if (!minDisplayElapsed || isLoading || !session || !storeHydrated) return
+    // Profile complete: archetype: non-null AND dateOfBirth: non-empty
+    const profileComplete = archetype !== null && dateOfBirth !== ''
+    navigation.replace(profileComplete ? 'MainTabs' : 'Welcome')
+  }, [minDisplayElapsed, isLoading, session, storeHydrated, archetype, dateOfBirth, navigation])
 
   return (
     <View style={styles.container}>
@@ -101,16 +116,25 @@ export default function SplashScreen() {
       </Animated.View>
       {sessionTimedOut && (
         <Pressable
-          onPress={() => {
+          disabled={retrying}
+          onPress={async () => {
+            setRetrying(true)
             setSessionTimedOut(false)
-            supabase.auth.signInAnonymously().catch((err: any) => {
+            try {
+              await supabase.auth.signInAnonymously()
+              // On success: SIGNED_IN fires via AuthProvider → session updates
+              // → routing effect fires → navigates. Button stays disabled until unmount.
+            } catch (err: any) {
               console.error('[Splash] retry sign-in failed:', err)
               setSessionTimedOut(true)
-            })
+              setRetrying(false)
+            }
           }}
           style={styles.retry}
         >
-          <Text variant="label" color="secondary">Tap to retry</Text>
+          <Text variant="label" color="secondary">
+            {retrying ? 'Retrying…' : 'Tap to retry'}
+          </Text>
         </Pressable>
       )}
     </View>
