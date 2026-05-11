@@ -230,8 +230,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
+  const resetProfile = useProfileStore((s) => s.reset)
+
   const signOut = useCallback(async (options?: { skipWarning?: boolean }) => {
     const performSignOut = async () => {
+      // 1. Clear local profile state BEFORE supabase signOut — ensures the
+      //    onAuthStateChange anonymous bootstrap sees a clean store, not the
+      //    previous user's firstName / archetype / reading caches.
+      try {
+        resetProfile()
+      } catch (err: any) {
+        console.error('[Auth] resetProfile failed during sign-out:', err?.message)
+        // Non-fatal: proceed — partial cleanup is better than a stuck sign-out.
+      }
+
+      // 2. RevenueCat sign out — best-effort, non-blocking. Matches deleteAccount pattern.
+      try {
+        await Purchases.logOut()
+      } catch (rcErr) {
+        console.warn('[Auth] Purchases.logOut failed (non-blocking):', rcErr)
+      }
+
+      // 3. Supabase sign out — fires SIGNED_OUT, triggers anonymous re-bootstrap.
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error('[Auth] sign-out error:', error)
@@ -254,7 +274,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         { text: 'Sign Out', style: 'destructive', onPress: performSignOut },
       ],
     )
-  }, [])
+  }, [resetProfile])
 
   const showAuthGate = useCallback((options?: { title?: string; body?: string }) => {
     const currentSession = session
@@ -268,8 +288,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hideAuthGate = useCallback(() => {
     setAuthGateState({ visible: false })
   }, [])
-
-  const resetProfile = useProfileStore((s) => s.reset)
 
   const deleteAccount = useCallback(async () => {
     try {
