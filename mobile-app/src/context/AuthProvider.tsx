@@ -29,7 +29,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     body?: string
   }>({ visible: false })
 
-  const previousAnonymousUserIdRef = useRef<string | null>(null)
+  const previousAnonymousUserIdRef  = useRef<string | null>(null)
+  const signingInAnonymouslyRef     = useRef(false)
 
   // Bootstrap: subscribe to auth changes, sign in anonymously if no session.
   useEffect(() => {
@@ -122,6 +123,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (err: any) {
           console.error('[Auth] transfer RPC threw:', err?.message)
+        }
+      }
+
+      // On sign-out: re-bootstrap a new anonymous session so the app never sits session-less.
+      // Guard against re-entrance in case SIGNED_OUT fires before the new SIGNED_IN arrives.
+      if (event === 'SIGNED_OUT' && !newSession && mounted && !signingInAnonymouslyRef.current) {
+        signingInAnonymouslyRef.current = true
+        try {
+          const { error } = await supabase.auth.signInAnonymously()
+          if (error) {
+            console.error('[Auth] re-bootstrap after sign-out failed:', error.message)
+            Alert.alert('Session Error', 'Could not create a new session. Please restart the app.')
+          }
+          // On success, SIGNED_IN fires → listener sets session with the new anonymous user.
+        } catch (err: any) {
+          console.error('[Auth] re-bootstrap after sign-out threw:', err?.message)
+          Alert.alert('Session Error', 'Could not create a new session. Please restart the app.')
+        } finally {
+          signingInAnonymouslyRef.current = false
         }
       }
     })
@@ -217,7 +237,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('[Auth] sign-out error:', error)
         Alert.alert('Sign Out Failed', error.message)
       }
-      // Auth state listener will re-run bootstrap and create a new anonymous session.
+      // On success, onAuthStateChange fires SIGNED_OUT → re-bootstrap handler creates a new anonymous session.
     }
 
     if (options?.skipWarning) {
