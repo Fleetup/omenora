@@ -142,6 +142,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               store.setLifePathNumber(serverProfile.life_path_number)
             }
             console.log('[Auth] profileStore hydrated from server for user:', targetId)
+          } else {
+            // No server row yet (user_profiles table is new, or user onboarded before
+            // this feature shipped). If local profileStore still has their data from
+            // a prior onboarding session, sync it up now so future sign-ins can hydrate.
+            const localStore = useProfileStore.getState()
+            if (localStore.dateOfBirth) {
+              saveProfile(targetId, {
+                first_name:       localStore.firstName    || undefined,
+                date_of_birth:    localStore.dateOfBirth,
+                time_of_birth:    localStore.timeOfBirth  || undefined,
+                city:             localStore.city         || undefined,
+                archetype:        localStore.archetype    || undefined,
+                sun_sign:         localStore.sunSign      || undefined,
+                moon_sign:        localStore.moonSign     || undefined,
+                rising_sign:      localStore.risingSign   || undefined,
+                life_path_number: localStore.lifePathNumber ?? undefined,
+              }).catch((e) => console.warn('[Auth] local→server sync-up failed:', e))
+              console.log('[Auth] no server profile — synced local profileStore to server for:', targetId)
+            }
           }
         } catch (hydrationErr) {
           console.warn('[Auth] profile hydration non-blocking error:', hydrationErr)
@@ -276,6 +295,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = useCallback(async (options?: { skipWarning?: boolean }) => {
     const performSignOut = async () => {
+      // 0. Persist profile to server BEFORE wiping local state — ensures a returning
+      //    user can restore their profile on next sign-in. This is a best-effort
+      //    save; sign-out proceeds regardless of outcome.
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession()
+        const permanentUserId = currentSession && !(currentSession.user as any).is_anonymous
+          ? currentSession.user.id
+          : null
+        if (permanentUserId) {
+          const localStore = useProfileStore.getState()
+          if (localStore.dateOfBirth) {
+            await saveProfile(permanentUserId, {
+              first_name:       localStore.firstName    || undefined,
+              date_of_birth:    localStore.dateOfBirth,
+              time_of_birth:    localStore.timeOfBirth  || undefined,
+              city:             localStore.city         || undefined,
+              archetype:        localStore.archetype    || undefined,
+              sun_sign:         localStore.sunSign      || undefined,
+              moon_sign:        localStore.moonSign     || undefined,
+              rising_sign:      localStore.risingSign   || undefined,
+              life_path_number: localStore.lifePathNumber ?? undefined,
+            })
+            console.log('[Auth] profile saved to server before sign-out for:', permanentUserId)
+          }
+        }
+      } catch (saveErr) {
+        console.warn('[Auth] pre-sign-out profile save failed (non-blocking):', saveErr)
+      }
+
       // 1. Clear local profile state BEFORE supabase signOut — ensures the
       //    onAuthStateChange anonymous bootstrap sees a clean store, not the
       //    previous user's firstName / archetype / reading caches.
