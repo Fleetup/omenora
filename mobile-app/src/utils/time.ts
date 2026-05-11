@@ -19,3 +19,18 @@ export function timeUntil(isoTimestamp: string): string {
   const diffHours = Math.ceil(diffMins / 60)
   return `${diffHours} hour${diffHours === 1 ? '' : 's'}`
 }
+
+/**
+ * Returns true if an ISO date string (YYYY-MM-DD) is in the past relative to today.
+ * Used to detect stale forecast periods.
+ *
+ * Pure function — no side effects. Relies on lexicographic ordering of YYYY-MM-DD
+ * strings, which is identical to chronological ordering.
+ *
+ * Examples:
+ *   isPastDate('2025-01-01') → true
+ *   isPastDate('2099-12-31') → false
+ */
+export function isPastDate(isoDate: string): boolean {
+  return isoDate < new Date().toISOString().slice(0, 10)
+}
