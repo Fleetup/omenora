@@ -29,8 +29,12 @@ export type RootStackParamList = {
   CrisisResources:     undefined;
   TraditionSwitcher:   undefined;
   Privacy:             undefined;
-  Terms:         undefined;
-  Components:    undefined;
+  Terms:               undefined;
+  Components:          undefined;
+  Profile:             undefined;
+  Notifications:       undefined;
+  Language:            undefined;
+  DeleteAccount:       undefined;
 };
 
 // ── Tab screen props (composite — can navigate to root stack screens too) ──────
@@ -61,3 +65,7 @@ export type BigThreeRevealScreenProps       = NativeStackScreenProps<RootStackPa
 export type TraditionSwitcherScreenProps    = NativeStackScreenProps<RootStackParamList, 'TraditionSwitcher'>;
 export type CounselChatScreenProps          = NativeStackScreenProps<RootStackParamList, 'CounselChat'>;
 export type CrisisResourcesScreenProps      = NativeStackScreenProps<RootStackParamList, 'CrisisResources'>;
+export type ProfileScreenProps              = NativeStackScreenProps<RootStackParamList, 'Profile'>;
+export type NotificationsScreenProps        = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
+export type LanguageScreenProps             = NativeStackScreenProps<RootStackParamList, 'Language'>;
+export type DeleteAccountScreenProps        = NativeStackScreenProps<RootStackParamList, 'DeleteAccount'>;

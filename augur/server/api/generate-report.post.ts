@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { ReportSchema, type ReportType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
+import { getLanguageInstruction } from '~~/server/utils/language-instructions'
 
 // ── Prompt version — increment on every prompt change ─────────────────────────
 // Format: v<major>.<minor> — major for structural changes, minor for phrasing/copy
@@ -446,15 +447,7 @@ Write with passion, warmth, and spiritual fire. Connect to the heart first, mind
 
   const regionPrompt = traditionFramework
 
-  const languageInstructions: Record<string, string> = {
-    en: 'Respond entirely in English.',
-    es: 'Responde completamente en español. Usa un tono cálido, poético y personal. Habla directamente a la persona.',
-    pt: 'Responda completamente em português brasileiro. Use tom caloroso, poético e pessoal. Fale diretamente com a pessoa.',
-    hi: 'पूरी तरह से हिंदी में जवाब दें। गर्म, काव्यात्मक और व्यक्तिगत स्वर का उपयोग करें।',
-    ko: '전체적으로 한국어로 답변해 주세요. 따뜻하고 시적이며 개인적인 어조를 사용하세요.',
-    zh: '完全用简体中文回答。使用温暖、诗意和个人化的语气。',
-  }
-  const langInstruction = languageInstructions[language] ?? languageInstructions['en'] ?? ''
+  const langInstruction = getLanguageInstruction(language)
 
   const archetypeDesc = archetypeDescriptions[archetype] || archetype
 

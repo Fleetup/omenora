@@ -3,6 +3,7 @@ import { Platform } from 'react-native'
 import Purchases, {
   LOG_LEVEL,
   type CustomerInfo,
+  type MakePurchaseResult,
   type PurchasesError,
   type PurchasesOffering,
 } from 'react-native-purchases'
@@ -142,6 +143,25 @@ export function PurchasesProvider({ children }: Props) {
     }
   }, [])
 
+  const purchaseCalendar = useCallback(async (): Promise<MakePurchaseResult> => {
+    const products = await Purchases.getProducts(
+      ['omenora_calendar_2026'],
+      Purchases.PRODUCT_CATEGORY.NON_SUBSCRIPTION,
+    )
+    if (products.length === 0) {
+      throw new Error(
+        'omenora_calendar_2026 not available — verify product is configured in App Store Connect / Play Console and linked to the RevenueCat project.',
+      )
+    }
+    const result = await Purchases.purchaseStoreProduct(products[0])
+    await refreshCustomerInfo()
+    return result
+  }, [refreshCustomerInfo])
+
+  const presentCustomerCenter = useCallback(async (): Promise<void> => {
+    await RevenueCatUI.presentCustomerCenter()
+  }, [])
+
   const presentPaywallIfNeeded = useCallback(async (entitlement = 'premium'): Promise<PAYWALL_RESULT> => {
     try {
       const result = await RevenueCatUI.presentPaywallIfNeeded({
@@ -175,6 +195,8 @@ export function PurchasesProvider({ children }: Props) {
         refreshCustomerInfo,
         presentPaywall,
         presentPaywallIfNeeded,
+        purchaseCalendar,
+        presentCustomerCenter,
       }}
     >
       {children}

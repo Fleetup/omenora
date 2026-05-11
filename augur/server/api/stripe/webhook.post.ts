@@ -6,6 +6,7 @@ import { sendReportEmail } from '~~/server/utils/report-email-builder'
 import { buildTestimonialRequestEmail } from '~~/server/utils/email-templates'
 import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
+import { getLanguageInstruction } from '~~/server/utils/language-instructions'
 import { inngest, subscriberWelcomeSend, stripeCheckoutCompleted } from '~~/inngest/client'
 import type { createSupabaseAdmin as _createSupabaseAdmin } from '~~/server/utils/auth'
 
@@ -717,15 +718,7 @@ async function generateReport(opts: {
 
   const archetypeDesc = archetypeDescriptions[opts.archetype] || opts.archetype
 
-  const languageInstructions: Record<string, string> = {
-    en: 'Respond entirely in English.',
-    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
-    pt: 'Responda completamente em português brasileiro.',
-    hi: 'पूरी तरह से हिंदी में जवाब दें।',
-    ko: '전체적으로 한국어로 답변해 주세요.',
-    zh: '完全用简体中文回答。',
-  }
-  const langInstruction = languageInstructions[opts.language] ?? languageInstructions['en'] ?? ''
+  const langInstruction = getLanguageInstruction(opts.language)
 
   const prompt = `${langInstruction}
 
@@ -997,15 +990,7 @@ async function generateCalendar(opts: {
 }): Promise<CalendarType> {
   const client = new Anthropic({ apiKey: opts.config.anthropicApiKey as string })
 
-  const languageInstructions: Record<string, string> = {
-    en: 'Respond entirely in English.',
-    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
-    pt: 'Responda completamente em português brasileiro. Use tom caloroso e pessoal.',
-    hi: 'पूरी तरह से हिंदी में जवाब दें।',
-    ko: '전체적으로 한국어로 답변해 주세요.',
-    zh: '完全用简体中文回答。',
-  }
-  const langInstruction = languageInstructions[opts.language] ?? languageInstructions['en'] ?? ''
+  const langInstruction = getLanguageInstruction(opts.language)
 
   const birthMonth = new Date(opts.dateOfBirth).toLocaleString('default', { month: 'long' })
   const birthMonthNum = new Date(opts.dateOfBirth).getMonth()

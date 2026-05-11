@@ -64,6 +64,10 @@ export interface ProfileState {
   forecastReading:      ForecastReading | null;
   setForecastReading:   (data: ForecastReading | null) => void;
 
+  // Analytics preferences
+  analyticsEnabled: boolean;
+  setAnalyticsEnabled: (enabled: boolean) => void;
+
   // Consent flags
   hasAcceptedCounselDisclosure:    boolean;
   setHasAcceptedCounselDisclosure: (accepted: boolean) => void;
@@ -80,10 +84,11 @@ export interface ProfileState {
   setMoonSign:   (moonSign: string | null) => void;
   setRisingSign: (risingSign: string | null) => void;
   setReportId: (id: string) => void;
-  setReport: (report: Report) => void;
+  setReport: (report: Report | null) => void;
   setAnonymousUserId: (id: string) => void;
   setRegionOverride: (region: string) => void;
   setLanguageOverride: (lang: string) => void;
+  changeLanguage: (newLang: string) => void;
 
   // Reset
   resetAnalysis: () => void;
@@ -114,6 +119,7 @@ const initialState = {
   natalChartReading: null,
   forecastReading:   null,
   hasAcceptedCounselDisclosure: false,
+  analyticsEnabled: true,
 };
 
 export const useProfileStore = create<ProfileState>()(
@@ -147,6 +153,19 @@ export const useProfileStore = create<ProfileState>()(
       setNatalChartReading: (natalChartReading) => set({ natalChartReading }),
       setForecastReading:   (forecastReading)   => set({ forecastReading }),
       setHasAcceptedCounselDisclosure: (hasAcceptedCounselDisclosure) => set({ hasAcceptedCounselDisclosure }),
+      setAnalyticsEnabled: (analyticsEnabled) => set({ analyticsEnabled }),
+
+      changeLanguage: (newLang) =>
+        set((state) => {
+          if (newLang === state.languageOverride) return {};
+          return {
+            languageOverride:   newLang,
+            archetypeReading:  null,
+            natalChartReading: null,
+            forecastReading:   null,
+            calendarData:      null,
+          };
+        }),
 
       resetAnalysis: () =>
         set({
@@ -191,6 +210,7 @@ export const useProfileStore = create<ProfileState>()(
         natalChartReading: state.natalChartReading,
         forecastReading:   state.forecastReading,
         hasAcceptedCounselDisclosure: state.hasAcceptedCounselDisclosure,
+        analyticsEnabled: state.analyticsEnabled,
       }),
     }
   )

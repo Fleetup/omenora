@@ -4,6 +4,7 @@ import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
 import { ReportSchema, type ReportType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
+import { getLanguageInstruction } from '~~/server/utils/language-instructions'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -322,15 +323,7 @@ async function generateReport(opts: {
 
   const archetypeDesc = archetypeDescriptions[opts.archetype] || opts.archetype
 
-  const languageInstructions: Record<string, string> = {
-    en: 'Respond entirely in English.',
-    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
-    pt: 'Responda completamente em português brasileiro.',
-    hi: 'पूरी तरह से हिंदी में जवाब दें।',
-    ko: '전체적으로 한국어로 답변해 주세요.',
-    zh: '完全用简体中文回答。',
-  }
-  const langInstruction = languageInstructions[opts.language] ?? languageInstructions['en'] ?? ''
+  const langInstruction = getLanguageInstruction(opts.language)
 
   const prompt = `${langInstruction}
 
