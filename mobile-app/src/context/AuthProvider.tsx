@@ -244,11 +244,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Non-fatal: proceed — partial cleanup is better than a stuck sign-out.
       }
 
-      // 2. RevenueCat sign out — best-effort, non-blocking. Matches deleteAccount pattern.
-      try {
-        await Purchases.logOut()
-      } catch (rcErr) {
-        console.warn('[Auth] Purchases.logOut failed (non-blocking):', rcErr)
+      // 2. RevenueCat sign out — only for identified (non-anonymous) users.
+      //    Purchases.logOut() throws if the RC user is already anonymous; there is
+      //    no identified session to end. Read session freshly to avoid stale closure.
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (currentSession && !(currentSession.user as any).is_anonymous) {
+        try {
+          await Purchases.logOut()
+        } catch (rcErr) {
+          console.warn('[Auth] Purchases.logOut failed (non-blocking):', rcErr)
+        }
       }
 
       // 3. Supabase sign out — fires SIGNED_OUT, triggers anonymous re-bootstrap.
