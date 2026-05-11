@@ -269,6 +269,42 @@ export interface GetDailyCacheResponse {
   zodiac:      Record<string, ZodiacRow>
 }
 
+// ── Counsel (Phase 5) ────────────────────────────────────────────────────────
+
+export interface CounselConversationTurn {
+  role:    'user' | 'assistant'
+  content: string
+}
+
+export interface CounselChartContext {
+  firstName:      string
+  archetype:      string
+  element:        string
+  lifePathNumber: number
+  sunSign:        string | null
+  moonSign:       string | null
+  risingSign:     string | null
+  powerTraits:    string[]
+  tradition:      string
+}
+
+export interface CounselMessageRequest {
+  message:              string
+  conversation_history: CounselConversationTurn[]
+  chart_context:        CounselChartContext
+}
+
+export interface CounselMessageResponse {
+  success:  boolean
+  response: string
+  usage: {
+    count:     number
+    cap:       number
+    period:    string
+    resets_at: string
+  }
+}
+
 // API Endpoints
 export const api = {
   // Report Generation
@@ -347,6 +383,12 @@ export const api = {
   // Daily Cache
   getDailyCache: async (data: GetDailyCacheRequest): Promise<GetDailyCacheResponse> => {
     const response = await apiClient.post<GetDailyCacheResponse>('/api/get-daily-cache', data);
+    return response.data;
+  },
+
+  // Counsel (Phase 5)
+  counselMessage: async (data: CounselMessageRequest): Promise<CounselMessageResponse> => {
+    const response = await apiClient.post<CounselMessageResponse>('/api/counsel/message', data);
     return response.data;
   },
 };
