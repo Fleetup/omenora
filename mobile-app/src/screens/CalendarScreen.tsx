@@ -124,7 +124,9 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
   const calendarData     = useProfileStore((s) => s.calendarData)
   const setCalendarData  = useProfileStore((s) => s.setCalendarData)
 
-  const { hasCalendar, presentPaywall } = usePurchases()
+  const { hasCalendar, presentPaywall, purchaseCalendar, calendarProduct } = usePurchases()
+
+  const [isPurchasingCalendar, setIsPurchasingCalendar] = useState(false)
 
   const [state, setState] = useState<ScreenState>(
     // TODO: v1.1 — detect calendar.year mismatch vs current year and prompt
@@ -184,6 +186,25 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
       console.warn('[Calendar] presentPaywall threw:', err)
     }
   }, [presentPaywall])
+
+  const handleBuyCalendar = useCallback(async () => {
+    if (isPurchasingCalendar) return
+    setIsPurchasingCalendar(true)
+    try {
+      await purchaseCalendar()
+      setCalendarData(null)
+    } catch (err: any) {
+      if (err?.userCancelled === true) {
+        return
+      }
+      Alert.alert(
+        'Purchase failed',
+        "Couldn't complete the purchase. Please try again or contact support@omenora.com.",
+      )
+    } finally {
+      setIsPurchasingCalendar(false)
+    }
+  }, [isPurchasingCalendar, purchaseCalendar, setCalendarData])
 
   const handleRegeneratePress = useCallback(() => {
     Alert.alert(
@@ -297,27 +318,45 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
               </>
 
             ) : (
-              <LockedCard
-                placement="feature_calendar"
-                lockMessage="Unlock your 2026 lucky timing"
-                unlockCtaLabel="Unlock"
-                onUnlockPress={handleUnlockPress}
-                preview={
-                  <Text variant="caption">
-                    12 months • peak periods • caution dates • lucky days
-                  </Text>
-                }
-              >
-                <View style={styles.decorativeGrid}>
-                  {MONTH_ABBREVS.map((abbr) => (
-                    <View key={abbr} style={styles.decorativeCellWrap}>
-                      <View style={styles.decorativeCell}>
-                        <Text variant="micro" style={styles.decorativeCellText}>{abbr}</Text>
+              <>
+                <LockedCard
+                  placement="feature_calendar"
+                  lockMessage="Unlock your 2026 lucky timing"
+                  unlockCtaLabel="Unlock"
+                  onUnlockPress={handleUnlockPress}
+                  preview={
+                    <Text variant="caption">
+                      12 months • peak periods • caution dates • lucky days
+                    </Text>
+                  }
+                >
+                  <View style={styles.decorativeGrid}>
+                    {MONTH_ABBREVS.map((abbr) => (
+                      <View key={abbr} style={styles.decorativeCellWrap}>
+                        <View style={styles.decorativeCell}>
+                          <Text variant="micro" style={styles.decorativeCellText}>{abbr}</Text>
+                        </View>
                       </View>
-                    </View>
-                  ))}
-                </View>
-              </LockedCard>
+                    ))}
+                  </View>
+                </LockedCard>
+                <Pressable
+                  onPress={handleBuyCalendar}
+                  disabled={isPurchasingCalendar}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Buy 2026 Calendar for ${calendarProduct?.priceString ?? '$4.99'}`}
+                  style={({ pressed }) => [
+                    styles.calendarBuyBtn,
+                    (isPurchasingCalendar || pressed) && styles.calendarBuyBtnPressed,
+                  ]}
+                >
+                  <Text variant="label" style={styles.calendarBuyBtnText}>
+                    {isPurchasingCalendar
+                      ? 'Processing…'
+                      : `Buy 2026 Calendar — ${calendarProduct?.priceString ?? '$4.99'}`}
+                  </Text>
+                </Pressable>
+              </>
             )}
           </ScrollView>
         )}
@@ -400,4 +439,20 @@ const styles = StyleSheet.create({
     alignItems:      'center',
   },
   decorativeCellText: { color: tokens.text.secondary },
+  calendarBuyBtn: {
+    borderWidth:       1,
+    borderColor:       tokens.border.default,
+    borderRadius:      radius.md,
+    paddingVertical:   space['3'],
+    paddingHorizontal: space['5'],
+    minHeight:         layout.tapTarget,
+    alignItems:        'center',
+    justifyContent:    'center',
+  },
+  calendarBuyBtnPressed: {
+    opacity: 0.6,
+  },
+  calendarBuyBtnText: {
+    color: tokens.text.secondary,
+  },
 })
