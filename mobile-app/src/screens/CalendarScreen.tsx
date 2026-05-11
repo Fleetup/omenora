@@ -9,6 +9,7 @@ import { usePurchases } from '../context/usePurchases'
 import api from '../api/endpoints'
 import { tokens, space, layout, radius } from '../design/tokens'
 import type { CalendarScreenProps } from '../navigation/types'
+import { remapAnswersForBackend } from '../utils/answers'
 import type { CalendarData, CalendarMonth } from '../types/calendar'
 
 // ── Module-level constants ────────────────────────────────────────────────────
@@ -154,13 +155,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
         lifePathNumber,
         dateOfBirth,
         language:       languageOverride ?? 'en',
-        // TODO Phase 5: profileStore.answers uses keys (life_focus, current_season,
-        // tone_pref, astro_familiarity) from OptionalQuestionsScreen, but backend
-        // reads (p1, p2, p3) with fallbacks ('growth', 'direct', 'self'). Backend
-        // uses fallback defaults since keys don't match. Resolve in Phase 5 LLM
-        // consolidation by either remapping keys here or updating the backend prompt
-        // to accept the actual keys from OptionalQuestionsScreen.
-        answers: answers ?? {},
+        answers: remapAnswersForBackend(answers ?? {}),
       })
 
       if (response.success && response.calendar) {

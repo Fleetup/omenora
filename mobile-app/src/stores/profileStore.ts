@@ -53,6 +53,10 @@ export interface ProfileState {
   calendarData: CalendarData | null;
   setCalendarData: (data: CalendarData | null) => void;
 
+  // Consent flags
+  hasAcceptedCounselDisclosure:    boolean;
+  setHasAcceptedCounselDisclosure: (accepted: boolean) => void;
+
   // Actions
   setFirstName: (name: string) => void;
   setDateOfBirth: (date: string) => void;
@@ -95,6 +99,7 @@ const initialState = {
   regionOverride: null,
   languageOverride: null,
   calendarData: null,
+  hasAcceptedCounselDisclosure: false,
 };
 
 export const useProfileStore = create<ProfileState>()(
@@ -124,6 +129,7 @@ export const useProfileStore = create<ProfileState>()(
       setRegionOverride: (regionOverride) => set({ regionOverride }),
       setLanguageOverride: (languageOverride) => set({ languageOverride }),
       setCalendarData: (calendarData) => set({ calendarData }),
+      setHasAcceptedCounselDisclosure: (hasAcceptedCounselDisclosure) => set({ hasAcceptedCounselDisclosure }),
 
       resetAnalysis: () =>
         set({
@@ -164,6 +170,7 @@ export const useProfileStore = create<ProfileState>()(
         regionOverride: state.regionOverride,
         languageOverride: state.languageOverride,
         calendarData: state.calendarData,
+        hasAcceptedCounselDisclosure: state.hasAcceptedCounselDisclosure,
       }),
     }
   )

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import React, { useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   View,
   ScrollView,
@@ -10,14 +10,12 @@ import { Text } from '../../components/atoms'
 import { Card, LockedCard } from '../../components/organisms'
 import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
-import api from '../../api/endpoints'
-import type { ReportStubResponse } from '../../api/endpoints'
 import { tokens, space, layout } from '../../design/tokens'
 import type { ReadingsScreenProps } from '../../navigation/types'
 
 // ── Per-section async state ────────────────────────────────────────────────
 interface SectionState {
-  data:    ReportStubResponse | null
+  data:    null   // TODO (Cluster 2): replace with ArchetypeReading | NatalChartReading | ForecastReading
   loading: boolean
   error:   string | null
 }
@@ -29,9 +27,9 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
   const { sunSign, moonSign, risingSign, archetype, report } = useProfileStore()
   const { isPremium, presentPaywall } = usePurchases()
 
-  const [archetypeSection, setArchetypeSection] = useState<SectionState>(INITIAL_SECTION)
-  const [natalSection,     setNatalSection]     = useState<SectionState>(INITIAL_SECTION)
-  const [forecastSection,  setForecastSection]  = useState<SectionState>(INITIAL_SECTION)
+  const archetypeSection: SectionState = INITIAL_SECTION
+  const natalSection:     SectionState = INITIAL_SECTION
+  const forecastSection:  SectionState = INITIAL_SECTION
   const abortRef = useRef<AbortController | null>(null)
 
   // ── Derived display values ─────────────────────────────────────────────
@@ -47,34 +45,21 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
   )
 
   // ── Per-section fetch helpers ──────────────────────────────────────────
-  const fetchArchetypeSection = useCallback(async (ctrl: AbortController) => {
-    setArchetypeSection(s => ({ ...s, loading: true, error: null }))
-    try {
-      const res = await api.getArchetypeReading()
-      if (!ctrl.signal.aborted) setArchetypeSection({ data: res, loading: false, error: null })
-    } catch (e: any) {
-      if (!ctrl.signal.aborted) setArchetypeSection({ data: null, loading: false, error: e?.message ?? 'Failed to load' })
-    }
+  // TODO (Cluster 2): wire real LLM calls — requires ReadingRequestBase construction
+  // from profileStore (firstName, archetype, element, lifePathNumber, dateOfBirth,
+  // language, powerTraits, sunSign, moonSign, risingSign, remapped answers).
+  // Cluster 2 replaces these no-ops with typed api.getArchetypeReading(data),
+  // api.getNatalChart(data), api.getForecast(data) calls.
+  const fetchArchetypeSection = useCallback(async (_ctrl: AbortController) => {
+    void _ctrl
   }, [])
 
-  const fetchNatalSection = useCallback(async (ctrl: AbortController) => {
-    setNatalSection(s => ({ ...s, loading: true, error: null }))
-    try {
-      const res = await api.getNatalChart()
-      if (!ctrl.signal.aborted) setNatalSection({ data: res, loading: false, error: null })
-    } catch (e: any) {
-      if (!ctrl.signal.aborted) setNatalSection({ data: null, loading: false, error: e?.message ?? 'Failed to load' })
-    }
+  const fetchNatalSection = useCallback(async (_ctrl: AbortController) => {
+    void _ctrl
   }, [])
 
-  const fetchForecastSection = useCallback(async (ctrl: AbortController) => {
-    setForecastSection(s => ({ ...s, loading: true, error: null }))
-    try {
-      const res = await api.getForecast()
-      if (!ctrl.signal.aborted) setForecastSection({ data: res, loading: false, error: null })
-    } catch (e: any) {
-      if (!ctrl.signal.aborted) setForecastSection({ data: null, loading: false, error: e?.message ?? 'Failed to load' })
-    }
+  const fetchForecastSection = useCallback(async (_ctrl: AbortController) => {
+    void _ctrl
   }, [])
 
   // Premium fetch: all 3 in parallel, single AbortController aborted on unmount

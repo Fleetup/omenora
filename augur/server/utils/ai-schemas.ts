@@ -436,3 +436,129 @@ export const WeeklyTransitSchema = z.object({
 })
 
 export type WeeklyTransitType = z.infer<typeof WeeklyTransitSchema>
+
+// ── ArchetypeReadingSchema ───────────────────────────────────────────────────
+// Used by: server/api/reports/archetype.post.ts (Phase 5 LLM wiring)
+//
+// Expected Claude output shape:
+// {
+//   archetypeName:   "The Alchemist",
+//   archetypeSymbol: "⚗",             (optional glyph)
+//   element:         "Fire",
+//   powerTraits:     ["trait1", "trait2", "trait3"],  (3-7 items)
+//   sections: {
+//     identity:    { title, content },
+//     science:     { title, content },
+//     shadow:      { title, content },  — shadow/challenge side of the archetype
+//     purpose:     { title, content },
+//     gift:        { title, content },
+//     affirmation: { title, content },
+//   }
+// }
+
+export const ArchetypeReadingSchema = z.object({
+  archetypeName:   z.string().min(1),
+  archetypeSymbol: z.string().optional(),
+  element:         z.enum(['Fire', 'Earth', 'Air', 'Water']),
+  powerTraits:     z.array(z.string().min(1)).min(3).max(7),
+  sections: z.object({
+    identity:    ReportSectionSchema,
+    science:     ReportSectionSchema,
+    shadow:      ReportSectionSchema,
+    purpose:     ReportSectionSchema,
+    gift:        ReportSectionSchema,
+    affirmation: ReportSectionSchema,
+  }),
+})
+
+export type ArchetypeReadingType = z.infer<typeof ArchetypeReadingSchema>
+
+// ── NatalChartReadingSchema ──────────────────────────────────────────────────
+// Used by: server/api/reports/natal-chart.post.ts (Phase 5 LLM wiring)
+//
+// Expected Claude output shape:
+// {
+//   bigThree: { sun, moon, rising } — each { sign, house, description }
+//   planets: [ 8 placements — Mercury through Pluto ]
+//   aspects: [ variable — key chart aspects ]
+//   dominantElement: "Fire" | "Earth" | "Air" | "Water"
+//   dominantQuality: "Cardinal" | "Fixed" | "Mutable"
+//   interpretation:  "overall synthesis paragraph"
+// }
+
+const ChartPlacementSchema = z.object({
+  sign:        z.string().min(1),
+  house:       z.number().int().min(1).max(12),
+  description: z.string().min(1),
+})
+
+const PlanetPlacementSchema = z.object({
+  planet:      z.string().min(1),
+  sign:        z.string().min(1),
+  house:       z.number().int().min(1).max(12),
+  retrograde:  z.boolean(),
+  description: z.string().min(1),
+})
+
+const AspectSchema = z.object({
+  from:    z.string().min(1),
+  to:      z.string().min(1),
+  type:    z.enum(['conjunction', 'opposition', 'trine', 'square', 'sextile']),
+  orb:     z.number().min(0).max(10),
+  meaning: z.string().min(1),
+})
+
+export const NatalChartReadingSchema = z.object({
+  bigThree: z.object({
+    sun:    ChartPlacementSchema,
+    moon:   ChartPlacementSchema,
+    rising: ChartPlacementSchema,
+  }),
+  planets:         z.array(PlanetPlacementSchema).length(8),
+  aspects:         z.array(AspectSchema),
+  dominantElement: z.enum(['Fire', 'Earth', 'Air', 'Water']),
+  dominantQuality: z.enum(['Cardinal', 'Fixed', 'Mutable']),
+  interpretation:  z.string().min(1),
+})
+
+export type NatalChartReadingType = z.infer<typeof NatalChartReadingSchema>
+
+// ── ForecastReadingSchema ────────────────────────────────────────────────────
+// Used by: server/api/reports/forecast.post.ts (Phase 5 LLM wiring)
+//
+// Expected Claude output shape:
+// {
+//   period: { start: "YYYY-MM-DD", end: "YYYY-MM-DD" }  — 90-day window
+//   overallTheme: "one sentence synthesis"
+//   keyTransits: [ 3-12 planetary events over the period ]
+//   monthlyHighlights: [ 3 months ] — theme, caution (nullable), opportunity
+//   advice: "closing actionable paragraph"
+// }
+
+const KeyTransitSchema = z.object({
+  date:    z.string().min(1),
+  planet:  z.string().min(1),
+  aspect:  z.string().min(1),
+  area:    z.enum(['relationships', 'career', 'identity', 'home', 'finance', 'spiritual']),
+  meaning: z.string().min(1),
+})
+
+const MonthlyHighlightSchema = z.object({
+  month:       z.string().min(1),
+  theme:       z.string().min(1),
+  caution:     z.string().nullable(),
+  opportunity: z.string().min(1),
+})
+
+export const ForecastReadingSchema = z.object({
+  period: z.object({
+    start: z.string().min(1),
+    end:   z.string().min(1),
+  }),
+  overallTheme:      z.string().min(1),
+  keyTransits:       z.array(KeyTransitSchema).min(3).max(12),
+  monthlyHighlights: z.array(MonthlyHighlightSchema).length(3),
+  advice:            z.string().min(1),
+})
+
+export type ForecastReadingType = z.infer<typeof ForecastReadingSchema>
