@@ -5,6 +5,7 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import type { Session } from '@supabase/supabase-js'
 import Purchases from 'react-native-purchases'
 import { supabase } from '../lib/supabase'
+import { useProfileStore } from '../stores/profileStore'
 import { AuthGate } from '../components/organisms/AuthGate'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 
@@ -248,8 +249,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthGateState({ visible: false })
   }, [])
 
+  const resetProfile = useProfileStore((s) => s.reset)
+
   const deleteAccount = useCallback(async () => {
     try {
+      // a. Verify active session
       const { data: sessionData } = await supabase.auth.getSession()
       const token = sessionData?.session?.access_token
 
@@ -262,6 +266,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('API base URL not configured')
       }
 
+      // b. Backend delete — cascades all user data server-side
       const response = await fetch(`${apiBaseUrl}/api/auth/delete-account`, {
         method: 'POST',
         headers: {
@@ -275,10 +280,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error((errorData as any).message || 'Account deletion failed')
       }
 
-      // Sign out locally — auth.users is gone server-side, session is invalid
-      await supabase.auth.signOut()
+      // c. RevenueCat sign out (best-effort — non-blocking)
+      try {
+        await Purchases.logOut()
+      } catch (rcErr) {
+        console.warn('[Auth] Purchases.logOut failed (non-blocking):', rcErr)
+      }
 
-      // onAuthStateChange will fire SIGNED_OUT and bootstrap a new anonymous user
+      // d. Apple token revocation — expo-apple-authentication ~7.2.4 has no
+      //    revokeAsync API. Follow-up required: server-side revoke via
+      //    Apple REST API POST /auth/revoke using the stored refresh token.
+
+      // e. Clear all local profile/store data
+      resetProfile()
+
+      // f. Sign out locally — session is invalid, onAuthStateChange will
+      //    fire SIGNED_OUT and bootstrap a new anonymous user.
+      await supabase.auth.signOut()
     } catch (err: any) {
       console.error('[Auth] deleteAccount failed:', err?.message)
       Alert.alert(
@@ -287,7 +305,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       )
       throw err
     }
-  }, [])
+  }, [resetProfile])
 
   const handleMagicLinkUrl = useCallback(async (url: string) => {
     try {
