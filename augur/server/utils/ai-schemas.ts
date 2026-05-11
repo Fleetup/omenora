@@ -562,3 +562,38 @@ export const ForecastReadingSchema = z.object({
 })
 
 export type ForecastReadingType = z.infer<typeof ForecastReadingSchema>
+
+// ── Reading request schemas ──────────────────────────────────────────────────
+// Shared base for all 3 reading endpoints (archetype / natal-chart / forecast).
+// Used by: server/api/reports/archetype.post.ts
+//          server/api/reports/natal-chart.post.ts
+//          server/api/reports/forecast.post.ts
+
+export const ReadingRequestBaseSchema = z.object({
+  firstName:      z.string().min(1).max(50),
+  archetype:      z.string().min(1).max(30),
+  element:        z.enum(['Fire', 'Earth', 'Air', 'Water']),
+  lifePathNumber: z.number().int().min(1).max(9),
+  dateOfBirth:    z.string().min(8).max(10),
+  language:       z.string().max(5).default('en'),
+  powerTraits:    z.array(z.string().min(1)).min(3).max(7),
+  sunSign:        z.string().nullable().default(null),
+  moonSign:       z.string().nullable().default(null),
+  risingSign:     z.string().nullable().default(null),
+  answers: z.object({
+    p1: z.string().default('growth'),
+    p2: z.string().default('direct'),
+    p3: z.string().default('self'),
+  }).default({ p1: 'growth', p2: 'direct', p3: 'self' }),
+})
+
+export type ReadingRequestBaseType = z.infer<typeof ReadingRequestBaseSchema>
+
+export const ArchetypeReadingRequestSchema  = ReadingRequestBaseSchema
+export type ArchetypeReadingRequestType     = ReadingRequestBaseType
+
+export const NatalChartReadingRequestSchema = ReadingRequestBaseSchema
+export type NatalChartReadingRequestType    = ReadingRequestBaseType
+
+export const ForecastReadingRequestSchema   = ReadingRequestBaseSchema
+export type ForecastReadingRequestType      = ReadingRequestBaseType
