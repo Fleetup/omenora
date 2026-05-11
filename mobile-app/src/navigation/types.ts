@@ -35,6 +35,7 @@ export type RootStackParamList = {
   Notifications:       undefined;
   Language:            undefined;
   DeleteAccount:       undefined;
+  PrivacySettings:     undefined;
 };
 
 // ── Tab screen props (composite — can navigate to root stack screens too) ──────
@@ -69,3 +70,4 @@ export type ProfileScreenProps              = NativeStackScreenProps<RootStackPa
 export type NotificationsScreenProps        = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
 export type LanguageScreenProps             = NativeStackScreenProps<RootStackParamList, 'Language'>;
 export type DeleteAccountScreenProps        = NativeStackScreenProps<RootStackParamList, 'DeleteAccount'>;
+export type PrivacySettingsScreenProps      = NativeStackScreenProps<RootStackParamList, 'PrivacySettings'>;

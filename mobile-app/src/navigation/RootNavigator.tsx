@@ -22,6 +22,10 @@ import { TermsScreen } from '../screens/TermsScreen';
 import TraditionSwitcherScreen from '../screens/settings/TraditionSwitcherScreen';
 import CrisisResourcesScreen  from '../screens/settings/CrisisResourcesScreen';
 import ProfileScreen          from '../screens/settings/ProfileScreen';
+import NotificationsScreen    from '../screens/settings/NotificationsScreen';
+import PrivacySettingsScreen  from '../screens/settings/PrivacySettingsScreen';
+import LanguageScreen         from '../screens/settings/LanguageScreen';
+import DeleteAccountScreen    from '../screens/settings/DeleteAccountScreen';
 import CounselChatScreen      from '../screens/counsel/CounselChatScreen';
 import { ComponentsScreen } from '../screens/dev/ComponentsScreen';
 
@@ -56,6 +60,10 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen name="TraditionSwitcher" component={TraditionSwitcherScreen} />
       <Stack.Screen name="CrisisResources"   component={CrisisResourcesScreen} />
       <Stack.Screen name="Profile"           component={ProfileScreen} />
+      <Stack.Screen name="Notifications"   component={NotificationsScreen} />
+      <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} />
+      <Stack.Screen name="Language"        component={LanguageScreen} />
+      <Stack.Screen name="DeleteAccount"   component={DeleteAccountScreen} />
       <Stack.Screen name="CounselChat"       component={CounselChatScreen} />
       <Stack.Screen name="Privacy"           component={PrivacyScreen} />
       <Stack.Screen name="Terms"         component={TermsScreen} />

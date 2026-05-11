@@ -6,6 +6,12 @@ import type { LucideIcon } from 'lucide-react-native'
 import { Text } from '../atoms'
 import { tokens, space, layout } from '../../design/tokens'
 
+/**
+ * Right-zone precedence (highest → lowest):
+ *   1. `right` — any ReactNode; renders instead of meta/chevron when provided
+ *   2. `meta`  — caption string
+ *   3. `showChevron` — auto-shown when `onPress` is set
+ */
 export interface ListItemProps {
   label: string
   icon?: LucideIcon
@@ -14,6 +20,7 @@ export interface ListItemProps {
   showChevron?: boolean
   destructive?: boolean
   disabled?: boolean
+  right?: React.ReactNode
   style?: ViewStyle
 }
 
@@ -25,6 +32,7 @@ export const ListItem: React.FC<ListItemProps> = ({
   showChevron,
   destructive = false,
   disabled = false,
+  right,
   style,
 }) => {
   const isInteractive = onPress != null && !disabled
@@ -51,17 +59,21 @@ export const ListItem: React.FC<ListItemProps> = ({
       >
         {label}
       </Text>
-      {meta != null && (
-        <Text
-          variant="caption"
-          color="tertiary"
-          style={shouldShowChevron ? styles.metaWithGap : undefined}
-        >
-          {meta}
-        </Text>
-      )}
-      {shouldShowChevron && (
-        <ChevronRight size={18} color={tokens.text.tertiary} />
+      {right != null ? right : (
+        <>
+          {meta != null && (
+            <Text
+              variant="caption"
+              color="tertiary"
+              style={shouldShowChevron ? styles.metaWithGap : undefined}
+            >
+              {meta}
+            </Text>
+          )}
+          {shouldShowChevron && (
+            <ChevronRight size={18} color={tokens.text.tertiary} />
+          )}
+        </>
       )}
     </>
   )

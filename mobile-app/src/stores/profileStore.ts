@@ -93,6 +93,7 @@ export interface ProfileState {
   // Reset
   resetAnalysis: () => void;
   resetAll: () => void;
+  reset: () => void;
 
   // Initialize
   initialize: () => Promise<void>;
@@ -181,6 +182,7 @@ export const useProfileStore = create<ProfileState>()(
         }),
 
       resetAll: () => set(initialState),
+      reset: () => set(initialState),
 
       initialize: async () => {
         // Any async initialization logic
