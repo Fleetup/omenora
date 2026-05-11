@@ -13,6 +13,7 @@ import { Card, DailyCard, LockedCard } from '../../components/organisms'
 import { ErrorState } from '../../components/templates/ErrorState'
 import { ListItem } from '../../components/molecules'
 import { useProfileStore } from '../../stores/profileStore'
+import { useAuth } from '../../context/useAuth'
 import { usePurchases } from '../../context/usePurchases'
 import api from '../../api/endpoints'
 import type { GetDailyCacheResponse } from '../../api/endpoints'
@@ -21,6 +22,7 @@ import type { TodayScreenProps } from '../../navigation/types'
 
 export default function TodayScreen({ navigation }: TodayScreenProps) {
   const { firstName, archetype, sunSign, languageOverride } = useProfileStore()
+  const { displayName } = useAuth()
   const { isPremium, presentPaywall } = usePurchases()
 
   const [data, setData]           = useState<GetDailyCacheResponse | null>(null)
@@ -38,7 +40,11 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
     return 'Good evening'
   }, [today])
 
-  const greetingLine = firstName ? `${greeting}, ${firstName}` : greeting
+  // Use profileStore.firstName first (already in memory), then fall back to
+  // displayName from auth context which covers provider metadata until the
+  // server profile hydration completes after a re-authentication.
+  const nameForGreeting = firstName || displayName
+  const greetingLine = nameForGreeting ? `${greeting}, ${nameForGreeting}` : greeting
 
   const formattedDate = useMemo(() =>
     today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),

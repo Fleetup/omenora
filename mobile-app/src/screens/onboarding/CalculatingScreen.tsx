@@ -6,6 +6,8 @@ import { Text } from '../../components/atoms'
 import { ErrorState, ScreenWrapper } from '../../components/templates'
 import { PhoenixLoader } from '../../components/ui/PhoenixLoader'
 import { useProfileStore } from '../../stores/profileStore'
+import { useAuth } from '../../context/useAuth'
+import { saveProfile } from '../../services/profileService'
 import { surface, fontFamily, space, layout } from '../../design/tokens'
 import { api } from '../../api/endpoints'
 import { RootStackParamList } from '../../navigation/types'
@@ -33,6 +35,7 @@ export default function CalculatingScreen() {
   const setMoonSign      = useProfileStore((s) => s.setMoonSign)
   const setRisingSign    = useProfileStore((s) => s.setRisingSign)
   const setArchetype     = useProfileStore((s) => s.setArchetype)
+  const { user }         = useAuth()
 
   const [localError,  setLocalError]  = useState<string | null>(null)
   const [retryBump,   setRetryBump]   = useState(0)
@@ -69,6 +72,25 @@ export default function CalculatingScreen() {
         setMoonSign(birthChart.moonSign)
         setRisingSign(birthChart.risingSign)
         setArchetype(birthChart.archetype)
+
+        // Persist profile to server so returning users can restore their data
+        // after sign-out or on a fresh device. Non-blocking — failure does not
+        // prevent navigation.
+        if (user?.id) {
+          saveProfile(user.id, {
+            first_name:       firstName   || undefined,
+            date_of_birth:    dateOfBirth || undefined,
+            time_of_birth:    timeOfBirth || undefined,
+            city:             city        || undefined,
+            archetype:        birthChart.archetype,
+            sun_sign:         birthChart.sunSign,
+            moon_sign:        birthChart.moonSign,
+            rising_sign:      birthChart.risingSign,
+            life_path_number: lifePathNumber ?? undefined,
+          }).catch((saveErr) =>
+            console.warn('[Calculating] profile save to server failed (non-blocking):', saveErr)
+          )
+        }
 
         const archetypeName =
           `The ${birthChart.archetype.charAt(0).toUpperCase()}${birthChart.archetype.slice(1)}`

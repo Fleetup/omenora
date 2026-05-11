@@ -6,6 +6,7 @@ import type { Session } from '@supabase/supabase-js'
 import Purchases from 'react-native-purchases'
 import { supabase } from '../lib/supabase'
 import { useProfileStore } from '../stores/profileStore'
+import { fetchProfile, saveProfile } from '../services/profileService'
 import { AuthGate } from '../components/organisms/AuthGate'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 
@@ -69,60 +70,81 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         previousAnonymousUserIdRef.current = newSession.user.id
       }
 
-      // On sign-in transition: anonymous → permanent
-      if (
-        event === 'SIGNED_IN' &&
-        newSession?.user &&
-        !newSession.user.is_anonymous &&
-        previousAnonymousUserIdRef.current &&
-        previousAnonymousUserIdRef.current !== newSession.user.id
-      ) {
-        const sourceId = previousAnonymousUserIdRef.current
+      // On permanent sign-in: transfer anonymous data (first-time) then hydrate profileStore
+      if (event === 'SIGNED_IN' && newSession?.user && !newSession.user.is_anonymous) {
         const targetId = newSession.user.id
 
-        try {
-          const { data, error } = await supabase.rpc('transfer_anonymous_user', {
-            source_user_id: sourceId,
-            target_user_id: targetId,
-          })
+        // ── Transfer from anonymous session (onboarding path only) ─────────────
+        if (
+          previousAnonymousUserIdRef.current &&
+          previousAnonymousUserIdRef.current !== targetId
+        ) {
+          const sourceId = previousAnonymousUserIdRef.current
+          try {
+            const { data, error } = await supabase.rpc('transfer_anonymous_user', {
+              source_user_id: sourceId,
+              target_user_id: targetId,
+            })
 
-          if (error) {
-            if (error.message?.includes('source user does not exist')) {
-              // Anonymous user was cleaned up by Supabase (30-day expiry) or
-              // deleted in a previous session. Non-fatal — permanent sign-in
-              // already succeeded. Clear ref so we don't retry.
-              console.warn('[Auth] transfer_anonymous_user: source already gone, skipping')
-              previousAnonymousUserIdRef.current = null
-            } else {
-              console.error('[Auth] transfer_anonymous_user failed:', error.message)
-              // Non-blocking: user is signed in regardless. Log to Sentry when wired.
-            }
-          } else {
-            console.log('[Auth] transfer succeeded:', data)
-            previousAnonymousUserIdRef.current = null
-
-            // Set RC custom attributes with profile data
-            try {
-              const { data: profile } = await supabase
-                .from('users')
-                .select('first_name, last_name, email')
-                .eq('id', targetId)
-                .single()
-
-              if (profile) {
-                await Purchases.setAttributes({
-                  $email: profile.email ?? '',
-                  $displayName: profile.first_name
-                    ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}`.trim()
-                    : '',
-                })
+            if (error) {
+              if (error.message?.includes('source user does not exist')) {
+                // Anonymous user cleaned up by Supabase 30-day expiry. Non-fatal.
+                console.warn('[Auth] transfer_anonymous_user: source already gone, skipping')
+                previousAnonymousUserIdRef.current = null
+              } else {
+                console.error('[Auth] transfer_anonymous_user failed:', error.message)
               }
-            } catch (e) {
-              console.warn('[Auth] failed to set RC attributes:', e)
+            } else {
+              console.log('[Auth] transfer succeeded:', data)
+              previousAnonymousUserIdRef.current = null
+
+              // Set RC custom attributes
+              try {
+                const { data: userRow } = await supabase
+                  .from('users')
+                  .select('first_name, last_name, email')
+                  .eq('id', targetId)
+                  .single()
+
+                if (userRow) {
+                  await Purchases.setAttributes({
+                    $email: userRow.email ?? '',
+                    $displayName: userRow.first_name
+                      ? `${userRow.first_name}${userRow.last_name ? ' ' + userRow.last_name : ''}`.trim()
+                      : '',
+                  })
+                }
+              } catch (e) {
+                console.warn('[Auth] failed to set RC attributes:', e)
+              }
             }
+          } catch (err: any) {
+            console.error('[Auth] transfer RPC threw:', err?.message)
           }
-        } catch (err: any) {
-          console.error('[Auth] transfer RPC threw:', err?.message)
+        }
+
+        // ── Hydrate profileStore from server (all permanent sign-ins) ──────────
+        // Handles both: first-time sign-in (profile just transferred) and
+        // returning user sign-in on fresh device / after sign-out.
+        try {
+          const serverProfile = await fetchProfile(targetId)
+          if (serverProfile) {
+            const store = useProfileStore.getState()
+            if (serverProfile.first_name)        store.setFirstName(serverProfile.first_name)
+            if (serverProfile.date_of_birth)     store.setDateOfBirth(serverProfile.date_of_birth)
+            if (serverProfile.time_of_birth)     store.setTimeOfBirth(serverProfile.time_of_birth)
+            if (serverProfile.city)              store.setCity(serverProfile.city)
+            if (serverProfile.archetype)         store.setArchetype(serverProfile.archetype)
+            store.setSunSign(serverProfile.sun_sign ?? null)
+            store.setMoonSign(serverProfile.moon_sign ?? null)
+            store.setRisingSign(serverProfile.rising_sign ?? null)
+            if (serverProfile.life_path_number != null) {
+              store.setLifePathNumber(serverProfile.life_path_number)
+            }
+            console.log('[Auth] profileStore hydrated from server for user:', targetId)
+          }
+        } catch (hydrationErr) {
+          console.warn('[Auth] profile hydration non-blocking error:', hydrationErr)
         }
       }
 
@@ -161,16 +183,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ],
       })
 
+      // Capture the name BEFORE the Supabase call — Apple only provides fullName
+      // on the very first sign-in for a given Apple ID. On all subsequent sign-ins
+      // the value is null. This is the only opportunity to capture it.
+      const appleGivenName = credential.fullName?.givenName ?? null
+
       if (!credential.identityToken) {
         throw new Error('Apple Sign In: no identity token returned')
       }
 
-      const { error } = await supabase.auth.signInWithIdToken({
+      const { data: signInData, error } = await supabase.auth.signInWithIdToken({
         provider: 'apple',
         token: credential.identityToken,
       })
 
       if (error) throw error
+
+      // Set name in profileStore immediately so UI shows it without waiting
+      // for the async server profile hydration in onAuthStateChange.
+      if (appleGivenName) {
+        useProfileStore.getState().setFirstName(appleGivenName)
+        // Best-effort persist to server; onAuthStateChange hydration runs after this
+        // but may overwrite with empty string if no profile row exists yet. Save now
+        // so the row is created and the hydration round-trip restores it correctly.
+        if (signInData?.user?.id) {
+          saveProfile(signInData.user.id, { first_name: appleGivenName }).catch((e) =>
+            console.warn('[Auth] Apple name save to server failed (non-blocking):', e)
+          )
+        }
+      }
     } catch (err: any) {
       if (err?.code === 'ERR_REQUEST_CANCELED') return
       console.error('[Auth] Apple sign-in error:', err)
@@ -230,7 +271,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
-  const resetProfile = useProfileStore((s) => s.reset)
+  const resetProfile      = useProfileStore((s) => s.reset)
+  const profileFirstName   = useProfileStore((s) => s.firstName)
 
   const signOut = useCallback(async (options?: { skipWarning?: boolean }) => {
     const performSignOut = async () => {
@@ -385,11 +427,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
+  // Derived display name: profileStore.firstName takes priority (set during onboarding
+  // or after server hydration), then fall back to provider metadata if available.
+  const displayName: string | null =
+    profileFirstName ||
+    (session?.user?.user_metadata?.['full_name'] as string | undefined) ||
+    (session?.user?.user_metadata?.['name'] as string | undefined) ||
+    null
+
   const value: AuthContextValue = {
     session,
     user: session?.user ?? null,
     isAnonymous: (session?.user as any)?.is_anonymous ?? false,
     isLoading,
+    displayName,
     signInWithApple,
     signInWithGoogle,
     signInWithMagicLink,
