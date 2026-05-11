@@ -1,13 +1,19 @@
-import React, { useEffect, useRef } from 'react'
-import { Animated, Dimensions, View, StyleSheet } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { Animated, Dimensions, View, StyleSheet, Pressable } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import Svg, { Circle } from 'react-native-svg'
 import { Text } from '../../components/atoms'
 import { surface } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
+import { useAuth } from '../../context/useAuth'
+import { useProfileStore } from '../../stores/profileStore'
+import { supabase } from '../../lib/supabase'
 
 type SplashNavProp = NativeStackNavigationProp<RootStackParamList, 'Splash'>
+
+const MIN_DISPLAY_MS  = 900
+const SESSION_WAIT_MS = 8000
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window')
 
@@ -30,9 +36,18 @@ const STAR_POSITIONS = (() => {
 
 export default function SplashScreen() {
   const navigation = useNavigation<SplashNavProp>()
-  const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const fadeAnim   = useRef(new Animated.Value(0)).current
+  const { session, isLoading } = useAuth()
+  const archetype   = useProfileStore((s) => s.archetype)
+  const dateOfBirth = useProfileStore((s) => s.dateOfBirth)
+  const fadeAnim    = useRef(new Animated.Value(0)).current
 
+  const [minDisplayElapsed, setMinDisplayElapsed] = useState(false)
+  const [sessionTimedOut,   setSessionTimedOut]   = useState(false)
+  const [retrying,          setRetrying]          = useState(false)
+  const [storeHydrated,     setStoreHydrated]     = useState(false)
+  const sessionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Fade-in animation (unchanged)
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue:         1,
@@ -41,14 +56,49 @@ export default function SplashScreen() {
     }).start()
   }, [])
 
+  // Minimum brand display — replaces the old hardcoded 1500ms → Welcome timer
   useEffect(() => {
-    timerRef.current = setTimeout(() => {
-      navigation.replace('Welcome')
-    }, 1500)
-    return () => {
-      if (timerRef.current !== null) clearTimeout(timerRef.current)
+    const timer = setTimeout(() => setMinDisplayElapsed(true), MIN_DISPLAY_MS)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Wait for Zustand persist to hydrate from AsyncStorage before reading profile fields.
+  useEffect(() => {
+    if (useProfileStore.persist.hasHydrated()) {
+      setStoreHydrated(true)
+      return
     }
-  }, [navigation])
+    const unsub = useProfileStore.persist.onFinishHydration(() => setStoreHydrated(true))
+    return unsub
+  }, [])
+
+  // Session-wait timeout: show retry UI if no session materialises after min display +
+  // bootstrap completion. Covers network failure or signInAnonymously rejection.
+  useEffect(() => {
+    if (!minDisplayElapsed || isLoading || session) return
+    sessionTimeoutRef.current = setTimeout(() => setSessionTimedOut(true), SESSION_WAIT_MS)
+    return () => {
+      if (sessionTimeoutRef.current) clearTimeout(sessionTimeoutRef.current)
+    }
+  }, [minDisplayElapsed, isLoading, session])
+
+  // Clear retry state when session finally arrives (e.g. after retrying)
+  useEffect(() => {
+    if (session && sessionTimeoutRef.current) {
+      clearTimeout(sessionTimeoutRef.current)
+      setSessionTimedOut(false)
+    }
+  }, [session])
+
+  // Routing decision — fires once all guards pass: min display, auth bootstrap, session
+  // stable, and store hydrated. Profile complete requires archetype: set AND dateOfBirth: set.
+  // Mid-onboarding users (either null) route back to Welcome to resume safely.
+  useEffect(() => {
+    if (!minDisplayElapsed || isLoading || !session || !storeHydrated) return
+    // Profile complete: archetype: non-null AND dateOfBirth: non-empty
+    const profileComplete = archetype !== null && dateOfBirth !== ''
+    navigation.replace(profileComplete ? 'MainTabs' : 'Welcome')
+  }, [minDisplayElapsed, isLoading, session, storeHydrated, archetype, dateOfBirth, navigation])
 
   return (
     <View style={styles.container}>
@@ -64,6 +114,29 @@ export default function SplashScreen() {
       <Animated.View style={{ opacity: fadeAnim }}>
         <Text variant="display2" style={styles.wordmark}>OMENORA</Text>
       </Animated.View>
+      {sessionTimedOut && (
+        <Pressable
+          disabled={retrying}
+          onPress={async () => {
+            setRetrying(true)
+            setSessionTimedOut(false)
+            try {
+              await supabase.auth.signInAnonymously()
+              // On success: SIGNED_IN fires via AuthProvider → session updates
+              // → routing effect fires → navigates. Button stays disabled until unmount.
+            } catch (err: any) {
+              console.error('[Splash] retry sign-in failed:', err)
+              setSessionTimedOut(true)
+              setRetrying(false)
+            }
+          }}
+          style={styles.retry}
+        >
+          <Text variant="label" color="secondary">
+            {retrying ? 'Retrying…' : 'Tap to retry'}
+          </Text>
+        </Pressable>
+      )}
     </View>
   )
 }
@@ -77,5 +150,9 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     letterSpacing: 6,
+  },
+  retry: {
+    position: 'absolute',
+    bottom:   60,
   },
 })

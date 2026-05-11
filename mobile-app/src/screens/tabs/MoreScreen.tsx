@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 import { View, ScrollView, Alert, Linking, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { CommonActions } from '@react-navigation/native'
 import Constants from 'expo-constants'
 import {
   Heart,
@@ -15,6 +16,7 @@ import {
   Info,
   LifeBuoy,
   Trash2,
+  LogIn,
   LogOut,
   HelpCircle,
   Mail,
@@ -36,26 +38,50 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
   const { signOut, showAuthGate, isAnonymous } = useAuth()
   const version = Constants.expoConfig?.version ?? 'unknown'
 
-  const handleSignOut = useCallback(() => {
-    Alert.alert(
-      'Sign out',
-      'Sign out of OMENORA?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign out',
-          onPress: async () => {
-            try {
-              // skipWarning: true — signOut has its own internal Alert; we provide ours
-              await signOut({ skipWarning: true })
-            } catch (err) {
-              Alert.alert('Could not sign out', String(err))
-            }
+  const handleSignOut = useCallback(async () => {
+    if (isAnonymous) {
+      // Anonymous users: signing out abandons their local-only session — data-loss warning.
+      Alert.alert(
+        'Sign out and lose your data?',
+        'Your profile and readings are not linked to an account and cannot be recovered after sign-out.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Sign out',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await signOut({ skipWarning: true })
+                const parent = navigation.getParent()
+                if (parent) {
+                  parent.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+                } else {
+                  console.warn('[MoreScreen] sign-out: getParent() returned null, falling back to navigation.dispatch — investigate navigator nesting')
+                  navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+                }
+              } catch (err) {
+                Alert.alert('Could not sign out', String(err))
+              }
+            },
           },
-        },
-      ],
-    )
-  }, [signOut])
+        ],
+      )
+    } else {
+      // Permanent users: sign-out is recoverable — skip the dialog, one tap.
+      try {
+        await signOut({ skipWarning: true })
+        const parent = navigation.getParent()
+        if (parent) {
+          parent.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+        } else {
+          console.warn('[MoreScreen] sign-out: getParent() returned null, falling back to navigation.dispatch — investigate navigator nesting')
+          navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+        }
+      } catch (err) {
+        Alert.alert('Could not sign out', String(err))
+      }
+    }
+  }, [signOut, isAnonymous, navigation])
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
@@ -113,6 +139,19 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
             Account &amp; Settings
           </Text>
           <Card variant="default" style={styles.listCard}>
+            {/* Sign-in CTA — only visible for anonymous users */}
+            {isAnonymous && (
+              <>
+                <ListItem
+                  icon={LogIn}
+                  label="Sign in or create account"
+                  meta="Save your readings across devices"
+                  onPress={() => showAuthGate()}
+                  showChevron
+                />
+                <View style={styles.divider} />
+              </>
+            )}
             {/* Profile route not yet registered — Phase 6 */}
             <ListItem
               icon={User}
