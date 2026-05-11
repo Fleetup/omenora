@@ -190,20 +190,18 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
               showChevron
             />
             <View style={styles.divider} />
-            {/* Counsel guidelines — Phase 5 builds CounselDisclosureModal */}
             <ListItem
               icon={Info}
               label="Counsel guidelines"
-              meta="Coming soon"
-              disabled
+              onPress={() => navigation.navigate('CounselChat', { showDisclosure: true })}
+              showChevron
             />
             <View style={styles.divider} />
-            {/* CrisisResources route not yet registered — Phase 5 */}
             <ListItem
               icon={LifeBuoy}
               label="Crisis resources"
-              meta="Coming soon"
-              disabled
+              onPress={() => navigation.navigate('CrisisResources')}
+              showChevron
             />
             {!isAnonymous && (
               <>

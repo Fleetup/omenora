@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { CalendarData } from '../types/calendar';
+import type { ArchetypeReading, NatalChartReading, ForecastReading } from '../api/endpoints';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -53,6 +54,20 @@ export interface ProfileState {
   calendarData: CalendarData | null;
   setCalendarData: (data: CalendarData | null) => void;
 
+  // Reading caches (Phase 5 Cluster 4)
+  archetypeReading:     ArchetypeReading | null;
+  setArchetypeReading:  (data: ArchetypeReading | null) => void;
+
+  natalChartReading:    NatalChartReading | null;
+  setNatalChartReading: (data: NatalChartReading | null) => void;
+
+  forecastReading:      ForecastReading | null;
+  setForecastReading:   (data: ForecastReading | null) => void;
+
+  // Consent flags
+  hasAcceptedCounselDisclosure:    boolean;
+  setHasAcceptedCounselDisclosure: (accepted: boolean) => void;
+
   // Actions
   setFirstName: (name: string) => void;
   setDateOfBirth: (date: string) => void;
@@ -95,6 +110,10 @@ const initialState = {
   regionOverride: null,
   languageOverride: null,
   calendarData: null,
+  archetypeReading:  null,
+  natalChartReading: null,
+  forecastReading:   null,
+  hasAcceptedCounselDisclosure: false,
 };
 
 export const useProfileStore = create<ProfileState>()(
@@ -123,7 +142,11 @@ export const useProfileStore = create<ProfileState>()(
 
       setRegionOverride: (regionOverride) => set({ regionOverride }),
       setLanguageOverride: (languageOverride) => set({ languageOverride }),
-      setCalendarData: (calendarData) => set({ calendarData }),
+      setCalendarData:    (calendarData)    => set({ calendarData }),
+      setArchetypeReading:  (archetypeReading)  => set({ archetypeReading }),
+      setNatalChartReading: (natalChartReading) => set({ natalChartReading }),
+      setForecastReading:   (forecastReading)   => set({ forecastReading }),
+      setHasAcceptedCounselDisclosure: (hasAcceptedCounselDisclosure) => set({ hasAcceptedCounselDisclosure }),
 
       resetAnalysis: () =>
         set({
@@ -163,7 +186,11 @@ export const useProfileStore = create<ProfileState>()(
         anonymousUserId: state.anonymousUserId,
         regionOverride: state.regionOverride,
         languageOverride: state.languageOverride,
-        calendarData: state.calendarData,
+        calendarData:      state.calendarData,
+        archetypeReading:  state.archetypeReading,
+        natalChartReading: state.natalChartReading,
+        forecastReading:   state.forecastReading,
+        hasAcceptedCounselDisclosure: state.hasAcceptedCounselDisclosure,
       }),
     }
   )

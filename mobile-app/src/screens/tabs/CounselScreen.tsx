@@ -3,13 +3,12 @@ import { View, ScrollView, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { MessageCircle } from 'lucide-react-native'
 import { Text, Button } from '../../components/atoms'
-import { Card } from '../../components/organisms'
 import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
 import { tokens, space, layout } from '../../design/tokens'
 import type { CounselScreenProps } from '../../navigation/types'
 
-export default function CounselScreen({ navigation: _navigation }: CounselScreenProps) {
+export default function CounselScreen({ navigation }: CounselScreenProps) {
   const { sunSign } = useProfileStore()
   const { isPremium, presentPaywall } = usePurchases()
 
@@ -46,26 +45,23 @@ export default function CounselScreen({ navigation: _navigation }: CounselScreen
             Ask Counsel anything about your chart
           </Text>
           <Text variant="caption" color="tertiary" style={styles.subheading}>
-            {isPremium
-              ? 'Premium \u2014 coming soon'
-              : 'Personal guidance from your full birth chart'}
+            Personal guidance from your full birth chart
           </Text>
         </View>
 
         {isPremium ? (
-          // ── Premium placeholder ─────────────────────────────────────
-          <Card variant="default" padding="default">
-            <Text variant="body" color="secondary" style={styles.stubText}>
-              Counsel chat is being prepared. Real-time AI conversation with
-              your chart launches in the next release.
+          // ── Premium: navigate to CounselChatScreen ──────────────────────────────────────────
+          <View style={styles.ctaBlock}>
+            <Button
+              label="Open Counsel"
+              variant="primary"
+              fullWidth
+              onPress={() => navigation.navigate('CounselChat')}
+            />
+            <Text variant="caption" color="tertiary">
+              Personal guidance from your full birth chart
             </Text>
-            {/*
-             * TODO (Phase 5): Build CounselChatScreen + CounselDisclosureModal.
-             * Navigate here when CounselChatScreen route is registered in
-             * RootStackParamList. Add Tab.Screen deepening in TabNavigator for
-             * CounselTab when the chat UI is ready.
-             */}
-          </Card>
+          </View>
         ) : (
           <>
             {/* ── Sample question chips (visual-only in Cluster 4) ──── */}
@@ -138,8 +134,5 @@ const styles = StyleSheet.create({
   ctaBlock: {
     alignItems: 'center',
     gap:        space['3'],
-  },
-  stubText: {
-    fontStyle: 'italic',
   },
 })

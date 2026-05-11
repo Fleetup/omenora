@@ -25,6 +25,8 @@ export type RootStackParamList = {
   MainTabs:      NavigatorScreenParams<TabParamList> | undefined;
   Calendar:      { calendarId?: string } | undefined;
   Compatibility:       { reportId?: string } | undefined;
+  CounselChat:         { showDisclosure?: boolean } | undefined;
+  CrisisResources:     undefined;
   TraditionSwitcher:   undefined;
   Privacy:             undefined;
   Terms:         undefined;
@@ -57,3 +59,5 @@ export type PrivacyScreenProps      = NativeStackScreenProps<RootStackParamList,
 export type TermsScreenProps                = NativeStackScreenProps<RootStackParamList, 'Terms'>;
 export type BigThreeRevealScreenProps       = NativeStackScreenProps<RootStackParamList, 'BigThreeReveal'>;
 export type TraditionSwitcherScreenProps    = NativeStackScreenProps<RootStackParamList, 'TraditionSwitcher'>;
+export type CounselChatScreenProps          = NativeStackScreenProps<RootStackParamList, 'CounselChat'>;
+export type CrisisResourcesScreenProps      = NativeStackScreenProps<RootStackParamList, 'CrisisResources'>;

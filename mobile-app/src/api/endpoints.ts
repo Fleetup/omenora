@@ -133,6 +133,110 @@ export interface ReportStubResponse {
   note?:   string
 }
 
+// ── In-app reading types (Phase 5) ────────────────────────────────────────────
+// These mirror augur/server/utils/ai-schemas.ts schemas — keep in sync manually.
+// Mobile cannot import from /augur; types are duplicated by design.
+
+export interface ReadingRequestBase {
+  firstName:      string
+  archetype:      string
+  element:        string
+  lifePathNumber: number
+  dateOfBirth:    string
+  language:       string
+  powerTraits:    string[]
+  sunSign:        string | null
+  moonSign:       string | null
+  risingSign:     string | null
+  answers:        { p1: string; p2: string; p3: string }   // remapped by remapAnswersForBackend
+}
+
+export interface GetArchetypeReadingRequest extends ReadingRequestBase {}
+export interface GetNatalChartReadingRequest extends ReadingRequestBase {}
+export interface GetForecastReadingRequest extends ReadingRequestBase {}
+
+export interface ReadingSection {
+  title:   string
+  content: string
+}
+
+export interface ArchetypeReading {
+  archetypeName:    string
+  archetypeSymbol?: string
+  element:          string
+  powerTraits:      string[]
+  sections: {
+    identity:    ReadingSection
+    science:     ReadingSection
+    shadow:      ReadingSection
+    purpose:     ReadingSection
+    gift:        ReadingSection
+    affirmation: ReadingSection
+  }
+}
+
+export interface GetArchetypeReadingResponse {
+  success: boolean
+  reading: ArchetypeReading
+  usage:   { count: number; cap: number; period: string; resets_at: string }
+}
+
+export interface NatalChartReading {
+  bigThree: {
+    sun:    { sign: string; house: number; description: string }
+    moon:   { sign: string; house: number; description: string }
+    rising: { sign: string; house: number; description: string }
+  }
+  planets: Array<{
+    planet:      string
+    sign:        string
+    house:       number
+    retrograde:  boolean
+    description: string
+  }>
+  aspects: Array<{
+    from:    string
+    to:      string
+    type:    'conjunction' | 'opposition' | 'trine' | 'square' | 'sextile'
+    orb:     number
+    meaning: string
+  }>
+  dominantElement: 'Fire' | 'Earth' | 'Air' | 'Water'
+  dominantQuality: 'Cardinal' | 'Fixed' | 'Mutable'
+  interpretation:  string
+}
+
+export interface GetNatalChartReadingResponse {
+  success: boolean
+  reading: NatalChartReading
+  usage:   { count: number; cap: number; period: string; resets_at: string }
+}
+
+export interface ForecastReading {
+  period: { start: string; end: string }
+  overallTheme: string
+  keyTransits: Array<{
+    date:    string
+    planet:  string
+    aspect:  string
+    area:    'relationships' | 'career' | 'identity' | 'home' | 'finance' | 'spiritual'
+    meaning: string
+  }>
+  monthlyHighlights: Array<{
+    month:       string
+    theme:       string
+    caution:     string | null
+    opportunity: string
+  }>
+  advice: string
+}
+
+export interface GetForecastReadingResponse {
+  success: boolean
+  reading: ForecastReading
+  usage:   { count: number; cap: number; period: string; resets_at: string }
+}
+
 export interface GetDailyCacheRequest {
   date:      string   // ISO YYYY-MM-DD
   language?: string   // 'en' | 'es' | 'pt' | 'hi' | 'ko' | 'zh'
@@ -163,6 +267,42 @@ export interface GetDailyCacheResponse {
   isYesterday: boolean
   archetypes:  Record<string, ArchetypeRow>
   zodiac:      Record<string, ZodiacRow>
+}
+
+// ── Counsel (Phase 5) ────────────────────────────────────────────────────────
+
+export interface CounselConversationTurn {
+  role:    'user' | 'assistant'
+  content: string
+}
+
+export interface CounselChartContext {
+  firstName:      string
+  archetype:      string
+  element:        string
+  lifePathNumber: number
+  sunSign:        string | null
+  moonSign:       string | null
+  risingSign:     string | null
+  powerTraits:    string[]
+  tradition:      string
+}
+
+export interface CounselMessageRequest {
+  message:              string
+  conversation_history: CounselConversationTurn[]
+  chart_context:        CounselChartContext
+}
+
+export interface CounselMessageResponse {
+  success:  boolean
+  response: string
+  usage: {
+    count:     number
+    cap:       number
+    period:    string
+    resets_at: string
+  }
 }
 
 // API Endpoints
@@ -224,25 +364,31 @@ export const api = {
     return response.data;
   },
 
-  // Reports (stubs — real LLM content wired in Phase 5)
-  getArchetypeReading: async (): Promise<ReportStubResponse> => {
-    const response = await apiClient.post<ReportStubResponse>('/api/reports/archetype', {});
+  // Reports (Phase 5 — typed request bodies + real response shapes)
+  getArchetypeReading: async (data: GetArchetypeReadingRequest): Promise<GetArchetypeReadingResponse> => {
+    const response = await apiClient.post<GetArchetypeReadingResponse>('/api/reports/archetype', data);
     return response.data;
   },
 
-  getNatalChart: async (): Promise<ReportStubResponse> => {
-    const response = await apiClient.post<ReportStubResponse>('/api/reports/natal-chart', {});
+  getNatalChart: async (data: GetNatalChartReadingRequest): Promise<GetNatalChartReadingResponse> => {
+    const response = await apiClient.post<GetNatalChartReadingResponse>('/api/reports/natal-chart', data);
     return response.data;
   },
 
-  getForecast: async (): Promise<ReportStubResponse> => {
-    const response = await apiClient.post<ReportStubResponse>('/api/reports/forecast', {});
+  getForecast: async (data: GetForecastReadingRequest): Promise<GetForecastReadingResponse> => {
+    const response = await apiClient.post<GetForecastReadingResponse>('/api/reports/forecast', data);
     return response.data;
   },
 
   // Daily Cache
   getDailyCache: async (data: GetDailyCacheRequest): Promise<GetDailyCacheResponse> => {
     const response = await apiClient.post<GetDailyCacheResponse>('/api/get-daily-cache', data);
+    return response.data;
+  },
+
+  // Counsel (Phase 5)
+  counselMessage: async (data: CounselMessageRequest): Promise<CounselMessageResponse> => {
+    const response = await apiClient.post<CounselMessageResponse>('/api/counsel/message', data);
     return response.data;
   },
 };
