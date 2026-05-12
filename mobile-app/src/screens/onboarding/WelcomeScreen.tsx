@@ -40,7 +40,7 @@ const STARS = (() => {
 
 export default function WelcomeScreen() {
   const navigation  = useNavigation<WelcomeNavProp>()
-  const { isAnonymous, profileHydrating, showAuthGate } = useAuth()
+  const { isAnonymous, profileHydrating, profileHydrated, showAuthGate } = useAuth()
   const archetype   = useProfileStore((s) => s.archetype)
   const dateOfBirth = useProfileStore((s) => s.dateOfBirth)
   const sunSign     = useProfileStore((s) => s.sunSign)
@@ -56,23 +56,31 @@ export default function WelcomeScreen() {
     ]).start()
   }, [])
 
-  // Route after sign-in based on profile completeness. Triple-check gate
-  // mirrors SplashScreen — incomplete profiles re-onboard at BirthInfo,
-  // complete profiles go to MainTabs. Decision 8.
+  // Route after sign-in based on profile completeness. Wait for hydration
+  // to COMPLETE (profileHydrated=true) before evaluating the triple-check —
+  // gating on profileHydrating=false alone has a race window between
+  // SIGNED_IN firing and the hydration block setting hydrating=true.
+  // Triple-check mirrors SplashScreen. Decision 8.
   useEffect(() => {
     if (isAnonymous) return
-    if (!profileHydrating || hydrationTimedOut) {
+    if (profileHydrated || hydrationTimedOut) {
       const profileComplete = archetype !== null && dateOfBirth !== '' && sunSign !== null
       navigation.replace(profileComplete ? 'MainTabs' : 'BirthInfo')
     }
-  }, [isAnonymous, profileHydrating, hydrationTimedOut, archetype, dateOfBirth, sunSign, navigation])
+  }, [isAnonymous, profileHydrated, hydrationTimedOut, archetype, dateOfBirth, sunSign, navigation])
 
   // 5-second max wait for profile hydration after permanent sign-in.
+  // Reset timeout state when user signs out so a subsequent sign-in
+  // starts with a fresh 5s window, not a stale already-timed-out flag.
   useEffect(() => {
-    if (isAnonymous) return
+    if (isAnonymous) {
+      setHydrationTimedOut(false)
+      return
+    }
+    if (profileHydrated) return
     const timer = setTimeout(() => setHydrationTimedOut(true), 5000)
     return () => clearTimeout(timer)
-  }, [isAnonymous])
+  }, [isAnonymous, profileHydrated])
 
   return (
     <View style={styles.container}>

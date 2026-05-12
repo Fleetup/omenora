@@ -25,6 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [profileHydrating, setProfileHydrating] = useState(false)
+  const [profileHydrated,  setProfileHydrated]  = useState(false)
   const [authGateState, setAuthGateState] = useState<{
     visible: boolean
     title?: string
@@ -172,7 +173,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (hydrationErr) {
           console.warn('[Auth] profile hydration non-blocking error:', hydrationErr)
         } finally {
-          if (mounted) setProfileHydrating(false)
+          if (mounted) {
+            setProfileHydrating(false)
+            setProfileHydrated(true)
+          }
         }
       }
 
@@ -185,6 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (resetErr: any) {
           console.warn('[Auth] resetProfile in SIGNED_OUT handler failed:', resetErr?.message)
         }
+        setProfileHydrated(false)
         signingInAnonymouslyRef.current = true
         try {
           const { error } = await supabase.auth.signInAnonymously()
@@ -482,6 +487,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAnonymous: (session?.user as any)?.is_anonymous ?? false,
     isLoading,
     profileHydrating,
+    profileHydrated,
     displayName,
     signInWithApple,
     signInWithGoogle,

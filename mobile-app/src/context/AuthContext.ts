@@ -7,6 +7,7 @@ export type AuthContextValue = {
   isAnonymous: boolean
   isLoading: boolean
   profileHydrating: boolean
+  profileHydrated: boolean
   // Derived display name: profileStore.firstName → user_metadata.full_name/name → null.
   // Email is intentionally excluded from displayName (shown separately as account identity).
   displayName: string | null
