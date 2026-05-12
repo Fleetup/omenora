@@ -24,6 +24,10 @@
       },
       "ios": {
         "enterpriseProvisioning": "adhoc"
+      },
+      "env": {
+        "EXPO_PUBLIC_SENTRY_DSN": "$EXPO_PUBLIC_SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN"
       }
     },
     "production": {
@@ -32,6 +36,10 @@
       },
       "ios": {
         "enterpriseProvisioning": "universal"
+      },
+      "env": {
+        "EXPO_PUBLIC_SENTRY_DSN": "$EXPO_PUBLIC_SENTRY_DSN",
+        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN"
       }
     }
   },
