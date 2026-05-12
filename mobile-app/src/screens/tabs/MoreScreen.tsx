@@ -33,9 +33,9 @@ import { tokens, space, layout } from '../../design/tokens'
 import type { MoreScreenProps } from '../../navigation/types'
 
 export default function MoreScreen({ navigation }: MoreScreenProps) {
-  const { firstName, languageOverride } = useProfileStore()
+  const { languageOverride } = useProfileStore()
   const { isPremium, presentCustomerCenter } = usePurchases()
-  const { signOut, showAuthGate, isAnonymous } = useAuth()
+  const { signOut, showAuthGate, isAnonymous, displayName, user } = useAuth()
   const version = Constants.expoConfig?.version ?? 'unknown'
 
   const handleSignOut = useCallback(async () => {
@@ -93,9 +93,16 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
         <Card variant="default" padding="default">
           <Text variant="heading2" color="primary">Account</Text>
           <View style={styles.accountSubRow}>
-            <Text variant="body" color="secondary">
-              {firstName ?? 'Welcome'}
-            </Text>
+            <View style={styles.accountIdentity}>
+              <Text variant="body" color="secondary">
+                {displayName || 'Welcome'}
+              </Text>
+              {!isAnonymous && user?.email ? (
+                <Text variant="caption" color="tertiary" style={styles.accountEmail}>
+                  {user.email}
+                </Text>
+              ) : null}
+            </View>
             <View style={[styles.planBadge, isPremium && styles.planBadgePremium]}>
               <Text variant="micro" color={isPremium ? 'accent' : 'tertiary'}>
                 {isPremium ? 'PREMIUM' : 'FREE'}
@@ -315,6 +322,13 @@ const styles = StyleSheet.create({
     alignItems:     'center',
     justifyContent: 'space-between',
     marginTop:      space['2'],
+  },
+  accountIdentity: {
+    flex: 1,
+    gap:  2,
+  },
+  accountEmail: {
+    marginTop: 1,
   },
   planBadge: {
     borderWidth:       1,
