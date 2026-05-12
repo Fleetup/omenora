@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
-    ...(process.env.SENTRY_DSN ? ['@nuxtjs/sentry'] : []),
+    '@sentry/nuxt/module',
   ],
 
   runtimeConfig: {
@@ -37,7 +37,7 @@ export default defineNuxtConfig({
       supabaseUrl: '',
       supabaseAnonKey: '',
       siteUrl: 'https://omenora.com',
-      sentryDsn: '',
+      sentry: { dsn: process.env.NUXT_PUBLIC_SENTRY_DSN },
       tiktokPixelId: '',
       metaPixelId: '',
       posthogKey: '',
@@ -71,28 +71,20 @@ export default defineNuxtConfig({
     },
   },
 
-  // @ts-ignore - @nuxtjs/sentry module extends NuxtConfig type
+  // @ts-ignore - @sentry/nuxt/module extends NuxtConfig type after nuxt prepare
   sentry: {
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || 'development',
-    publishRelease: {
-      authToken: process.env.SENTRY_AUTH_TOKEN,
+    sourceMapsUploadOptions: {
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
-    },
-    config: {
-      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-      replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.01 : 0.0,
-      replaysOnErrorSampleRate: 1.0,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
     },
   },
+
+  sourcemap: { client: 'hidden' },
 
   vite: {
     optimizeDeps: {
       exclude: ['canvas'],
-    },
-    build: {
-      sourcemap: false,
     },
   },
 
