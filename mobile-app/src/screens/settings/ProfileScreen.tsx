@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { ScrollView, Alert, StyleSheet } from 'react-native'
 import { ScreenWrapper } from '../../components/templates'
 import { Header } from '../../components/organisms'
 import { Button } from '../../components/atoms'
 import { TextField, DateField, TimeField, CityField } from '../../components/molecules'
 import { useProfileStore } from '../../stores/profileStore'
+import { useAuth } from '../../context/useAuth'
+import { ProfileSaveError } from '../../services/profileService'
 import { layout, space } from '../../design/tokens'
 import type { Place } from '../../api/nominatim'
 import type { ProfileScreenProps } from '../../navigation/types'
@@ -44,7 +46,9 @@ const dateToTimeString = (d: Date | null): string => {
 }
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
-  // ── Store values (read-only baseline) ────────────────────────────────────
+  const { user, isAnonymous, showAuthGate } = useAuth()
+
+  // ── Store values (read-only baseline) ────────────────────────
   const storeFirstName   = useProfileStore((s) => s.firstName)
   const storeDateOfBirth = useProfileStore((s) => s.dateOfBirth)
   const storeTimeOfBirth = useProfileStore((s) => s.timeOfBirth)
@@ -59,7 +63,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const setArchetypeReading  = useProfileStore((s) => s.setArchetypeReading)
   const setNatalChartReading = useProfileStore((s) => s.setNatalChartReading)
   const setForecastReading   = useProfileStore((s) => s.setForecastReading)
-  const setCalendarData      = useProfileStore((s) => s.setCalendarData)
+  const setCalendarData           = useProfileStore((s) => s.setCalendarData)
+  const commitProfileToServer     = useProfileStore((s) => s.commitProfileToServer)
 
   // ── Local field state ─────────────────────────────────────────────────────
   const [firstName,   setLocalFirstName]   = useState(storeFirstName)
@@ -71,7 +76,12 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       : null
   )
 
-  // ── Dirty tracking ────────────────────────────────────────────────────────
+  // ── Commit state ────────────────────────────────────────────
+  const [saving, setSaving]   = useState(false)
+  // Prevent the beforeRemove dirty-check from blocking navigation mid-commit.
+  const committingRef         = useRef(false)
+
+  // ── Dirty tracking ────────────────────────────────────────
   const firstNameDirty = firstName !== storeFirstName
   const dobDirty       = dateOfBirth !== storeDateOfBirth
   const tobDirty       = timeOfBirth !== storeTimeOfBirth
@@ -84,10 +94,10 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     dateOfBirth.length > 0 &&
     (localPlace?.displayName?.length ?? 0) > 0
 
-  // ── Back-navigation intercept ─────────────────────────────────────────────
+  // ── Back-navigation intercept ─────────────────────────────────
   useEffect(() => {
     const unsub = navigation.addListener('beforeRemove', (e) => {
-      if (!isAnyDirty) return
+      if (!isAnyDirty || committingRef.current) return
       e.preventDefault()
       Alert.alert(
         'Discard changes?',
@@ -101,25 +111,73 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     return unsub
   }, [navigation, isAnyDirty])
 
-  // ── Save helpers ──────────────────────────────────────────────────────────
-  const commitWithCacheClear = () => {
+  // ── Save helpers ─────────────────────────────────────────────
+  const commitWithCacheClear = async () => {
+    if (isAnonymous || !user?.id) {
+      showAuthGate()
+      return
+    }
+    committingRef.current = true
+    setSaving(true)
     if (firstNameDirty) setFirstName(firstName)
     setDateOfBirth(dateOfBirth)
     if (tobDirty) setTimeOfBirth(timeOfBirth)
     if (cityDirty) setCity(localPlace?.displayName ?? '')
-    setReport(null)
-    setArchetypeReading(null)
-    setNatalChartReading(null)
-    setForecastReading(null)
-    setCalendarData(null)
-    navigation.goBack()
+    try {
+      await commitProfileToServer(user.id)
+      setReport(null)
+      setArchetypeReading(null)
+      setNatalChartReading(null)
+      setForecastReading(null)
+      setCalendarData(null)
+      navigation.goBack()
+    } catch (err: any) {
+      committingRef.current = false
+      setSaving(false)
+      if (err instanceof ProfileSaveError && err.kind === 'network') {
+        Alert.alert(
+          "Couldn't save changes",
+          "Your changes are saved locally. Tap Retry to try again.",
+          [
+            { text: 'Retry', onPress: () => void commitWithCacheClear() },
+            { text: 'Done', style: 'cancel', onPress: () => { committingRef.current = true; navigation.goBack() } },
+          ]
+        )
+      } else {
+        Alert.alert('Save failed', 'Please try again or contact support@omenora.com.')
+      }
+    }
   }
 
-  const commitFieldsOnly = () => {
+  const commitFieldsOnly = async () => {
+    if (isAnonymous || !user?.id) {
+      showAuthGate()
+      return
+    }
+    committingRef.current = true
+    setSaving(true)
     if (firstNameDirty) setFirstName(firstName)
     if (tobDirty) setTimeOfBirth(timeOfBirth)
     if (cityDirty) setCity(localPlace?.displayName ?? '')
-    navigation.goBack()
+    try {
+      await commitProfileToServer(user.id)
+      navigation.goBack()
+    } catch (err: any) {
+      committingRef.current = false
+      setSaving(false)
+      if (err instanceof ProfileSaveError && err.kind === 'network') {
+        Alert.alert(
+          "Couldn't save changes",
+          "Your changes are saved locally. Tap Retry to try again.",
+          [
+            { text: 'Retry', onPress: () => void commitFieldsOnly() },
+            { text: 'Done', style: 'cancel', onPress: () => { committingRef.current = true; navigation.goBack() } },
+          ]
+        )
+      } else {
+        Alert.alert('Save failed', 'Please try again or contact support@omenora.com.')
+      }
+    }
   }
 
   const handleSave = () => {
@@ -129,11 +187,11 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         'Your destiny report, archetype reading, natal chart, forecast, and calendar will regenerate the next time you open them. Continue?',
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Continue', style: 'destructive', onPress: commitWithCacheClear },
+          { text: 'Continue', style: 'destructive', onPress: () => void commitWithCacheClear() },
         ]
       )
     } else {
-      commitFieldsOnly()
+      void commitFieldsOnly()
     }
   }
 
@@ -178,10 +236,10 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         />
 
         <Button
-          label="Save"
+          label={saving ? 'Saving…' : 'Save'}
           variant="primary"
           fullWidth
-          disabled={!isValid || !isAnyDirty}
+          disabled={!isValid || !isAnyDirty || saving}
           onPress={handleSave}
         />
       </ScrollView>

@@ -1,16 +1,46 @@
-import React from 'react'
-import { StyleSheet, Switch, ScrollView } from 'react-native'
+import React, { useState } from 'react'
+import { StyleSheet, Switch, ScrollView, Alert } from 'react-native'
 import { ScreenWrapper } from '../../components/templates'
 import { Header, Card } from '../../components/organisms'
 import { ListItem } from '../../components/molecules'
 import { Text, Button } from '../../components/atoms'
 import { useProfileStore } from '../../stores/profileStore'
+import { useAuth } from '../../context/useAuth'
+import { updateProfileField, ProfileSaveError } from '../../services/profileService'
 import { tokens, space, layout } from '../../design/tokens'
 import type { PrivacySettingsScreenProps } from '../../navigation/types'
 
 export default function PrivacySettingsScreen({ navigation }: PrivacySettingsScreenProps) {
-  const analyticsEnabled = useProfileStore((s) => s.analyticsEnabled)
+  const analyticsEnabled    = useProfileStore((s) => s.analyticsEnabled)
   const setAnalyticsEnabled = useProfileStore((s) => s.setAnalyticsEnabled)
+  const { user, isAnonymous } = useAuth()
+
+  const [saving, setSaving] = useState(false)
+
+  const handleAnalyticsToggle = async (newValue: boolean) => {
+    if (isAnonymous || !user?.id) {
+      setAnalyticsEnabled(newValue)
+      return
+    }
+
+    setSaving(true)
+    try {
+      await updateProfileField(user.id, 'analytics_enabled', newValue)
+      setAnalyticsEnabled(newValue)
+    } catch (err: any) {
+      if (err instanceof ProfileSaveError && err.kind === 'network') {
+        Alert.alert(
+          "Couldn't save preference",
+          "Your preference is saved locally and will sync when you're back online.",
+          [{ text: 'OK', onPress: () => setAnalyticsEnabled(newValue) }],
+        )
+      } else {
+        Alert.alert('Save failed', 'Please try again.')
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <ScreenWrapper scroll={false} padded={false} background="base">
@@ -25,7 +55,8 @@ export default function PrivacySettingsScreen({ navigation }: PrivacySettingsScr
             right={
               <Switch
                 value={analyticsEnabled}
-                onValueChange={setAnalyticsEnabled}
+                onValueChange={(v) => void handleAnalyticsToggle(v)}
+                disabled={saving}
                 trackColor={{ true: tokens.accent.primary, false: tokens.border.default }}
               />
             }

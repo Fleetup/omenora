@@ -24,6 +24,7 @@ if (GOOGLE_IOS_CLIENT_ID && GOOGLE_WEB_CLIENT_ID) {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [profileHydrating, setProfileHydrating] = useState(false)
   const [authGateState, setAuthGateState] = useState<{
     visible: boolean
     title?: string
@@ -126,6 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // ── Hydrate profileStore from server (all permanent sign-ins) ──────────
         // Handles both: first-time sign-in (profile just transferred) and
         // returning user sign-in on fresh device / after sign-out.
+        if (mounted) setProfileHydrating(true)
         try {
           const serverProfile = await fetchProfile(targetId)
           if (serverProfile) {
@@ -141,6 +143,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (serverProfile.life_path_number != null) {
               store.setLifePathNumber(serverProfile.life_path_number)
             }
+            if (serverProfile.answers && Object.keys(serverProfile.answers).length > 0) {
+              store.setAnswers(serverProfile.answers)
+            }
+            if (serverProfile.language_override)  store.setLanguageOverride(serverProfile.language_override)
+            store.setAnalyticsEnabled(serverProfile.analytics_enabled ?? true)
             console.log('[Auth] profileStore hydrated from server for user:', targetId)
           } else {
             // No server row yet (user_profiles table is new, or user onboarded before
@@ -164,31 +171,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (hydrationErr) {
           console.warn('[Auth] profile hydration non-blocking error:', hydrationErr)
-        }
-      }
-
-      // On sign-out: re-bootstrap a new anonymous session so the app never sits session-less.
-      // Guard against re-entrance in case SIGNED_OUT fires before the new SIGNED_IN arrives.
-      if (event === 'SIGNED_OUT' && !newSession && mounted && !signingInAnonymouslyRef.current) {
-        signingInAnonymouslyRef.current = true
-        try {
-          const { error } = await supabase.auth.signInAnonymously()
-          if (error) {
-            console.error('[Auth] re-bootstrap after sign-out failed:', error.message)
-            Alert.alert('Session Error', 'Could not create a new session. Please restart the app.')
-          }
-          // On success, SIGNED_IN fires → listener sets session with the new anonymous user.
-        } catch (err: any) {
-          console.error('[Auth] re-bootstrap after sign-out threw:', err?.message)
-          Alert.alert('Session Error', 'Could not create a new session. Please restart the app.')
         } finally {
-          signingInAnonymouslyRef.current = false
+          if (mounted) setProfileHydrating(false)
         }
       }
 
-      // On sign-out: re-bootstrap a new anonymous session so the app never sits session-less.
+      // On sign-out: reset local profile then re-bootstrap a new anonymous session.
       // Guard against re-entrance in case SIGNED_OUT fires before the new SIGNED_IN arrives.
       if (event === 'SIGNED_OUT' && !newSession && mounted && !signingInAnonymouslyRef.current) {
+        // Reset local profile state so the anonymous bootstrap sees a clean store.
+        try {
+          useProfileStore.getState().reset()
+        } catch (resetErr: any) {
+          console.warn('[Auth] resetProfile in SIGNED_OUT handler failed:', resetErr?.message)
+        }
         signingInAnonymouslyRef.current = true
         try {
           const { error } = await supabase.auth.signInAnonymously()
@@ -314,48 +310,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = useCallback(async (options?: { skipWarning?: boolean }) => {
     const performSignOut = async () => {
-      // 0. Persist profile to server BEFORE wiping local state — ensures a returning
-      //    user can restore their profile on next sign-in. This is a best-effort
-      //    save; sign-out proceeds regardless of outcome.
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession()
-        const permanentUserId = currentSession && !(currentSession.user as any).is_anonymous
-          ? currentSession.user.id
-          : null
-        if (permanentUserId) {
-          const localStore = useProfileStore.getState()
-          if (localStore.dateOfBirth) {
-            await saveProfile(permanentUserId, {
-              first_name:       localStore.firstName    || undefined,
-              date_of_birth:    localStore.dateOfBirth,
-              time_of_birth:    localStore.timeOfBirth  || undefined,
-              city:             localStore.city         || undefined,
-              archetype:        localStore.archetype    || undefined,
-              sun_sign:         localStore.sunSign      || undefined,
-              moon_sign:        localStore.moonSign     || undefined,
-              rising_sign:      localStore.risingSign   || undefined,
-              life_path_number: localStore.lifePathNumber ?? undefined,
-            })
-            console.log('[Auth] profile saved to server before sign-out for:', permanentUserId)
-          }
-        }
-      } catch (saveErr) {
-        console.warn('[Auth] pre-sign-out profile save failed (non-blocking):', saveErr)
-      }
-
-      // 1. Clear local profile state BEFORE supabase signOut — ensures the
-      //    onAuthStateChange anonymous bootstrap sees a clean store, not the
-      //    previous user's firstName / archetype / reading caches.
-      try {
-        resetProfile()
-      } catch (err: any) {
-        console.error('[Auth] resetProfile failed during sign-out:', err?.message)
-        // Non-fatal: proceed — partial cleanup is better than a stuck sign-out.
+      // 1. Warn if there are unsynced local changes — give user a chance to cancel.
+      if (useProfileStore.getState().pendingServerSync) {
+        let confirmed = false
+        await new Promise<void>((resolve) => {
+          Alert.alert(
+            'Unsaved profile changes',
+            "You have profile changes that haven't synced to the server yet. Sign out anyway?",
+            [
+              { text: 'Cancel',   style: 'cancel',      onPress: () => resolve() },
+              { text: 'Sign Out', style: 'destructive',  onPress: () => { confirmed = true; resolve() } },
+            ],
+          )
+        })
+        if (!confirmed) return
       }
 
       // 2. RevenueCat sign out — only for identified (non-anonymous) users.
-      //    Purchases.logOut() throws if the RC user is already anonymous; there is
-      //    no identified session to end. Read session freshly to avoid stale closure.
+      //    Purchases.logOut() throws if the RC user is already anonymous.
       const { data: { session: currentSession } } = await supabase.auth.getSession()
       if (currentSession && !(currentSession.user as any).is_anonymous) {
         try {
@@ -365,13 +337,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 3. Supabase sign out — fires SIGNED_OUT, triggers anonymous re-bootstrap.
+      // 3. Supabase sign out — fires SIGNED_OUT → SIGNED_OUT handler resets profile + re-bootstraps.
+      //    On error: Alert and return WITHOUT resetting local state (so data is preserved).
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error('[Auth] sign-out error:', error)
         Alert.alert('Sign Out Failed', error.message)
+        return
       }
-      // On success, onAuthStateChange fires SIGNED_OUT → re-bootstrap handler creates a new anonymous session.
+      // On success, onAuthStateChange fires SIGNED_OUT → reset + re-bootstrap handler runs.
     }
 
     if (options?.skipWarning) {
@@ -507,6 +481,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user: session?.user ?? null,
     isAnonymous: (session?.user as any)?.is_anonymous ?? false,
     isLoading,
+    profileHydrating,
     displayName,
     signInWithApple,
     signInWithGoogle,

@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   View,
   StyleSheet,
   Pressable,
   Animated,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
@@ -38,7 +39,8 @@ const STARS = (() => {
 
 export default function WelcomeScreen() {
   const navigation  = useNavigation<WelcomeNavProp>()
-  const { isAnonymous, showAuthGate } = useAuth()
+  const { isAnonymous, profileHydrating, showAuthGate } = useAuth()
+  const [hydrationTimedOut, setHydrationTimedOut] = useState(false)
   const fadeAnim    = useRef(new Animated.Value(0)).current
   const slideAnim   = useRef(new Animated.Value(28)).current
 
@@ -50,12 +52,20 @@ export default function WelcomeScreen() {
     ]).start()
   }, [])
 
-  // Route to MainTabs after successful sign-in via AuthGate
+  // Route to MainTabs after sign-in AND profile hydration complete (or 5s timeout).
   useEffect(() => {
-    if (!isAnonymous) {
+    if (isAnonymous) return
+    if (!profileHydrating || hydrationTimedOut) {
       navigation.replace('MainTabs')
     }
-  }, [isAnonymous, navigation])
+  }, [isAnonymous, profileHydrating, hydrationTimedOut, navigation])
+
+  // 5-second max wait for profile hydration after permanent sign-in.
+  useEffect(() => {
+    if (isAnonymous) return
+    const timer = setTimeout(() => setHydrationTimedOut(true), 5000)
+    return () => clearTimeout(timer)
+  }, [isAnonymous])
 
   return (
     <View style={styles.container}>
@@ -104,36 +114,42 @@ export default function WelcomeScreen() {
             Your birth data unlocks a reading built only for you
           </Text>
 
-          <View style={styles.actions}>
-            <Button
-              label="Begin"
-              variant="primary"
-              fullWidth
-              onPress={() => navigation.navigate('BirthInfo')}
-            />
-
-            <View style={styles.orRow}>
-              <View style={styles.orLine} />
-              <Text variant="micro" color="tertiary" style={styles.orLabel}>or</Text>
-              <View style={styles.orLine} />
+          {!isAnonymous && profileHydrating && !hydrationTimedOut ? (
+            <View style={styles.actions}>
+              <ActivityIndicator size="small" color="rgba(255,255,255,0.5)" />
             </View>
+          ) : (
+            <View style={styles.actions}>
+              <Button
+                label="Begin"
+                variant="primary"
+                fullWidth
+                onPress={() => navigation.navigate('BirthInfo')}
+              />
 
-            <Pressable
-              onPress={() =>
-                showAuthGate({
-                  title: 'Welcome back',
-                  body: 'Sign in to access your readings and profile.',
-                })
-              }
-              style={({ pressed }) => [
-                styles.signInTap,
-                pressed && styles.signInTapPressed,
-              ]}
-            >
-              <Text variant="label" color="secondary">Already have an account?</Text>
-              <Text variant="label" style={styles.signInAccent}>{' '}Sign in</Text>
-            </Pressable>
-          </View>
+              <View style={styles.orRow}>
+                <View style={styles.orLine} />
+                <Text variant="micro" color="tertiary" style={styles.orLabel}>or</Text>
+                <View style={styles.orLine} />
+              </View>
+
+              <Pressable
+                onPress={() =>
+                  showAuthGate({
+                    title: 'Welcome back',
+                    body: 'Sign in to access your readings and profile.',
+                  })
+                }
+                style={({ pressed }) => [
+                  styles.signInTap,
+                  pressed && styles.signInTapPressed,
+                ]}
+              >
+                <Text variant="label" color="secondary">Already have an account?</Text>
+                <Text variant="label" style={styles.signInAccent}>{' '}Sign in</Text>
+              </Pressable>
+            </View>
+          )}
 
           {/* Legal */}
           <View style={styles.legalRow}>
