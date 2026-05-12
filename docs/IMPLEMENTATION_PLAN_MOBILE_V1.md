@@ -2574,6 +2574,143 @@ Definition of done. All items must pass before starting Phase 7.
 
 ---
 
+## Architecture — Data & Identity (locked 2026-05-11)
+
+This section captures architectural decisions about how OMENORA stores, syncs, and protects user data, subscriptions, usage counters, and identity across the sign-out / sign-in / multi-device / reinstall lifecycle. These decisions are the canonical reference for Phase 6 Cluster 4C through 4G build work and supersede any earlier per-phase decisions that conflict. Reviewed and locked after the 2026-05-11 device-test data-loss incident and the comprehensive sync audit conducted on `feature/phase-6-cluster-4a` HEAD `79676de`.
+
+### Production-grade success criteria
+
+These outcomes are guaranteed by the decisions below. Any future change that would weaken them requires an explicit architectural decision update in this section.
+
+- **Profile data survives** sign-out, sign-in on different device, app uninstall + reinstall, six months of inactivity, brief network failures during any of the above.
+- **Subscription entitlements survive** all of the above plus restore-purchases flow plus RevenueCat webhook delay plus cross-device.
+- **Usage counters are server-authoritative**, tamper-proof, atomic, and consistent across devices.
+- **User flows correct** for new install, returning permanent user, returning anonymous user, multi-device, sign-out / sign-back-in, account deletion.
+- **Apple App Review passes on first submission** — restore purchases, account deletion, Apple Sign-In token revoke all wired per guidelines 3.1.1, 5.1.1(v).
+- **All failures are visible to the user**, not silently swallowed.
+
+### Decision 1 — Source of truth assignments
+
+Each data category has exactly one authoritative store. Everything else is a read-through cache.
+
+**Profile data** (firstName, dateOfBirth, timeOfBirth, city, archetype, sun_sign, moon_sign, rising_sign, life_path_number, answers, language_override, analytics_enabled): Supabase `user_profiles` table is authoritative. Mobile `profileStore` (Zustand + AsyncStorage) is a read-through cache. Multi-device sync, sign-out preservation, and reinstall recovery all require server-side persistence; the local-only-with-sign-out-save pattern fails all three.
+
+**Subscription entitlements** (`isPremium`, `hasCalendar`): RevenueCat is canonical. Backend gating reads from `subscriptions` Supabase table populated by RC webhook. Mobile reads from RC SDK `customerInfo`. Neither mobile cache nor `subscriptions` table can override RC — RC has receipt-level truth from Apple and Google.
+
+**Usage counters** (`feature_usage` rows: counsel, archetype, natal_chart, forecast, compatibility): Supabase `feature_usage` table is authoritative. Mobile never reads it directly — only receives current values in API responses. Anything the client can see, the client can fake; usage caps are revenue and cost controls and must be server-only.
+
+**Identity**: Supabase Auth is the sole identity authority. `auth.users.id` is the universal user UUID used everywhere — as RC `app_user_id`, as FK in every user-scoped table, as profile lookup key. Single ID space eliminates the "which ID is real" bug class.
+
+### Decision 2 — Profile sync pattern (Cluster 4C)
+
+Replace the current "save on sign-out" pattern with "save on every change, hydrate on every sign-in."
+
+Writes go server-first. `CalculatingScreen` saves to server (awaited) after the LLM completes, before navigating to BigThreeReveal; on network failure shows inline retry UI with up to 3 manual retries, then a "Continue offline" fallback that flags `pendingServerSync: true` in profileStore. `ProfileScreen.handleSave` writes to server first (awaited), then updates local cache on success; on failure surfaces an error and does NOT update local — server stays the truth. `LanguageScreen` and `PrivacySettingsScreen` follow the same pattern via a new `updateProfileField` service method.
+
+Reads on `SIGNED_IN` hydrate profileStore from `fetchProfile` (awaited before navigation away from auth-aware screens). App foreground after >5 minutes refreshes profile in background (silent on failure — stale cache is acceptable). Pull-to-refresh on ProfileScreen is explicit refetch.
+
+Conflict resolution is server-always-wins on read. Mobile cache is overwritten unconditionally on SIGNED_IN. For multi-device edits, last-write-wins by `updated_at` timestamp (the `set_updated_at` Supabase trigger handles this automatically). No merge logic, no vector clocks, no conflict resolution UI — this is a single-user single-account product where last-write-wins is correct and simple.
+
+The `answers` field gap (column exists server-side but mobile never writes or reads it) is closed in Cluster 4C: added to profileStore partialize, added to `fetchProfile` hydration block, added to all save payloads.
+
+### Decision 3 — Subscription architecture (Cluster 4D)
+
+The current RC integration is mostly correct. Three required additions plus one race fix.
+
+`Purchases.logIn(supabaseUserId)` already fires on auth state change with permanent users. `isPremium` is already derived from `customerInfo.entitlements.active` inline on every render — no stale local cache. Backend webhook already writes to `subscriptions` table for backend gating. RC and Supabase user IDs are already aligned.
+
+**Addition 1 — Restore Purchases UI is mandatory.** Apple Guideline 3.1.1: any app with non-consumable IAPs or auto-renewable subscriptions must provide a restore mechanism. OMENORA has both (`omenora_calendar_2026` non-consumable IAP plus monthly/annual subscriptions). Current state: zero restore surface exists anywhere. Add a "Restore purchases" row in MoreScreen Account section and ensure the RC paywall (already used) has its restore button enabled. On tap: `Purchases.restorePurchases()` then `refreshCustomerInfo`; on success toast "Purchases restored", on no-purchases-found toast "No purchases to restore."
+
+**Addition 2 — `syncPurchases` after `Purchases.logIn`.** Per RC documentation, `syncPurchases` handles the edge case where a subscription renews while the user is signed out (the renewal gets attached to anonymous identity by default; without `syncPurchases` after logIn, the paying subscriber loses access on sign-in). One-line addition in PurchasesProvider.
+
+**Addition 3 — Force sign-in before IAP purchase.** Non-renewing IAPs tied to anonymous RC identities cannot be restored on app reinstall — the purchase is permanently lost (RC docs confirm this; the receipt is anonymous-bound and there's no way to attribute it after a new anonymous identity is created). OMENORA's `omenora_calendar_2026` is exactly this category. Pre-fix: anonymous user buys calendar, deletes app, reinstalls, purchase gone. Fix: CalendarScreen IAP CTA triggers AuthGate first if user is anonymous; only after sign-in completes does `purchaseCalendar()` fire. One extra tap, eliminates a 1-star-review category.
+
+**Race fix — `isInitialReady` flag in PurchasesProvider.** Between app launch and `Purchases.logIn` resolving, `customerInfo` may be null and `isPremium === false` for actual paying users. Code that hard-gates on `!isPremium` (CounselChatScreen `useEffect` goBack guard) can eject legitimate subscribers during this window. Add `isInitialReady: boolean` to PurchasesContext, true only after first successful customerInfo fetch post-logIn; gates that consume `isPremium` show a loader (not the locked state) when `!isInitialReady`.
+
+### Decision 4 — Usage counter atomicity (Cluster 4E)
+
+The current `requirePremiumWithUsage → LLM → incrementUsage` pattern has a check-then-increment race: two parallel requests at `count = cap-1` both pass the cap check, both call LLM, both increment, resulting in `count = cap+1`. The increment-after-LLM order also means LLM-call success with increment-failure produces uncapped free messages (the increment error is logged-and-swallowed).
+
+Replace with a single atomic Postgres RPC `check_and_consume_usage(p_user_id, p_feature, p_period, p_cap)` that inserts-or-increments in one transaction with a conditional update gated on `count < cap`. Returns `{allowed: bool, count: int, cap: int}`. Backend endpoint flow becomes: call RPC; if `allowed === false` return 429 immediately without LLM call; if `allowed === true` run LLM and return response with usage.
+
+Trade-off: increment happens before LLM call. If LLM fails, the user is "charged" one usage credit for a failed message. This is the correct trade — LLM failure rate is <1% in production, while the abuse vector (every silent increment failure being uncapped) is a much bigger risk. No refund-usage RPC; accept the tradeoff explicitly.
+
+Client-side counter UI in CounselChatScreen is informational only; remove any client-side gating that prevents send. Server is the only gate.
+
+### Decision 5 — Anonymous-to-permanent migration
+
+The current `transfer_anonymous_user` Supabase RPC is correct. COALESCE merge preserves anonymous-session data when target has nulls; DELETE source row after merge prevents orphans; RLS guard `auth.uid() = target_user_id` is correct.
+
+Two additions in Cluster 4C and 4D respectively. First, the transfer must complete BEFORE profileStore hydration in the SIGNED_IN handler (current code order is correct; add a code comment making the dependency explicit so it doesn't regress). Second, `Purchases.syncPurchases()` fires after `Purchases.logIn` post-transfer (per Decision 3 Addition 2) so anonymous IAP purchases transfer correctly to the named app_user_id.
+
+The `public.users` table is a known gap. The `transfer_anonymous_user` RPC and the `delete-account` cascade both reference it, but no `CREATE TABLE public.users` statement exists in any tracked migration. This is shippable now (Supabase has the table; cascade behaviour is functionally correct in production) but is a source-of-truth violation. Cluster 4F locates the missing migration or creates one from current schema, then verifies cascade.
+
+### Decision 6 — Sign-out pattern (Cluster 4C)
+
+Simplify the current four-step pattern. Under server-first writes (Decision 2), there is no local-only data to save at sign-out — server is always current. The pre-sign-out save is redundant and introduces a silent-failure mode.
+
+Target sequence: (1) if permanent user, `await Purchases.logOut()` wrapped in try/catch; (2) `await supabase.auth.signOut()` — on error, Alert and return early without resetting local state (stuck-but-recoverable beats corrupted); (3) `onAuthStateChange` SIGNED_OUT handler does `setSession(null)`, `resetProfile()`, then `signInAnonymously` for the next anonymous session (with re-entrance guard from Cluster 4A).
+
+`pendingServerSync` flag check: if set to true at sign-out (rare — indicates local-only data from the "Continue offline" fallback in CalculatingScreen), surface a warning Alert "You have unsaved profile changes. Sign out anyway?" with destructive and cancel buttons. User confirms means data is lost — they were warned.
+
+### Decision 7 — Account deletion completeness (Cluster 4F)
+
+Apple Guideline 5.1.1(v) requires that all user data be deleted on account deletion request. Three required additions to meet this bar.
+
+**Apple Sign-In token revoke** — server-side `POST https://appleid.apple.com/auth/revoke` with the stored Apple refresh token, generated via client_secret JWT signed with the .p8 key. Required only for users who signed in with Apple; no-op for Google or email users. Already documented as a pre-submission blocker in Phase 7 Step 7.7. Estimated 2-3 hours backend work.
+
+**RevenueCat customer delete** — backend calls RC REST `DELETE /v1/subscribers/{user_id}` during the delete-account handler. Current `Purchases.logOut()` ends the client session but leaves the RC customer record plus purchase history intact. Apple may not test this directly, but it's part of "complete deletion."
+
+**`public.users` cascade verification** — per Decision 5. The delete-account endpoint relies on `auth.users` cascade to wipe `public.users`. If that FK isn't configured in production Supabase (cannot verify from tracked migrations because the table definition is missing), account deletion leaves orphan rows. Either locate the missing migration or write one capturing current schema, then verify cascade with a SQL test.
+
+### Decision 8 — User flow matrix (Cluster 4C)
+
+SplashScreen is the sole routing authority. `RootNavigator.initialRouteName` is unconditionally `'Splash'`. The current ternary that bypasses Splash when `dateOfBirth` is truthy is removed.
+
+Routing matrix:
+
+| Scenario | Session | Profile complete | Destination |
+| --- | --- | --- | --- |
+| New install | none → bootstrap creates anonymous | empty | Welcome |
+| Returning permanent, complete profile | permanent | yes | MainTabs |
+| Returning permanent, mid-onboarding | permanent | partial | Welcome (resume onboarding) |
+| Returning anonymous, completed onboarding | anonymous | yes | MainTabs |
+| Returning anonymous, incomplete | anonymous | partial | Welcome |
+| Network failure on bootstrap | unknown | unknown | Splash retry UI (existing 8s timeout) |
+
+Profile completeness check is a triple-condition gate: `archetype !== null AND dateOfBirth !== null AND sun_sign !== null`. Conservative — if these three fields are all set, onboarding completed successfully. Better to be too strict and re-onboard a few mid-onboarding users than too loose and break many users with empty MainTabs surfaces.
+
+WelcomeScreen post-sign-in navigation waits for both `isAnonymous === false` AND profile hydration complete (new `profileHydrating: boolean` exposed on AuthContext). Max wait 5 seconds; after that navigate anyway to avoid trapping the user on a hung hydration call.
+
+### Decision 9 — Cron daily-push dispatcher (Cluster 4G)
+
+Backend cron job (Railway scheduled route or equivalent) queries `push_tokens` and POSTs to `https://exp.host/--/api/v2/push/send` at a fixed UTC time (06:00 UTC initial). User-configurable notification time deferred to v1.1.
+
+Daily push is the single highest-leverage retention mechanism for daily-content apps in this category; shipping v1 with the toggle wired but no dispatcher means users toggle ON and get nothing — visibly broken feature. Infrastructure is half-built (push_tokens table, register endpoint, mobile toggle). Estimated 2-3 hours.
+
+### Decision 10 — Out of scope (v1.1 and beyond)
+
+Decisions deferred to v1.1 or v1.2 with explicit acceptance of the current limitation:
+
+- **Real-time multi-device sync via Supabase Realtime.** Edits on Device A propagate to Device B only on B's next sign-in or app foreground. Live-update push deferred to v1.2.
+- **Offline write queue.** True offline-write support requires conflict resolution beyond last-write-wins. v1 surfaces errors immediately and requires manual retry. Deferred to v1.1 if user feedback demands.
+- **i18n architecture for UI copy.** 10-language support is reading-generation only at v1; all Alert strings, ListItem labels, and inline copy are English. Adding `i18next` or similar deferred to v1.1.
+- **Existing-user data restoration on reinstall.** Decision 2 architecture supports this natively going forward (server is source of truth). Existing users with only local data — including current internal testers — must re-onboard once to establish their server-side row, after which data is durable. Documented in Phase 7 testing notes.
+
+### Implementation cluster sequence
+
+| Cluster | Decisions | Scope |
+| --- | --- | --- |
+| 4C | 2, 6, 8 | Profile sync server-first writes, simplified sign-out, SplashScreen sole routing authority, audit fixes S2/R1, `answers` field wired |
+| 4D | 3 | Restore Purchases UI, `syncPurchases` after logIn, force-sign-in before IAP, `isInitialReady` race fix |
+| 4E | 4 | `check_and_consume_usage` RPC, backend endpoint refactor, remove client-side cap gating |
+| 4F | 5, 7 | Apple Sign-In token revoke endpoint, RC customer delete REST call, `public.users` migration audit |
+| 4G | 9 | Cron daily-push dispatcher backend (augur web repo) |
+
+Clusters are sequential. 4C blocks 4D through 4G because every cluster downstream depends on the server-first profile pattern. Within each cluster, the build prompt follows the intent-only convention established in Cluster 4A: Windsurf reads the codebase and decides implementation; the spec specifies intent, constraints, and verification.
+
+---
+
 ## Phase 7 — Production Preparation
 
 **Goal:** Finalize all assets, configure push notifications, set up EAS production build, complete App Store + Google Play submission config. Validate all compliance requirements.
