@@ -37,15 +37,19 @@ const STAR_POSITIONS = (() => {
 export default function SplashScreen() {
   const navigation = useNavigation<SplashNavProp>()
   const { session, isLoading } = useAuth()
-  const archetype   = useProfileStore((s) => s.archetype)
-  const dateOfBirth = useProfileStore((s) => s.dateOfBirth)
-  const fadeAnim    = useRef(new Animated.Value(0)).current
+  const archetype             = useProfileStore((s) => s.archetype)
+  const dateOfBirth           = useProfileStore((s) => s.dateOfBirth)
+  const sunSign               = useProfileStore((s) => s.sunSign)
+  const pendingServerSync     = useProfileStore((s) => s.pendingServerSync)
+  const commitProfileToServer = useProfileStore((s) => s.commitProfileToServer)
+  const fadeAnim              = useRef(new Animated.Value(0)).current
 
   const [minDisplayElapsed, setMinDisplayElapsed] = useState(false)
   const [sessionTimedOut,   setSessionTimedOut]   = useState(false)
   const [retrying,          setRetrying]          = useState(false)
   const [storeHydrated,     setStoreHydrated]     = useState(false)
-  const sessionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const sessionTimeoutRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasNavigatedRef    = useRef(false)
 
   // Fade-in animation (unchanged)
   useEffect(() => {
@@ -91,14 +95,22 @@ export default function SplashScreen() {
   }, [session])
 
   // Routing decision — fires once all guards pass: min display, auth bootstrap, session
-  // stable, and store hydrated. Profile complete requires archetype: set AND dateOfBirth: set.
-  // Mid-onboarding users (either null) route back to Welcome to resume safely.
+  // stable, and store hydrated. Profile complete requires archetype AND dateOfBirth AND sunSign
+  // all set. Mid-onboarding users (any missing) route back to Welcome to resume safely.
   useEffect(() => {
     if (!minDisplayElapsed || isLoading || !session || !storeHydrated) return
-    // Profile complete: archetype: non-null AND dateOfBirth: non-empty
-    const profileComplete = archetype !== null && dateOfBirth !== ''
+    if (hasNavigatedRef.current) return
+    hasNavigatedRef.current = true
+    // Triple-check completeness gate (AD-6: server-first data integrity)
+    const profileComplete = archetype !== null && dateOfBirth !== '' && sunSign !== null
     navigation.replace(profileComplete ? 'MainTabs' : 'Welcome')
-  }, [minDisplayElapsed, isLoading, session, storeHydrated, archetype, dateOfBirth, navigation])
+    // Background recovery: flush any unsynced profile data to server after routing.
+    if (pendingServerSync && session.user?.id) {
+      commitProfileToServer(session.user.id).catch((e) =>
+        console.warn('[Splash] pendingServerSync recovery failed:', e)
+      )
+    }
+  }, [minDisplayElapsed, isLoading, session, storeHydrated, archetype, dateOfBirth, sunSign, pendingServerSync, commitProfileToServer, navigation])
 
   return (
     <View style={styles.container}>

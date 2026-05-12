@@ -4,7 +4,6 @@ import { tokens } from '../design/tokens';
 import { createNavigationContainerRef } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { TabNavigator } from './TabNavigator';
-import { useProfileStore } from '../stores/profileStore';
 import SplashScreen             from '../screens/onboarding/SplashScreen';
 import WelcomeScreen            from '../screens/onboarding/WelcomeScreen';
 import BirthInfoScreen          from '../screens/onboarding/BirthInfoScreen';
@@ -34,12 +33,9 @@ export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const RootNavigator: React.FC = () => {
-  const dateOfBirth      = useProfileStore((state) => state.dateOfBirth);
-  const initialRouteName = dateOfBirth ? 'MainTabs' : 'Splash';
-
   return (
     <Stack.Navigator
-      initialRouteName={initialRouteName}
+      initialRouteName="Splash"
       screenOptions={{
         headerShown:  false,
         contentStyle: { backgroundColor: tokens.surface.base },
