@@ -17,6 +17,7 @@ import { Text } from '../../components/atoms/Text'
 import { Button } from '../../components/atoms/Button'
 import { PhoenixLoader } from '../../components/ui/PhoenixLoader'
 import { useAuth } from '../../context/useAuth'
+import { useProfileStore } from '../../stores/profileStore'
 import { RootStackParamList } from '../../navigation/types'
 
 type WelcomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>
@@ -40,6 +41,9 @@ const STARS = (() => {
 export default function WelcomeScreen() {
   const navigation  = useNavigation<WelcomeNavProp>()
   const { isAnonymous, profileHydrating, showAuthGate } = useAuth()
+  const archetype   = useProfileStore((s) => s.archetype)
+  const dateOfBirth = useProfileStore((s) => s.dateOfBirth)
+  const sunSign     = useProfileStore((s) => s.sunSign)
   const [hydrationTimedOut, setHydrationTimedOut] = useState(false)
   const fadeAnim    = useRef(new Animated.Value(0)).current
   const slideAnim   = useRef(new Animated.Value(28)).current
@@ -52,13 +56,16 @@ export default function WelcomeScreen() {
     ]).start()
   }, [])
 
-  // Route to MainTabs after sign-in AND profile hydration complete (or 5s timeout).
+  // Route after sign-in based on profile completeness. Triple-check gate
+  // mirrors SplashScreen — incomplete profiles re-onboard at BirthInfo,
+  // complete profiles go to MainTabs. Decision 8.
   useEffect(() => {
     if (isAnonymous) return
     if (!profileHydrating || hydrationTimedOut) {
-      navigation.replace('MainTabs')
+      const profileComplete = archetype !== null && dateOfBirth !== '' && sunSign !== null
+      navigation.replace(profileComplete ? 'MainTabs' : 'BirthInfo')
     }
-  }, [isAnonymous, profileHydrating, hydrationTimedOut, navigation])
+  }, [isAnonymous, profileHydrating, hydrationTimedOut, archetype, dateOfBirth, sunSign, navigation])
 
   // 5-second max wait for profile hydration after permanent sign-in.
   useEffect(() => {
