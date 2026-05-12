@@ -2711,6 +2711,127 @@ Clusters are sequential. 4C blocks 4D through 4G because every cluster downstrea
 
 ---
 
+## Phase 6.6 — Production Hardening (locked 2026-05-12)
+
+This phase inserts between Cluster 4C-bis-2 (shipped 2026-05-12) and Cluster 4D. Phase 6 feature clusters 4D through 4G resume after Phase 6.6 closes. The premise is that observability, rate limiting, webhook monitoring, secrets hygiene, recoverability, and legal documentation must be in place before the remaining monetization-critical clusters (4D restore-purchases, 4E atomic counters, 4F account-deletion completeness, 4G push dispatcher) ship — so any bugs introduced in those clusters surface against an instrumented backend rather than a silent one, and so the first paying users meet an app that can be audited, rate-limited, recovered, and legally defended.
+
+The phase is **deploy-frozen**. Railway production stays on the existing main tip (`~a56e9a9` area, May 8 hotfix) throughout Phase 6.6 and Phase 6 cluster 4D–4G work. All backend-touching code ships to `develop` only. Verification during 6.6 is static analysis plus local testing — no incremental Railway deploys. Production promotion happens exactly once after Phase 6.6 + Phase 6 4D–4G + Phase 7 prep are all complete and device-validated. This trades multiple small-blast-radius deploys for one large-blast-radius deploy under full attention, which is the correct trade for a solo operator with no on-call rotation.
+
+The phase is **sequential**. 6.6.0 captures the plan; 6.6.1 establishes observability before any further code lands; 6.6.2 hardens the perimeter before 6.6.3 instruments the webhook; 6.6.4 audits secrets before 6.6.5 tests recovery against those same secrets; 6.6.6 produces the legal artifacts that Phase 7 submission requires; 6.6.7 captures what shipped. Reordering breaks dependency assumptions and is not permitted without an explicit architectural decision update in this section.
+
+### Cluster sequence
+
+| Cluster | Scope | Backend impact |
+|---|---|---|
+| 6.6.0 | Plan-doc capture of Phase 6.6 section | None — documentation only |
+| 6.6.1 | Sentry observability — mobile SDK and backend SDK | Code on develop only; Sentry project provisioned externally |
+| 6.6.2 | Backend rate limiting, auth audit, CORS allowlist, body size limits | Code on develop only |
+| 6.6.3 | Webhook delivery monitoring with RevenueCat event deduplication via `rc_event_id` | Code on develop only; new Supabase table via manual migration |
+| 6.6.4 | Service role key audit and key rotation runbook | Documentation only |
+| 6.6.5 | Database backup and restore test via staging Supabase project | Documentation only; staging Supabase project provisioned externally |
+| 6.6.6 | Privacy policy and terms of service drafted from legal citations | Documentation + web app (omenora.com) deploy |
+| 6.6.7 | Phase 6.6 closeout plan-doc capture and Session Log entries | None — documentation only |
+
+### Cluster 6.6.0 — Plan-doc capture
+
+**Scope.** This cluster. A single insertion of the Phase 6.6 section into `docs/IMPLEMENTATION_PLAN_MOBILE_V1.md` between the Architecture — Data & Identity section and Phase 7 — Production Preparation.
+
+**Deliverables.** One commit on `feature/phase-6.6-cluster-6.6.0` modifying exactly one file (`docs/IMPLEMENTATION_PLAN_MOBILE_V1.md`). Squash-merged to develop.
+
+**Success criteria.** Section header present at the expected insertion line. Eight cluster subsections present (6.6.0 through 6.6.7). `git diff --stat` shows one file changed. `npx tsc --noEmit` from the mobile-app directory still exits zero (sanity check that the plan-doc edit didn't accidentally touch TypeScript).
+
+**Rollback.** Documentation rollback procedure.
+
+### Cluster 6.6.1 — Sentry observability
+
+**Scope.** Provision a Sentry account on the free tier at sentry.io with two projects — one React Native, one Node.js. Integrate `@sentry/react-native` in the mobile app and `@sentry/node` in the augur backend. Configure release tracking, environment tagging, source map upload for stack trace symbolication, and PII scrubbing for all transports. DSNs are environment-aware via EAS secrets (mobile) and Railway environment variables (backend — set in dashboard but not yet deployed).
+
+**Deliverables.** Sentry project IDs and DSNs captured in `.env.example`. Mobile SDK initialization in `App.tsx` wrapped in an env-guard so absent DSN is a no-op. Backend SDK initialization in the augur server entry point under the same env-guard. PII scrubbing config drops `email`, `ip_address`, `user_agent`, and any field matching `token|secret|key|password` from request bodies and breadcrumbs. EAS build profile updated to upload source maps to Sentry on production builds. Sentry release name uses the commit SHA so each event is traceable to a build.
+
+**Success criteria.** A forced `throw new Error('sentry test')` in a dev build of the mobile app produces an event visible in the Sentry mobile project within 60 seconds, with a symbolicated stack trace pointing to source files. The same forced error from a local backend run produces an event in the Sentry backend project. A test payload containing an email field is captured with the email value replaced by the scrubber. Sentry SDK call sites are zero when `EXPO_PUBLIC_SENTRY_DSN` is empty (verified by grep + behavior test). Release tag visible in the Sentry event matches the git commit SHA.
+
+**Rollback.** Mobile code rollback procedure for mobile integration. Backend code rollback procedure for backend integration. Sentry projects remain (no cost, no harm).
+
+### Cluster 6.6.2 — Backend rate limiting and perimeter hardening
+
+**Scope.** Add rate limiting middleware to every public endpoint in `augur/server/api/`. Audit every route to confirm authentication is enforced where required. Lock the CORS allowlist to the exact set of legitimate origins. Set request body size limits to prevent oversized-payload denial-of-service.
+
+**Deliverables.** Rate limiting library integrated (specific library deferred to cluster build — Windsurf inspects current framework and selects). Per-route rate limit policy applied: stricter caps on authentication endpoints, magic link request endpoints, payment endpoints, and report-generation endpoints (which call paid LLM APIs); looser caps on read endpoints. Authentication middleware audit produces an explicit inventory of all routes with their auth requirement, captured in the commit body. CORS allowlist contains only `https://omenora.com`, the mobile deep-link scheme(s), and any EAS dev domains required for dev builds — no wildcards. Body size limits set globally with stricter limits on auth/payment endpoints. Security policy documented in `augur/server/SECURITY.md`.
+
+**Success criteria.** A burst of requests to a rate-limited endpoint produces a 429 response after the configured cap. An unauthenticated request to a protected endpoint produces a 401. A request from a disallowed origin produces a CORS error in the browser console (or fails the preflight). A request body exceeding the size limit produces a 413. All four behaviours verified via curl or equivalent and the verification commands captured in `augur/server/SECURITY.md`. No legitimate flow regressed (mobile dev build still completes auth, reports, and webhook handling locally).
+
+**Rollback.** Backend code rollback procedure.
+
+### Cluster 6.6.3 — Webhook delivery monitoring and RevenueCat dedup
+
+**Scope.** Add observability and idempotency to the RevenueCat webhook handler. Every incoming RC event is logged to a Supabase table before processing. A unique constraint on the event ID prevents duplicate processing of retried webhooks (RC retries on non-2xx responses, which has caused double-processing in past production observations of similar systems). Failed processing surfaces in Sentry (6.6.1 prerequisite) with the full payload, scrubbed of any PII.
+
+**Deliverables.** Supabase migration file under `augur/supabase/migrations/` creating `public.webhook_events` with columns for event identifier, provider, event type, payload (JSONB), received_at, processed_at, status (received/processing/succeeded/failed), and error message. Unique constraint on `(provider, event_id)`. Migration is idempotent via `IF NOT EXISTS`. Applied manually via Supabase SQL Editor by Miki, not via CLI. Webhook handler refactored: insert the event row inside a transaction, return 200 if the unique constraint fires (duplicate), proceed with processing if the row is new, update `processed_at` and `status` on completion. Monitoring SQL queries for webhook health (last-24-hour counts, error rates, processing latency p50/p95) documented in `augur/server/runbooks/webhook-monitoring.md`.
+
+**Success criteria.** Replaying an RC webhook event (same `event_id`) creates exactly one row in `webhook_events` and returns 200 on the duplicate without re-invoking the processing path. All RC webhook events received during local testing are present in the table. A simulated processing failure surfaces in the Sentry backend project with the payload visible and PII scrubbed. The monitoring query returns expected counts when run in Supabase SQL Editor.
+
+**Rollback.** Backend code rollback procedure for the handler changes. Database rollback procedure for the migration — `DROP TABLE public.webhook_events` in Supabase SQL Editor.
+
+### Cluster 6.6.4 — Service role key audit and rotation runbook
+
+**Scope.** Enumerate every location in the codebase that references the Supabase service role key and any other privileged secret (Apple Sign-In `.p8` key, RevenueCat webhook secret, RevenueCat REST API key, Resend API key, Stripe secret key, OpenAI/Anthropic API keys). Verify every reference is backend-only and justified. Document the emergency rotation procedure for each key.
+
+**Deliverables.** Audit report captured in the commit body listing every secret reference with file path, line number, and justification. Mobile codebase grep proving zero references to the service role key or any other backend-only secret. Runbook at `docs/runbooks/key-rotation.md` covering rotation steps for each of: Supabase service role key, Apple Sign-In key, RC webhook secret, RC REST API key, Resend API key, Stripe secret key, LLM API keys. Each rotation procedure includes the dashboard URL where the key is rotated, the env var name(s) that need updating in Railway and EAS, the restart procedure, and the verification step that the rotation worked.
+
+**Success criteria.** `git grep` from the repo root for `SUPABASE_SERVICE_ROLE_KEY` (and equivalent patterns for other backend secrets) returns hits only from backend directories (`augur/server/`, `augur/supabase/`) — never from `mobile-app/`. Mobile bundle inspection (next EAS build) shows no embedded secrets. Runbook is complete for all listed keys with step-by-step procedures that a future engineer could execute under time pressure. The runbook is reviewed for plausibility — not executed live (no actual key rotation in this cluster; that's an emergency-response procedure).
+
+**Rollback.** Documentation rollback procedure.
+
+### Cluster 6.6.5 — Database backup restore test
+
+**Scope.** Verify that the production Supabase database can be restored from backup. Provision a separate staging Supabase project, perform a backup-and-restore cycle from production into staging, validate data integrity, document the procedure for emergency recovery. This is preventative: discovering a backup is unrecoverable during a real incident is too late.
+
+**Deliverables.** Staging Supabase project provisioned, distinct from the production project. Backup obtained from production (Supabase has automated daily backups; restore mechanism depends on plan tier — Windsurf to confirm during cluster build). Restore executed against the staging project. Verification queries comparing row counts for `auth.users`, `public.user_profiles`, `public.subscriptions`, `public.feature_usage`, `public.push_tokens`, `public.users` between production and staging (within an acceptable delta for in-flight data). Time-to-restore measured and recorded. Runbook at `docs/runbooks/backup-restore.md` capturing the full procedure with commands or dashboard steps for a future operator.
+
+**Success criteria.** Staging Supabase project exists and contains the restored schema. Row counts on the listed tables in staging are within ±5% of production at restore time (delta accommodates legitimate writes during the restore window). The runbook is reproducible — a second engineer with Supabase admin access could follow it without additional context. Time-to-restore documented in the runbook so RTO expectations are realistic.
+
+**Rollback.** Staging Supabase project can be deleted with no impact on production. Documentation rollback for the runbook.
+
+### Cluster 6.6.6 — Privacy policy and terms of service
+
+**Scope.** Draft a privacy policy and terms of service grounded in real legal citations and comparable-app reference texts, not generic templates. Both documents must satisfy the GDPR, the CCPA/CPRA, COPPA where applicable, the Apple App Store Review Guidelines, and the Google Play Developer Policy. Deploy both to omenora.com under the URLs already referenced in the implementation plan (`/privacy` and `/terms`).
+
+**Research basis.** The draft cites specific provisions: GDPR Articles 6, 7, 13, 14, 15 through 22, 30, 32, 33; CCPA/CPRA §§1798.100, 1798.105, 1798.110, 1798.115, 1798.120, 1798.130, 1798.135, 1798.140; COPPA 16 CFR Part 312 (verified against the app's 17+ age gate to confirm scope); Apple App Store Review Guideline 5.1.1 in full; Google Play Personal and Sensitive User Data policy. Real-world reference texts from comparable consumer subscription apps with non-medical AI personalization are used as structural models, not copied content.
+
+**Deliverables.** Privacy policy covering data categories collected (auth identifiers, profile attributes, subscription state, usage counters, push tokens, device identifiers, error telemetry once 6.6.1 ships, analytics events if PostHog is enabled), purpose for each category, lawful basis under GDPR (consent for analytics, contract for subscriptions, legitimate interest for fraud prevention and product improvement), exhaustive list of third-party processors (Supabase, RevenueCat, Stripe, Apple, Google, Sentry, Resend, PostHog if applicable) with their location and processing purpose, retention periods, user rights and how to exercise them, data subject access request process, contact information, jurisdiction and dispute resolution forum. Terms of service covering subscription auto-renewal terms, refund policy (deferring to Apple/Google store policies for IAP), `omenora_calendar_2026` non-consumable disclosure, account termination conditions, prohibited use, AI-generated reading disclaimer (entertainment-only, no medical or professional advice — this is critical for OMENORA given prior legal review concerns), limitation of liability, indemnification, governing law (Illinois), and dispute resolution. Both documents implemented as Nuxt 3 pages in the web app, deployed to omenora.com.
+
+**Success criteria.** Privacy policy includes inline citations to the specific GDPR Articles and CCPA Sections it implements. The list of third-party processors in the policy is cross-checked against the actual integrations and is exhaustive. Terms cover every subscription and IAP edge case present in the OMENORA monetization model. Both pages are live at `omenora.com/privacy` and `omenora.com/terms` with effective and last-updated dates. Apple App Store Connect privacy questionnaire can be completed using the policy as the reference. Google Play data safety section can be completed using the policy as the reference.
+
+**Deploy boundary note.** This is the one cluster in Phase 6.6 that does deploy externally — the web app (Nuxt 3 on Railway) is a separate deployment from the augur backend. Web platform deploys are allowed during 6.6.
+
+**Rollback.** Web platform rollback procedure.
+
+### Cluster 6.6.7 — Phase 6.6 closeout
+
+**Scope.** Capture what shipped in Phase 6.6 in the plan-doc Session Log. Record any architectural refinements that emerged during 6.6 work as inline edits to the appropriate section (Architecture for data/identity refinements; this Phase 6.6 section for hardening refinements). Transition statement that Phase 6 cluster 4D resumes next.
+
+**Deliverables.** New Session Log entry block for the dates Phase 6.6 spanned, with sub-entries for each cluster (6.6.1 through 6.6.6) capturing the squash-merge commit hashes, branches preserved, and lessons learned. Any decision refinements locked in the canonical section, not floating in chat. Closeout statement at the end of this Phase 6.6 section: "Phase 6.6 complete on [date]. Phase 6 resumes with Cluster 4D — Restore Purchases UI and RC race fix."
+
+**Success criteria.** Session Log captures every cluster's completion with its hash. Any architectural refinement is locked in plan-doc text, not in chat. One commit, single-file diff. `git diff --stat` shows exactly one file.
+
+**Rollback.** Documentation rollback procedure.
+
+### Rollback procedures
+
+These procedures are referenced by individual clusters above and grouped here to avoid duplication.
+
+**Mobile code rollback.** Phase 6.6 mobile work (currently only the SDK initialization in 6.6.1) lives on `develop` and is not promoted to main during Phase 6.6. Rollback is `git revert` of the squash-merge commit on develop, or branch reset if the revert is performed before any further commits land. No mobile production users are affected because no mobile production build is cut during Phase 6.6.
+
+**Backend code rollback.** Backend work (6.6.1 backend SDK, 6.6.2, 6.6.3) lives on `develop`. Railway production stays on main throughout Phase 6.6. Rollback is `git revert` on develop. No production users are affected. If a 6.6 change introduces a regression that affects local development or the test path for subsequent clusters, the revert is immediate and isolated.
+
+**Database rollback.** The only Phase 6.6 migration is the `webhook_events` table in 6.6.3. Rollback is `DROP TABLE public.webhook_events` executed manually in Supabase SQL Editor, mirroring the manual-apply migration pattern. The migration file uses `IF NOT EXISTS` so re-application after rollback is idempotent.
+
+**Documentation rollback.** Plan-doc edits (6.6.0, 6.6.4, 6.6.5, 6.6.7) and runbook additions live on `develop`. Rollback is `git revert`. No system impact.
+
+**Web platform rollback.** Phase 6.6 web app changes (6.6.6 privacy and terms pages) deploy to omenora.com via the web app's Railway deployment. Rollback options: revert the commit on the web app branch and redeploy, or use Railway's redeploy-previous-deployment feature to restore the prior build artifact while the source revert is prepared. Public pages remain available — at worst, content is briefly stale.
+
+---
+
 ## Phase 7 — Production Preparation
 
 **Goal:** Finalize all assets, configure push notifications, set up EAS production build, complete App Store + Google Play submission config. Validate all compliance requirements.
