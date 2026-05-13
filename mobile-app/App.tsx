@@ -38,6 +38,11 @@ import {
   HankenGrotesk_500Medium,
   HankenGrotesk_600SemiBold,
 } from '@expo-google-fonts/hanken-grotesk';
+import {
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+} from '@expo-google-fonts/poppins';
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
@@ -127,6 +132,9 @@ function App() {
     HankenGrotesk_400Regular,
     HankenGrotesk_500Medium,
     HankenGrotesk_600SemiBold,
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
   });
 
   useEffect(() => {

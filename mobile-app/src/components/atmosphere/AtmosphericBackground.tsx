@@ -6,18 +6,20 @@ import React from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import Svg, { Circle, Defs, Rect, RadialGradient, Stop } from 'react-native-svg'
+import BackgroundGraph from '../../../assets/Background-Graph.svg'
 
 import { accent, surface } from '../../design/tokens'
 
 export interface AtmosphericBackgroundProps {
-  variant?:      'hero' | 'default' | 'muted'
-  glowPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
-  counterGlow?:  boolean
-  ctaLightPool?: boolean   // dedicated warm light pool sized to sit behind a CTA in the lower third
-  buttonHalo?:   boolean   // tight warm halo positioned at lower-third center — sit a CTA in this for "lit object" effect
-  grain?:        boolean
-  vignette?:     'none' | 'bottom' | 'top'
-  children?:     React.ReactNode
+  variant?:        'hero' | 'default' | 'muted'
+  glowPosition?:   'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right'
+  counterGlow?:    boolean
+  ctaLightPool?:   boolean   // dedicated warm light pool sized to sit behind a CTA in the lower third
+  buttonHalo?:     boolean   // tight warm halo positioned at lower-third center — sit a CTA in this for "lit object" effect
+  grain?:          boolean
+  graphicOverlay?: boolean   // renders the Background-Graph.svg as a blended decorative layer
+  vignette?:       'none' | 'bottom' | 'top'
+  children?:       React.ReactNode
 }
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('screen')
@@ -54,34 +56,37 @@ const GLOW_RADIUS: Record<'hero' | 'default' | 'muted', number> = {
 
 // Glow center coordinates as fraction of screen dimensions
 const GLOW_COORDS: Record<
-  'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
+  'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right',
   { cx: number; cy: number }
 > = {
   'top-left':     { cx: SCREEN_W * 0.28, cy: SCREEN_H * 0.32 },
   'top-right':    { cx: SCREEN_W * 0.72, cy: SCREEN_H * 0.32 },
+  'top-center':   { cx: SCREEN_W * 0.50, cy: SCREEN_H * -0.05 },
   'bottom-left':  { cx: SCREEN_W * 0.28, cy: SCREEN_H * 0.75 },
   'bottom-right': { cx: SCREEN_W * 0.72, cy: SCREEN_H * 0.75 },
 }
 
 // Opposite corner mapping for counter glow
 const OPPOSITE_CORNER: Record<
-  'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
-  'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+  'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right',
+  'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right'
 > = {
   'top-left':     'bottom-right',
   'top-right':    'bottom-left',
+  'top-center':   'bottom-left',
   'bottom-left':  'top-right',
   'bottom-right': 'top-left',
 }
 
 export default function AtmosphericBackground({
-  variant      = 'default',
-  glowPosition = 'top-left',
-  counterGlow  = false,
-  ctaLightPool = false,
-  buttonHalo   = false,
-  grain        = true,
-  vignette     = 'none',
+  variant         = 'default',
+  glowPosition    = 'top-left',
+  counterGlow     = false,
+  ctaLightPool    = false,
+  buttonHalo      = false,
+  grain           = true,
+  graphicOverlay  = false,
+  vignette        = 'none',
   children,
 }: AtmosphericBackgroundProps) {
   const stops       = GLOW_STOPS[variant]
@@ -102,6 +107,19 @@ export default function AtmosphericBackground({
           end={{ x: 0, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
+
+        {/* Layer 1b — Decorative graphic overlay (optional) */}
+        {graphicOverlay && typeof BackgroundGraph === 'function' && (
+          <View style={styles.graphicOverlay} pointerEvents="none">
+            <BackgroundGraph
+              width={SCREEN_W}
+              height={SCREEN_H}
+              style={styles.graphicSvg}
+              preserveAspectRatio="xMidYMid meet"
+              color="#ffffff"
+            />
+          </View>
+        )}
 
         {/* Layers 2–4 — Radial glows + optional grain via SVG */}
         <Svg
@@ -235,6 +253,16 @@ export default function AtmosphericBackground({
 }
 
 const styles = StyleSheet.create({
+  graphicOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    opacity:        0.06,
+    alignItems:     'center',
+    justifyContent: 'center',
+  },
+  graphicSvg: {
+    width:  SCREEN_W,
+    height: SCREEN_H,
+  },
   vignette: {
     position: 'absolute',
     left:     0,

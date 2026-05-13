@@ -40,10 +40,13 @@ export const state = {
 } as const
 
 export const specialty = {
-  lockScrim:   'rgba(5,4,16,0.65)',
-  lockBlur:    40,
-  chatUser:    '#13122A',
-  chatCounsel: 'rgba(201,169,97,0.10)',
+  lockScrim:    'rgba(5,4,16,0.65)',
+  lockBlur:     40,
+  chatUser:     '#13122A',
+  chatCounsel:  'rgba(201,169,97,0.10)',
+  glassTint:    'rgba(255,255,255,0.10)',
+  white:        '#FFFFFF',
+  overlayScrim: 'rgba(0,0,0,0.60)',
 } as const
 
 export const tokens = { surface, text, accent, border, state, specialty } as const

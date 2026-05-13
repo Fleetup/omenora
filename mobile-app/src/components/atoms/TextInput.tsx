@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native'
+import { BlurView } from 'expo-blur'
 import { tokens, typeScale, space, radius } from '../../design/tokens'
 import { Text } from './Text'
 
@@ -38,12 +39,6 @@ export const TextInput: React.FC<AppTextInputProps> = ({
     onBlur?.(e)
   }
 
-  const borderColor = error != null
-    ? tokens.state.danger
-    : focused
-    ? tokens.border.accent
-    : tokens.border.default
-
   return (
     <View style={[styles.container, containerStyle]}>
       {label != null && (
@@ -51,13 +46,24 @@ export const TextInput: React.FC<AppTextInputProps> = ({
           {label}
         </Text>
       )}
-      <RNTextInput
-        style={[styles.input, { borderColor }, style]}
-        placeholderTextColor={tokens.text.disabled}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        {...inputProps}
-      />
+      <BlurView
+        intensity={20}
+        tint="dark"
+        style={[
+          styles.inputShell,
+          focused && styles.inputShellFocused,
+          error != null && styles.inputShellError,
+        ]}
+      >
+        <View style={styles.inputTint} />
+        <RNTextInput
+          style={[styles.input, style]}
+          placeholderTextColor={tokens.text.disabled}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          {...inputProps}
+        />
+      </BlurView>
       {error != null ? (
         <Text variant="caption" style={styles.errorText}>
           {error}
@@ -79,6 +85,22 @@ const styles = StyleSheet.create({
     color:        tokens.text.secondary,
     marginBottom: space['1'],
   },
+  inputShell: {
+    borderRadius: radius.md,
+    overflow:     'hidden',
+    borderWidth:  1,
+    borderColor:  'transparent',
+  },
+  inputShellFocused: {
+    borderColor: tokens.border.accent,
+  },
+  inputShellError: {
+    borderColor: tokens.state.danger,
+  },
+  inputTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: tokens.specialty.glassTint,
+  },
   input: {
     fontFamily:        typeScale.bodyLarge.fontFamily,
     fontSize:          typeScale.bodyLarge.fontSize,
@@ -86,9 +108,8 @@ const styles = StyleSheet.create({
     color:             tokens.text.primary,
     paddingVertical:   space['3'],
     paddingHorizontal: space['4'],
-    backgroundColor:   tokens.surface.raised,
-    borderRadius:      radius.md,
-    borderWidth:       1,
+    minHeight:         48,
+    backgroundColor:   'transparent',
   },
   errorText: {
     color:     tokens.state.danger,

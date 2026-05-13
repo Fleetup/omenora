@@ -2,9 +2,9 @@ export const fontFamily = {
   display:        'Fraunces_300Light',
   displayItalic:  'Fraunces_300Light_Italic',
   displayMedium:  'Fraunces_500Medium',
-  ui:             'HankenGrotesk_400Regular',
-  uiMedium:       'HankenGrotesk_500Medium',
-  uiSemiBold:     'HankenGrotesk_600SemiBold',
+  ui:             'Poppins_400Regular',
+  uiMedium:       'Poppins_500Medium',
+  uiSemiBold:     'Poppins_600SemiBold',
   readingSerif:   'CormorantGaramond_300Light',
 } as const
 

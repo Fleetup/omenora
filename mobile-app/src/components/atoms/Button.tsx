@@ -6,7 +6,7 @@ import {
   ViewStyle,
   View,
 } from 'react-native'
-import { LinearGradient } from 'expo-linear-gradient'
+import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import type { LucideIcon } from 'lucide-react-native'
 import {
@@ -14,7 +14,6 @@ import {
   space,
   layout,
   radius,
-  text,
   fontFamily,
 } from '../../design/tokens'
 import { Text } from './Text'
@@ -50,8 +49,8 @@ const variantStyles = {
   },
   danger: {
     container: { backgroundColor: tokens.state.danger, borderWidth: 0 },
-    label:     { color: '#FFFFFF' },
-    indicator:  '#FFFFFF',
+    label:     { color: tokens.specialty.white },
+    indicator:  tokens.specialty.white,
   },
 } as const
 
@@ -66,45 +65,36 @@ const PremiumButtonShell: React.FC<{
   label:     string
 }> = ({ onPress, disabled, loading, fullWidth, icon, label }) => {
   const IconComponent = icon
-  // Shadow-bearing outer View: NO borderRadius, NO overflow — these would clip the shadow on iOS.
-  // Clipping (borderRadius + overflow:hidden) lives on the Pressable below, which is safe.
   return (
-    <View style={[styles.premiumShadowOuter, fullWidth && styles.fullWidth]}>
-      <Pressable
-        onPress={onPress}
-        disabled={disabled || loading}
-        style={({ pressed }) => [
-          styles.premiumButton,
-          (disabled || loading) && styles.disabled,
-          pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
-        ]}
+    <Pressable
+      onPress={onPress}
+      disabled={disabled || loading}
+      style={({ pressed }) => [
+        styles.premiumOuter,
+        fullWidth && styles.fullWidth,
+        (disabled || loading) && styles.disabled,
+        pressed && { opacity: 0.65, transform: [{ scale: 0.98 }] },
+      ]}
+    >
+      <BlurView
+        intensity={18}
+        tint="light"
+        style={styles.premiumBlur}
       >
-        {/* Premium button gradient — intentional 3-stop for wider luminance range
-            top: brighter than accent.emphasis (highlight)
-            mid: accent.primary base
-            bottom: deeper for bottom-edge contact suggestion
-            Hard-coded because this is the premium variant's signature treatment;
-            not generalizable to other variants. */}
-        <LinearGradient
-          colors={['#EBCC8C', '#C9A961', '#B8975A']}
-          locations={[0, 0.5, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.premiumHighlight} />
+        {/* Soft white tint over blur — makes it read as frosted glass */}
+        <View style={styles.premiumTint} />
         {loading ? (
-          <ActivityIndicator size="small" color={text.inverse} />
+          <ActivityIndicator size="small" color={tokens.text.primary} />
         ) : (
           <View style={styles.premiumInner}>
             {IconComponent != null && (
-              <IconComponent size={16} color={text.inverse} />
+              <IconComponent size={16} color={tokens.text.primary} />
             )}
             <Text style={styles.premiumLabel}>{label}</Text>
           </View>
         )}
-      </Pressable>
-    </View>
+      </BlurView>
+    </Pressable>
   )
 }
 
@@ -176,36 +166,20 @@ export const Button: React.FC<ButtonProps> = ({
 }
 
 const styles = StyleSheet.create({
-  premiumShadowOuter: {
-    // Black edge shadow — defines contact with surface. Warm glow is provided by
-    // AtmosphericBackground buttonHalo layer rendered behind the button.
-    // CRITICAL: no borderRadius, no overflow, no backgroundColor — these clip iOS shadows.
-    shadowColor:   '#000000',
-    shadowOffset:  { width: 0, height: 4 },
-    shadowOpacity: 0.30,
-    shadowRadius:  8,
-    elevation:     6,
+  premiumOuter: {
+    borderRadius: radius.xl,
+    overflow:     'hidden',
   },
-  premiumButton: {
-    // Clipping container — safe to have borderRadius + overflow here because
-    // it is a child of premiumShadowOuter, not an ancestor that would clip it.
+  premiumBlur: {
     paddingVertical:   space['4'],
     paddingHorizontal: space['6'],
-    minHeight:         52,
-    borderRadius:      radius.lg,
-    overflow:          'hidden',
+    minHeight:         56,
     alignItems:        'center',
     justifyContent:    'center',
-    elevation:         6,
   },
-  premiumHighlight: {
-    position:        'absolute',
-    top:             0,
-    left:            0,
-    right:           0,
-    height:          2,
-    backgroundColor: 'rgba(255,255,255,0.28)',
-    zIndex:          1,
+  premiumTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: tokens.specialty.glassTint,
   },
   premiumInner: {
     flexDirection: 'row',
@@ -214,10 +188,10 @@ const styles = StyleSheet.create({
     zIndex:        1,
   },
   premiumLabel: {
-    fontFamily:    fontFamily.display,
-    fontSize:      16,
-    letterSpacing: 0.3,
-    color:         text.inverse,
+    fontFamily:    fontFamily.uiMedium,
+    fontSize:      18,
+    letterSpacing: 0.2,
+    color:         tokens.text.primary,
   },
   base: {
     paddingVertical:   space['3'],
