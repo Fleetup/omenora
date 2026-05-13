@@ -59,11 +59,11 @@ What this means concretely — every screen should feel like opening a beautiful
 
 **All colors defined in `src/design/tokens/colors.ts`:**
 
-- **Base surface:** `surface.base` = `#050410` — default screen canvas. `surface.deep` = `#020108` — deepest background for full-bleed hero moments.
+- **Base surface:** `surface.base` = `#120D08` — default screen canvas. `surface.deep` = `#0A0604` — deepest background for full-bleed hero moments. (Phase 2 warm-shift applied; see colors.ts)
 - **Surface elevation stack:** `surface.deep` < `surface.base` < `surface.raised` < `surface.overlay` < `surface.floating` — use in order, never skip levels.
 - **Single dominant accent:** `accent.primary` = `#C9A961` (warm amber/honey gold). This is the ONE warm color carrying the brand. `accent.emphasis` = `#E0C078` for hover/pressed states. `accent.subtle` / `accent.muted` for backgrounds.
 - **Text:** `text.primary` = `rgba(255,255,255,0.93)`, `text.secondary` = `rgba(255,255,255,0.68)`, `text.tertiary` = `rgba(255,255,255,0.45)`. No pure white `#FFFFFF` — always softened.
-- **Borders:** `border.hairline` = `rgba(255,255,255,0.04)`, `border.gold` = `rgba(201,169,97,0.22)` for premium card edges.
+- **Borders:** `border.subtle` / `border.default` / `border.strong` / `border.accent` — standard hierarchy. `border.hairline` = `rgba(255,255,255,0.04)` for near-invisible separation. `border.gold` = `rgba(201,169,97,0.22)` for premium card edges. (Cluster 8 added hairline + gold.)
 
 **Atmospheric depth rule:** Every full-screen surface must use a layered gradient stack: solid surface base + radial gradient(s) in the warm amber family + subtle film grain noise overlay at 3–6% opacity. **Never use a flat solid color as a screen background** — that reads cold and clinical.
 
@@ -100,7 +100,7 @@ What this means concretely — every screen should feel like opening a beautiful
 - 4px spacing grid — consume from `space` tokens only. No hard-coded margin/padding values.
 - Asymmetric composition is acceptable and often better — do not center everything by default.
 - Hairline rules (`border.hairline`, `border.gold`) for separation, not solid heavy borders.
-- Card elevation via `elevation.cardShadow` / `elevation.cardShadowPremium`, never default iOS shadow style.
+- Card elevation via `elevation.cardShadow` / `elevation.cardShadowPremium`, never default iOS shadow style. For true premium depth on iOS, use `cardShadowPremiumLayers` (array of 3 nested shadow Views — see elevation.ts).
 
 ## Existing design system (USE THESE — do not create parallel tokens)
 
@@ -111,13 +111,41 @@ import { surface, text, accent, border, state, specialty } from '@/design/tokens
 import { typeScale, fontFamily } from '@/design/tokens'
 import { space, layout } from '@/design/tokens'
 import { radius } from '@/design/tokens'
-import { motion, easings } from '@/design/tokens'
+import { duration, easing, stagger } from '@/design/tokens'
 import { elevation } from '@/design/tokens'
 ```
 
 The `@/design/*` path alias is now configured in `tsconfig.json`. Both relative imports (`../../design/tokens`) and alias imports (`@/design/tokens`) resolve correctly.
 
 The legacy `mobile-app/src/theme/` system still exists but is **deprecated**. Do not import from it in new or redesigned code.
+
+## Motion easing curves
+
+Use cubic-bezier curves from the `easing` token, never raw strings.
+
+- `easing.enter` — Apple signature out; default for entrance animations (`Moti transition.easing`, Reanimated `withTiming({ easing: Easing.bezier(...easing.enter) })`)
+- `easing.exit` — accelerated; for dismiss / exit
+- `easing.transition` — standard ease-in-out
+- `easing.heroEntrance` — expo out for prestige reveal moments only (use sparingly)
+- `easing.softSettle` — soft overshoot for emotional settles (no bounciness)
+
+Each value is a `[x1, y1, x2, y2]` cubic-bezier tuple. For Reanimated's `withTiming`, spread into `Easing.bezier`: `Easing.bezier(...easing.enter)`. `easingLegacy` exports the old string values for backward compatibility only — do not use in new code.
+
+## Elevation tokens
+
+Defined in `src/design/tokens/elevation.ts`. Import via `import { elevation, cardShadowPremiumLayers, warmGlow } from '@/design/tokens'`.
+
+Single-layer (apply directly to a View's style):
+- `elevation.cardSubtle` — resting list items, inactive cards
+- `elevation.cardShadow` — default card shadow
+- `elevation.cardShadowPremium` — single-layer premium fallback
+- `elevation.floating` — modals, bottom sheets
+
+Multi-layer (true premium iOS depth):
+- `cardShadowPremiumLayers` — array of 3 shadow definitions. Wrap card content in 3 nested Views, each applying one layer. Android uses the innermost `elevation: 12`.
+
+Warm glow:
+- `warmGlow` — accent-tinted (`#C9A961`) shadow at 0 offset for premium CTAs and high-value surfaces.
 
 ## Implementation rules
 

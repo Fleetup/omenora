@@ -1,3 +1,8 @@
+// TODO(token-debt): FADE_COLORS hardcodes the legacy cold surface base
+// (#050410, rgba(5,4,16,0.92)). After the warm surface palette landed in
+// cluster 6, these values will produce a visible cold seam against the
+// new warm canvas. Update to surface.deep / surface.base equivalents
+// before any paywall surface ships visually.
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
