@@ -21,3 +21,5 @@ export type { SkeletonProps } from './Skeleton'
 
 export { TextInput } from './TextInput'
 export type { AppTextInputProps } from './TextInput'
+
+export { EditorialBenefit } from './EditorialBenefit'
