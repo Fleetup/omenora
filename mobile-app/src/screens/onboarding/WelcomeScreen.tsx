@@ -1,21 +1,28 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   View,
   StyleSheet,
   Pressable,
-  Animated,
   Dimensions,
   ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import Svg, { Circle } from 'react-native-svg'
+import { LinearGradient } from 'expo-linear-gradient'
+import Svg, { Defs, RadialGradient, Stop, Rect, Circle } from 'react-native-svg'
+import { MotiView } from 'moti'
 
-import { surface, accent, border, space, layout } from '../../design/tokens'
+import {
+  surface,
+  accent,
+  space,
+  layout,
+  fontFamily,
+  easings,
+} from '../../design/tokens'
 import { Text } from '../../components/atoms/Text'
 import { Button } from '../../components/atoms/Button'
-import { PhoenixLoader } from '../../components/ui/PhoenixLoader'
 import { useAuth } from '../../context/useAuth'
 import { useProfileStore } from '../../stores/profileStore'
 import { RootStackParamList } from '../../navigation/types'
@@ -24,18 +31,20 @@ type WelcomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('screen')
 
-const STARS = (() => {
-  let seed = 0xcafebabe
-  const result: Array<{ cx: number; cy: number; r: number; opacity: number }> = []
-  for (let i = 0; i < 55; i++) {
+// Deterministic film-grain noise — static, low-density tiny dots layered over
+// the radial gradient atmosphere to suggest paper-stock texture.
+const NOISE = (() => {
+  let seed = 0xdeadbeef
+  const out: Array<{ cx: number; cy: number; r: number; opacity: number }> = []
+  for (let i = 0; i < 320; i++) {
     seed = (seed * 1664525 + 1013904223) & 0x7fffffff
     const cx = seed % SCREEN_W
     seed = (seed * 1664525 + 1013904223) & 0x7fffffff
     const cy = seed % SCREEN_H
     seed = (seed * 1664525 + 1013904223) & 0x7fffffff
-    result.push({ cx, cy, r: 0.85, opacity: 0.05 + ((seed % 12) / 12) * 0.14 })
+    out.push({ cx, cy, r: 0.7, opacity: 0.018 + ((seed % 10) / 10) * 0.032 })
   }
-  return result
+  return out
 })()
 
 export default function WelcomeScreen() {
@@ -45,16 +54,6 @@ export default function WelcomeScreen() {
   const dateOfBirth = useProfileStore((s) => s.dateOfBirth)
   const sunSign     = useProfileStore((s) => s.sunSign)
   const [hydrationTimedOut, setHydrationTimedOut] = useState(false)
-  const fadeAnim    = useRef(new Animated.Value(0)).current
-  const slideAnim   = useRef(new Animated.Value(28)).current
-
-  // Slide-up entrance
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim,  { toValue: 1, duration: 600, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
-    ]).start()
-  }, [])
 
   // Route after sign-in based on profile completeness. Wait for hydration
   // to COMPLETE (profileHydrated=true) before evaluating the triple-check —
@@ -83,107 +82,178 @@ export default function WelcomeScreen() {
   }, [isAnonymous, profileHydrated])
 
   return (
-    <View style={styles.container}>
-      {/* Star field */}
+    <View style={styles.container} testID="welcome-screen-root">
+      {/* Atmospheric layered background — static. Never animate this stack. */}
+      <LinearGradient
+        colors={[surface.deep, surface.base, surface.deep]}
+        locations={[0, 0.55, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+
       <Svg
         style={StyleSheet.absoluteFill}
         viewBox={`0 0 ${SCREEN_W} ${SCREEN_H}`}
         preserveAspectRatio="xMidYMid slice"
       >
-        {STARS.map((s, i) => (
+        <Defs>
+          <RadialGradient
+            id="glowPrimary"
+            cx={SCREEN_W * 0.28}
+            cy={SCREEN_H * 0.32}
+            rx={SCREEN_W * 0.78}
+            ry={SCREEN_W * 0.78}
+            fx={SCREEN_W * 0.28}
+            fy={SCREEN_H * 0.32}
+            gradientUnits="userSpaceOnUse"
+          >
+            <Stop offset="0"    stopColor={accent.primary} stopOpacity="0.22" />
+            <Stop offset="0.35" stopColor={accent.primary} stopOpacity="0.10" />
+            <Stop offset="0.7"  stopColor={accent.primary} stopOpacity="0.03" />
+            <Stop offset="1"    stopColor={accent.primary} stopOpacity="0"    />
+          </RadialGradient>
+          <RadialGradient
+            id="glowCounter"
+            cx={SCREEN_W * 0.88}
+            cy={SCREEN_H * 0.85}
+            rx={SCREEN_W * 0.55}
+            ry={SCREEN_W * 0.55}
+            fx={SCREEN_W * 0.88}
+            fy={SCREEN_H * 0.85}
+            gradientUnits="userSpaceOnUse"
+          >
+            <Stop offset="0"   stopColor={accent.primary} stopOpacity="0.12" />
+            <Stop offset="0.5" stopColor={accent.primary} stopOpacity="0.04" />
+            <Stop offset="1"   stopColor={accent.primary} stopOpacity="0"    />
+          </RadialGradient>
+        </Defs>
+        <Rect x="0" y="0" width={SCREEN_W} height={SCREEN_H} fill="url(#glowPrimary)" />
+        <Rect x="0" y="0" width={SCREEN_W} height={SCREEN_H} fill="url(#glowCounter)" />
+        {NOISE.map((n, i) => (
           <Circle
             key={i}
-            cx={s.cx}
-            cy={s.cy}
-            r={s.r}
-            fill={`rgba(255,255,255,${s.opacity.toFixed(2)})`}
+            cx={n.cx}
+            cy={n.cy}
+            r={n.r}
+            fill={`rgba(255,255,255,${n.opacity.toFixed(3)})`}
           />
         ))}
       </Svg>
 
+      {/* Bottom vignette anchors the CTA cluster against the gradient. */}
+      <LinearGradient
+        colors={['rgba(2,1,8,0)', 'rgba(2,1,8,0.55)']}
+        locations={[0, 1]}
+        style={styles.bottomVignette}
+        pointerEvents="none"
+      />
+
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-        {/* Brand wordmark */}
-        <View style={styles.topBar}>
+        {/* Brand wordmark — left-aligned editorial masthead */}
+        <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ ...easings.transition, duration: 600 }}
+          style={styles.topBar}
+        >
           <Text variant="micro" color="secondary" style={styles.wordmark}>
             OMENORA
           </Text>
-        </View>
+        </MotiView>
 
-        {/* Phoenix visual */}
-        <View style={styles.visualZone}>
-          <View style={styles.glow} />
-          <PhoenixLoader size={144} duration={4800} />
-        </View>
-
-        {/* Copy + actions — slides up on mount */}
-        <Animated.View
-          style={[
-            styles.bottomZone,
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-          ]}
-        >
-          <Text variant="display2" color="primary" style={styles.headline}>
-            {'Discover your\narchetype'}
-          </Text>
-          <Text variant="bodyLarge" color="secondary" style={styles.subheadline}>
-            Your birth data unlocks a reading built only for you
-          </Text>
-
-          {!isAnonymous && profileHydrating && !hydrationTimedOut ? (
-            <View style={styles.actions}>
-              <ActivityIndicator size="small" color="rgba(255,255,255,0.5)" />
-            </View>
-          ) : (
-            <View style={styles.actions}>
-              <Button
-                label="Begin"
-                variant="primary"
-                fullWidth
-                onPress={() => navigation.navigate('BirthInfo')}
-              />
-
-              <View style={styles.orRow}>
-                <View style={styles.orLine} />
-                <Text variant="micro" color="tertiary" style={styles.orLabel}>or</Text>
-                <View style={styles.orLine} />
-              </View>
-
-              <Pressable
-                onPress={() =>
-                  showAuthGate({
-                    title: 'Welcome back',
-                    body: 'Sign in to access your readings and profile.',
-                  })
-                }
-                style={({ pressed }) => [
-                  styles.signInTap,
-                  pressed && styles.signInTapPressed,
-                ]}
+        {/* Headline cluster — upper third, asymmetric with right breathing room */}
+        <View style={styles.headlineZone}>
+          <MotiView
+            from={{ opacity: 0, translateY: 16 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ ...easings.transition, duration: 800, delay: 200 }}
+          >
+            <Text variant="micro" color="tertiary" style={styles.eyebrow}>
+              An invitation
+            </Text>
+            <Text variant="display1" color="primary" style={styles.headline}>
+              {'Begin with the\nnight you were '}
+              <Text
+                variant="display1"
+                color="primary"
+                style={styles.headlineItalic}
               >
-                <Text variant="label" color="secondary">Already have an account?</Text>
-                <Text variant="label" style={styles.signInAccent}>{' '}Sign in</Text>
+                born
+              </Text>
+            </Text>
+          </MotiView>
+        </View>
+
+        {/* Bottom cluster — subhead + CTA + sign-in + legal */}
+        <View style={styles.bottomZone}>
+          <MotiView
+            from={{ opacity: 0, translateY: 12 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ ...easings.transition, duration: 800, delay: 400 }}
+          >
+            <Text variant="readingBody" color="secondary" style={styles.subheadline}>
+              Your birth, your hour, your hemisphere — the reading is shaped only by what is true for you.
+            </Text>
+          </MotiView>
+
+          <MotiView
+            from={{ opacity: 0, translateY: 12 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ ...easings.transition, duration: 800, delay: 600 }}
+          >
+            {!isAnonymous && profileHydrating && !hydrationTimedOut ? (
+              <View style={styles.actions}>
+                <ActivityIndicator size="small" color="rgba(255,255,255,0.5)" />
+              </View>
+            ) : (
+              <View style={styles.actions}>
+                <View testID="welcome-cta-primary">
+                  <Button
+                    label="Begin"
+                    variant="primary"
+                    fullWidth
+                    onPress={() => navigation.navigate('BirthInfo')}
+                  />
+                </View>
+
+                <Pressable
+                  testID="welcome-cta-signin"
+                  onPress={() =>
+                    showAuthGate({
+                      title: 'Welcome back',
+                      body: 'Sign in to access your readings and profile.',
+                    })
+                  }
+                  style={({ pressed }) => [
+                    styles.signInTap,
+                    pressed && styles.signInTapPressed,
+                  ]}
+                >
+                  <Text variant="label" color="secondary">Already have an account?</Text>
+                  <Text variant="label" style={styles.signInAccent}>{' '}Sign in</Text>
+                </Pressable>
+              </View>
+            )}
+
+            <View style={styles.legalRow}>
+              <Text variant="caption" color="tertiary">By continuing you agree to our </Text>
+              <Pressable
+                testID="welcome-link-terms"
+                onPress={() => navigation.navigate('Terms')}
+                hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+              >
+                <Text variant="caption" style={styles.legalLink}>Terms</Text>
+              </Pressable>
+              <Text variant="caption" color="tertiary"> and </Text>
+              <Pressable
+                testID="welcome-link-privacy"
+                onPress={() => navigation.navigate('Privacy')}
+                hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+              >
+                <Text variant="caption" style={styles.legalLink}>Privacy Policy</Text>
               </Pressable>
             </View>
-          )}
-
-          {/* Legal */}
-          <View style={styles.legalRow}>
-            <Text variant="caption" color="tertiary">By continuing you agree to our </Text>
-            <Pressable
-              onPress={() => navigation.navigate('Terms')}
-              hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-            >
-              <Text variant="caption" style={styles.legalLink}>Terms</Text>
-            </Pressable>
-            <Text variant="caption" color="tertiary"> and </Text>
-            <Pressable
-              onPress={() => navigation.navigate('Privacy')}
-              hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-            >
-              <Text variant="caption" style={styles.legalLink}>Privacy Policy</Text>
-            </Pressable>
-          </View>
-        </Animated.View>
+          </MotiView>
+        </View>
       </SafeAreaView>
     </View>
   )
@@ -192,59 +262,50 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex:            1,
-    backgroundColor: surface.base,
+    backgroundColor: surface.deep,
   },
   safe: {
-    flex: 1,
+    flex:              1,
+    paddingHorizontal: layout.screenPadding,
+  },
+  bottomVignette: {
+    position: 'absolute',
+    bottom:   0,
+    left:     0,
+    right:    0,
+    height:   SCREEN_H * 0.42,
   },
   topBar: {
-    alignItems:      'center',
-    paddingTop:      space['5'],
+    paddingTop: space['5'],
   },
   wordmark: {
     letterSpacing: 6,
   },
-  visualZone: {
-    flex:           1,
-    alignItems:     'center',
-    justifyContent: 'center',
+  headlineZone: {
+    flex:          1,
+    paddingTop:    space['16'],
+    paddingRight:  space['8'],
   },
-  glow: {
-    position:        'absolute',
-    width:           270,
-    height:          270,
-    borderRadius:    135,
-    backgroundColor: accent.subtle,
-  },
-  bottomZone: {
-    paddingHorizontal: layout.screenPadding,
-    paddingBottom:     space['4'],
+  eyebrow: {
+    letterSpacing: 4,
+    marginBottom:  space['4'],
   },
   headline: {
-    textAlign:    'center',
-    marginBottom: space['3'],
+    letterSpacing: -0.5,
+  },
+  headlineItalic: {
+    fontFamily: fontFamily.displayItalic,
+  },
+  bottomZone: {
+    paddingBottom: space['4'],
   },
   subheadline: {
-    textAlign:    'center',
     marginBottom: space['8'],
+    paddingRight: space['6'],
   },
   actions: {
-    gap:          space['2'],
+    gap:          space['3'],
     marginBottom: space['5'],
-  },
-  orRow: {
-    flexDirection: 'row',
-    alignItems:    'center',
-    marginVertical: space['1'],
-  },
-  orLine: {
-    flex:            1,
-    height:          StyleSheet.hairlineWidth,
-    backgroundColor: border.default,
-  },
-  orLabel: {
-    marginHorizontal: space['3'],
-    letterSpacing:    2,
   },
   signInTap: {
     flexDirection:  'row',
@@ -259,13 +320,12 @@ const styles = StyleSheet.create({
     color: accent.primary,
   },
   legalRow: {
-    flexDirection:  'row',
-    justifyContent: 'center',
-    flexWrap:       'wrap',
-    marginTop:      space['2'],
+    flexDirection: 'row',
+    flexWrap:      'wrap',
+    marginTop:     space['2'],
   },
   legalLink: {
-    color:               'rgba(255,255,255,0.45)',
-    textDecorationLine:  'underline',
+    color:              'rgba(255,255,255,0.45)',
+    textDecorationLine: 'underline',
   },
 })
