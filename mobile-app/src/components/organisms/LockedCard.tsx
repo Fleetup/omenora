@@ -14,7 +14,7 @@ export interface LockedCardProps {
   onUnlockPress: () => void
   lockMessage?: string
   unlockCtaLabel?: string
-  variant?: 'default' | 'raised' | 'premium'
+  variant?: 'default' | 'raised' | 'premium' | 'glass'
   minLockedHeight?: number
   style?: ViewStyle
 }
@@ -26,7 +26,7 @@ export const LockedCard: React.FC<LockedCardProps> = ({
   onUnlockPress,
   lockMessage = 'Unlock to read more',
   unlockCtaLabel = 'Unlock',
-  variant = 'premium',
+  variant = 'glass',
   minLockedHeight = 200,
   style,
 }) => {

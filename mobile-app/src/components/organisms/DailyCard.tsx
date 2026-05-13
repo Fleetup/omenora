@@ -27,7 +27,7 @@ export const DailyCard: React.FC<DailyCardProps> = ({
   })
 
   return (
-    <Card variant="default" padding="default" style={style}>
+    <Card variant="raised" padding="default" style={style}>
       <Text variant="micro" color="tertiary">
         {formattedDate}
       </Text>

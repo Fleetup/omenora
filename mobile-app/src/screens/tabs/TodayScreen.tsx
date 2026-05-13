@@ -176,7 +176,7 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
         />
 
         {/* ── 3. Reflection Card — free ──────────────────────────────── */}
-        <Card variant="default" padding="default">
+        <Card variant="raised" padding="default">
           <Text variant="micro" color="tertiary" style={styles.sectionLabel}>
             Reflection
           </Text>
@@ -187,7 +187,7 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
 
         {/* ── 4. Planetary weather — free (only if zodiac available) ─── */}
         {zodiacContent != null && (
-          <Card variant="default" padding="compact">
+          <Card variant="raised" padding="compact">
             <Text variant="micro" color="tertiary" style={styles.sectionLabel}>
               Today's cosmic stage
             </Text>
@@ -199,7 +199,7 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
 
         {/* ── 5. Premium-only CTAs ───────────────────────────────────── */}
         {isPremium && (
-          <Card variant="default" padding="compact">
+          <Card variant="raised" padding="compact">
             <ListItem
               label="Ask Counsel about today"
               icon={MessageCircle}
