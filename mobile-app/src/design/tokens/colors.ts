@@ -49,5 +49,9 @@ export const specialty = {
   overlayScrim: 'rgba(0,0,0,0.60)',
 } as const
 
-export const tokens = { surface, text, accent, border, state, specialty } as const
+export const gradient = {
+  cardGlass: ['#201710', '#16100A'] as const,
+} as const
+
+export const tokens = { surface, text, accent, border, state, specialty, gradient } as const
 export type DesignTokens = typeof tokens

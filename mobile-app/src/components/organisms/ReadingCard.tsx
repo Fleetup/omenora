@@ -2,9 +2,19 @@ import React from 'react'
 import { Pressable, View, ViewStyle } from 'react-native'
 import type { LucideIcon } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
-import { Text, Icon } from '../atoms'
+import { Text, Icon, ZodiacSymbol } from '../atoms'
 import { Card } from './Card'
-import { space } from '../../design/tokens'
+import { space, text } from '../../design/tokens'
+
+const ZODIAC_SIGNS = new Set([
+  'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
+  'Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces',
+])
+
+function isZodiacSign(s: string): boolean {
+  const norm = s.trim()
+  return ZODIAC_SIGNS.has(norm.charAt(0).toUpperCase() + norm.slice(1).toLowerCase())
+}
 
 export interface ReadingCardProps {
   title: string
@@ -35,8 +45,10 @@ export const ReadingCard: React.FC<ReadingCardProps> = ({
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: space['3'] }}>
         {icon != null ? (
           <Icon icon={icon} size={24} color="accent" />
+        ) : symbol != null && isZodiacSign(symbol) ? (
+          <ZodiacSymbol sign={symbol} size={32} opacity={0.65} />
         ) : symbol != null ? (
-          <Text variant="display2" color="accent" style={{ lineHeight: 32 }}>
+          <Text variant="display2" style={{ lineHeight: 32, color: text.disabled }}>
             {symbol}
           </Text>
         ) : null}

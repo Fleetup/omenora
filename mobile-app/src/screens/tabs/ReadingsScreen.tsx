@@ -7,7 +7,7 @@ import {
   Alert,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Text, Chip, Button } from '../../components/atoms'
+import { Text, Chip, Button, ZodiacSymbol } from '../../components/atoms'
 import { Card, LockedCard, ReadingCard, TransitCard, SectionHeader } from '../../components/organisms'
 import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
@@ -257,12 +257,12 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
         <Card variant="premium" padding="default">
           <Text variant="micro" color="tertiary" style={styles.cardLabel}>Your Chart</Text>
           {[
-            { glyph: '☉', label: 'Sun',    value: sunSign    },
-            { glyph: '☽', label: 'Moon',   value: moonSign   },
-            { glyph: '↑', label: 'Rising', value: risingSign },
-          ].map(({ glyph, label, value }) => (
+            { label: 'Sun',    value: sunSign    },
+            { label: 'Moon',   value: moonSign   },
+            { label: 'Rising', value: risingSign },
+          ].map(({ label, value }) => (
             <View key={label} style={styles.bigThreeRow}>
-              <Text style={styles.glyph}>{glyph}</Text>
+              <ZodiacSymbol sign={value ?? ''} size={28} opacity={0.60} style={styles.glyphContainer} />
               <View style={styles.bigThreeText}>
                 <Text variant="caption" color="tertiary">{label}</Text>
                 <Text variant="heading2" color="primary">{value ?? '—'}</Text>
@@ -453,13 +453,13 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
                   </Card>
                   <SectionHeader title="The Big Three" style={styles.subSectionHeader} />
                   {[
-                    { key: 'sun',    glyph: '☉', label: 'Sun',    d: natalChartState.data.bigThree.sun    },
-                    { key: 'moon',   glyph: '☽', label: 'Moon',   d: natalChartState.data.bigThree.moon   },
-                    { key: 'rising', glyph: '↑', label: 'Rising', d: natalChartState.data.bigThree.rising },
-                  ].map(({ key, glyph, label, d }) => (
+                    { key: 'sun',    label: 'Sun',    d: natalChartState.data.bigThree.sun    },
+                    { key: 'moon',   label: 'Moon',   d: natalChartState.data.bigThree.moon   },
+                    { key: 'rising', label: 'Rising', d: natalChartState.data.bigThree.rising },
+                  ].map(({ key, label, d }) => (
                     <ReadingCard
                       key={key}
-                      symbol={glyph}
+                      symbol={d.sign}
                       title={label}
                       meta={`${d.sign} · House ${d.house}`}
                       body={d.description}
@@ -691,12 +691,9 @@ const styles = StyleSheet.create({
     gap:             space['4'],
     paddingVertical: space['2'],
   },
-  glyph: {
-    fontSize:   22,
-    lineHeight: 28,
-    color:      tokens.text.accent,
-    width:      28,
-    textAlign:  'center',
+  glyphContainer: {
+    width:  28,
+    height: 28,
   },
   bigThreeText: {
     flex: 1,
