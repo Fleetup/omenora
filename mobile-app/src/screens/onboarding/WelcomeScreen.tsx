@@ -27,6 +27,22 @@ import { RootStackParamList } from '../../navigation/types'
 
 type WelcomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>
 
+const WELCOME_WORDMARK_FROM       = { opacity: 0 } as const
+const WELCOME_WORDMARK_ANIMATE    = { opacity: 1 } as const
+const WELCOME_WORDMARK_TRANSITION = { type: 'timing' as const, duration: 600 }
+
+const WELCOME_HEADLINE_FROM       = { opacity: 0, translateY: 16 } as const
+const WELCOME_HEADLINE_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const WELCOME_HEADLINE_TRANSITION = { type: 'timing' as const, duration: 800, delay: 200 }
+
+const WELCOME_SUBHEAD_FROM       = { opacity: 0, translateY: 12 } as const
+const WELCOME_SUBHEAD_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const WELCOME_SUBHEAD_TRANSITION = { type: 'timing' as const, duration: 800, delay: 400 }
+
+const WELCOME_CTA_FROM       = { opacity: 0, translateY: 12 } as const
+const WELCOME_CTA_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const WELCOME_CTA_TRANSITION = { type: 'timing' as const, duration: 800, delay: 600 }
+
 export default function WelcomeScreen() {
   const navigation  = useNavigation<WelcomeNavProp>()
   const { isAnonymous, profileHydrating, profileHydrated, showAuthGate } = useAuth()
@@ -75,9 +91,9 @@ export default function WelcomeScreen() {
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         {/* Brand wordmark — left-aligned editorial masthead */}
         <MotiView
-          from={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ type: 'timing', duration: 600 }}
+          from={WELCOME_WORDMARK_FROM}
+          animate={WELCOME_WORDMARK_ANIMATE}
+          transition={WELCOME_WORDMARK_TRANSITION}
           style={styles.topBar}
         >
           <Text variant="micro" color="secondary" style={styles.wordmark}>
@@ -88,9 +104,9 @@ export default function WelcomeScreen() {
         {/* Headline cluster — upper third, asymmetric with right breathing room */}
         <View style={styles.headlineZone}>
           <MotiView
-            from={{ opacity: 0, translateY: 16 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 200 }}
+            from={WELCOME_HEADLINE_FROM}
+            animate={WELCOME_HEADLINE_ANIMATE}
+            transition={WELCOME_HEADLINE_TRANSITION}
           >
             <Text variant="micro" color="tertiary" style={styles.eyebrow}>
               An invitation
@@ -111,9 +127,9 @@ export default function WelcomeScreen() {
         {/* Bottom cluster — subhead + CTA + sign-in + legal */}
         <View style={styles.bottomZone}>
           <MotiView
-            from={{ opacity: 0, translateY: 12 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 400 }}
+            from={WELCOME_SUBHEAD_FROM}
+            animate={WELCOME_SUBHEAD_ANIMATE}
+            transition={WELCOME_SUBHEAD_TRANSITION}
           >
             <Text variant="bodyLarge" color="secondary" style={styles.subheadline}>
               Your birth, your hour, your hemisphere — the reading is shaped only by what is true for you.
@@ -121,9 +137,9 @@ export default function WelcomeScreen() {
           </MotiView>
 
           <MotiView
-            from={{ opacity: 0, translateY: 12 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 600 }}
+            from={WELCOME_CTA_FROM}
+            animate={WELCOME_CTA_ANIMATE}
+            transition={WELCOME_CTA_TRANSITION}
           >
             {!isAnonymous && profileHydrating && !hydrationTimedOut ? (
               <View style={styles.actions}>

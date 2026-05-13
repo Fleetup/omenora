@@ -14,6 +14,18 @@ import { RootStackParamList } from '../../navigation/types'
 
 type PremiumTeaserNavProp = NativeStackNavigationProp<RootStackParamList, 'PremiumTeaser'>
 
+const TEASER_HERO_FROM       = { opacity: 0, translateY: 16 } as const
+const TEASER_HERO_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const TEASER_HERO_TRANSITION = { type: 'timing' as const, duration: 800, delay: 100 }
+
+const TEASER_CTA_FROM       = { opacity: 0, translateY: 12 } as const
+const TEASER_CTA_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const TEASER_CTA_TRANSITION = { type: 'timing' as const, duration: 800, delay: 500 }
+
+const TEASER_SKIP_FROM       = { opacity: 0 } as const
+const TEASER_SKIP_ANIMATE    = { opacity: 1 } as const
+const TEASER_SKIP_TRANSITION = { type: 'timing' as const, duration: 600, delay: 700 }
+
 // Editorial dinkus — inline component; promote to atoms if pattern recurs in Cluster 12+
 const DinkusDivider = () => (
   <View style={styles.dinkusRow}>
@@ -82,9 +94,9 @@ export default function PremiumTeaserScreen() {
         >
           {/* Hero zone + benefits — single orchestrated entrance */}
           <MotiView
-            from={{ opacity: 0, translateY: 16 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 100 }}
+            from={TEASER_HERO_FROM}
+            animate={TEASER_HERO_ANIMATE}
+            transition={TEASER_HERO_TRANSITION}
           >
             <View style={styles.heroZone}>
               <Text variant="micro" color="secondary" style={styles.eyebrow}>
@@ -121,9 +133,9 @@ export default function PremiumTeaserScreen() {
 
         {/* CTA — staggered separately so it feels like the door opening after the content lands */}
         <MotiView
-          from={{ opacity: 0, translateY: 12 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 800, delay: 500 }}
+          from={TEASER_CTA_FROM}
+          animate={TEASER_CTA_ANIMATE}
+          transition={TEASER_CTA_TRANSITION}
           style={[styles.footer, { paddingBottom: Math.max(space['8'], insets.bottom + space['4']) }]}
         >
           <View testID="paywall-cta-primary">
@@ -137,9 +149,9 @@ export default function PremiumTeaserScreen() {
 
           {/* Tertiary skip — fade only, softest entrance */}
           <MotiView
-            from={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ type: 'timing', duration: 600, delay: 700 }}
+            from={TEASER_SKIP_FROM}
+            animate={TEASER_SKIP_ANIMATE}
+            transition={TEASER_SKIP_TRANSITION}
           >
             <Pressable
               testID="paywall-cta-decline"

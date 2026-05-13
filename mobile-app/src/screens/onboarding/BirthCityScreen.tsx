@@ -15,6 +15,18 @@ import type { Place } from '../../api/nominatim'
 
 type BirthCityNavProp = NativeStackNavigationProp<RootStackParamList, 'BirthCity'>
 
+const CITY_HEADER_FROM       = { opacity: 0, translateY: 16 } as const
+const CITY_HEADER_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const CITY_HEADER_TRANSITION = { type: 'timing' as const, duration: 800, delay: 100 }
+
+const CITY_INPUT_FROM       = { opacity: 0, translateY: 12 } as const
+const CITY_INPUT_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const CITY_INPUT_TRANSITION = { type: 'timing' as const, duration: 800, delay: 300 }
+
+const CITY_CTA_FROM       = { opacity: 0, translateY: 8 } as const
+const CITY_CTA_ANIMATE    = { opacity: 1, translateY: 0 } as const
+const CITY_CTA_TRANSITION = { type: 'timing' as const, duration: 800, delay: 500 }
+
 export default function BirthCityScreen() {
   const navigation = useNavigation<BirthCityNavProp>()
   const city       = useProfileStore((s) => s.city)
@@ -48,9 +60,9 @@ export default function BirthCityScreen() {
         </Pressable>
         <View style={styles.content}>
           <MotiView
-            from={{ opacity: 0, translateY: 16 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 100 }}
+            from={CITY_HEADER_FROM}
+            animate={CITY_HEADER_ANIMATE}
+            transition={CITY_HEADER_TRANSITION}
             style={styles.header}
           >
             <Text variant="micro" color="secondary" style={styles.eyebrow}>
@@ -65,9 +77,9 @@ export default function BirthCityScreen() {
           </MotiView>
 
           <MotiView
-            from={{ opacity: 0, translateY: 12 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 300 }}
+            from={CITY_INPUT_FROM}
+            animate={CITY_INPUT_ANIMATE}
+            transition={CITY_INPUT_TRANSITION}
             testID="birthcity-input"
           >
             <CityField
@@ -79,9 +91,9 @@ export default function BirthCityScreen() {
         </View>
 
         <MotiView
-          from={{ opacity: 0, translateY: 8 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 800, delay: 500 }}
+          from={CITY_CTA_FROM}
+          animate={CITY_CTA_ANIMATE}
+          transition={CITY_CTA_TRANSITION}
           style={styles.footer}
           testID="birthcity-cta-continue"
         >

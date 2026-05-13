@@ -14,6 +14,18 @@ import { RootStackParamList } from '../../navigation/types'
 
 type NameNavProp = NativeStackNavigationProp<RootStackParamList, 'Name'>
 
+const NAME_HEADER_FROM       = { opacity: 0, translateY: 16 } as const
+const NAME_HEADER_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const NAME_HEADER_TRANSITION = { type: 'timing' as const, duration: 800, delay: 100 }
+
+const NAME_INPUT_FROM       = { opacity: 0, translateY: 12 } as const
+const NAME_INPUT_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const NAME_INPUT_TRANSITION = { type: 'timing' as const, duration: 800, delay: 300 }
+
+const NAME_CTA_FROM       = { opacity: 0, translateY: 8 } as const
+const NAME_CTA_ANIMATE    = { opacity: 1, translateY: 0 } as const
+const NAME_CTA_TRANSITION = { type: 'timing' as const, duration: 800, delay: 500 }
+
 export default function NameScreen() {
   const navigation  = useNavigation<NameNavProp>()
   const firstName   = useProfileStore((s) => s.firstName)
@@ -40,9 +52,9 @@ export default function NameScreen() {
           </Pressable>
           <View style={styles.content}>
             <MotiView
-              from={{ opacity: 0, translateY: 16 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              transition={{ type: 'timing', duration: 800, delay: 100 }}
+              from={NAME_HEADER_FROM}
+              animate={NAME_HEADER_ANIMATE}
+              transition={NAME_HEADER_TRANSITION}
               style={styles.header}
             >
               <Text variant="micro" color="secondary" style={styles.eyebrow}>
@@ -57,9 +69,9 @@ export default function NameScreen() {
             </MotiView>
 
             <MotiView
-              from={{ opacity: 0, translateY: 12 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              transition={{ type: 'timing', duration: 800, delay: 300 }}
+              from={NAME_INPUT_FROM}
+              animate={NAME_INPUT_ANIMATE}
+              transition={NAME_INPUT_TRANSITION}
               testID="name-input"
             >
               <TextField
@@ -73,9 +85,9 @@ export default function NameScreen() {
           </View>
 
           <MotiView
-            from={{ opacity: 0, translateY: 8 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 500 }}
+            from={NAME_CTA_FROM}
+            animate={NAME_CTA_ANIMATE}
+            transition={NAME_CTA_TRANSITION}
             style={styles.footer}
             testID="name-cta-continue"
           >

@@ -14,6 +14,18 @@ import { RootStackParamList } from '../../navigation/types'
 
 type BirthTimeNavProp = NativeStackNavigationProp<RootStackParamList, 'BirthTime'>
 
+const TIME_HEADER_FROM       = { opacity: 0, translateY: 16 } as const
+const TIME_HEADER_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const TIME_HEADER_TRANSITION = { type: 'timing' as const, duration: 800, delay: 100 }
+
+const TIME_INPUT_FROM       = { opacity: 0, translateY: 12 } as const
+const TIME_INPUT_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const TIME_INPUT_TRANSITION = { type: 'timing' as const, duration: 800, delay: 300 }
+
+const TIME_CTA_FROM       = { opacity: 0, translateY: 8 } as const
+const TIME_CTA_ANIMATE    = { opacity: 1, translateY: 0 } as const
+const TIME_CTA_TRANSITION = { type: 'timing' as const, duration: 800, delay: 500 }
+
 const timeStringToDate = (s: string): Date | null => {
   if (!s) return null
   const parts = s.split(':')
@@ -54,9 +66,9 @@ export default function BirthTimeScreen() {
         </Pressable>
         <View style={styles.content}>
           <MotiView
-            from={{ opacity: 0, translateY: 16 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 100 }}
+            from={TIME_HEADER_FROM}
+            animate={TIME_HEADER_ANIMATE}
+            transition={TIME_HEADER_TRANSITION}
             style={styles.header}
           >
             <Text variant="micro" color="secondary" style={styles.eyebrow}>
@@ -71,9 +83,9 @@ export default function BirthTimeScreen() {
           </MotiView>
 
           <MotiView
-            from={{ opacity: 0, translateY: 12 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 300 }}
+            from={TIME_INPUT_FROM}
+            animate={TIME_INPUT_ANIMATE}
+            transition={TIME_INPUT_TRANSITION}
             testID="birthtime-input"
           >
             <TimeField
@@ -85,9 +97,9 @@ export default function BirthTimeScreen() {
         </View>
 
         <MotiView
-          from={{ opacity: 0, translateY: 8 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 800, delay: 500 }}
+          from={TIME_CTA_FROM}
+          animate={TIME_CTA_ANIMATE}
+          transition={TIME_CTA_TRANSITION}
           style={styles.footer}
           testID="birthtime-cta-continue"
         >

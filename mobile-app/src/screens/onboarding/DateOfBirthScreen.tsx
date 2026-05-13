@@ -15,6 +15,18 @@ import { RootStackParamList } from '../../navigation/types'
 
 type DateOfBirthNavProp = NativeStackNavigationProp<RootStackParamList, 'DateOfBirth'>
 
+const DOB_HEADER_FROM       = { opacity: 0, translateY: 16 } as const
+const DOB_HEADER_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const DOB_HEADER_TRANSITION = { type: 'timing' as const, duration: 800, delay: 100 }
+
+const DOB_INPUT_FROM       = { opacity: 0, translateY: 12 } as const
+const DOB_INPUT_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const DOB_INPUT_TRANSITION = { type: 'timing' as const, duration: 800, delay: 300 }
+
+const DOB_CTA_FROM       = { opacity: 0, translateY: 8 } as const
+const DOB_CTA_ANIMATE    = { opacity: 1, translateY: 0 } as const
+const DOB_CTA_TRANSITION = { type: 'timing' as const, duration: 800, delay: 500 }
+
 const dateStringToDate = (s: string): Date | null => {
   if (!s) return null
   const d = new Date(`${s}T00:00:00`)
@@ -58,9 +70,9 @@ export default function DateOfBirthScreen() {
           </Pressable>
         <View style={styles.content}>
           <MotiView
-            from={{ opacity: 0, translateY: 16 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 100 }}
+            from={DOB_HEADER_FROM}
+            animate={DOB_HEADER_ANIMATE}
+            transition={DOB_HEADER_TRANSITION}
             style={styles.header}
           >
             <Text variant="micro" color="secondary" style={styles.eyebrow}>
@@ -75,9 +87,9 @@ export default function DateOfBirthScreen() {
           </MotiView>
 
           <MotiView
-            from={{ opacity: 0, translateY: 12 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 800, delay: 300 }}
+            from={DOB_INPUT_FROM}
+            animate={DOB_INPUT_ANIMATE}
+            transition={DOB_INPUT_TRANSITION}
             testID="dob-input"
           >
             <DateField
@@ -89,9 +101,9 @@ export default function DateOfBirthScreen() {
         </View>
 
         <MotiView
-          from={{ opacity: 0, translateY: 8 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 800, delay: 500 }}
+          from={DOB_CTA_FROM}
+          animate={DOB_CTA_ANIMATE}
+          transition={DOB_CTA_TRANSITION}
           style={styles.footer}
           testID="dob-cta-continue"
         >
