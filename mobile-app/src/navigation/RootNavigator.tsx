@@ -12,6 +12,7 @@ import BirthCityScreen     from '../screens/onboarding/BirthCityScreen';
 import BirthTimeScreen     from '../screens/onboarding/BirthTimeScreen';
 import CalculatingScreen        from '../screens/onboarding/CalculatingScreen';
 import BigThreeRevealScreen     from '../screens/onboarding/BigThreeRevealScreen';
+import SaveYourReadingScreen    from '../screens/onboarding/SaveYourReadingScreen';
 import OptionalQuestionsScreen  from '../screens/onboarding/OptionalQuestionsScreen';
 import PremiumTeaserScreen      from '../screens/onboarding/PremiumTeaserScreen';
 
@@ -52,6 +53,7 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen name="BirthTime"   component={BirthTimeScreen} />
       <Stack.Screen name="Calculating"       component={CalculatingScreen}       options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="BigThreeReveal"     component={BigThreeRevealScreen}     options={{ animation: 'fade', gestureEnabled: false }} />
+      <Stack.Screen name="SaveYourReading"    component={SaveYourReadingScreen}    options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="OptionalQuestions"  component={OptionalQuestionsScreen} />
       <Stack.Screen name="PremiumTeaser"      component={PremiumTeaserScreen}      options={{ gestureEnabled: false }} />
       <Stack.Screen name="MainTabs"      component={TabNavigator}        options={{ animation: 'none' }} />

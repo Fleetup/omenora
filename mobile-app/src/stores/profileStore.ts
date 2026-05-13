@@ -66,6 +66,12 @@ export interface ProfileState {
   forecastReading:      ForecastReading | null;
   setForecastReading:   (data: ForecastReading | null) => void;
 
+  // Save-reading re-prompt counters
+  saveDeclineCount: number;
+  saveLastDeclinedAt: number | null;
+  setSaveDeclineCount: (count: number) => void;
+  setSaveLastDeclinedAt: (ts: number | null) => void;
+
   // Analytics preferences
   analyticsEnabled: boolean;
   setAnalyticsEnabled: (enabled: boolean) => void;
@@ -130,6 +136,8 @@ const initialState = {
   hasAcceptedCounselDisclosure: false,
   analyticsEnabled: true,
   pendingServerSync: false,
+  saveDeclineCount: 0,
+  saveLastDeclinedAt: null,
 };
 
 export const useProfileComplete = () =>
@@ -166,6 +174,9 @@ export const useProfileStore = create<ProfileState>()(
       setNatalChartReading: (natalChartReading) => set({ natalChartReading }),
       setForecastReading:   (forecastReading)   => set({ forecastReading }),
       setHasAcceptedCounselDisclosure: (hasAcceptedCounselDisclosure) => set({ hasAcceptedCounselDisclosure }),
+      setSaveDeclineCount: (saveDeclineCount) => set({ saveDeclineCount }),
+      setSaveLastDeclinedAt: (saveLastDeclinedAt) => set({ saveLastDeclinedAt }),
+
       setAnalyticsEnabled: (analyticsEnabled) => set({ analyticsEnabled }),
 
       setPendingServerSync: (pendingServerSync) => set({ pendingServerSync }),
@@ -258,6 +269,8 @@ export const useProfileStore = create<ProfileState>()(
         analyticsEnabled: state.analyticsEnabled,
         answers: state.answers,
         pendingServerSync: state.pendingServerSync,
+        saveDeclineCount: state.saveDeclineCount,
+        saveLastDeclinedAt: state.saveLastDeclinedAt,
       }),
     }
   )

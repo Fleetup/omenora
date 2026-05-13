@@ -85,7 +85,7 @@ export default function BigThreeRevealScreen() {
           label="Continue to deeper reading"
           variant="primary"
           fullWidth
-          onPress={() => navigation.navigate('OptionalQuestions')}
+          onPress={() => navigation.navigate('SaveYourReading')}
         />
       </MotiView>
     </View>

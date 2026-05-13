@@ -21,6 +21,7 @@ export type RootStackParamList = {
   BirthTime:          undefined;
   Calculating:        undefined;
   BigThreeReveal:     { sunSign: string; moonSign: string; risingSign: string; archetypeName: string };
+  SaveYourReading:    undefined;
   OptionalQuestions:  undefined;
   PremiumTeaser:      undefined;
   // App
@@ -65,6 +66,7 @@ export type CompatibilityScreenProps = NativeStackScreenProps<RootStackParamList
 export type PrivacyScreenProps      = NativeStackScreenProps<RootStackParamList, 'Privacy'>;
 export type TermsScreenProps                = NativeStackScreenProps<RootStackParamList, 'Terms'>;
 export type BigThreeRevealScreenProps       = NativeStackScreenProps<RootStackParamList, 'BigThreeReveal'>;
+export type SaveYourReadingScreenProps      = NativeStackScreenProps<RootStackParamList, 'SaveYourReading'>;
 export type TraditionSwitcherScreenProps    = NativeStackScreenProps<RootStackParamList, 'TraditionSwitcher'>;
 export type CounselChatScreenProps          = NativeStackScreenProps<RootStackParamList, 'CounselChat'>;
 export type CrisisResourcesScreenProps      = NativeStackScreenProps<RootStackParamList, 'CrisisResources'>;

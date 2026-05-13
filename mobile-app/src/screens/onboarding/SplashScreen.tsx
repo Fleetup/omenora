@@ -99,8 +99,30 @@ export default function SplashScreen() {
     if (!minDisplayElapsed || isLoading || !session || !storeHydrated) return
     if (hasNavigatedRef.current) return
     hasNavigatedRef.current = true
+
+    let destination: 'MainTabs' | 'Welcome' | 'SaveYourReading' = profileComplete ? 'MainTabs' : 'Welcome'
+
+    // Re-prompt anonymous users who previously declined SaveYourReading:
+    // — up to 3 total declines, spaced at least 24h apart.
+    if (profileComplete && destination === 'MainTabs') {
+      const { saveDeclineCount, saveLastDeclinedAt } = useProfileStore.getState()
+      const isAnon = (session.user as any)?.is_anonymous ?? true
+      const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+      const cooldownElapsed =
+        saveLastDeclinedAt === null ||
+        Date.now() - saveLastDeclinedAt > TWENTY_FOUR_HOURS
+      if (
+        isAnon &&
+        saveDeclineCount > 0 &&
+        saveDeclineCount < 3 &&
+        cooldownElapsed
+      ) {
+        destination = 'SaveYourReading'
+      }
+    }
+
     // Triple-check completeness gate (AD-6: server-first data integrity)
-    navigation.replace(profileComplete ? 'MainTabs' : 'Welcome')
+    navigation.replace(destination)
     // Background recovery: flush any unsynced profile data to server after routing.
     if (pendingServerSync && session.user?.id) {
       commitProfileToServer(session.user.id).catch((e) =>

@@ -283,6 +283,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
+  // @deprecated — use sendEmailOtp + verifyEmailOtp. Kept as fallback for magic-link deep-link URLs.
   const signInWithMagicLink = useCallback(async (email: string) => {
     try {
       const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL
@@ -306,6 +307,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('[Auth] magic link error:', err)
       Alert.alert('Could not send magic link', err?.message ?? 'Please try again.')
+      throw err
+    }
+  }, [])
+
+  const sendEmailOtp = useCallback(async (email: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: true },
+      })
+      if (error) throw error
+    } catch (err: any) {
+      console.error('[Auth] sendEmailOtp error:', err)
+      Alert.alert('Could not send code', err?.message ?? 'Please try again.')
+      throw err
+    }
+  }, [])
+
+  const verifyEmailOtp = useCallback(async (email: string, token: string) => {
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      })
+      if (error) throw error
+    } catch (err: any) {
+      console.error('[Auth] verifyEmailOtp error:', err)
+      Alert.alert('Verification Failed', err?.message ?? 'Incorrect code. Please try again.')
       throw err
     }
   }, [])
@@ -492,6 +522,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithApple,
     signInWithGoogle,
     signInWithMagicLink,
+    sendEmailOtp,
+    verifyEmailOtp,
     signOut,
     deleteAccount,
     handleMagicLinkUrl,

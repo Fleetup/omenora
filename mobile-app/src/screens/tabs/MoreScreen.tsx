@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { View, ScrollView, Alert, Linking, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { CommonActions } from '@react-navigation/native'
@@ -16,7 +16,7 @@ import {
   Info,
   LifeBuoy,
   Trash2,
-  LogIn,
+  AlertTriangle,
   LogOut,
   HelpCircle,
   Mail,
@@ -34,8 +34,20 @@ import type { MoreScreenProps } from '../../navigation/types'
 
 export default function MoreScreen({ navigation }: MoreScreenProps) {
   const { languageOverride } = useProfileStore()
-  const { isPremium, presentCustomerCenter } = usePurchases()
+  const { isPremium, presentCustomerCenter, presentPaywall } = usePurchases()
   const { signOut, showAuthGate, isAnonymous, displayName, user } = useAuth()
+
+  const [awaitingSignIn, setAwaitingSignIn] = useState(false)
+
+  useEffect(() => {
+    if (awaitingSignIn && !isAnonymous) {
+      setAwaitingSignIn(false)
+      if (!isPremium) {
+        presentPaywall()
+      }
+    }
+  }, [awaitingSignIn, isAnonymous, isPremium, presentPaywall])
+
   const version = Constants.expoConfig?.version ?? 'unknown'
 
   const handleSignOut = useCallback(async () => {
@@ -150,10 +162,10 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
             {isAnonymous && (
               <>
                 <ListItem
-                  icon={LogIn}
+                  icon={AlertTriangle}
                   label="Sign in or create account"
-                  meta="Save your readings across devices"
-                  onPress={() => showAuthGate()}
+                  meta="Your reading isn't backed up"
+                  onPress={() => { setAwaitingSignIn(true); showAuthGate() }}
                   showChevron
                 />
                 <View style={styles.divider} />
