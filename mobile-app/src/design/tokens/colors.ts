@@ -1,9 +1,10 @@
 export const surface = {
-  base:    '#050410',
-  raised:  '#0B0A1F',
-  overlay: '#13122A',
-  floating:'#1B1A35',
-  inverse: '#EDEDED',
+  deep:    '#0A0604',
+  base:    '#120D08',
+  raised:  '#1A130C',
+  overlay: '#221A12',
+  floating:'#2A2218',
+  inverse: '#F5F0E8',
 } as const
 
 export const text = {
@@ -11,7 +12,7 @@ export const text = {
   secondary: 'rgba(255,255,255,0.68)',
   tertiary:  'rgba(255,255,255,0.45)',
   disabled:  'rgba(255,255,255,0.30)',
-  inverse:   '#050410',
+  inverse:   '#120D08',
   accent:    '#C9A961',
 } as const
 
@@ -27,6 +28,8 @@ export const border = {
   default: 'rgba(255,255,255,0.10)',
   strong:  'rgba(255,255,255,0.18)',
   accent:  'rgba(201,169,97,0.40)',
+  hairline:'rgba(255,255,255,0.04)',
+  gold:    'rgba(201,169,97,0.22)',
 } as const
 
 export const state = {

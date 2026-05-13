@@ -5,6 +5,7 @@ export const fontFamily = {
   ui:             'HankenGrotesk_400Regular',
   uiMedium:       'HankenGrotesk_500Medium',
   uiSemiBold:     'HankenGrotesk_600SemiBold',
+  readingSerif:   'CormorantGaramond_300Light',
 } as const
 
 export const typeScale = {
@@ -16,5 +17,8 @@ export const typeScale = {
   body:      { fontFamily: fontFamily.ui,            fontSize: 15, lineHeight: 22, letterSpacing: 0 },
   label:     { fontFamily: fontFamily.uiMedium,      fontSize: 13, lineHeight: 18, letterSpacing: 0.1 },
   caption:   { fontFamily: fontFamily.ui,            fontSize: 12, lineHeight: 16, letterSpacing: 0.1 },
-  micro:     { fontFamily: fontFamily.uiSemiBold,    fontSize: 11, lineHeight: 14, letterSpacing: 0.5, textTransform: 'uppercase' as const },
+  micro:         { fontFamily: fontFamily.uiSemiBold,    fontSize: 11, lineHeight: 14, letterSpacing: 0.5, textTransform: 'uppercase' as const },
+  hero:          { fontFamily: fontFamily.display,       fontSize: 56, lineHeight: 64, letterSpacing: -0.6 },
+  displayItalic: { fontFamily: fontFamily.displayItalic, fontSize: 32, lineHeight: 40, letterSpacing: -0.3 },
+  readingBody:   { fontFamily: fontFamily.readingSerif,  fontSize: 18, lineHeight: 30, letterSpacing: 0 },
 } as const
