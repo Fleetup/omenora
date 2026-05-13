@@ -15,8 +15,10 @@ export type RootStackParamList = {
   // Onboarding
   Splash:             undefined;
   Welcome:            undefined;
-  BirthInfo:          undefined;
-  BirthTimeLocation:  undefined;
+  Name:               undefined;
+  DateOfBirth:        undefined;
+  BirthCity:          undefined;
+  BirthTime:          undefined;
   Calculating:        undefined;
   BigThreeReveal:     { sunSign: string; moonSign: string; risingSign: string; archetypeName: string };
   OptionalQuestions:  undefined;

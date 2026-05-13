@@ -11,7 +11,7 @@ import { layout, space } from '../../design/tokens'
 import type { Place } from '../../api/nominatim'
 import type { ProfileScreenProps } from '../../navigation/types'
 
-// ── Date ↔ string helpers (inlined from BirthInfoScreen) ─────────────────────
+// ── Date ↔ string helpers (inlined from DateOfBirthScreen) ────────────────────
 
 const dateStringToDate = (s: string): Date | null => {
   if (!s) return null
@@ -27,7 +27,7 @@ const dateToISO = (d: Date | null): string => {
   return `${y}-${m}-${dd}`
 }
 
-// ── Time ↔ string helpers (inlined from BirthTimeLocationScreen) ──────────────
+// ── Time ↔ string helpers (inlined from BirthTimeScreen) ──────────────────────
 
 const timeStringToDate = (s: string): Date | null => {
   if (!s) return null

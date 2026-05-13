@@ -7,7 +7,7 @@ import { Text } from '../../components/atoms'
 import { surface } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
 import { useAuth } from '../../context/useAuth'
-import { useProfileStore } from '../../stores/profileStore'
+import { useProfileStore, useProfileComplete } from '../../stores/profileStore'
 import { supabase } from '../../lib/supabase'
 
 type SplashNavProp = NativeStackNavigationProp<RootStackParamList, 'Splash'>
@@ -37,9 +37,7 @@ const STAR_POSITIONS = (() => {
 export default function SplashScreen() {
   const navigation = useNavigation<SplashNavProp>()
   const { session, isLoading } = useAuth()
-  const archetype             = useProfileStore((s) => s.archetype)
-  const dateOfBirth           = useProfileStore((s) => s.dateOfBirth)
-  const sunSign               = useProfileStore((s) => s.sunSign)
+  const profileComplete       = useProfileComplete()
   const pendingServerSync     = useProfileStore((s) => s.pendingServerSync)
   const commitProfileToServer = useProfileStore((s) => s.commitProfileToServer)
   const fadeAnim              = useRef(new Animated.Value(0)).current
@@ -102,7 +100,6 @@ export default function SplashScreen() {
     if (hasNavigatedRef.current) return
     hasNavigatedRef.current = true
     // Triple-check completeness gate (AD-6: server-first data integrity)
-    const profileComplete = archetype !== null && dateOfBirth !== '' && sunSign !== null
     navigation.replace(profileComplete ? 'MainTabs' : 'Welcome')
     // Background recovery: flush any unsynced profile data to server after routing.
     if (pendingServerSync && session.user?.id) {
@@ -110,7 +107,7 @@ export default function SplashScreen() {
         console.warn('[Splash] pendingServerSync recovery failed:', e)
       )
     }
-  }, [minDisplayElapsed, isLoading, session, storeHydrated, archetype, dateOfBirth, sunSign, pendingServerSync, commitProfileToServer, navigation])
+  }, [minDisplayElapsed, isLoading, session, storeHydrated, profileComplete, pendingServerSync, commitProfileToServer, navigation])
 
   return (
     <View style={styles.container}>

@@ -132,6 +132,9 @@ const initialState = {
   pendingServerSync: false,
 };
 
+export const useProfileComplete = () =>
+  useProfileStore((s) => s.archetype !== null && s.dateOfBirth !== '' && s.sunSign !== null)
+
 export const useProfileStore = create<ProfileState>()(
   persist(
     (set) => ({

@@ -6,8 +6,10 @@ import { RootStackParamList } from './types';
 import { TabNavigator } from './TabNavigator';
 import SplashScreen             from '../screens/onboarding/SplashScreen';
 import WelcomeScreen            from '../screens/onboarding/WelcomeScreen';
-import BirthInfoScreen          from '../screens/onboarding/BirthInfoScreen';
-import BirthTimeLocationScreen  from '../screens/onboarding/BirthTimeLocationScreen';
+import NameScreen          from '../screens/onboarding/NameScreen';
+import DateOfBirthScreen   from '../screens/onboarding/DateOfBirthScreen';
+import BirthCityScreen     from '../screens/onboarding/BirthCityScreen';
+import BirthTimeScreen     from '../screens/onboarding/BirthTimeScreen';
 import CalculatingScreen        from '../screens/onboarding/CalculatingScreen';
 import BigThreeRevealScreen     from '../screens/onboarding/BigThreeRevealScreen';
 import OptionalQuestionsScreen  from '../screens/onboarding/OptionalQuestionsScreen';
@@ -44,8 +46,10 @@ export const RootNavigator: React.FC = () => {
     >
       <Stack.Screen name="Splash"  component={SplashScreen}  options={{ animation: 'fade' }} />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
-      <Stack.Screen name="BirthInfo"         component={BirthInfoScreen} />
-      <Stack.Screen name="BirthTimeLocation" component={BirthTimeLocationScreen} options={{ presentation: 'modal' }} />
+      <Stack.Screen name="Name"        component={NameScreen} />
+      <Stack.Screen name="DateOfBirth" component={DateOfBirthScreen} />
+      <Stack.Screen name="BirthCity"   component={BirthCityScreen} />
+      <Stack.Screen name="BirthTime"   component={BirthTimeScreen} />
       <Stack.Screen name="Calculating"       component={CalculatingScreen}       options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="BigThreeReveal"     component={BigThreeRevealScreen}     options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="OptionalQuestions"  component={OptionalQuestionsScreen} />

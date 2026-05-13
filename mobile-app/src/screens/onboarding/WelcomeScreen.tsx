@@ -22,7 +22,7 @@ import { AtmosphericBackground } from '../../components/atmosphere'
 import { Text } from '../../components/atoms/Text'
 import { Button } from '../../components/atoms/Button'
 import { useAuth } from '../../context/useAuth'
-import { useProfileStore } from '../../stores/profileStore'
+import { useProfileComplete } from '../../stores/profileStore'
 import { RootStackParamList } from '../../navigation/types'
 
 type WelcomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>
@@ -30,9 +30,7 @@ type WelcomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>
 export default function WelcomeScreen() {
   const navigation  = useNavigation<WelcomeNavProp>()
   const { isAnonymous, profileHydrating, profileHydrated, showAuthGate } = useAuth()
-  const archetype   = useProfileStore((s) => s.archetype)
-  const dateOfBirth = useProfileStore((s) => s.dateOfBirth)
-  const sunSign     = useProfileStore((s) => s.sunSign)
+  const profileComplete = useProfileComplete()
   const [hydrationTimedOut, setHydrationTimedOut] = useState(false)
 
   // Route after sign-in based on profile completeness. Wait for hydration
@@ -43,10 +41,9 @@ export default function WelcomeScreen() {
   useEffect(() => {
     if (isAnonymous) return
     if (profileHydrated || hydrationTimedOut) {
-      const profileComplete = archetype !== null && dateOfBirth !== '' && sunSign !== null
-      navigation.replace(profileComplete ? 'MainTabs' : 'BirthInfo')
+      navigation.replace(profileComplete ? 'MainTabs' : 'Name')
     }
-  }, [isAnonymous, profileHydrated, hydrationTimedOut, archetype, dateOfBirth, sunSign, navigation])
+  }, [isAnonymous, profileHydrated, hydrationTimedOut, profileComplete, navigation])
 
   // 5-second max wait for profile hydration after permanent sign-in.
   // Reset timeout state when user signs out so a subsequent sign-in
@@ -66,11 +63,12 @@ export default function WelcomeScreen() {
       {/* Atmospheric layered background — static. Never animate this stack. */}
       <AtmosphericBackground
         variant="hero"
-        glowPosition="top-left"
+        glowPosition="top-center"
         counterGlow
         ctaLightPool
         buttonHalo
         grain
+        graphicOverlay
         vignette="bottom"
       />
 
@@ -138,7 +136,7 @@ export default function WelcomeScreen() {
                     label="Begin"
                     variant="premium"
                     fullWidth
-                    onPress={() => navigation.navigate('BirthInfo')}
+                    onPress={() => navigation.navigate('Name')}
                   />
                 </View>
 
