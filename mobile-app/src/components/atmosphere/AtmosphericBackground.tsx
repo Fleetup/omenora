@@ -11,8 +11,16 @@ import BackgroundGraph from '../../../assets/Background-Graph.svg'
 import { accent, surface } from '../../design/tokens'
 
 export interface AtmosphericBackgroundProps {
-  variant?:        'hero' | 'default' | 'muted'
-  glowPosition?:   'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right'
+  /**
+   * - standard — universal app background: top-center + bottom-center glows,
+   *              grain on, graphic SVG on. Use this on ALL tab screens and
+   *              any screen that should match the app's consistent atmosphere.
+   * - hero     — stronger glow intensity for dramatic onboarding moments.
+   * - default  — manual control; use glowPosition + counterGlow props.
+   * - muted    — quieter glow for information-dense screens.
+   */
+  variant?:        'standard' | 'hero' | 'default' | 'muted'
+  glowPosition?:   'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center'
   counterGlow?:    boolean
   ctaLightPool?:   boolean   // dedicated warm light pool sized to sit behind a CTA in the lower third
   buttonHalo?:     boolean   // tight warm halo positioned at lower-third center — sit a CTA in this for "lit object" effect
@@ -41,6 +49,7 @@ const NOISE = (() => {
 })()
 
 // Opacity stops per variant: [center, 0.35, 0.70, edge]
+// 'standard' maps to 'default' intensity — two glows together provide sufficient presence
 const GLOW_STOPS: Record<'hero' | 'default' | 'muted', [string, string, string, string]> = {
   hero:    ['0.55', '0.22', '0.06', '0'],
   default: ['0.25', '0.10', '0.03', '0'],
@@ -56,31 +65,33 @@ const GLOW_RADIUS: Record<'hero' | 'default' | 'muted', number> = {
 
 // Glow center coordinates as fraction of screen dimensions
 const GLOW_COORDS: Record<
-  'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right',
+  'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center',
   { cx: number; cy: number }
 > = {
-  'top-left':     { cx: SCREEN_W * 0.28, cy: SCREEN_H * 0.32 },
-  'top-right':    { cx: SCREEN_W * 0.72, cy: SCREEN_H * 0.32 },
-  'top-center':   { cx: SCREEN_W * 0.50, cy: SCREEN_H * -0.05 },
-  'bottom-left':  { cx: SCREEN_W * 0.28, cy: SCREEN_H * 0.75 },
-  'bottom-right': { cx: SCREEN_W * 0.72, cy: SCREEN_H * 0.75 },
+  'top-left':      { cx: SCREEN_W * 0.28, cy: SCREEN_H * 0.32 },
+  'top-right':     { cx: SCREEN_W * 0.72, cy: SCREEN_H * 0.32 },
+  'top-center':    { cx: SCREEN_W * 0.50, cy: SCREEN_H * -0.05 },
+  'bottom-left':   { cx: SCREEN_W * 0.28, cy: SCREEN_H * 0.75 },
+  'bottom-right':  { cx: SCREEN_W * 0.72, cy: SCREEN_H * 0.75 },
+  'bottom-center': { cx: SCREEN_W * 0.50, cy: SCREEN_H * 1.05 }, // mirror of top-center
 }
 
 // Opposite corner mapping for counter glow
 const OPPOSITE_CORNER: Record<
-  'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right',
-  'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right'
+  'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center',
+  'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center'
 > = {
-  'top-left':     'bottom-right',
-  'top-right':    'bottom-left',
-  'top-center':   'bottom-left',
-  'bottom-left':  'top-right',
-  'bottom-right': 'top-left',
+  'top-left':      'bottom-right',
+  'top-right':     'bottom-left',
+  'top-center':    'bottom-center',  // now maps to symmetric bottom-center
+  'bottom-left':   'top-right',
+  'bottom-right':  'top-left',
+  'bottom-center': 'top-center',
 }
 
 export default function AtmosphericBackground({
-  variant         = 'default',
-  glowPosition    = 'top-left',
+  variant         = 'standard',
+  glowPosition    = 'top-center',
   counterGlow     = false,
   ctaLightPool    = false,
   buttonHalo      = false,
@@ -89,11 +100,19 @@ export default function AtmosphericBackground({
   vignette        = 'none',
   children,
 }: AtmosphericBackgroundProps) {
-  const stops       = GLOW_STOPS[variant]
-  const glowRadius  = SCREEN_W * GLOW_RADIUS[variant]
-  const primary     = GLOW_COORDS[glowPosition]
-  const counterPos  = GLOW_COORDS[OPPOSITE_CORNER[glowPosition]]
-  const counterR    = SCREEN_W * 0.55
+  // 'standard' preset: top-center + bottom-center glows, grain, graphic SVG
+  const isStandard    = variant === 'standard'
+  const resolvedVariant: 'hero' | 'default' | 'muted' = isStandard ? 'default' : variant
+  const resolvedPosition  = isStandard ? 'top-center'    : glowPosition
+  const resolvedCounter   = isStandard ? true            : counterGlow
+  const resolvedGrain     = isStandard ? true            : grain
+  const resolvedGraphic   = isStandard ? true            : graphicOverlay
+
+  const stops       = GLOW_STOPS[resolvedVariant]
+  const glowRadius  = SCREEN_W * GLOW_RADIUS[resolvedVariant]
+  const primary     = GLOW_COORDS[resolvedPosition]
+  const counterPos  = GLOW_COORDS[OPPOSITE_CORNER[resolvedPosition]]
+  const counterR    = SCREEN_W * 0.75  // bottom-center counter glow needs wider radius to fill screen base
 
   return (
     <>
@@ -108,8 +127,8 @@ export default function AtmosphericBackground({
           style={StyleSheet.absoluteFill}
         />
 
-        {/* Layer 1b — Decorative graphic overlay (optional) */}
-        {graphicOverlay && typeof BackgroundGraph === 'function' && (
+        {/* Layer 1b — Decorative graphic overlay (standard: always on; manual: opt-in) */}
+        {resolvedGraphic && typeof BackgroundGraph === 'function' && (
           <View style={styles.graphicOverlay} pointerEvents="none">
             <BackgroundGraph
               width={SCREEN_W}
@@ -143,7 +162,7 @@ export default function AtmosphericBackground({
               <Stop offset="0.7"  stopColor={accent.primary} stopOpacity={stops[2]} />
               <Stop offset="1"    stopColor={accent.primary} stopOpacity={stops[3]} />
             </RadialGradient>
-            {counterGlow && (
+            {resolvedCounter && (
               <RadialGradient
                 id="atmGlowCounter"
                 cx={counterPos.cx}
@@ -196,8 +215,8 @@ export default function AtmosphericBackground({
           {/* Layer 2 — Primary glow */}
           <Rect x="0" y="0" width={SCREEN_W} height={SCREEN_H} fill="url(#atmGlowPrimary)" />
 
-          {/* Layer 3 — Counter glow (optional) */}
-          {counterGlow && (
+          {/* Layer 3 — Counter glow (standard: bottom-center; manual: opposite corner) */}
+          {resolvedCounter && (
             <Rect x="0" y="0" width={SCREEN_W} height={SCREEN_H} fill="url(#atmGlowCounter)" />
           )}
 
@@ -211,8 +230,8 @@ export default function AtmosphericBackground({
             <Rect x="0" y="0" width={SCREEN_W} height={SCREEN_H} fill="url(#glowButtonHalo)" />
           )}
 
-          {/* Layer 4 — Film grain (optional) */}
-          {grain && NOISE.map((n, i) => (
+          {/* Layer 4 — Film grain (standard: always on; manual: opt-in) */}
+          {resolvedGrain && NOISE.map((n, i) => (
             <Circle
               key={i}
               cx={n.cx}
