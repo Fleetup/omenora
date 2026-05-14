@@ -4,6 +4,7 @@ import { CompatibilitySchema, type CompatibilityType, PreviewCompatibilitySchema
 import { withAiRetry } from '~~/server/utils/ai-retry'
 import { getSunSign, getLifePathNumber } from '~~/server/utils/quick-signs'
 import { getPlanetaryTransits } from '~~/server/utils/planetaryTransits'
+import { getLanguageInstruction } from '~~/server/utils/language-instructions'
 import { calculateNatalChart, assignArchetypeFromChart } from '~~/app/utils/natalChart'
 
 // ── Deterministic compatibility score ────────────────────────────────────────
@@ -192,15 +193,7 @@ export default defineEventHandler(async (event) => {
 
   // ── Language instruction ──────────────────────────────────────────────────
 
-  const languageInstructions: Record<string, string> = {
-    en: 'Respond entirely in English.',
-    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
-    pt: 'Responda completamente em português brasileiro. Use tom caloroso e pessoal.',
-    hi: 'पूरी तरह से हिंदी में जवाब दें। गर्म, काव्यात्मक और व्यक्तिगत स्वर का उपयोग करें।',
-    ko: '전체적으로 한국어로 답변해 주세요. 따뜻하고 시적이며 개인적인 어조를 사용하세요.',
-    zh: '完全用简体中文回答。使用温暖、诗意和个人化的语气。',
-  }
-  const langInstruction = languageInstructions[language] ?? languageInstructions['en'] ?? ''
+  const langInstruction = getLanguageInstruction(language)
 
   // ── Anthropic client ──────────────────────────────────────────────────────
 

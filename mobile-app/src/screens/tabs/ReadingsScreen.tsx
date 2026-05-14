@@ -7,16 +7,17 @@ import {
   Alert,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Text, Chip, Button } from '../../components/atoms'
-import { Card, LockedCard, ReadingCard, TransitCard, SectionHeader } from '../../components/organisms'
+import { Text, Chip, Button, ZodiacSymbol, ArchetypeIcon } from '../../components/atoms'
+import { Card, ReadingCard, TransitCard, SectionHeader, ReadingFeatureCard } from '../../components/organisms'
+import ReadingHero from '../../components/hero/ReadingHero'
 import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
 import api from '../../api/endpoints'
-import { parseBackendError } from '../../api/errors'
 import type { ArchetypeReading, NatalChartReading, ForecastReading } from '../../api/endpoints'
 import { remapAnswersForBackend } from '../../utils/answers'
 import { isPastDate } from '../../utils/time'
-import { tokens, space, layout } from '../../design/tokens'
+import { tokens, space, layout, accent } from '../../design/tokens'
+import { AtmosphericBackground } from '../../components/atmosphere'
 import type { ReadingsScreenProps } from '../../navigation/types'
 
 // ── Section state (discriminated union) ───────────────────────────────────
@@ -37,8 +38,6 @@ const PLANET_GLYPHS: Record<string, string> = {
 const ARCHETYPE_SECTIONS = [
   'identity', 'science', 'shadow', 'purpose', 'gift', 'affirmation',
 ] as const
-
-const STALE_FORECAST_BG = 'rgba(194, 136, 64, 0.12)'
 
 // ── Component ─────────────────────────────────────────────────────────────
 
@@ -129,19 +128,17 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
         setArchetypeState({ kind: 'error', message: 'Something went wrong. Please try again.' })
       }
     } catch (err: unknown) {
-      const parsed = parseBackendError(err)
-      if (parsed.kind === 'subscription_required') {
-        await presentPaywall()
-        setArchetypeState({ kind: 'initial' })
-        return
-      }
-      if (parsed.kind === 'cap_reached') {
+      const status   = (err as { response?: { status?: number } })?.response?.status
+      const errorKey = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      if (status === 429 || errorKey === 'monthly_limit_reached') {
         setArchetypeState({ kind: 'error', message: "You've reached this month's archetype reading limit. Resets next month." })
-        return
+      } else if (status === 403 || errorKey === 'subscription_required') {
+        setArchetypeState({ kind: 'error', message: 'Premium required.' })
+      } else {
+        setArchetypeState({ kind: 'error', message: "Couldn't generate the reading. Please try again." })
       }
-      setArchetypeState({ kind: 'error', message: "Couldn't generate the reading. Please try again." })
     }
-  }, [profileReady, buildRequest, setArchetypeReading, presentPaywall])
+  }, [profileReady, buildRequest, setArchetypeReading])
 
   const generateNatalChart = useCallback(async () => {
     if (!profileReady) {
@@ -158,19 +155,17 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
         setNatalChartState({ kind: 'error', message: 'Something went wrong. Please try again.' })
       }
     } catch (err: unknown) {
-      const parsed = parseBackendError(err)
-      if (parsed.kind === 'subscription_required') {
-        await presentPaywall()
-        setNatalChartState({ kind: 'initial' })
-        return
-      }
-      if (parsed.kind === 'cap_reached') {
+      const status   = (err as { response?: { status?: number } })?.response?.status
+      const errorKey = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      if (status === 429 || errorKey === 'monthly_limit_reached') {
         setNatalChartState({ kind: 'error', message: "You've reached this month's natal chart limit. Resets next month." })
-        return
+      } else if (status === 403 || errorKey === 'subscription_required') {
+        setNatalChartState({ kind: 'error', message: 'Premium required.' })
+      } else {
+        setNatalChartState({ kind: 'error', message: "Couldn't generate the reading. Please try again." })
       }
-      setNatalChartState({ kind: 'error', message: "Couldn't generate the reading. Please try again." })
     }
-  }, [profileReady, buildRequest, setNatalChartReading, presentPaywall])
+  }, [profileReady, buildRequest, setNatalChartReading])
 
   const generateForecast = useCallback(async () => {
     if (!profileReady) {
@@ -187,19 +182,17 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
         setForecastState({ kind: 'error', message: 'Something went wrong. Please try again.' })
       }
     } catch (err: unknown) {
-      const parsed = parseBackendError(err)
-      if (parsed.kind === 'subscription_required') {
-        await presentPaywall()
-        setForecastState({ kind: 'initial' })
-        return
-      }
-      if (parsed.kind === 'cap_reached') {
+      const status   = (err as { response?: { status?: number } })?.response?.status
+      const errorKey = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      if (status === 429 || errorKey === 'monthly_limit_reached') {
         setForecastState({ kind: 'error', message: "You've reached this month's forecast limit. Resets next month." })
-        return
+      } else if (status === 403 || errorKey === 'subscription_required') {
+        setForecastState({ kind: 'error', message: 'Premium required.' })
+      } else {
+        setForecastState({ kind: 'error', message: "Couldn't generate the forecast. Please try again." })
       }
-      setForecastState({ kind: 'error', message: "Couldn't generate the forecast. Please try again." })
     }
-  }, [profileReady, buildRequest, setForecastReading, presentPaywall])
+  }, [profileReady, buildRequest, setForecastReading])
 
   // ── Regenerate handlers (Alert-confirmed) ────────────────────────────
 
@@ -247,29 +240,32 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
+    <View style={styles.root}>
+      <AtmosphericBackground variant="muted" />
+      <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── 1. Page header ─────────────────────────────────────────── */}
-        <View style={styles.pageHeader}>
-          <Text variant="display2" color="primary">Your Reading</Text>
-          <Text variant="body" color="tertiary" style={styles.subtitle}>
-            Personal to you
-          </Text>
-        </View>
+        {/* ── 1. Reading hero — archetype identity anchor ────────── */}
+        <ReadingHero
+          archetypeKey={archetype}
+          archetypeDisplayName={archetypeDisplayName}
+          element={report?.element ?? null}
+          powerTraits={report?.powerTraits ?? null}
+          identityTeaser={identityTeaser}
+        />
 
         {/* ── 2. Big-Three Card ──────────────────────────────────────── */}
         <Card variant="premium" padding="default">
           <Text variant="micro" color="tertiary" style={styles.cardLabel}>Your Chart</Text>
           {[
-            { glyph: '☉', label: 'Sun',    value: sunSign    },
-            { glyph: '☽', label: 'Moon',   value: moonSign   },
-            { glyph: '↑', label: 'Rising', value: risingSign },
-          ].map(({ glyph, label, value }) => (
+            { label: 'Sun',    value: sunSign    },
+            { label: 'Moon',   value: moonSign   },
+            { label: 'Rising', value: risingSign },
+          ].map(({ label, value }) => (
             <View key={label} style={styles.bigThreeRow}>
-              <Text style={styles.glyph}>{glyph}</Text>
+              <ZodiacSymbol sign={value ?? ''} size={28} opacity={0.60} style={styles.glyphContainer} />
               <View style={styles.bigThreeText}>
                 <Text variant="caption" color="tertiary">{label}</Text>
                 <Text variant="heading2" color="primary">{value ?? '—'}</Text>
@@ -278,29 +274,8 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
           ))}
         </Card>
 
-        {/* ── 3. Archetype teaser ────────────────────────────────────── */}
-        <Card variant="default" padding="default">
-          {archetypeDisplayName != null ? (
-            <>
-              <Text variant="heading2" color="primary" style={styles.archetypeHeading}>
-                {`You are ${archetypeDisplayName}`}
-              </Text>
-              <Text variant="body" color="secondary">
-                {identityTeaser ?? 'Your archetype reading is being prepared\u2026'}
-              </Text>
-            </>
-          ) : (
-            <Text variant="body" color="secondary">
-              Your reading is being prepared\u2026
-            </Text>
-          )}
-        </Card>
-
         {/* ── 4. Full archetype reading — PREMIUM ────────────────────── */}
         <View>
-          <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
-            Full archetype reading
-          </Text>
           {isPremium ? (
             <>
               {archetypeState.kind === 'initial' && (
@@ -376,31 +351,27 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
               )}
             </>
           ) : (
-            <LockedCard
+            <ReadingFeatureCard
+              variant="flagship"
               placement="feature_archetype"
-              lockMessage="Unlock your full archetype reading"
-              unlockCtaLabel="Unlock"
-              onUnlockPress={handleUnlockPress}
-              preview={
-                <Text variant="caption" color="tertiary">
-                  {archetypeDisplayName
-                    ? `The deeper psychological framework of ${archetypeDisplayName}`
-                    : 'The deeper psychological framework of your archetype'}
-                </Text>
+              eyebrow="Full Archetype Reading"
+              title="Shadow, gifts, and the patterns that shape your life"
+              description="The complete psychological framework of your archetype — how you move through the world, your shadow side, your core gifts, and how you show up in love and work."
+              glyph={
+                <ArchetypeIcon
+                  archetype={archetype ?? 'architect'}
+                  size={140}
+                  fill={accent.primary}
+                  opacity={1}
+                />
               }
-            >
-              <Text variant="body" color="secondary" style={styles.stubText}>
-                Your full archetype reading is being prepared.
-              </Text>
-            </LockedCard>
+              onUnlockPress={handleUnlockPress}
+            />
           )}
         </View>
 
         {/* ── 5. Full natal chart — PREMIUM ──────────────────────────── */}
         <View>
-          <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
-            Full natal chart
-          </Text>
           {isPremium ? (
             <>
               {natalChartState.kind === 'initial' && (
@@ -460,13 +431,13 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
                   </Card>
                   <SectionHeader title="The Big Three" style={styles.subSectionHeader} />
                   {[
-                    { key: 'sun',    glyph: '☉', label: 'Sun',    d: natalChartState.data.bigThree.sun    },
-                    { key: 'moon',   glyph: '☽', label: 'Moon',   d: natalChartState.data.bigThree.moon   },
-                    { key: 'rising', glyph: '↑', label: 'Rising', d: natalChartState.data.bigThree.rising },
-                  ].map(({ key, glyph, label, d }) => (
+                    { key: 'sun',    label: 'Sun',    d: natalChartState.data.bigThree.sun    },
+                    { key: 'moon',   label: 'Moon',   d: natalChartState.data.bigThree.moon   },
+                    { key: 'rising', label: 'Rising', d: natalChartState.data.bigThree.rising },
+                  ].map(({ key, label, d }) => (
                     <ReadingCard
                       key={key}
-                      symbol={glyph}
+                      symbol={d.sign}
                       title={label}
                       meta={`${d.sign} · House ${d.house}`}
                       body={d.description}
@@ -509,29 +480,26 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
               )}
             </>
           ) : (
-            <LockedCard
+            <ReadingFeatureCard
+              variant="standard"
               placement="feature_natal_chart"
-              lockMessage="Unlock your complete natal chart"
-              unlockCtaLabel="Unlock"
-              onUnlockPress={handleUnlockPress}
-              preview={
-                <Text variant="caption" color="tertiary">
-                  All 10 planets, 12 houses, aspects, and dominant patterns
-                </Text>
+              eyebrow="Complete Natal Chart"
+              title="Every planet. Every house. Your full birth chart."
+              description="All 10 planets in your chart — their signs, houses, aspects, and what each placement means for you personally."
+              glyph={
+                <ZodiacSymbol
+                  sign={sunSign ?? 'Aries'}
+                  size={140}
+                  opacity={1}
+                />
               }
-            >
-              <Text variant="body" color="secondary" style={styles.stubText}>
-                Your natal chart is being prepared.
-              </Text>
-            </LockedCard>
+              onUnlockPress={handleUnlockPress}
+            />
           )}
         </View>
 
         {/* ── 6. 90-day forecast — PREMIUM ───────────────────────────── */}
         <View>
-          <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
-            90-day forecast
-          </Text>
           {isPremium ? (
             <>
               {forecastState.kind === 'initial' && (
@@ -576,7 +544,7 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
                   <Card
                     variant="default"
                     padding="compact"
-                    style={forecastStale ? { backgroundColor: STALE_FORECAST_BG } : undefined}
+                    style={forecastStale ? { backgroundColor: tokens.specialty.forecastStaleSurface } : undefined}
                   >
                     <Text variant="caption" color={forecastStale ? 'tertiary' : 'secondary'}>
                       {`This forecast covers ${forecastState.data.period.start} – ${forecastState.data.period.end}.`}
@@ -638,21 +606,23 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
               )}
             </>
           ) : (
-            <LockedCard
+            /* TODO: swap phoenix glyph for planet composite icon when assets/symbols/planets/ ships in a future cluster */
+            <ReadingFeatureCard
+              variant="standard"
               placement="feature_forecast"
-              lockMessage="Unlock your 90-day forecast"
-              unlockCtaLabel="Unlock"
-              onUnlockPress={handleUnlockPress}
-              preview={
-                <Text variant="caption" color="tertiary">
-                  What's coming, when, and how to meet it
-                </Text>
+              eyebrow="90-Day Forecast"
+              title="The major themes, transits, and timing ahead"
+              description="Month-by-month planetary guidance — key transits, peak periods, and how to move through each phase with your chart in mind."
+              glyph={
+                <ArchetypeIcon
+                  archetype="phoenix"
+                  size={140}
+                  fill={accent.primary}
+                  opacity={1}
+                />
               }
-            >
-              <Text variant="body" color="secondary" style={styles.stubText}>
-                Your 90-day forecast is being prepared.
-              </Text>
-            </LockedCard>
+              onUnlockPress={handleUnlockPress}
+            />
           )}
         </View>
 
@@ -668,26 +638,24 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
          * Will show upcoming planetary transits affecting the user's chart.
          */}
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  safe: {
+  root: {
     flex:            1,
     backgroundColor: tokens.surface.base,
+  },
+  safe: {
+    flex: 1,
   },
   scroll: {
     paddingHorizontal: layout.screenPadding,
     paddingTop:        space['6'],
     paddingBottom:     space['10'],
     gap:               layout.cardGap,
-  },
-  pageHeader: {
-    marginBottom: space['2'],
-  },
-  subtitle: {
-    marginTop: space['1'],
   },
   cardLabel: {
     marginBottom: space['3'],
@@ -698,22 +666,13 @@ const styles = StyleSheet.create({
     gap:             space['4'],
     paddingVertical: space['2'],
   },
-  glyph: {
-    fontSize:   22,
-    lineHeight: 28,
-    color:      tokens.text.accent,
-    width:      28,
-    textAlign:  'center',
+  glyphContainer: {
+    width:  28,
+    height: 28,
   },
   bigThreeText: {
     flex: 1,
     gap:  space['0.5'],
-  },
-  archetypeHeading: {
-    marginBottom: space['3'],
-  },
-  sectionHeading: {
-    marginBottom: space['2'],
   },
   capNote: {
     marginTop: space['2'],

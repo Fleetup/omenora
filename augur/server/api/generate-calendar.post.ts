@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { CalendarSchema, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
+import { getLanguageInstruction } from '~~/server/utils/language-instructions'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -20,15 +21,7 @@ export default defineEventHandler(async (event) => {
   assertInput(isValidArchetype(archetype), 'Invalid archetype')
   assertInput(isValidDateOfBirth(dateOfBirth), 'Invalid dateOfBirth')
 
-  const languageInstructions: Record<string, string> = {
-    en: 'Respond entirely in English.',
-    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
-    pt: 'Responda completamente em português brasileiro. Use tom caloroso e pessoal.',
-    hi: 'पूरी तरह से हिंदी में जवाब दें।',
-    ko: '전체적으로 한국어로 답변해 주세요.',
-    zh: '完全用简体中文回答。',
-  }
-  const langInstruction = languageInstructions[language as string] ?? languageInstructions['en'] ?? ''
+  const langInstruction = getLanguageInstruction(language as string)
 
   const client = new Anthropic({
     apiKey: config.anthropicApiKey as string,

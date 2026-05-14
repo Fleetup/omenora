@@ -102,7 +102,15 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "omenora-mobile",
+          "organization": "unc-development"
+        }
+      ]
     ],
     "extra": {
       "eas": {

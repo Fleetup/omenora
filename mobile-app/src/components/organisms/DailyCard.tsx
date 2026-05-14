@@ -27,7 +27,7 @@ export const DailyCard: React.FC<DailyCardProps> = ({
   })
 
   return (
-    <Card variant="default" padding="default" style={style}>
+    <Card variant="elevated" padding="premium" style={style}>
       <Text variant="micro" color="tertiary">
         {formattedDate}
       </Text>
@@ -40,7 +40,7 @@ export const DailyCard: React.FC<DailyCardProps> = ({
       </Text>
       {moonPhase != null && (
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: space['4'], gap: space['2'] }}>
-          <Icon icon={Moon} size={16} color="accent" />
+          <Icon icon={Moon} size={18} color="accent" />
           <Text variant="caption" color="tertiary">
             {moonPhase}
           </Text>

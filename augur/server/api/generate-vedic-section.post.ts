@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { VedicSectionSchema, type VedicSectionType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
+import { getLanguageInstruction } from '~~/server/utils/language-instructions'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -20,15 +21,7 @@ export default defineEventHandler(async (event) => {
   assertInput(isValidArchetype(archetype), 'Invalid archetype')
   assertInput(nakshatra !== null, 'nakshatra is required')
 
-  const languageInstructions: Record<string, string> = {
-    en: 'Respond entirely in English.',
-    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
-    pt: 'Responda completamente em português brasileiro. Use tom caloroso e pessoal.',
-    hi: 'पूरी तरह से हिंदी में जवाब दें। गर्म, काव्यात्मक और व्यक्तिगत स्वर का उपयोग करें।',
-    ko: '전체적으로 한국어로 답변해 주세요. 따뜻하고 시적이며 개인적인 어조를 사용하세요.',
-    zh: '完全用简体中文回答。使用温暖、诗意和个人化的语气。',
-  }
-  const langInstruction = languageInstructions[language as string] ?? languageInstructions['en'] ?? ''
+  const langInstruction = getLanguageInstruction(language as string)
 
   const client = new Anthropic({ apiKey: config.anthropicApiKey })
 

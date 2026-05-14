@@ -4,21 +4,32 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { MotiView } from 'moti'
-import { Button, Text } from '../../components/atoms'
+import { Button, Text, ZodiacSymbol } from '../../components/atoms'
+import { Card } from '../../components/organisms'
+import { AtmosphericBackground } from '../../components/atmosphere'
 import { tokens, space, layout } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
 
 type BigThreeRevealNavProp   = NativeStackNavigationProp<RootStackParamList, 'BigThreeReveal'>
 type BigThreeRevealRouteProp = RouteProp<RootStackParamList, 'BigThreeReveal'>
 
-const CARD_DURATION = 400
-const CARD_STAGGER  = 60
+const CARD_DURATION   = 400
+const CARD_STAGGER    = 60
 const ARCHETYPE_DELAY = 700
 
+const CARD_FROM       = { opacity: 0, translateY: 8 } as const
+const CARD_ANIMATE    = { opacity: 1, translateY: 0 } as const
+
+const ARCH_FROM       = { opacity: 0 } as const
+const ARCH_ANIMATE    = { opacity: 1 } as const
+
+const FOOTER_FROM     = { opacity: 0 } as const
+const FOOTER_ANIMATE  = { opacity: 1 } as const
+
 const PLACEMENTS = (sunSign: string, moonSign: string, risingSign: string) => [
-  { symbol: '☉', label: 'Sun',    sign: sunSign    },
-  { symbol: '☽', label: 'Moon',   sign: moonSign   },
-  { symbol: '↑', label: 'Rising', sign: risingSign },
+  { label: 'Sun',    sign: sunSign    },
+  { label: 'Moon',   sign: moonSign   },
+  { label: 'Rising', sign: risingSign },
 ]
 
 export default function BigThreeRevealScreen() {
@@ -31,38 +42,45 @@ export default function BigThreeRevealScreen() {
 
   return (
     <View style={styles.root}>
-      <View style={styles.glow} pointerEvents="none" />
+      <AtmosphericBackground
+        variant="hero"
+        glowPosition="top-center"
+        counterGlow
+        grain
+        vignette="bottom"
+      />
 
       <SafeAreaView style={styles.content} edges={['top']}>
         <View style={styles.cards}>
           {cards.map((card, i) => (
             <MotiView
               key={card.label}
-              from={{ opacity: 0, translateY: 8 }}
-              animate={{ opacity: 1, translateY: 0 }}
+              from={CARD_FROM}
+              animate={CARD_ANIMATE}
               transition={{ type: 'timing', duration: CARD_DURATION, delay: CARD_STAGGER * i }}
-              style={styles.card}
               accessible={true}
               accessibilityLabel={`${card.label} sign: ${card.sign}`}
             >
-              <Text variant="heading2" style={styles.symbol}>
-                {card.symbol}
-              </Text>
-              <View>
-                <Text variant="caption" color="secondary" style={styles.cardLabel}>
-                  {card.label}
-                </Text>
-                <Text variant="heading1" color="primary">
-                  {card.sign}
-                </Text>
-              </View>
+              <Card variant="glass" padding="default">
+                <View style={styles.cardRow}>
+                  <ZodiacSymbol sign={card.sign} size={36} opacity={0.70} style={styles.symbolContainer} />
+                  <View>
+                    <Text variant="caption" color="secondary" style={styles.cardLabel}>
+                      {card.label}
+                    </Text>
+                    <Text variant="heading1" color="primary">
+                      {card.sign}
+                    </Text>
+                  </View>
+                </View>
+              </Card>
             </MotiView>
           ))}
         </View>
 
         <MotiView
-          from={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          from={ARCH_FROM}
+          animate={ARCH_ANIMATE}
           transition={{ type: 'timing', duration: 400, delay: ARCHETYPE_DELAY }}
           style={styles.archetypeBlock}
         >
@@ -76,8 +94,8 @@ export default function BigThreeRevealScreen() {
       </SafeAreaView>
 
       <MotiView
-        from={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        from={FOOTER_FROM}
+        animate={FOOTER_ANIMATE}
         transition={{ type: 'timing', duration: 300, delay: ARCHETYPE_DELAY + 400 }}
         style={[styles.footer, { paddingBottom: Math.max(space['8'], insets.bottom + space['4']) }]}
       >
@@ -85,7 +103,7 @@ export default function BigThreeRevealScreen() {
           label="Continue to deeper reading"
           variant="primary"
           fullWidth
-          onPress={() => navigation.navigate('OptionalQuestions')}
+          onPress={() => navigation.navigate('SaveYourReading')}
         />
       </MotiView>
     </View>
@@ -97,42 +115,25 @@ const styles = StyleSheet.create({
     flex:            1,
     backgroundColor: tokens.surface.base,
   },
-  glow: {
-    position:        'absolute',
-    top:             -60,
-    alignSelf:       'center',
-    width:           340,
-    height:          340,
-    borderRadius:    170,
-    backgroundColor: tokens.accent.primary,
-    opacity:         0.07,
-  },
   content: {
-    flex:            1,
-    alignItems:      'center',
-    justifyContent:  'center',
+    flex:              1,
+    alignItems:        'center',
+    justifyContent:    'center',
     paddingHorizontal: layout.screenPadding,
   },
   cards: {
     width:    '100%',
-    gap:      space['4'],
+    gap:      space['3'],
     maxWidth: 400,
   },
-  card: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    gap:             space['5'],
-    backgroundColor: tokens.surface.raised,
-    borderRadius:    12,
-    paddingVertical:   space['4'],
-    paddingHorizontal: space['5'],
-    borderWidth:     1,
-    borderColor:     tokens.border.subtle,
+  cardRow: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:           space['5'],
   },
-  symbol: {
-    color:    tokens.accent.primary,
-    minWidth: 32,
-    textAlign: 'center',
+  symbolContainer: {
+    width:  40,
+    height: 40,
   },
   cardLabel: {
     textTransform: 'uppercase',
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
     marginTop:  space['10'],
   },
   eyebrow: {
-    marginBottom: space['2'],
+    marginBottom:  space['2'],
     textTransform: 'uppercase',
     letterSpacing: 2,
   },

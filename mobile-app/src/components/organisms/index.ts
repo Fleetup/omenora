@@ -30,3 +30,6 @@ export type { ReadingCardProps } from './ReadingCard'
 
 export { TransitCard } from './TransitCard'
 export type { TransitCardProps } from './TransitCard'
+
+export { ReadingFeatureCard } from './ReadingFeatureCard'
+export type { ReadingFeatureCardProps } from './ReadingFeatureCard'

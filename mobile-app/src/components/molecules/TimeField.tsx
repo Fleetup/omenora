@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Modal, Platform, Pressable, Switch, View, StyleSheet, ViewStyle } from 'react-native'
+import { Modal, Platform, Pressable, View, StyleSheet, ViewStyle } from 'react-native'
+import { BlurView } from 'expo-blur'
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
 import type { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import { Clock } from 'lucide-react-native'
@@ -8,7 +9,7 @@ import { Text, Button } from '../atoms'
 import { tokens, space, layout, radius } from '../../design/tokens'
 
 export interface TimeFieldProps {
-  label: string
+  label?: string
   value: Date | null
   onChange: (time: Date | null) => void
   showUnknownToggle?: boolean
@@ -36,8 +37,7 @@ export const TimeField: React.FC<TimeFieldProps> = ({
   const [tempValue, setTempValue] = useState<Date>(value ?? new Date())
   const [unknownEnabled, setUnknownEnabled] = useState(showUnknownToggle && value === null)
 
-  const resolvedLabel = required ? `${label} *` : label
-  const borderColor = error != null ? tokens.state.danger : tokens.border.default
+  const resolvedLabel = label != null ? (required ? `${label} *` : label) : undefined
 
   const handleTap = () => {
     if (unknownEnabled) return
@@ -82,40 +82,52 @@ export const TimeField: React.FC<TimeFieldProps> = ({
 
   return (
     <View style={style}>
-      <Text variant="label" style={styles.label}>
-        {resolvedLabel}
-      </Text>
-      <Pressable
-        onPress={handleTap}
-        style={[styles.field, { borderColor }, unknownEnabled && styles.fieldDisabled]}
-      >
-        {unknownEnabled ? (
-          <Text variant="bodyLarge" style={styles.unknownText}>
-            Unknown
-          </Text>
-        ) : (
-          <Text
-            variant="bodyLarge"
-            style={[styles.displayText, { color: formattedValue != null ? tokens.text.primary : tokens.text.disabled }]}
-          >
-            {formattedValue ?? placeholder}
-          </Text>
-        )}
-        <Clock size={20} color={tokens.text.secondary} />
+      {resolvedLabel != null && (
+        <Text variant="label" style={styles.label}>
+          {resolvedLabel}
+        </Text>
+      )}
+      <Pressable onPress={handleTap} disabled={unknownEnabled}>
+        <BlurView
+          intensity={20}
+          tint="dark"
+          style={[
+            styles.field,
+            unknownEnabled && styles.fieldDisabled,
+            error != null && styles.fieldError,
+          ]}
+        >
+          <View style={styles.fieldTint} />
+          {unknownEnabled ? (
+            <Text variant="bodyLarge" style={styles.unknownText}>
+              Unknown
+            </Text>
+          ) : (
+            <Text
+              variant="bodyLarge"
+              style={[styles.displayText, { color: formattedValue != null ? tokens.text.primary : tokens.text.disabled }]}
+            >
+              {formattedValue ?? placeholder}
+            </Text>
+          )}
+          <Clock size={20} color={tokens.text.secondary} />
+        </BlurView>
       </Pressable>
 
       {showUnknownToggle && (
-        <View style={styles.toggleRow}>
-          <Switch
-            value={unknownEnabled}
-            onValueChange={handleToggle}
-            trackColor={{ true: tokens.accent.primary, false: tokens.border.default }}
-            thumbColor="#FFFFFF"
-          />
+        <Pressable
+          onPress={() => handleToggle(!unknownEnabled)}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: unknownEnabled }}
+          style={styles.toggleRow}
+        >
+          <View style={[styles.trackOuter, unknownEnabled && styles.trackActive]}>
+            <View style={[styles.thumb, unknownEnabled && styles.thumbActive]} />
+          </View>
           <Text variant="body" style={styles.toggleLabel}>
             {unknownToggleLabel}
           </Text>
-        </View>
+        </Pressable>
       )}
 
       {error != null ? (
@@ -131,24 +143,28 @@ export const TimeField: React.FC<TimeFieldProps> = ({
       {Platform.OS !== 'android' && (
         <Modal
           visible={showModal}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          transparent={false}
+          animationType="fade"
+          transparent={true}
           onRequestClose={handleCancel}
         >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Button variant="tertiary" label="Cancel" onPress={handleCancel} />
-              <Button variant="tertiary" label="Done" onPress={handleDone} />
-            </View>
-            <DateTimePicker
-              value={tempValue}
-              mode="time"
-              display="spinner"
-              onChange={(_event: DateTimePickerEvent, date?: Date) => {
-                if (date != null) setTempValue(date)
-              }}
-            />
+          <View style={styles.modalBackdrop}>
+            <BlurView intensity={24} tint="dark" style={styles.modalCard}>
+              <View style={styles.modalTint} />
+              <View style={styles.modalHeader}>
+                <Button variant="tertiary" label="Cancel" onPress={handleCancel} />
+                <Button variant="tertiary" label="Done" onPress={handleDone} />
+              </View>
+              <DateTimePicker
+                value={tempValue}
+                mode="time"
+                display="spinner"
+                themeVariant="dark"
+                style={styles.picker}
+                onChange={(_event: DateTimePickerEvent, date?: Date) => {
+                  if (date != null) setTempValue(date)
+                }}
+              />
+            </BlurView>
           </View>
         </Modal>
       )}
@@ -166,13 +182,21 @@ const styles = StyleSheet.create({
     alignItems:        'center',
     paddingVertical:   space['3'],
     paddingHorizontal: space['4'],
-    backgroundColor:   tokens.surface.raised,
     borderRadius:      radius.md,
+    overflow:          'hidden',
     borderWidth:       1,
+    borderColor:       'transparent',
     minHeight:         layout.tapTarget,
   },
   fieldDisabled: {
-    opacity: 0.5,
+    opacity: 0.4,
+  },
+  fieldError: {
+    borderColor: tokens.state.danger,
+  },
+  fieldTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: tokens.specialty.glassTint,
   },
   displayText: {
     flex: 1,
@@ -200,10 +224,48 @@ const styles = StyleSheet.create({
     color:     tokens.text.tertiary,
     marginTop: space['1'],
   },
-  modalContainer: {
+  modalBackdrop: {
     flex:            1,
-    backgroundColor: tokens.surface.raised,
-    padding:         layout.screenPadding,
+    justifyContent:  'center',
+    alignItems:      'center',
+    backgroundColor: tokens.specialty.overlayScrim,
+  },
+  modalCard: {
+    width:             '85%',
+    borderRadius:      24,
+    overflow:          'hidden',
+    paddingVertical:   space['4'],
+    paddingHorizontal: space['2'],
+    borderWidth:       1,
+    borderColor:       tokens.border.subtle,
+  },
+  modalTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: tokens.specialty.glassTint,
+  },
+  picker: {
+    backgroundColor: 'transparent',
+  },
+  trackOuter: {
+    width:           48,
+    height:          26,
+    borderRadius:    13,
+    backgroundColor: tokens.border.default,
+    padding:         3,
+    justifyContent:  'center',
+  },
+  trackActive: {
+    backgroundColor: tokens.accent.primary,
+  },
+  thumb: {
+    width:           20,
+    height:          20,
+    borderRadius:    10,
+    backgroundColor: tokens.specialty.white,
+    alignSelf:       'flex-start',
+  },
+  thumbActive: {
+    alignSelf: 'flex-end',
   },
   modalHeader: {
     flexDirection:  'row',

@@ -85,7 +85,9 @@ export const LANGUAGES = [
   { code: 'pt', label: 'Português', flag: '🇧🇷' },
   { code: 'it', label: 'Italiano', flag: '🇮🇹' },
   { code: 'ru', label: 'Русский', flag: '🇷🇺' },
-  { code: 'zh', label: '中文', flag: '🇨🇳' },
+  { code: 'zh', label: '中文',    flag: '🇨🇳' },
+  { code: 'hi', label: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'ko', label: '한국어',  flag: '🇰🇷' },
 ];
 
 export const REGION_OPTIONS = [

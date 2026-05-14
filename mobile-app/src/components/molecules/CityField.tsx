@@ -14,7 +14,7 @@ import { searchPlaces, type Place } from '../../api/nominatim'
 import { tokens, space, radius, layout } from '../../design/tokens'
 
 export interface CityFieldProps {
-  label: string
+  label?: string
   value: Place | null
   onChange: (place: Place | null) => void
   placeholder?: string
@@ -52,7 +52,7 @@ export const CityField: React.FC<CityFieldProps> = ({
     }
   }, [])
 
-  const resolvedLabel = required ? `${label} *` : label
+  const resolvedLabel = label != null ? (required ? `${label} *` : label) : undefined
 
   const doSearch = (text: string) => {
     abortRef.current?.abort()
@@ -132,9 +132,11 @@ export const CityField: React.FC<CityFieldProps> = ({
 
   return (
     <View style={style}>
-      <Text variant="label" style={styles.label}>
-        {resolvedLabel}
-      </Text>
+      {resolvedLabel != null && (
+        <Text variant="label" style={styles.label}>
+          {resolvedLabel}
+        </Text>
+      )}
 
       {value != null ? (
         <View style={styles.chip}>
@@ -216,8 +218,10 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection:   'row',
     alignItems:      'center',
-    backgroundColor: tokens.accent.subtle,
+    backgroundColor: tokens.specialty.glassTint,
     borderRadius:    radius.md,
+    borderWidth:     1,
+    borderColor:     tokens.border.accent,
     padding:         space['3'],
     gap:             space['2'],
   },
@@ -247,9 +251,12 @@ const styles = StyleSheet.create({
     marginTop: space['1'],
   },
   resultsList: {
-    backgroundColor: tokens.surface.overlay,
-    borderRadius:    radius.md,
+    backgroundColor: tokens.specialty.glassTint,
+    borderRadius:    radius.xl,
+    borderWidth:     1,
+    borderColor:     tokens.border.subtle,
     marginTop:       space['1'],
+    overflow:        'hidden',
   },
   resultRow: {
     paddingVertical:   space['3'],

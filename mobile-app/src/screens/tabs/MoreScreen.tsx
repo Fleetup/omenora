@@ -1,6 +1,7 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { View, ScrollView, Alert, Linking, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { CommonActions } from '@react-navigation/native'
 import Constants from 'expo-constants'
 import {
   Heart,
@@ -15,6 +16,7 @@ import {
   Info,
   LifeBuoy,
   Trash2,
+  AlertTriangle,
   LogOut,
   HelpCircle,
   Mail,
@@ -28,69 +30,96 @@ import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
 import { useAuth } from '../../context/useAuth'
 import { tokens, space, layout } from '../../design/tokens'
+import { AtmosphericBackground } from '../../components/atmosphere'
 import type { MoreScreenProps } from '../../navigation/types'
 
+const CARD_BG = 'rgba(42,31,24,0.40)'
+
 export default function MoreScreen({ navigation }: MoreScreenProps) {
-  const { firstName, languageOverride } = useProfileStore()
-  const { isPremium } = usePurchases()
-  const { signOut, deleteAccount, showAuthGate, isAnonymous } = useAuth()
+  const { languageOverride } = useProfileStore()
+  const { isPremium, presentCustomerCenter, presentPaywall } = usePurchases()
+  const { signOut, showAuthGate, isAnonymous, displayName, user } = useAuth()
+
+  const [awaitingSignIn, setAwaitingSignIn] = useState(false)
+
+  useEffect(() => {
+    if (awaitingSignIn && !isAnonymous) {
+      setAwaitingSignIn(false)
+      if (!isPremium) {
+        presentPaywall()
+      }
+    }
+  }, [awaitingSignIn, isAnonymous, isPremium, presentPaywall])
+
   const version = Constants.expoConfig?.version ?? 'unknown'
 
-  const handleDeleteAccount = useCallback(() => {
-    Alert.alert(
-      'Delete account',
-      'This permanently deletes your account, profile, and reading history. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteAccount()
-            } catch {
-              // Error already alerted inside deleteAccount
-            }
+  const handleSignOut = useCallback(async () => {
+    if (isAnonymous) {
+      // Anonymous users: signing out abandons their local-only session — data-loss warning.
+      Alert.alert(
+        'Sign out and lose your data?',
+        'Your profile and readings are not linked to an account and cannot be recovered after sign-out.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Sign out',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await signOut({ skipWarning: true })
+                const parent = navigation.getParent()
+                if (parent) {
+                  parent.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+                } else {
+                  console.warn('[MoreScreen] sign-out: getParent() returned null, falling back to navigation.dispatch — investigate navigator nesting')
+                  navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+                }
+              } catch (err) {
+                Alert.alert('Could not sign out', String(err))
+              }
+            },
           },
-        },
-      ],
-    )
-  }, [deleteAccount])
-
-  const handleSignOut = useCallback(() => {
-    Alert.alert(
-      'Sign out',
-      'Sign out of OMENORA?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign out',
-          onPress: async () => {
-            try {
-              // skipWarning: true — signOut has its own internal Alert; we provide ours
-              await signOut({ skipWarning: true })
-            } catch (err) {
-              Alert.alert('Could not sign out', String(err))
-            }
-          },
-        },
-      ],
-    )
-  }, [signOut])
+        ],
+      )
+    } else {
+      // Permanent users: sign-out is recoverable — skip the dialog, one tap.
+      try {
+        await signOut({ skipWarning: true })
+        const parent = navigation.getParent()
+        if (parent) {
+          parent.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+        } else {
+          console.warn('[MoreScreen] sign-out: getParent() returned null, falling back to navigation.dispatch — investigate navigator nesting')
+          navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Splash' }] }))
+        }
+      } catch (err) {
+        Alert.alert('Could not sign out', String(err))
+      }
+    }
+  }, [signOut, isAnonymous, navigation])
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
+    <View style={styles.root}>
+      <AtmosphericBackground variant="standard" />
+      <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Account header ─────────────────────────────────────────── */}
-        <Card variant="default" padding="default">
+        <Card variant="default" padding="default" style={{ backgroundColor: CARD_BG }}>
           <Text variant="heading2" color="primary">Account</Text>
           <View style={styles.accountSubRow}>
-            <Text variant="body" color="secondary">
-              {firstName ?? 'Welcome'}
-            </Text>
+            <View style={styles.accountIdentity}>
+              <Text variant="body" color="secondary">
+                {displayName || 'Welcome'}
+              </Text>
+              {!isAnonymous && user?.email ? (
+                <Text variant="caption" color="tertiary" style={styles.accountEmail}>
+                  {user.email}
+                </Text>
+              ) : null}
+            </View>
             <View style={[styles.planBadge, isPremium && styles.planBadgePremium]}>
               <Text variant="micro" color={isPremium ? 'accent' : 'tertiary'}>
                 {isPremium ? 'PREMIUM' : 'FREE'}
@@ -104,7 +133,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
           <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
             Premium Features
           </Text>
-          <Card variant="default" style={styles.listCard}>
+          <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
             <ListItem
               icon={Heart}
               label="Compatibility"
@@ -133,20 +162,33 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
           <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
             Account &amp; Settings
           </Text>
-          <Card variant="default" style={styles.listCard}>
+          <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
+            {/* Sign-in CTA — only visible for anonymous users */}
+            {isAnonymous && (
+              <>
+                <ListItem
+                  icon={AlertTriangle}
+                  label="Sign in or create account"
+                  meta="Your reading isn't backed up"
+                  onPress={() => { setAwaitingSignIn(true); showAuthGate() }}
+                  showChevron
+                />
+                <View style={styles.divider} />
+              </>
+            )}
             {/* Profile route not yet registered — Phase 6 */}
             <ListItem
               icon={User}
               label="Profile"
-              meta="Coming soon"
-              disabled
+              onPress={() => navigation.navigate('Profile')}
+              showChevron
             />
             <View style={styles.divider} />
             {/* Subscription route not in RootStackParamList — open iOS subscription management */}
             <ListItem
               icon={CreditCard}
               label="Subscription"
-              onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
+              onPress={presentCustomerCenter}
               showChevron
             />
             <View style={styles.divider} />
@@ -154,16 +196,17 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
             <ListItem
               icon={Bell}
               label="Notifications"
-              meta="Coming soon"
-              disabled
+              onPress={() => navigation.navigate('Notifications')}
+              showChevron
             />
             <View style={styles.divider} />
             {/* Language selector — Phase 6 */}
             <ListItem
               icon={Globe}
               label="Language"
-              meta={`${languageOverride ?? 'English'} \u00b7 Coming soon`}
-              disabled
+              meta={languageOverride ?? 'English'}
+              onPress={() => navigation.navigate('Language')}
+              showChevron
             />
           </Card>
         </View>
@@ -173,12 +216,12 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
           <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
             Trust &amp; Compliance
           </Text>
-          <Card variant="default" style={styles.listCard}>
+          <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
             {/* navigate() not Linking — web /privacy URL doesn't exist yet */}
             <ListItem
               icon={Shield}
               label="Privacy & Data"
-              onPress={() => navigation.navigate('Privacy')}
+              onPress={() => navigation.navigate('PrivacySettings')}
               showChevron
             />
             <View style={styles.divider} />
@@ -210,7 +253,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
                   icon={Trash2}
                   label="Account deletion"
                   destructive
-                  onPress={handleDeleteAccount}
+                  onPress={() => navigation.navigate('DeleteAccount')}
                 />
               </>
             )}
@@ -228,7 +271,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
           <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
             Support
           </Text>
-          <Card variant="default" style={styles.listCard}>
+          <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
             {/* /faq page does not exist on web yet — disabled until it ships */}
             <ListItem
               icon={HelpCircle}
@@ -258,7 +301,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
             <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
               Developer (dev-only)
             </Text>
-            <Card variant="default" style={styles.listCard}>
+            <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
               <ListItem
                 icon={Layers}
                 label="Component Gallery"
@@ -276,14 +319,18 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
         )}
 
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  safe: {
+  root: {
     flex:            1,
     backgroundColor: tokens.surface.base,
+  },
+  safe: {
+    flex: 1,
   },
   scroll: {
     paddingHorizontal: layout.screenPadding,
@@ -297,11 +344,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop:      space['2'],
   },
+  accountIdentity: {
+    flex: 1,
+    gap:  space['0.5'],
+  },
+  accountEmail: {
+  },
   planBadge: {
     borderWidth:       1,
     borderColor:       tokens.border.subtle,
     borderRadius:      4,
-    paddingVertical:   2,
+    paddingVertical:   space['0.5'],
     paddingHorizontal: space['2'],
   },
   planBadgePremium: {
@@ -316,8 +369,8 @@ const styles = StyleSheet.create({
     overflow:          'hidden',
   },
   divider: {
-    height:          StyleSheet.hairlineWidth,
-    backgroundColor: tokens.border.subtle,
+    height:           1,
+    backgroundColor:  tokens.border.default,
     marginHorizontal: space['4'],
   },
 })

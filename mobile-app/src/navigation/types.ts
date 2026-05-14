@@ -15,10 +15,13 @@ export type RootStackParamList = {
   // Onboarding
   Splash:             undefined;
   Welcome:            undefined;
-  BirthInfo:          undefined;
-  BirthTimeLocation:  undefined;
+  Name:               undefined;
+  DateOfBirth:        undefined;
+  BirthCity:          undefined;
+  BirthTime:          undefined;
   Calculating:        undefined;
   BigThreeReveal:     { sunSign: string; moonSign: string; risingSign: string; archetypeName: string };
+  SaveYourReading:    undefined;
   OptionalQuestions:  undefined;
   PremiumTeaser:      undefined;
   // App
@@ -29,8 +32,13 @@ export type RootStackParamList = {
   CrisisResources:     undefined;
   TraditionSwitcher:   undefined;
   Privacy:             undefined;
-  Terms:         undefined;
-  Components:    undefined;
+  Terms:               undefined;
+  Components:          undefined;
+  Profile:             undefined;
+  Notifications:       undefined;
+  Language:            undefined;
+  DeleteAccount:       undefined;
+  PrivacySettings:     undefined;
 };
 
 // ── Tab screen props (composite — can navigate to root stack screens too) ──────
@@ -58,6 +66,12 @@ export type CompatibilityScreenProps = NativeStackScreenProps<RootStackParamList
 export type PrivacyScreenProps      = NativeStackScreenProps<RootStackParamList, 'Privacy'>;
 export type TermsScreenProps                = NativeStackScreenProps<RootStackParamList, 'Terms'>;
 export type BigThreeRevealScreenProps       = NativeStackScreenProps<RootStackParamList, 'BigThreeReveal'>;
+export type SaveYourReadingScreenProps      = NativeStackScreenProps<RootStackParamList, 'SaveYourReading'>;
 export type TraditionSwitcherScreenProps    = NativeStackScreenProps<RootStackParamList, 'TraditionSwitcher'>;
 export type CounselChatScreenProps          = NativeStackScreenProps<RootStackParamList, 'CounselChat'>;
 export type CrisisResourcesScreenProps      = NativeStackScreenProps<RootStackParamList, 'CrisisResources'>;
+export type ProfileScreenProps              = NativeStackScreenProps<RootStackParamList, 'Profile'>;
+export type NotificationsScreenProps        = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
+export type LanguageScreenProps             = NativeStackScreenProps<RootStackParamList, 'Language'>;
+export type DeleteAccountScreenProps        = NativeStackScreenProps<RootStackParamList, 'DeleteAccount'>;
+export type PrivacySettingsScreenProps      = NativeStackScreenProps<RootStackParamList, 'PrivacySettings'>;

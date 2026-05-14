@@ -10,7 +10,7 @@ import {
 import { ChatBubble, Header } from '../../components/organisms'
 import { ScreenWrapper } from '../../components/templates'
 import { Text, Button, TextInput } from '../../components/atoms'
-import { BoostPackSheet } from '../../components/molecules'
+import { BoostPackSheet, Toast } from '../../components/molecules'
 import type { BoostPackIdentifier } from '../../components/molecules'
 import { useProfileStore } from '../../stores/profileStore'
 import { CounselDisclosureModal } from './CounselDisclosureModal'
@@ -59,16 +59,6 @@ function ThinkingBubble() {
 const nextId = (prefix: string) =>
   `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
 
-// ── Post-purchase confirmation message ────────────────────────────────────────
-
-function getPostPurchaseMessage(packId: 'spark' | 'insight' | 'ascend'): string {
-  switch (packId) {
-    case 'spark':   return '5 conversations added. Send your next message anytime.'
-    case 'insight': return '15 conversations added. Send your next message anytime.'
-    case 'ascend':  return '35 conversations added. Send your next message anytime.'
-  }
-}
-
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function CounselChatScreen({ navigation, route }: CounselChatScreenProps) {
@@ -96,6 +86,7 @@ export default function CounselChatScreen({ navigation, route }: CounselChatScre
   const [isSending,  setIsSending]  = useState(false)
   const [usage,           setUsage]           = useState<CounselUsage | null>(null)
   const [boostSheetVisible, setBoostSheetVisible] = useState(false)
+  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' })
 
   const capReached = usage !== null && usage.source === 'premium' && usage.count >= usage.cap
   const canSend    = input.trim().length > 0 && !isSending && !capReached && profileReady
@@ -314,16 +305,20 @@ export default function CounselChatScreen({ navigation, route }: CounselChatScre
         visible={boostSheetVisible}
         onDismiss={() => setBoostSheetVisible(false)}
         onPurchaseSuccess={(packId: BoostPackIdentifier) => {
+          setToast({
+            visible: true,
+            message: packId === 'spark' ? '5 conversations added'
+                   : packId === 'insight' ? '15 conversations added'
+                   : '35 conversations added',
+          })
           setUsage(null)
-          setMessages((prev) => [
-            ...prev,
-            {
-              id:      nextId('sys'),
-              role:    'system' as const,
-              content: getPostPurchaseMessage(packId),
-            },
-          ])
         }}
+      />
+      <Toast
+        variant="success"
+        message={toast.message}
+        visible={toast.visible}
+        onDismiss={() => setToast((t) => ({ ...t, visible: false }))}
       />
 
       {/* ── Disclosure overlay — visible on first access or via MoreScreen ── */}

@@ -3,7 +3,7 @@ import { ScrollView, View, ActivityIndicator, StyleSheet } from 'react-native'
 import { ScreenWrapper, ErrorState } from '../components/templates'
 import { Header, Card, LockedCard } from '../components/organisms'
 import { Text, Button } from '../components/atoms'
-import { TextField, DateField, CompatibilityIAPSheet } from '../components/molecules'
+import { TextField, DateField, CompatibilityIAPSheet, Toast } from '../components/molecules'
 import { parseBackendError } from '../api/errors'
 import { useProfileStore } from '../stores/profileStore'
 import { usePurchases } from '../context/usePurchases'
@@ -52,6 +52,7 @@ export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ naviga
   const [partnerCity, setPartnerCity]       = useState('')
   const [partnerDobDate, setPartnerDobDate] = useState<Date | null>(null)
   const [iapSheetVisible, setIapSheetVisible] = useState(false)
+  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' })
 
   const canSubmit = partnerName.trim().length > 0 && partnerDobDate != null
 
@@ -241,22 +242,10 @@ export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ naviga
           ) : (
             <LockedCard
               placement="feature_compatibility"
-              lockMessage="Unlock compatibility readings"
-              unlockCtaLabel="Unlock"
+              title="Compatibility Reading"
+              description="Seven sections including bond strength, communication style, conflict patterns, and intimacy — your full relationship blueprint."
               onUnlockPress={handleUnlockPress}
-              preview={
-                <Text variant="caption">
-                  7 sections: bond, strength, challenge, communication, dynamic, forecast, advice
-                </Text>
-              }
-            >
-              <View style={styles.decorativeScore}>
-                <Text variant="display1" style={styles.decorativeScorePct}>??%</Text>
-                <Text variant="caption" style={styles.decorativeScoreLabel}>
-                  compatibility score
-                </Text>
-              </View>
-            </LockedCard>
+            />
           )}
         </ScrollView>
       )}
@@ -264,8 +253,15 @@ export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ naviga
         visible={iapSheetVisible}
         onDismiss={() => setIapSheetVisible(false)}
         onPurchaseSuccess={() => {
+          setToast({ visible: true, message: 'Compatibility reading unlocked' })
           void handleSubmit()
         }}
+      />
+      <Toast
+        variant="success"
+        message={toast.message}
+        visible={toast.visible}
+        onDismiss={() => setToast((t) => ({ ...t, visible: false }))}
       />
     </ScreenWrapper>
   )

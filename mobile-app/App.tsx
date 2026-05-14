@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import * as Sentry from '@sentry/react-native';
+import { isRunningInExpoGo } from 'expo';
 import * as Linking from 'expo-linking'
 import { useAuth } from './src/context/useAuth'
 import { StatusBar } from 'expo-status-bar';
@@ -18,27 +20,54 @@ import {
   CormorantGaramond_500Medium,
 } from '@expo-google-fonts/cormorant-garamond';
 import {
-  PlayfairDisplay_400Regular,
-  PlayfairDisplay_400Regular_Italic,
-} from '@expo-google-fonts/playfair-display';
-import {
-  Inter_300Light,
-  Inter_400Regular,
-  Inter_500Medium,
-} from '@expo-google-fonts/inter';
-import {
   Fraunces_300Light,
   Fraunces_300Light_Italic,
   Fraunces_500Medium,
 } from '@expo-google-fonts/fraunces';
 import {
-  HankenGrotesk_400Regular,
-  HankenGrotesk_500Medium,
-  HankenGrotesk_600SemiBold,
-} from '@expo-google-fonts/hanken-grotesk';
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+} from '@expo-google-fonts/poppins';
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  environment: __DEV__ ? 'development' : 'production',
+  tracesSampleRate: 0,
+  sendDefaultPii: false,
+  enableNativeFramesTracking: !isRunningInExpoGo(),
+  beforeSend(event) {
+    if (event.user) {
+      delete event.user.ip_address;
+      delete event.user.email;
+    }
+    if (event.request?.headers) {
+      const headers = event.request.headers as Record<string, unknown>;
+      delete headers['user-agent'];
+      delete headers['User-Agent'];
+    }
+    const scrubObject = (obj: Record<string, unknown>) => {
+      const PII_FIELDS = ['email', 'firstName', 'dateOfBirth', 'city', 'ip_address'];
+      const SECRET_PATTERN = /token|secret|key|password/i;
+      for (const field of PII_FIELDS) {
+        if (field in obj) obj[field] = '[Filtered]';
+      }
+      for (const field of Object.keys(obj)) {
+        if (SECRET_PATTERN.test(field)) obj[field] = '[Filtered]';
+      }
+    };
+    if (event.request?.data && typeof event.request.data === 'object') {
+      scrubObject(event.request.data as Record<string, unknown>);
+    }
+    if (event.extra && typeof event.extra === 'object') {
+      scrubObject(event.extra as Record<string, unknown>);
+    }
+    return event;
+  },
+});
 
 function DeepLinkHandler() {
   const { handleMagicLinkUrl } = useAuth()
@@ -70,7 +99,7 @@ function DeepLinkHandler() {
   return null
 }
 
-export default function App() {
+function App() {
   const [appIsReady, setAppIsReady] = useState(false);
   const initializeStore = useProfileStore((state) => state.initialize);
 
@@ -78,17 +107,12 @@ export default function App() {
     CormorantGaramond_300Light,
     CormorantGaramond_300Light_Italic,
     CormorantGaramond_500Medium,
-    PlayfairDisplay_400Regular,
-    PlayfairDisplay_400Regular_Italic,
-    Inter_300Light,
-    Inter_400Regular,
-    Inter_500Medium,
     Fraunces_300Light,
     Fraunces_300Light_Italic,
     Fraunces_500Medium,
-    HankenGrotesk_400Regular,
-    HankenGrotesk_500Medium,
-    HankenGrotesk_600SemiBold,
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
   });
 
   useEffect(() => {
@@ -132,3 +156,5 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
+export default Sentry.wrap(App);

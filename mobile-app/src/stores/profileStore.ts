@@ -3,6 +3,8 @@ import type { CalendarData } from '../types/calendar';
 import type { ArchetypeReading, NatalChartReading, ForecastReading } from '../api/endpoints';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveProfile, ProfileSaveError } from '../services/profileService';
+import type { ProfilePayload } from '../services/profileService';
 
 export interface ReportSection {
   title: string;
@@ -64,6 +66,16 @@ export interface ProfileState {
   forecastReading:      ForecastReading | null;
   setForecastReading:   (data: ForecastReading | null) => void;
 
+  // Save-reading re-prompt counters
+  saveDeclineCount: number;
+  saveLastDeclinedAt: number | null;
+  setSaveDeclineCount: (count: number) => void;
+  setSaveLastDeclinedAt: (ts: number | null) => void;
+
+  // Analytics preferences
+  analyticsEnabled: boolean;
+  setAnalyticsEnabled: (enabled: boolean) => void;
+
   // Consent flags
   hasAcceptedCounselDisclosure:    boolean;
   setHasAcceptedCounselDisclosure: (accepted: boolean) => void;
@@ -80,14 +92,22 @@ export interface ProfileState {
   setMoonSign:   (moonSign: string | null) => void;
   setRisingSign: (risingSign: string | null) => void;
   setReportId: (id: string) => void;
-  setReport: (report: Report) => void;
+  setReport: (report: Report | null) => void;
   setAnonymousUserId: (id: string) => void;
   setRegionOverride: (region: string) => void;
   setLanguageOverride: (lang: string) => void;
+  changeLanguage: (newLang: string) => void;
+
+  // Server sync
+  pendingServerSync: boolean;
+  setPendingServerSync: (v: boolean) => void;
+  setAnswers: (answers: Record<string, string>) => void;
+  commitProfileToServer: (userId: string) => Promise<void>;
 
   // Reset
   resetAnalysis: () => void;
   resetAll: () => void;
+  reset: () => void;
 
   // Initialize
   initialize: () => Promise<void>;
@@ -114,7 +134,14 @@ const initialState = {
   natalChartReading: null,
   forecastReading:   null,
   hasAcceptedCounselDisclosure: false,
+  analyticsEnabled: true,
+  pendingServerSync: false,
+  saveDeclineCount: 0,
+  saveLastDeclinedAt: null,
 };
+
+export const useProfileComplete = () =>
+  useProfileStore((s) => s.archetype !== null && s.dateOfBirth !== '' && s.sunSign !== null)
 
 export const useProfileStore = create<ProfileState>()(
   persist(
@@ -147,6 +174,53 @@ export const useProfileStore = create<ProfileState>()(
       setNatalChartReading: (natalChartReading) => set({ natalChartReading }),
       setForecastReading:   (forecastReading)   => set({ forecastReading }),
       setHasAcceptedCounselDisclosure: (hasAcceptedCounselDisclosure) => set({ hasAcceptedCounselDisclosure }),
+      setSaveDeclineCount: (saveDeclineCount) => set({ saveDeclineCount }),
+      setSaveLastDeclinedAt: (saveLastDeclinedAt) => set({ saveLastDeclinedAt }),
+
+      setAnalyticsEnabled: (analyticsEnabled) => set({ analyticsEnabled }),
+
+      setPendingServerSync: (pendingServerSync) => set({ pendingServerSync }),
+
+      setAnswers: (answers) => set({ answers }),
+
+      commitProfileToServer: async (userId) => {
+        const s = useProfileStore.getState()
+        const payload: ProfilePayload = {
+          first_name:        s.firstName        || undefined,
+          date_of_birth:     s.dateOfBirth      || undefined,
+          time_of_birth:     s.timeOfBirth      || undefined,
+          city:              s.city             || undefined,
+          archetype:         s.archetype        ?? undefined,
+          sun_sign:          s.sunSign          ?? undefined,
+          moon_sign:         s.moonSign         ?? undefined,
+          rising_sign:       s.risingSign       ?? undefined,
+          life_path_number:  s.lifePathNumber   ?? undefined,
+          answers:           s.answers,
+          language_override: s.languageOverride ?? undefined,
+          analytics_enabled: s.analyticsEnabled,
+        }
+        try {
+          await saveProfile(userId, payload)
+          set({ pendingServerSync: false })
+        } catch (err: any) {
+          if (err instanceof ProfileSaveError && err.kind === 'network') {
+            set({ pendingServerSync: true })
+          }
+          throw err
+        }
+      },
+
+      changeLanguage: (newLang) =>
+        set((state) => {
+          if (newLang === state.languageOverride) return {};
+          return {
+            languageOverride:   newLang,
+            archetypeReading:  null,
+            natalChartReading: null,
+            forecastReading:   null,
+            calendarData:      null,
+          };
+        }),
 
       resetAnalysis: () =>
         set({
@@ -162,6 +236,7 @@ export const useProfileStore = create<ProfileState>()(
         }),
 
       resetAll: () => set(initialState),
+      reset: () => set(initialState),
 
       initialize: async () => {
         // Any async initialization logic
@@ -191,6 +266,11 @@ export const useProfileStore = create<ProfileState>()(
         natalChartReading: state.natalChartReading,
         forecastReading:   state.forecastReading,
         hasAcceptedCounselDisclosure: state.hasAcceptedCounselDisclosure,
+        analyticsEnabled: state.analyticsEnabled,
+        answers: state.answers,
+        pendingServerSync: state.pendingServerSync,
+        saveDeclineCount: state.saveDeclineCount,
+        saveLastDeclinedAt: state.saveLastDeclinedAt,
       }),
     }
   )

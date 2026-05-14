@@ -14,7 +14,6 @@ import type { CalendarData, CalendarMonth } from '../types/calendar'
 
 // ── Module-level constants ────────────────────────────────────────────────────
 
-const MONTH_ABBREVS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'] as const
 const SHEET_HEIGHT  = Math.round(Dimensions.get('window').height * 0.75)
 
 // ── State machine ─────────────────────────────────────────────────────────────
@@ -124,7 +123,9 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
   const calendarData     = useProfileStore((s) => s.calendarData)
   const setCalendarData  = useProfileStore((s) => s.setCalendarData)
 
-  const { hasCalendar, presentPaywall } = usePurchases()
+  const { hasCalendar, presentPaywall, purchaseCalendar, calendarProduct } = usePurchases()
+
+  const [isPurchasingCalendar, setIsPurchasingCalendar] = useState(false)
 
   const [state, setState] = useState<ScreenState>(
     // TODO: v1.1 — detect calendar.year mismatch vs current year and prompt
@@ -184,6 +185,25 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
       console.warn('[Calendar] presentPaywall threw:', err)
     }
   }, [presentPaywall])
+
+  const handleBuyCalendar = useCallback(async () => {
+    if (isPurchasingCalendar) return
+    setIsPurchasingCalendar(true)
+    try {
+      await purchaseCalendar()
+      setCalendarData(null)
+    } catch (err: any) {
+      if (err?.userCancelled === true) {
+        return
+      }
+      Alert.alert(
+        'Purchase failed',
+        "Couldn't complete the purchase. Please try again or contact support@omenora.com.",
+      )
+    } finally {
+      setIsPurchasingCalendar(false)
+    }
+  }, [isPurchasingCalendar, purchaseCalendar, setCalendarData])
 
   const handleRegeneratePress = useCallback(() => {
     Alert.alert(
@@ -297,27 +317,30 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
               </>
 
             ) : (
-              <LockedCard
-                placement="feature_calendar"
-                lockMessage="Unlock your 2026 lucky timing"
-                unlockCtaLabel="Unlock"
-                onUnlockPress={handleUnlockPress}
-                preview={
-                  <Text variant="caption">
-                    12 months • peak periods • caution dates • lucky days
+              <>
+                <LockedCard
+                  placement="feature_calendar"
+                  title="Your 2026 Lucky Timing"
+                  description="12 months of peak periods, caution dates, and lucky windows — mapped to your personal chart."
+                  onUnlockPress={handleUnlockPress}
+                />
+                <Pressable
+                  onPress={handleBuyCalendar}
+                  disabled={isPurchasingCalendar}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Buy 2026 Calendar for ${calendarProduct?.priceString ?? '$4.99'}`}
+                  style={({ pressed }) => [
+                    styles.calendarBuyBtn,
+                    (isPurchasingCalendar || pressed) && styles.calendarBuyBtnPressed,
+                  ]}
+                >
+                  <Text variant="label" style={styles.calendarBuyBtnText}>
+                    {isPurchasingCalendar
+                      ? 'Processing…'
+                      : `Buy 2026 Calendar — ${calendarProduct?.priceString ?? '$4.99'}`}
                   </Text>
-                }
-              >
-                <View style={styles.decorativeGrid}>
-                  {MONTH_ABBREVS.map((abbr) => (
-                    <View key={abbr} style={styles.decorativeCellWrap}>
-                      <View style={styles.decorativeCell}>
-                        <Text variant="micro" style={styles.decorativeCellText}>{abbr}</Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </LockedCard>
+                </Pressable>
+              </>
             )}
           </ScrollView>
         )}
@@ -384,20 +407,20 @@ const styles = StyleSheet.create({
     height:       '100%',
     borderRadius: radius.xs,
   },
-  decorativeGrid: {
-    flexDirection:   'row',
-    flexWrap:        'wrap',
-    justifyContent:  'space-between',
-    rowGap:          space['2'],
-    opacity:         0.35,
-    paddingVertical: space['2'],
+  calendarBuyBtn: {
+    borderWidth:       1,
+    borderColor:       tokens.border.default,
+    borderRadius:      radius.md,
+    paddingVertical:   space['3'],
+    paddingHorizontal: space['5'],
+    minHeight:         layout.tapTarget,
+    alignItems:        'center',
+    justifyContent:    'center',
   },
-  decorativeCellWrap: { width: '31.5%' },
-  decorativeCell: {
-    backgroundColor: tokens.surface.overlay,
-    borderRadius:    radius.sm,
-    paddingVertical: space['3'],
-    alignItems:      'center',
+  calendarBuyBtnPressed: {
+    opacity: 0.6,
   },
-  decorativeCellText: { color: tokens.text.secondary },
+  calendarBuyBtnText: {
+    color: tokens.text.secondary,
+  },
 })

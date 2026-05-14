@@ -2368,9 +2368,63 @@ Definition of done. All items must pass before starting Phase 6.
 ## Phase 6 — More Tab & Settings
 
 **Goal:** Build all settings screens wired from More tab. Complete account deletion. Wire subscription management via RC customer center.
-**Duration:** ~6 hrs
+**Duration:** ~14-16 hrs (recon-revised; original 6hr estimate predates LanguageScreen, Calendar IAP, push notifications backend work, and language mismatch fix)
 **Prerequisites:** Phase 3 complete (MoreScreen built). Phase 0.5 complete (auth context for sign out and deletion).
 **Verify:** Profile screen shows correct user data. Subscription screen opens RC customer center. Account deletion completes end-to-end. Sign out clears all state.
+
+> **[ARCHITECTURAL DECISIONS 2026-05-11 — Phase 6 recon]**
+>
+> Six decisions and six drift corrections captured during Phase 6 pre-flight recon. Apply throughout Phase 6 cluster work.
+>
+> **Decision 1 — Calendar buy CTA inline on CalendarScreen.** No separate PurchaseCalendarScreen. In CalendarScreen's !hasCalendar locked state, primary LockedCard triggers subscription paywall as today; secondary button below offers "or buy 2026 Calendar separately — $4.99" → purchaseCalendar() → on success, clear calendarData and re-render with hasCalendar = true. Subscription is primary value; one-time IAP is alternative for non-commitment buyers.
+>
+> **Decision 2 — Profile edit in-place with Save button.** ProfileScreen renders read-only view by default; tap "Edit" → form mode with TextField / DateField inline; tap "Save changes" → validate → call existing setters. DOB change triggers warning dialog: "Your archetype, chart readings, and 2026 calendar will be regenerated next time you view them." User confirms → save → invalidate report, archetypeReading, natalChartReading, forecastReading, calendarData (5 cache fields). firstName change: no warning, no invalidation. No separate BirthInfoEditScreen — inline edit on ProfileScreen.
+>
+> **Decision 3 — Notifications settings-only opt-in.** No hard permission ask on app launch or MoreScreen visit. User must manually navigate to NotificationsScreen and toggle "Daily horoscope at 6 AM" → iOS native permission prompt fires AT THAT TOGGLE → grant → token registered with backend. App Store Review-friendly pattern; users who don't want notifications never see the prompt.
+>
+> **Decision 4 — Language change clears caches automatically.** setLanguageOverride wrapper also calls setReport(null), setArchetypeReading(null), setNatalChartReading(null), setForecastReading(null), setCalendarData(null). Toast confirms "Readings will be regenerated in {new language}." No warning dialog (low-stakes presentational change, not chart-changing edit).
+>
+> **Decision 5 — Customer center uses RevenueCatUI.presentCustomerCenter().** No custom screen. MoreScreen "Subscription" row onPress directly invokes RC native modal. Replaces current Linking.openURL to Apple's generic subscription page. RC's customer center handles status display, restore, cancel, manage in App Store deep link.
+>
+> **Decision 6 — Step 6.3a analytics: UI + store field only in Phase 6.** analyticsEnabled: boolean added to profileStore (default true). Toggle UI shipped in Phase 6 NotificationsScreen (or dedicated Privacy section). SDK runtime calls (posthog.optOut, Sentry disable) DEFERRED to Phase 7 alongside PostHog + Sentry SDK installs. Toggle has no effect until Phase 7 — acceptable because no analytics are firing pre-Phase-7.
+
+> **[DRIFT CORRECTIONS 2026-05-11]**
+>
+> Six plan-vs-reality drift items surfaced by recon. Corrections applied below.
+>
+> **Drift 1 — LanguageScreen formalized as Step 6.6.** Previously deferred work with no formal step. Plan now adds Step 6.6.
+>
+> **Drift 2 — Calendar IAP buy CTA formalized as Step 6.7.** Phase 4 amendments (Decision 2) said "deferred to Phase 6" but no Phase 6 step existed. Plan now adds Step 6.7.
+>
+> **Drift 3 — Privacy/Terms rows external links.** Plan QG correctly says rows link to omenora.com/privacy and omenora.com/terms externally. Current MoreScreen navigates to in-app Privacy + Terms screens — those screens become orphaned. Phase 6 changes MoreScreen onPress to Linking.openURL. In-app screens deleted as Phase 6 cleanup.
+>
+> **Drift 4 — DeleteAccountScreen replaces inline flow.** Current MoreScreen has inline Alert → deleteAccount() handler. Plan Step 6.4 specifies a dedicated DeleteAccountScreen with confirmation UX. MoreScreen Account deletion row becomes navigation.navigate('DeleteAccount').
+>
+> **Drift 5 — Step 6.3a SDK calls deferred (see Decision 6).** Plan Step 6.3a as written references posthog.optOut() and Sentry.getClient() but those SDKs are Phase 7 installs. Phase 6 ships UI + store field only.
+>
+> **Drift 6 — Language mismatch bug (Cluster 0 backend work).** Mobile LANGUAGES constant lists 8 codes (en, es, fr, de, pt, it, ru, zh). Backend languageInstructions map covers 6 (en, es, pt, hi, ko, zh). Non-overlap: mobile-only fr/de/it/ru silently fall back to English; backend-only hi/ko unpickable. Cluster 0 expands backend to 10 languages (en, es, fr, de, pt, it, ru, zh, hi, ko) and adds hi/ko to mobile LANGUAGES. Fixes a real bug affecting all non-English users since Phase 5.
+
+> **[Cluster 0 — Phase 6 prerequisite (~3hr)]**
+>
+> Pre-screen-build prerequisite work. Must complete before Clusters 1-N.
+>
+> 0.1 — Add analyticsEnabled: boolean to profileStore (default true). Setter + persistence via partialize. SDK calls deferred to Phase 7 per Decision 6.
+>
+> 0.2 — Add purchaseCalendar(): Promise<{ success: boolean }> method to PurchasesContext + PurchasesProvider. Wraps Purchases.purchaseStoreProduct for omenora_calendar_2026. On success: refreshCustomerInfo() so hasCalendar re-derives. Error handling: user cancel, network failure, product not available.
+>
+> 0.3 — Add presentCustomerCenter(): Promise<void> method to PurchasesContext + PurchasesProvider. Wraps RevenueCatUI.presentCustomerCenter(). RevenueCatUI is already imported per recon — zero new imports.
+>
+> 0.4 — Add 4 missing language instructions to backend endpoint languageInstructions maps: fr (French), de (German), it (Italian), ru (Russian). Each instruction is a 1-2 sentence directive to Claude to generate the response in that language with culturally appropriate phrasing. Pattern matches existing entries for es / pt / hi / ko / zh. Apply to all 3 report endpoints (archetype, natal-chart, forecast).
+>
+> 0.5 — Add hi + ko to mobile LANGUAGES constant (mobile-app/src/constants/questions.ts). Final list: en, es, fr, de, pt, it, ru, zh, hi, ko (10 codes).
+>
+> 0.6 — Add route registrations: Profile, Notifications, Language, DeleteAccount to RootStackParamList. Composite screen prop exports.
+>
+> 0.7 — Supabase migration: push_tokens table (user_id, token, platform: 'ios' | 'android', created_at). Foreign key to auth.users with cascade delete on user removal.
+>
+> 0.8 — Backend endpoint scaffold: POST /api/notifications/register. Body: { token, platform }. Auth: requireAuth. Inserts into push_tokens. Upserts on (user_id, platform) so same user re-registering replaces old token. (Cron daily-push dispatch deferred to a later Phase 6 cluster.)
+>
+> Cluster 0 ships before any screen builds. ~3hr work spans mobile + backend + Supabase migration.
 
 ---
 
@@ -2393,18 +2447,9 @@ Content:
 
 ---
 
-### Step 6.2 — Wire Subscription management
+### Step 6.2 — Subscription management
 
-**In MoreScreen (Step 3.6 already shells this):**
-
-```typescript
-import RevenueCatUI from 'react-native-purchases-ui'
-
-// In Subscription list item onPress:
-await RevenueCatUI.presentCustomerCenter()
-```
-
-> RC customer center handles: upgrade, downgrade, cancellation, restore. No custom screen needed.
+Replace MoreScreen "Subscription" row's `Linking.openURL` with `onPress: () => presentCustomerCenter()` (Cluster 0 method). Removes the deep link to Apple's generic subscription page; RC native modal handles cancel, restore, manage entirely in-app.
 
 ---
 
@@ -2417,11 +2462,7 @@ Add to `RootStackParamList`:
 Notifications: undefined
 ```
 
-Content:
-- `Header` + title "Notifications"
-- Toggle: Daily cosmic insight (7am default) — request `expo-notifications` permission on enable
-- Time picker for notification time (uses `@react-native-community/datetimepicker` ✅)
-- Toggle: New transit alerts
+Per Decision 3, iOS permission prompt fires WHEN USER TOGGLES ON (not earlier). Toggle on success: `registerForPushNotificationsAsync` → `getExpoPushTokenAsync` → `POST /api/notifications/register` (Cluster 0 endpoint) → toast confirms. Toggle off: cancel scheduled notifications (push_tokens row retained until account deletion). v1: daily horoscope only. "New transit alerts" deferred to v1.1.
 
 Notification scheduling uses `expo-notifications` (already installed `~0.31.5`) ✅.
 
@@ -2472,20 +2513,33 @@ Add to `RootStackParamList`:
 DeleteAccount: undefined
 ```
 
-Content:
-- `Header` + title "Delete Account"
-- Warning body: "This will permanently delete your chart, readings, and account. This cannot be undone."
-- List of what is deleted: chart data, reading history, active subscription (cancelled immediately)
-- `[Delete my account]` (danger Button variant):
-  1. Confirm dialog: "Are you sure? This is permanent."
-  2. `DELETE /api/auth/account` (built in Phase 0.5.15)
-  3. `supabase.auth.signOut()`
-  4. `Purchases.logOut()`
-  5. `AsyncStorage.clear()`
-  6. Navigate to `Splash` (reset stack)
-- `[Cancel]` → navigate back
+Replaces current MoreScreen inline Alert flow (Drift 4). UX: warning paragraph about permanence + checkbox "I understand this cannot be undone" + primary destructive button "Delete my account permanently." On confirm: `DELETE /api/auth/account` → `signOut` → `Purchases.logOut` → `AsyncStorage.clear` → navigate Splash. MoreScreen Account deletion row becomes `navigation.navigate('DeleteAccount')`.
 
 > Apple App Store requires in-app account deletion since June 2022. This screen must be reachable without contacting support.
+
+---
+
+### Step 6.6 — LanguageScreen
+
+**File:** `src/screens/settings/LanguageScreen.tsx` (new)
+
+Picker UI listing 10 supported languages with native names and flag emoji. Selection calls `setLanguageOverride` wrapper which clears all reading caches per Decision 4 and shows a toast confirming the language change. MoreScreen Language row enabled and navigates here.
+
+---
+
+### Step 6.7 — Calendar IAP buy CTA
+
+CalendarScreen `!hasCalendar` locked state adds secondary "Buy 2026 Calendar — $4.99" button below the existing LockedCard. `onPress` → `purchaseCalendar()` (Cluster 0 method) → on success `setCalendarData(null)` (forces re-fetch) → screen re-renders with `hasCalendar = true`.
+
+**Decisions captured at implementation time (Cluster 3, commit `573a6ef`):**
+
+- **CTA placement: sibling below LockedCard, NOT inside it.** LockedCard is consumed by 7 call sites (CalendarScreen, CompatibilityScreen, TraditionSwitcherScreen, TodayScreen ×2, ReadingsScreen ×3, ComponentsScreen). Only CalendarScreen has a non-subscription alternative purchase path; Compatibility / Readings / Today are subscription-gated only. Extending LockedCard with a footer slot would have forced migration of 7 call sites for a behavior 1 needs — wrong cost/benefit. CalendarScreen's `!hasCalendar` branch wraps the existing `<LockedCard>` and the new `<Pressable>` in a React fragment; LockedCard's `onUnlockPress` continues to call `presentPaywall()` (primary CTA, subscription path), the new sibling button calls `purchaseCalendar()` (secondary CTA, IAP path).
+
+- **Price source: RC `priceString` with `"$4.99"` fallback.** Hardcoding "$4.99" violates Apple Guideline 2.3.8 — a non-USD user sees "$4.99" in the button label but Apple charges them in their local currency per Apple's regional pricing tier (€4.99 / ¥600 / £4.99 / etc.). `PurchasesContext` extended with a new field `calendarProduct: PurchasesStoreProduct | null`. `PurchasesProvider` fetches the product via `Purchases.getProducts(['omenora_calendar_2026'], NON_SUBSCRIPTION)` in a `useEffect` keyed on `isReady`, with cancelled-flag cleanup. Errors `console.warn`, state stays `null`. CalendarScreen reads `calendarProduct?.priceString ?? '$4.99'` for the button label. The fallback handles both pre-launch (ASC product doesn't exist yet, `getProducts` returns `[]`) and runtime network failure — graceful degradation, no broken UI state.
+
+- **Purchase error handling.** RC `PurchasesError.userCancelled: boolean | null` checked strictly as `=== true` to exclude the `null` case some SDK versions return on non-purchase errors. User-cancelled = silent no-op (industry standard, the user just dismissed the sheet). All other errors → native `Alert.alert` with non-technical copy pointing to `support@omenora.com`. Double-tap guarded by local `isPurchasingCalendar` state.
+
+- **Out of Cluster 3 scope, flagged for follow-up:** (1) MoreScreen Help / FAQ row still shows `meta="Coming soon"` — only remaining stub on MoreScreen, capture in v1 hardening or Phase 7. (2) Contact Support row uses `Linking.openURL('mailto:...')` with no `canOpenURL` guard — fine for v1 since Mail is preinstalled on iOS, but iPad-only users without a Mail account configured see a blank screen on tap. v1.1 polish item.
 
 ---
 
@@ -2507,7 +2561,7 @@ Definition of done. All items must pass before starting Phase 7.
 - [ ] ProfileScreen: firstName, birth date, city, archetype, sign-in method all displayed correctly
 - [ ] Subscription row → RevenueCat customer center modal opens
 - [ ] NotificationsScreen: enabling daily insight → permission prompt → notification scheduled at user-specified time
-- [ ] Analytics opt-out toggle (Step 6.3a): off state → `posthog.optOut()` called, Sentry disabled
+- [ ] Analytics opt-out toggle (Step 6.3a): store field exists, toggle UI renders. SDK runtime hookup verified in Phase 7.
 - [ ] DeleteAccountScreen: full flow completes → backend RPC succeeds → session cleared → app navigates to Splash → new anonymous session created on next launch
 - [ ] Sign out (anonymous user): warning dialog "data will be lost" shown; on confirm: session cleared, app navigates to Splash
 - [ ] Sign out (permanent user): no warning dialog; session cleared, app navigates to Splash
@@ -2515,6 +2569,266 @@ Definition of done. All items must pass before starting Phase 7.
 - [ ] Privacy & Data row links to `omenora.com/privacy` in external browser
 - [ ] Terms of Service row links to `omenora.com/terms` in external browser
 - [ ] Analytics event fired: `account_deleted` on successful deletion
+- [ ] LanguageScreen: 10 languages display with native names. Selection clears caches and shows toast.
+- [ ] Calendar IAP buy CTA: free-state CalendarScreen renders secondary $4.99 button. purchaseCalendar() success path triggers cache clear + hasCalendar transition.
+
+---
+
+## Architecture — Data & Identity (locked 2026-05-11)
+
+This section captures architectural decisions about how OMENORA stores, syncs, and protects user data, subscriptions, usage counters, and identity across the sign-out / sign-in / multi-device / reinstall lifecycle. These decisions are the canonical reference for Phase 6 Cluster 4C through 4G build work and supersede any earlier per-phase decisions that conflict. Reviewed and locked after the 2026-05-11 device-test data-loss incident and the comprehensive sync audit conducted on `feature/phase-6-cluster-4a` HEAD `79676de`.
+
+### Production-grade success criteria
+
+These outcomes are guaranteed by the decisions below. Any future change that would weaken them requires an explicit architectural decision update in this section.
+
+- **Profile data survives** sign-out, sign-in on different device, app uninstall + reinstall, six months of inactivity, brief network failures during any of the above.
+- **Subscription entitlements survive** all of the above plus restore-purchases flow plus RevenueCat webhook delay plus cross-device.
+- **Usage counters are server-authoritative**, tamper-proof, atomic, and consistent across devices.
+- **User flows correct** for new install, returning permanent user, returning anonymous user, multi-device, sign-out / sign-back-in, account deletion.
+- **Apple App Review passes on first submission** — restore purchases, account deletion, Apple Sign-In token revoke all wired per guidelines 3.1.1, 5.1.1(v).
+- **All failures are visible to the user**, not silently swallowed.
+
+### Decision 1 — Source of truth assignments
+
+Each data category has exactly one authoritative store. Everything else is a read-through cache.
+
+**Profile data** (firstName, dateOfBirth, timeOfBirth, city, archetype, sun_sign, moon_sign, rising_sign, life_path_number, answers, language_override, analytics_enabled): Supabase `user_profiles` table is authoritative. Mobile `profileStore` (Zustand + AsyncStorage) is a read-through cache. Multi-device sync, sign-out preservation, and reinstall recovery all require server-side persistence; the local-only-with-sign-out-save pattern fails all three.
+
+**Subscription entitlements** (`isPremium`, `hasCalendar`): RevenueCat is canonical. Backend gating reads from `subscriptions` Supabase table populated by RC webhook. Mobile reads from RC SDK `customerInfo`. Neither mobile cache nor `subscriptions` table can override RC — RC has receipt-level truth from Apple and Google.
+
+**Usage counters** (`feature_usage` rows: counsel, archetype, natal_chart, forecast, compatibility): Supabase `feature_usage` table is authoritative. Mobile never reads it directly — only receives current values in API responses. Anything the client can see, the client can fake; usage caps are revenue and cost controls and must be server-only.
+
+**Identity**: Supabase Auth is the sole identity authority. `auth.users.id` is the universal user UUID used everywhere — as RC `app_user_id`, as FK in every user-scoped table, as profile lookup key. Single ID space eliminates the "which ID is real" bug class.
+
+### Decision 2 — Profile sync pattern (Cluster 4C)
+
+Replace the current "save on sign-out" pattern with "save on every change, hydrate on every sign-in."
+
+Writes go server-first. `CalculatingScreen` saves to server (awaited) after the LLM completes, before navigating to BigThreeReveal; on network failure shows inline retry UI with up to 3 manual retries, then a "Continue offline" fallback that flags `pendingServerSync: true` in profileStore. `ProfileScreen.handleSave` writes to server first (awaited), then updates local cache on success; on failure surfaces an error and does NOT update local — server stays the truth. `LanguageScreen` and `PrivacySettingsScreen` follow the same pattern via a new `updateProfileField` service method.
+
+Reads on `SIGNED_IN` hydrate profileStore from `fetchProfile` (awaited before navigation away from auth-aware screens). App foreground after >5 minutes refreshes profile in background (silent on failure — stale cache is acceptable). Pull-to-refresh on ProfileScreen is explicit refetch.
+
+Conflict resolution is server-always-wins on read. Mobile cache is overwritten unconditionally on SIGNED_IN. For multi-device edits, last-write-wins by `updated_at` timestamp (the `set_updated_at` Supabase trigger handles this automatically). No merge logic, no vector clocks, no conflict resolution UI — this is a single-user single-account product where last-write-wins is correct and simple.
+
+The `answers` field gap (column exists server-side but mobile never writes or reads it) is closed in Cluster 4C: added to profileStore partialize, added to `fetchProfile` hydration block, added to all save payloads.
+
+### Decision 3 — Subscription architecture (Cluster 4D)
+
+The current RC integration is mostly correct. Three required additions plus one race fix.
+
+`Purchases.logIn(supabaseUserId)` already fires on auth state change with permanent users. `isPremium` is already derived from `customerInfo.entitlements.active` inline on every render — no stale local cache. Backend webhook already writes to `subscriptions` table for backend gating. RC and Supabase user IDs are already aligned.
+
+**Addition 1 — Restore Purchases UI is mandatory.** Apple Guideline 3.1.1: any app with non-consumable IAPs or auto-renewable subscriptions must provide a restore mechanism. OMENORA has both (`omenora_calendar_2026` non-consumable IAP plus monthly/annual subscriptions). Current state: zero restore surface exists anywhere. Add a "Restore purchases" row in MoreScreen Account section and ensure the RC paywall (already used) has its restore button enabled. On tap: `Purchases.restorePurchases()` then `refreshCustomerInfo`; on success toast "Purchases restored", on no-purchases-found toast "No purchases to restore."
+
+**Addition 2 — `syncPurchases` after `Purchases.logIn`.** Per RC documentation, `syncPurchases` handles the edge case where a subscription renews while the user is signed out (the renewal gets attached to anonymous identity by default; without `syncPurchases` after logIn, the paying subscriber loses access on sign-in). One-line addition in PurchasesProvider.
+
+**Addition 3 — Force sign-in before IAP purchase.** Non-renewing IAPs tied to anonymous RC identities cannot be restored on app reinstall — the purchase is permanently lost (RC docs confirm this; the receipt is anonymous-bound and there's no way to attribute it after a new anonymous identity is created). OMENORA's `omenora_calendar_2026` is exactly this category. Pre-fix: anonymous user buys calendar, deletes app, reinstalls, purchase gone. Fix: CalendarScreen IAP CTA triggers AuthGate first if user is anonymous; only after sign-in completes does `purchaseCalendar()` fire. One extra tap, eliminates a 1-star-review category.
+
+**Race fix — `isInitialReady` flag in PurchasesProvider.** Between app launch and `Purchases.logIn` resolving, `customerInfo` may be null and `isPremium === false` for actual paying users. Code that hard-gates on `!isPremium` (CounselChatScreen `useEffect` goBack guard) can eject legitimate subscribers during this window. Add `isInitialReady: boolean` to PurchasesContext, true only after first successful customerInfo fetch post-logIn; gates that consume `isPremium` show a loader (not the locked state) when `!isInitialReady`.
+
+### Decision 4 — Usage counter atomicity (Cluster 4E)
+
+The current `requirePremiumWithUsage → LLM → incrementUsage` pattern has a check-then-increment race: two parallel requests at `count = cap-1` both pass the cap check, both call LLM, both increment, resulting in `count = cap+1`. The increment-after-LLM order also means LLM-call success with increment-failure produces uncapped free messages (the increment error is logged-and-swallowed).
+
+Replace with a single atomic Postgres RPC `check_and_consume_usage(p_user_id, p_feature, p_period, p_cap)` that inserts-or-increments in one transaction with a conditional update gated on `count < cap`. Returns `{allowed: bool, count: int, cap: int}`. Backend endpoint flow becomes: call RPC; if `allowed === false` return 429 immediately without LLM call; if `allowed === true` run LLM and return response with usage.
+
+Trade-off: increment happens before LLM call. If LLM fails, the user is "charged" one usage credit for a failed message. This is the correct trade — LLM failure rate is <1% in production, while the abuse vector (every silent increment failure being uncapped) is a much bigger risk. No refund-usage RPC; accept the tradeoff explicitly.
+
+Client-side counter UI in CounselChatScreen is informational only; remove any client-side gating that prevents send. Server is the only gate.
+
+### Decision 5 — Anonymous-to-permanent migration
+
+The current `transfer_anonymous_user` Supabase RPC is correct. COALESCE merge preserves anonymous-session data when target has nulls; DELETE source row after merge prevents orphans; RLS guard `auth.uid() = target_user_id` is correct.
+
+Two additions in Cluster 4C and 4D respectively. First, the transfer must complete BEFORE profileStore hydration in the SIGNED_IN handler (current code order is correct; add a code comment making the dependency explicit so it doesn't regress). Second, `Purchases.syncPurchases()` fires after `Purchases.logIn` post-transfer (per Decision 3 Addition 2) so anonymous IAP purchases transfer correctly to the named app_user_id.
+
+The `public.users` table is a known gap. The `transfer_anonymous_user` RPC and the `delete-account` cascade both reference it, but no `CREATE TABLE public.users` statement exists in any tracked migration. This is shippable now (Supabase has the table; cascade behaviour is functionally correct in production) but is a source-of-truth violation. Cluster 4F locates the missing migration or creates one from current schema, then verifies cascade.
+
+### Decision 6 — Sign-out pattern (Cluster 4C)
+
+Simplify the current four-step pattern. Under server-first writes (Decision 2), there is no local-only data to save at sign-out — server is always current. The pre-sign-out save is redundant and introduces a silent-failure mode.
+
+Target sequence: (1) if permanent user, `await Purchases.logOut()` wrapped in try/catch; (2) `await supabase.auth.signOut()` — on error, Alert and return early without resetting local state (stuck-but-recoverable beats corrupted); (3) `onAuthStateChange` SIGNED_OUT handler does `setSession(null)`, `resetProfile()`, then `signInAnonymously` for the next anonymous session (with re-entrance guard from Cluster 4A).
+
+`pendingServerSync` flag check: if set to true at sign-out (rare — indicates local-only data from the "Continue offline" fallback in CalculatingScreen), surface a warning Alert "You have unsaved profile changes. Sign out anyway?" with destructive and cancel buttons. User confirms means data is lost — they were warned.
+
+### Decision 7 — Account deletion completeness (Cluster 4F)
+
+Apple Guideline 5.1.1(v) requires that all user data be deleted on account deletion request. Three required additions to meet this bar.
+
+**Apple Sign-In token revoke** — server-side `POST https://appleid.apple.com/auth/revoke` with the stored Apple refresh token, generated via client_secret JWT signed with the .p8 key. Required only for users who signed in with Apple; no-op for Google or email users. Already documented as a pre-submission blocker in Phase 7 Step 7.7. Estimated 2-3 hours backend work.
+
+**RevenueCat customer delete** — backend calls RC REST `DELETE /v1/subscribers/{user_id}` during the delete-account handler. Current `Purchases.logOut()` ends the client session but leaves the RC customer record plus purchase history intact. Apple may not test this directly, but it's part of "complete deletion."
+
+**`public.users` cascade verification** — per Decision 5. The delete-account endpoint relies on `auth.users` cascade to wipe `public.users`. If that FK isn't configured in production Supabase (cannot verify from tracked migrations because the table definition is missing), account deletion leaves orphan rows. Either locate the missing migration or write one capturing current schema, then verify cascade with a SQL test.
+
+### Decision 8 — User flow matrix (Cluster 4C)
+
+SplashScreen is the sole routing authority. `RootNavigator.initialRouteName` is unconditionally `'Splash'`. The current ternary that bypasses Splash when `dateOfBirth` is truthy is removed.
+
+Routing matrix:
+
+| Scenario | Session | Profile complete | Destination |
+| --- | --- | --- | --- |
+| New install | none → bootstrap creates anonymous | empty | Welcome |
+| Returning permanent, complete profile | permanent | yes | MainTabs |
+| Returning permanent, mid-onboarding | permanent | partial | Welcome (resume onboarding) |
+| Returning anonymous, completed onboarding | anonymous | yes | MainTabs |
+| Returning anonymous, incomplete | anonymous | partial | Welcome |
+| Network failure on bootstrap | unknown | unknown | Splash retry UI (existing 8s timeout) |
+
+Profile completeness check is a triple-condition gate: `archetype !== null AND dateOfBirth !== null AND sun_sign !== null`. Conservative — if these three fields are all set, onboarding completed successfully. Better to be too strict and re-onboard a few mid-onboarding users than too loose and break many users with empty MainTabs surfaces.
+
+WelcomeScreen post-sign-in navigation waits for both `isAnonymous === false` AND profile hydration complete (new `profileHydrating: boolean` exposed on AuthContext). Max wait 5 seconds; after that navigate anyway to avoid trapping the user on a hung hydration call.
+
+### Decision 9 — Cron daily-push dispatcher (Cluster 4G)
+
+Backend cron job (Railway scheduled route or equivalent) queries `push_tokens` and POSTs to `https://exp.host/--/api/v2/push/send` at a fixed UTC time (06:00 UTC initial). User-configurable notification time deferred to v1.1.
+
+Daily push is the single highest-leverage retention mechanism for daily-content apps in this category; shipping v1 with the toggle wired but no dispatcher means users toggle ON and get nothing — visibly broken feature. Infrastructure is half-built (push_tokens table, register endpoint, mobile toggle). Estimated 2-3 hours.
+
+### Decision 10 — Out of scope (v1.1 and beyond)
+
+Decisions deferred to v1.1 or v1.2 with explicit acceptance of the current limitation:
+
+- **Real-time multi-device sync via Supabase Realtime.** Edits on Device A propagate to Device B only on B's next sign-in or app foreground. Live-update push deferred to v1.2.
+- **Offline write queue.** True offline-write support requires conflict resolution beyond last-write-wins. v1 surfaces errors immediately and requires manual retry. Deferred to v1.1 if user feedback demands.
+- **i18n architecture for UI copy.** 10-language support is reading-generation only at v1; all Alert strings, ListItem labels, and inline copy are English. Adding `i18next` or similar deferred to v1.1.
+- **Existing-user data restoration on reinstall.** Decision 2 architecture supports this natively going forward (server is source of truth). Existing users with only local data — including current internal testers — must re-onboard once to establish their server-side row, after which data is durable. Documented in Phase 7 testing notes.
+
+### Implementation cluster sequence
+
+| Cluster | Decisions | Scope |
+| --- | --- | --- |
+| 4C | 2, 6, 8 | Profile sync server-first writes, simplified sign-out, SplashScreen sole routing authority, audit fixes S2/R1, `answers` field wired |
+| 4D | 3 | Restore Purchases UI, `syncPurchases` after logIn, force-sign-in before IAP, `isInitialReady` race fix |
+| 4E | 4 | `check_and_consume_usage` RPC, backend endpoint refactor, remove client-side cap gating |
+| 4F | 5, 7 | Apple Sign-In token revoke endpoint, RC customer delete REST call, `public.users` migration audit |
+| 4G | 9 | Cron daily-push dispatcher backend (augur web repo) |
+
+Clusters are sequential. 4C blocks 4D through 4G because every cluster downstream depends on the server-first profile pattern. Within each cluster, the build prompt follows the intent-only convention established in Cluster 4A: Windsurf reads the codebase and decides implementation; the spec specifies intent, constraints, and verification.
+
+---
+
+## Phase 6.6 — Production Hardening (locked 2026-05-12)
+
+This phase inserts between Cluster 4C-bis-2 (shipped 2026-05-12) and Cluster 4D. Phase 6 feature clusters 4D through 4G resume after Phase 6.6 closes. The premise is that observability, rate limiting, webhook monitoring, secrets hygiene, recoverability, and legal documentation must be in place before the remaining monetization-critical clusters (4D restore-purchases, 4E atomic counters, 4F account-deletion completeness, 4G push dispatcher) ship — so any bugs introduced in those clusters surface against an instrumented backend rather than a silent one, and so the first paying users meet an app that can be audited, rate-limited, recovered, and legally defended.
+
+The phase is **deploy-frozen**. Railway production stays on the existing main tip (`~a56e9a9` area, May 8 hotfix) throughout Phase 6.6 and Phase 6 cluster 4D–4G work. All backend-touching code ships to `develop` only. Verification during 6.6 is static analysis plus local testing — no incremental Railway deploys. Production promotion happens exactly once after Phase 6.6 + Phase 6 4D–4G + Phase 7 prep are all complete and device-validated. This trades multiple small-blast-radius deploys for one large-blast-radius deploy under full attention, which is the correct trade for a solo operator with no on-call rotation.
+
+The phase is **sequential**. 6.6.0 captures the plan; 6.6.1 establishes observability before any further code lands; 6.6.2 hardens the perimeter before 6.6.3 instruments the webhook; 6.6.4 audits secrets before 6.6.5 tests recovery against those same secrets; 6.6.6 produces the legal artifacts that Phase 7 submission requires; 6.6.7 captures what shipped. Reordering breaks dependency assumptions and is not permitted without an explicit architectural decision update in this section.
+
+### Cluster sequence
+
+| Cluster | Scope | Backend impact |
+|---|---|---|
+| 6.6.0 | Plan-doc capture of Phase 6.6 section | None — documentation only |
+| 6.6.1 | Sentry observability — mobile SDK and backend SDK | Code on develop only; Sentry project provisioned externally |
+| 6.6.2 | Backend rate limiting, auth audit, CORS allowlist, body size limits | Code on develop only |
+| 6.6.3 | Webhook delivery monitoring with RevenueCat event deduplication via `rc_event_id` | Code on develop only; new Supabase table via manual migration |
+| 6.6.4 | Service role key audit and key rotation runbook | Documentation only |
+| 6.6.5 | Database backup and restore test via staging Supabase project | Documentation only; staging Supabase project provisioned externally |
+| 6.6.6 | Privacy policy and terms of service drafted from legal citations | Documentation + web app (omenora.com) deploy |
+| 6.6.7 | Phase 6.6 closeout plan-doc capture and Session Log entries | None — documentation only |
+
+### Cluster 6.6.0 — Plan-doc capture
+
+**Scope.** This cluster. A single insertion of the Phase 6.6 section into `docs/IMPLEMENTATION_PLAN_MOBILE_V1.md` between the Architecture — Data & Identity section and Phase 7 — Production Preparation.
+
+**Deliverables.** One commit on `feature/phase-6.6-cluster-6.6.0` modifying exactly one file (`docs/IMPLEMENTATION_PLAN_MOBILE_V1.md`). Squash-merged to develop.
+
+**Success criteria.** Section header present at the expected insertion line. Eight cluster subsections present (6.6.0 through 6.6.7). `git diff --stat` shows one file changed. `npx tsc --noEmit` from the mobile-app directory still exits zero (sanity check that the plan-doc edit didn't accidentally touch TypeScript).
+
+**Rollback.** Documentation rollback procedure.
+
+### Cluster 6.6.1 — Sentry observability
+
+**Scope.** Provision a Sentry account on the free tier at sentry.io with two projects — one React Native, one Node.js. Integrate `@sentry/react-native` in the mobile app and `@sentry/node` in the augur backend. Configure release tracking, environment tagging, source map upload for stack trace symbolication, and PII scrubbing for all transports. DSNs are environment-aware via EAS secrets (mobile) and Railway environment variables (backend — set in dashboard but not yet deployed).
+
+**Deliverables.** Sentry project IDs and DSNs captured in `.env.example`. Mobile SDK initialization in `App.tsx` wrapped in an env-guard so absent DSN is a no-op. Backend SDK initialization in the augur server entry point under the same env-guard. PII scrubbing config drops `email`, `ip_address`, `user_agent`, and any field matching `token|secret|key|password` from request bodies and breadcrumbs. EAS build profile updated to upload source maps to Sentry on production builds. Sentry release name uses the commit SHA so each event is traceable to a build.
+
+**Success criteria.** A forced `throw new Error('sentry test')` in a dev build of the mobile app produces an event visible in the Sentry mobile project within 60 seconds, with a symbolicated stack trace pointing to source files. The same forced error from a local backend run produces an event in the Sentry backend project. A test payload containing an email field is captured with the email value replaced by the scrubber. Sentry SDK call sites are zero when `EXPO_PUBLIC_SENTRY_DSN` is empty (verified by grep + behavior test). Release tag visible in the Sentry event matches the git commit SHA.
+
+**Rollback.** Mobile code rollback procedure for mobile integration. Backend code rollback procedure for backend integration. Sentry projects remain (no cost, no harm).
+
+### Cluster 6.6.2 — Backend rate limiting and perimeter hardening
+
+**Scope.** Add rate limiting middleware to every public endpoint in `augur/server/api/`. Audit every route to confirm authentication is enforced where required. Lock the CORS allowlist to the exact set of legitimate origins. Set request body size limits to prevent oversized-payload denial-of-service.
+
+**Deliverables.** Rate limiting library integrated (specific library deferred to cluster build — Windsurf inspects current framework and selects). Per-route rate limit policy applied: stricter caps on authentication endpoints, magic link request endpoints, payment endpoints, and report-generation endpoints (which call paid LLM APIs); looser caps on read endpoints. Authentication middleware audit produces an explicit inventory of all routes with their auth requirement, captured in the commit body. CORS allowlist contains only `https://omenora.com`, the mobile deep-link scheme(s), and any EAS dev domains required for dev builds — no wildcards. Body size limits set globally with stricter limits on auth/payment endpoints. Security policy documented in `augur/server/SECURITY.md`.
+
+**Success criteria.** A burst of requests to a rate-limited endpoint produces a 429 response after the configured cap. An unauthenticated request to a protected endpoint produces a 401. A request from a disallowed origin produces a CORS error in the browser console (or fails the preflight). A request body exceeding the size limit produces a 413. All four behaviours verified via curl or equivalent and the verification commands captured in `augur/server/SECURITY.md`. No legitimate flow regressed (mobile dev build still completes auth, reports, and webhook handling locally).
+
+**Rollback.** Backend code rollback procedure.
+
+### Cluster 6.6.3 — Webhook delivery monitoring and RevenueCat dedup
+
+**Scope.** Add observability and idempotency to the RevenueCat webhook handler. Every incoming RC event is logged to a Supabase table before processing. A unique constraint on the event ID prevents duplicate processing of retried webhooks (RC retries on non-2xx responses, which has caused double-processing in past production observations of similar systems). Failed processing surfaces in Sentry (6.6.1 prerequisite) with the full payload, scrubbed of any PII.
+
+**Deliverables.** Supabase migration file under `augur/supabase/migrations/` creating `public.webhook_events` with columns for event identifier, provider, event type, payload (JSONB), received_at, processed_at, status (received/processing/succeeded/failed), and error message. Unique constraint on `(provider, event_id)`. Migration is idempotent via `IF NOT EXISTS`. Applied manually via Supabase SQL Editor by Miki, not via CLI. Webhook handler refactored: insert the event row inside a transaction, return 200 if the unique constraint fires (duplicate), proceed with processing if the row is new, update `processed_at` and `status` on completion. Monitoring SQL queries for webhook health (last-24-hour counts, error rates, processing latency p50/p95) documented in `augur/server/runbooks/webhook-monitoring.md`.
+
+**Success criteria.** Replaying an RC webhook event (same `event_id`) creates exactly one row in `webhook_events` and returns 200 on the duplicate without re-invoking the processing path. All RC webhook events received during local testing are present in the table. A simulated processing failure surfaces in the Sentry backend project with the payload visible and PII scrubbed. The monitoring query returns expected counts when run in Supabase SQL Editor.
+
+**Rollback.** Backend code rollback procedure for the handler changes. Database rollback procedure for the migration — `DROP TABLE public.webhook_events` in Supabase SQL Editor.
+
+### Cluster 6.6.4 — Service role key audit and rotation runbook
+
+**Scope.** Enumerate every location in the codebase that references the Supabase service role key and any other privileged secret (Apple Sign-In `.p8` key, RevenueCat webhook secret, RevenueCat REST API key, Resend API key, Stripe secret key, OpenAI/Anthropic API keys). Verify every reference is backend-only and justified. Document the emergency rotation procedure for each key.
+
+**Deliverables.** Audit report captured in the commit body listing every secret reference with file path, line number, and justification. Mobile codebase grep proving zero references to the service role key or any other backend-only secret. Runbook at `docs/runbooks/key-rotation.md` covering rotation steps for each of: Supabase service role key, Apple Sign-In key, RC webhook secret, RC REST API key, Resend API key, Stripe secret key, LLM API keys. Each rotation procedure includes the dashboard URL where the key is rotated, the env var name(s) that need updating in Railway and EAS, the restart procedure, and the verification step that the rotation worked.
+
+**Success criteria.** `git grep` from the repo root for `SUPABASE_SERVICE_ROLE_KEY` (and equivalent patterns for other backend secrets) returns hits only from backend directories (`augur/server/`, `augur/supabase/`) — never from `mobile-app/`. Mobile bundle inspection (next EAS build) shows no embedded secrets. Runbook is complete for all listed keys with step-by-step procedures that a future engineer could execute under time pressure. The runbook is reviewed for plausibility — not executed live (no actual key rotation in this cluster; that's an emergency-response procedure).
+
+**Rollback.** Documentation rollback procedure.
+
+### Cluster 6.6.5 — Database backup restore test
+
+**Scope.** Verify that the production Supabase database can be restored from backup. Provision a separate staging Supabase project, perform a backup-and-restore cycle from production into staging, validate data integrity, document the procedure for emergency recovery. This is preventative: discovering a backup is unrecoverable during a real incident is too late.
+
+**Deliverables.** Staging Supabase project provisioned, distinct from the production project. Backup obtained from production (Supabase has automated daily backups; restore mechanism depends on plan tier — Windsurf to confirm during cluster build). Restore executed against the staging project. Verification queries comparing row counts for `auth.users`, `public.user_profiles`, `public.subscriptions`, `public.feature_usage`, `public.push_tokens`, `public.users` between production and staging (within an acceptable delta for in-flight data). Time-to-restore measured and recorded. Runbook at `docs/runbooks/backup-restore.md` capturing the full procedure with commands or dashboard steps for a future operator.
+
+**Success criteria.** Staging Supabase project exists and contains the restored schema. Row counts on the listed tables in staging are within ±5% of production at restore time (delta accommodates legitimate writes during the restore window). The runbook is reproducible — a second engineer with Supabase admin access could follow it without additional context. Time-to-restore documented in the runbook so RTO expectations are realistic.
+
+**Rollback.** Staging Supabase project can be deleted with no impact on production. Documentation rollback for the runbook.
+
+### Cluster 6.6.6 — Privacy policy and terms of service
+
+**Scope.** Draft a privacy policy and terms of service grounded in real legal citations and comparable-app reference texts, not generic templates. Both documents must satisfy the GDPR, the CCPA/CPRA, COPPA where applicable, the Apple App Store Review Guidelines, and the Google Play Developer Policy. Deploy both to omenora.com under the URLs already referenced in the implementation plan (`/privacy` and `/terms`).
+
+**Research basis.** The draft cites specific provisions: GDPR Articles 6, 7, 13, 14, 15 through 22, 30, 32, 33; CCPA/CPRA §§1798.100, 1798.105, 1798.110, 1798.115, 1798.120, 1798.130, 1798.135, 1798.140; COPPA 16 CFR Part 312 (verified against the app's 17+ age gate to confirm scope); Apple App Store Review Guideline 5.1.1 in full; Google Play Personal and Sensitive User Data policy. Real-world reference texts from comparable consumer subscription apps with non-medical AI personalization are used as structural models, not copied content.
+
+**Deliverables.** Privacy policy covering data categories collected (auth identifiers, profile attributes, subscription state, usage counters, push tokens, device identifiers, error telemetry once 6.6.1 ships, analytics events if PostHog is enabled), purpose for each category, lawful basis under GDPR (consent for analytics, contract for subscriptions, legitimate interest for fraud prevention and product improvement), exhaustive list of third-party processors (Supabase, RevenueCat, Stripe, Apple, Google, Sentry, Resend, PostHog if applicable) with their location and processing purpose, retention periods, user rights and how to exercise them, data subject access request process, contact information, jurisdiction and dispute resolution forum. Terms of service covering subscription auto-renewal terms, refund policy (deferring to Apple/Google store policies for IAP), `omenora_calendar_2026` non-consumable disclosure, account termination conditions, prohibited use, AI-generated reading disclaimer (entertainment-only, no medical or professional advice — this is critical for OMENORA given prior legal review concerns), limitation of liability, indemnification, governing law (Illinois), and dispute resolution. Both documents implemented as Nuxt 3 pages in the web app, deployed to omenora.com.
+
+**Success criteria.** Privacy policy includes inline citations to the specific GDPR Articles and CCPA Sections it implements. The list of third-party processors in the policy is cross-checked against the actual integrations and is exhaustive. Terms cover every subscription and IAP edge case present in the OMENORA monetization model. Both pages are live at `omenora.com/privacy` and `omenora.com/terms` with effective and last-updated dates. Apple App Store Connect privacy questionnaire can be completed using the policy as the reference. Google Play data safety section can be completed using the policy as the reference.
+
+**Deploy boundary note.** This is the one cluster in Phase 6.6 that does deploy externally — the web app (Nuxt 3 on Railway) is a separate deployment from the augur backend. Web platform deploys are allowed during 6.6.
+
+**Rollback.** Web platform rollback procedure.
+
+### Cluster 6.6.7 — Phase 6.6 closeout
+
+**Scope.** Capture what shipped in Phase 6.6 in the plan-doc Session Log. Record any architectural refinements that emerged during 6.6 work as inline edits to the appropriate section (Architecture for data/identity refinements; this Phase 6.6 section for hardening refinements). Transition statement that Phase 6 cluster 4D resumes next.
+
+**Deliverables.** New Session Log entry block for the dates Phase 6.6 spanned, with sub-entries for each cluster (6.6.1 through 6.6.6) capturing the squash-merge commit hashes, branches preserved, and lessons learned. Any decision refinements locked in the canonical section, not floating in chat. Closeout statement at the end of this Phase 6.6 section: "Phase 6.6 complete on [date]. Phase 6 resumes with Cluster 4D — Restore Purchases UI and RC race fix."
+
+**Success criteria.** Session Log captures every cluster's completion with its hash. Any architectural refinement is locked in plan-doc text, not in chat. One commit, single-file diff. `git diff --stat` shows exactly one file.
+
+**Rollback.** Documentation rollback procedure.
+
+### Rollback procedures
+
+These procedures are referenced by individual clusters above and grouped here to avoid duplication.
+
+**Mobile code rollback.** Phase 6.6 mobile work (currently only the SDK initialization in 6.6.1) lives on `develop` and is not promoted to main during Phase 6.6. Rollback is `git revert` of the squash-merge commit on develop, or branch reset if the revert is performed before any further commits land. No mobile production users are affected because no mobile production build is cut during Phase 6.6.
+
+**Backend code rollback.** Backend work (6.6.1 backend SDK, 6.6.2, 6.6.3) lives on `develop`. Railway production stays on main throughout Phase 6.6. Rollback is `git revert` on develop. No production users are affected. If a 6.6 change introduces a regression that affects local development or the test path for subsequent clusters, the revert is immediate and isolated.
+
+**Database rollback.** The only Phase 6.6 migration is the `webhook_events` table in 6.6.3. Rollback is `DROP TABLE public.webhook_events` executed manually in Supabase SQL Editor, mirroring the manual-apply migration pattern. The migration file uses `IF NOT EXISTS` so re-application after rollback is idempotent.
+
+**Documentation rollback.** Plan-doc edits (6.6.0, 6.6.4, 6.6.5, 6.6.7) and runbook additions live on `develop`. Rollback is `git revert`. No system impact.
+
+**Web platform rollback.** Phase 6.6 web app changes (6.6.6 privacy and terms pages) deploy to omenora.com via the web app's Railway deployment. Rollback options: revert the commit on the web app branch and redeploy, or use Railway's redeploy-previous-deployment feature to restore the prior build artifact while the source revert is prepared. Public pages remain available — at worst, content is briefly stale.
 
 ---
 
@@ -2710,6 +3024,29 @@ Before submission, verify each item:
 **Account deletion (Apple requirement since June 2022):**
 - [ ] `DeleteAccountScreen` reachable without contacting support
 - [ ] Deletion is complete — not just deactivation
+- [ ] **Apple Sign-In token revocation per Guideline 5.1.1(v).** When a
+      user signed in with Apple deletes their account, the app MUST
+      revoke their Apple refresh token via `POST https://appleid.apple.com/auth/revoke`.
+      `expo-apple-authentication` ~7.2.4 exposes no `revokeAsync` API,
+      so this is a server-side requirement, NOT a mobile code change.
+      Implementation owner: backend `/api/auth/delete-account` handler
+      in the augur web repo. Steps: (1) on delete-account request,
+      retrieve Apple `provider_refresh_token` from Supabase
+      `auth.identities` for the user where `provider = 'apple'`;
+      (2) generate a client_secret JWT signed with the Apple Sign-In
+      Key (.p8) using Team ID `[TEAM_ID]` as iss, Service ID
+      `com.omenora.app.signin` as sub, ES256, exp ≤ 6 months;
+      (3) POST to Apple revoke endpoint with `client_id`,
+      `client_secret`, `token`, `token_type_hint=refresh_token`;
+      (4) accept 200 OK as success, log any other response without
+      blocking deletion (Apple's revoke is idempotent and best-effort
+      per their spec). Code marker for mobile-side acknowledgment:
+      `AuthProvider.tsx:290-292` (post-Cluster-2 line numbers, may
+      shift). Severity: medium — pre-App-Review blocker, not a
+      runtime bug; users can delete accounts today, but App Review
+      will reject the build if this isn't wired before submission.
+      Tracking: this checklist item. Effort estimate: 2–3 hrs
+      backend + 1 hr device test.
 
 **Privacy:**
 - [ ] Privacy policy link in `AuthGate` before sign-in

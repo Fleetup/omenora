@@ -8,6 +8,7 @@ import type { BoostPackIdentifier } from '../../components/molecules'
 import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
 import { tokens, space, layout } from '../../design/tokens'
+import { AtmosphericBackground } from '../../components/atmosphere'
 import type { CounselScreenProps } from '../../navigation/types'
 
 export default function CounselScreen({ navigation }: CounselScreenProps) {
@@ -34,6 +35,7 @@ export default function CounselScreen({ navigation }: CounselScreenProps) {
 
   return (
     <View style={styles.root}>
+      <AtmosphericBackground variant="standard" />
       <SafeAreaView edges={['top']} style={styles.safe}>
         <ScrollView
           contentContainerStyle={styles.scroll}
@@ -54,7 +56,7 @@ export default function CounselScreen({ navigation }: CounselScreenProps) {
           </View>
 
           {isPremium ? (
-            // ── Premium: navigate to CounselChatScreen ──────────────────────────────────────────
+            // ── Premium: navigate to CounselChatScreen ────────────────
             <View style={styles.ctaBlock}>
               <Button
                 label="Open Counsel"
@@ -68,7 +70,7 @@ export default function CounselScreen({ navigation }: CounselScreenProps) {
             </View>
           ) : (
             <>
-              {/* ── Sample question chips (visual-only in Cluster 4) ──── */}
+              {/* ── Sample question chips (visual-only) ──── */}
               <View style={styles.chips}>
                 {sampleQuestions.map((q, i) => (
                   <View key={i} style={styles.chip}>
@@ -116,7 +118,7 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.surface.base,
   },
   safe: {
-    flex:            1,
+    flex: 1,
   },
   scroll: {
     paddingHorizontal: layout.screenPadding,

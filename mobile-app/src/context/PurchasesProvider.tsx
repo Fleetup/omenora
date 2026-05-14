@@ -38,7 +38,7 @@ export function PurchasesProvider({ children }: Props) {
   const [currentOffering,           setCurrentOffering]           = useState<PurchasesOffering | null>(null)
   const [boostPacksOffering,         setBoostPacksOffering]         = useState<PurchasesOffering | null>(null)
   const [compatibilityAddonOffering, setCompatibilityAddonOffering] = useState<PurchasesOffering | null>(null)
-  const [calendarProduct] = useState<PurchasesStoreProduct | null>(null)
+  const [calendarProduct,            setCalendarProduct]            = useState<PurchasesStoreProduct | null>(null)
 
   // Initialize SDK once
   useEffect(() => {
@@ -96,6 +96,30 @@ export function PurchasesProvider({ children }: Props) {
 
     initialize()
   }, [])
+
+  // Fetch calendar IAP product once SDK is ready (display-only — for localized priceString)
+  useEffect(() => {
+    if (!isReady) return
+    let cancelled = false
+
+    const fetchCalendarProduct = async () => {
+      try {
+        const products = await Purchases.getProducts(
+          ['omenora_calendar_2026'],
+          Purchases.PRODUCT_CATEGORY.NON_SUBSCRIPTION,
+        )
+        if (!cancelled) {
+          setCalendarProduct(products[0] ?? null)
+          console.log('[Purchases] calendar product loaded:', products[0]?.priceString ?? 'not found')
+        }
+      } catch (err: any) {
+        console.warn('[Purchases] failed to fetch calendar product:', err?.message ?? err)
+      }
+    }
+
+    fetchCalendarProduct()
+    return () => { cancelled = true }
+  }, [isReady])
 
   // Sync RC user ID with Supabase auth state
   useEffect(() => {

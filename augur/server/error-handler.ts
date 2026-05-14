@@ -4,28 +4,9 @@
  * - Captures true 5xx errors in Sentry (production only).
  * - Never leaks stack traces or internal details to API consumers.
  */
-import * as Sentry from '@sentry/node'
+import * as Sentry from '@sentry/nuxt'
 import type { NitroErrorHandler } from 'nitropack'
 
-// Initialise Sentry once when the module loads (idempotent — safe to call multiple times)
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn:              process.env.SENTRY_DSN,
-    environment:      process.env.NODE_ENV || 'production',
-    release:          process.env.npm_package_version,
-    tracesSampleRate: 0.05, // 5% of traces — adjust as needed
-    beforeSend(event) {
-      // Strip PII from request data before sending to Sentry
-      if (event.request?.data) {
-        const data = event.request.data as Record<string, unknown>
-        for (const key of ['email', 'firstName', 'dateOfBirth', 'city', 'password']) {
-          if (key in data) data[key] = '[Filtered]'
-        }
-      }
-      return event
-    },
-  })
-}
 
 const OPERATIONAL_CODES = new Set([400, 401, 402, 403, 404, 409, 422, 429])
 

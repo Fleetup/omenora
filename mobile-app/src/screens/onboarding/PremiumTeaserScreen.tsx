@@ -1,26 +1,39 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { View, StyleSheet, ScrollView } from 'react-native'
+import { View, StyleSheet, ScrollView, Pressable } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MotiView } from 'moti'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { Text } from '../../components/atoms'
-import { Button } from '../../components/atoms'
-import { FeatureListItem } from '../../components/ui/FeatureListItem'
+import { Text, Button, EditorialBenefit } from '../../components/atoms'
+import { AtmosphericBackground } from '../../components/atmosphere'
 import { useProfileStore } from '../../stores/profileStore'
 import { useAuth } from '../../context/useAuth'
 import { usePurchases } from '../../context/usePurchases'
-import { tokens, space, layout } from '../../design/tokens'
+import { surface, border, space, layout } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
 
 type PremiumTeaserNavProp = NativeStackNavigationProp<RootStackParamList, 'PremiumTeaser'>
 
-const BENEFITS = [
-  { icon: '✦', label: 'Full archetype deep reading'  },
-  { icon: '✦', label: 'Complete natal chart'          },
-  { icon: '✦', label: '90-day personal forecast'      },
-  { icon: '✦', label: 'Counsel — AI chat with your chart' },
-]
+const TEASER_HERO_FROM       = { opacity: 0, translateY: 16 } as const
+const TEASER_HERO_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const TEASER_HERO_TRANSITION = { type: 'timing' as const, duration: 800, delay: 100 }
+
+const TEASER_CTA_FROM       = { opacity: 0, translateY: 12 } as const
+const TEASER_CTA_ANIMATE    = { opacity: 1, translateY: 0  } as const
+const TEASER_CTA_TRANSITION = { type: 'timing' as const, duration: 800, delay: 500 }
+
+const TEASER_SKIP_FROM       = { opacity: 0 } as const
+const TEASER_SKIP_ANIMATE    = { opacity: 1 } as const
+const TEASER_SKIP_TRANSITION = { type: 'timing' as const, duration: 600, delay: 700 }
+
+// Editorial dinkus — inline component; promote to atoms if pattern recurs in Cluster 12+
+const DinkusDivider = () => (
+  <View style={styles.dinkusRow}>
+    <View style={styles.dinkusLine} />
+    <Text variant="micro" color="tertiary" style={styles.dinkusGlyph}>❋</Text>
+    <View style={styles.dinkusLine} />
+  </View>
+)
 
 export default function PremiumTeaserScreen() {
   const navigation = useNavigation<PremiumTeaserNavProp>()
@@ -61,115 +74,154 @@ export default function PremiumTeaserScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.root} edges={['top']}>
-      <View style={styles.glow} pointerEvents="none" />
+    <View style={styles.container} testID="paywall-screen-root">
+      {/* Atmospheric layered background — static. Never animate this stack. */}
+      <AtmosphericBackground
+        variant="hero"
+        glowPosition="top-right"
+        counterGlow
+        ctaLightPool
+        buttonHalo
+        grain
+        graphicOverlay
+        vignette="bottom"
+      />
 
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-      >
-        <MotiView
-          from={{ opacity: 0, translateY: 12 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 400, delay: 100 }}
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
         >
-          <View style={styles.hero}>
-            <Text variant="micro" color="secondary" style={styles.heroEyebrow}>
-              You are
-            </Text>
-            <Text variant="display1" color="primary" style={styles.heroName}>
-              {archetypeName}
-            </Text>
+          {/* Hero zone + benefits — single orchestrated entrance */}
+          <MotiView
+            from={TEASER_HERO_FROM}
+            animate={TEASER_HERO_ANIMATE}
+            transition={TEASER_HERO_TRANSITION}
+          >
+            <View style={styles.heroZone}>
+              <Text variant="micro" color="secondary" style={styles.eyebrow}>
+                You are
+              </Text>
+              <Text
+                variant="hero"
+                color="primary"
+                style={styles.archetypeName}
+                testID="paywall-headline-archetype"
+                numberOfLines={2}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+              >
+                {archetypeName}
+              </Text>
+            </View>
+
+            <DinkusDivider />
+
+            <View style={styles.benefitsZone}>
+              <EditorialBenefit>
+                The full portrait of who you were born to be.
+              </EditorialBenefit>
+              <EditorialBenefit>
+                Every planet's whisper at the moment you arrived.
+              </EditorialBenefit>
+              <EditorialBenefit>
+                The next ninety days, mapped by what's moving above.
+              </EditorialBenefit>
+            </View>
+          </MotiView>
+        </ScrollView>
+
+        {/* CTA — staggered separately so it feels like the door opening after the content lands */}
+        <MotiView
+          from={TEASER_CTA_FROM}
+          animate={TEASER_CTA_ANIMATE}
+          transition={TEASER_CTA_TRANSITION}
+          style={[styles.footer, { paddingBottom: Math.max(space['8'], insets.bottom + space['4']) }]}
+        >
+          <View testID="paywall-cta-primary">
+            <Button
+              label="Open my reading"
+              variant="premium"
+              fullWidth
+              onPress={handleUnlock}
+            />
           </View>
-        </MotiView>
 
-        <MotiView
-          from={{ opacity: 0, translateY: 12 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 400, delay: 260 }}
-        >
-          <Text variant="display2" color="primary" style={styles.heading} accessibilityRole="header">
-            Your full reading awaits
-          </Text>
+          {/* Tertiary skip — fade only, softest entrance */}
+          <MotiView
+            from={TEASER_SKIP_FROM}
+            animate={TEASER_SKIP_ANIMATE}
+            transition={TEASER_SKIP_TRANSITION}
+          >
+            <Pressable
+              testID="paywall-cta-decline"
+              onPress={() => navigation.replace('MainTabs')}
+              style={({ pressed }) => [styles.declineTap, pressed && styles.declineTapPressed]}
+            >
+              <Text variant="label" color="tertiary">
+                I'll come back to my reading
+              </Text>
+            </Pressable>
+          </MotiView>
         </MotiView>
-
-        <MotiView
-          from={{ opacity: 0, translateY: 12 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 400, delay: 420 }}
-        >
-          <View style={styles.bullets}>
-            {BENEFITS.map((b) => (
-              <FeatureListItem key={b.label} icon={b.icon} label={b.label} />
-            ))}
-          </View>
-        </MotiView>
-      </ScrollView>
-
-      <View style={[styles.footer, { paddingBottom: Math.max(space['8'], insets.bottom + space['4']) }]}>
-        <Button
-          label="Unlock Premium"
-          variant="primary"
-          fullWidth
-          onPress={handleUnlock}
-        />
-        <Button
-          label="Maybe later"
-          variant="tertiary"
-          fullWidth
-          onPress={() => navigation.replace('MainTabs')}
-          style={styles.maybeLater}
-        />
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex:            1,
-    backgroundColor: tokens.surface.base,
+    backgroundColor: surface.deep,
   },
-  glow: {
-    position:        'absolute',
-    top:             -80,
-    alignSelf:       'center',
-    width:           360,
-    height:          360,
-    borderRadius:    180,
-    backgroundColor: tokens.accent.primary,
-    opacity:         0.07,
+  safe: {
+    flex:              1,
+    paddingHorizontal: layout.screenPadding,
   },
   scroll: {
-    flexGrow:          1,
-    paddingHorizontal: layout.screenPadding,
-    paddingTop:        space['12'],
-    paddingBottom:     space['8'],
+    flexGrow:      1,
+    paddingTop:    space['16'],
+    paddingBottom: space['8'],
   },
-  hero: {
+  heroZone: {
     alignItems:   'center',
     marginBottom: space['10'],
   },
-  heroEyebrow: {
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    marginBottom:  space['2'],
+  eyebrow: {
+    letterSpacing: 4,
+    marginBottom:  space['3'],
   },
-  heroName: {
+  archetypeName: {
     textAlign: 'center',
   },
-  heading: {
-    textAlign:    'center',
-    marginBottom: space['8'],
+  dinkusRow: {
+    flexDirection:   'row',
+    alignItems:      'center',
+    marginVertical:  space['8'],
+    paddingHorizontal: space['4'],
   },
-  bullets: {
-    gap: space['4'],
+  dinkusLine: {
+    flex:            1,
+    height:          1,
+    backgroundColor: border.gold,
+  },
+  dinkusGlyph: {
+    paddingHorizontal: space['3'],
+    letterSpacing:     2,
+  },
+  benefitsZone: {
+    gap:               space['6'],
+    paddingHorizontal: space['4'],
   },
   footer: {
-    paddingHorizontal: layout.screenPadding,
-    gap:               space['3'],
+    gap: space['3'],
   },
-  maybeLater: {
-    marginTop: 0,
+  declineTap: {
+    alignItems:  'center',
+    justifyContent: 'center',
+    minHeight:   layout.tapTarget,
+  },
+  declineTapPressed: {
+    opacity: 0.5,
   },
 })

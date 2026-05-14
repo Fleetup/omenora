@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { DailyInsightSchema, type DailyInsightType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
 import { getPlanetaryTransits } from '~~/server/utils/planetaryTransits'
+import { getLanguageInstruction } from '~~/server/utils/language-instructions'
 
 // ── Subject line rotation ─────────────────────────────────────────────────
 function buildSubjectLines(firstName: string, archetype: string, dateLabel: string): string[] {
@@ -80,16 +81,7 @@ export default defineEventHandler(async (event) => {
   const subjectLines = buildSubjectLines(firstName, archetype, dateString)
   const todaySubject = subjectLines[dayOfYear % subjectLines.length]!
 
-  // ── Language instruction (kept from original) ─────────────────────────
-  const languageInstructions: Record<string, string> = {
-    en: 'Respond entirely in English.',
-    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
-    pt: 'Responda completamente em português brasileiro. Use tom caloroso e pessoal.',
-    hi: 'पूरी तरह से हिंदी में जवाब दें। गर्म, काव्यात्मक और व्यक्तिगत स्वर का उपयोग करें।',
-    ko: '전체적으로 한국어로 답변해 주세요. 따뜻하고 시적이며 개인적인 어조를 사용하세요.',
-    zh: '完全用简体中文回答。使用温暖、诗意和个人化的语气。',
-  }
-  const langInstruction = languageInstructions[language as string] ?? languageInstructions['en'] ?? ''
+  const langInstruction = getLanguageInstruction(language as string)
 
   // ── Regional style (kept from original) ──────────────────────────────
   const regionalStyle = region === 'india'
