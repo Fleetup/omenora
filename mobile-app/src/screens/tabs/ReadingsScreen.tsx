@@ -12,6 +12,7 @@ import { Card, LockedCard, ReadingCard, TransitCard, SectionHeader } from '../..
 import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
 import api from '../../api/endpoints'
+import { parseBackendError } from '../../api/errors'
 import type { ArchetypeReading, NatalChartReading, ForecastReading } from '../../api/endpoints'
 import { remapAnswersForBackend } from '../../utils/answers'
 import { isPastDate } from '../../utils/time'
@@ -128,17 +129,19 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
         setArchetypeState({ kind: 'error', message: 'Something went wrong. Please try again.' })
       }
     } catch (err: unknown) {
-      const status   = (err as { response?: { status?: number } })?.response?.status
-      const errorKey = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-      if (status === 429 || errorKey === 'monthly_limit_reached') {
-        setArchetypeState({ kind: 'error', message: "You've reached this month's archetype reading limit. Resets next month." })
-      } else if (status === 403 || errorKey === 'subscription_required') {
-        setArchetypeState({ kind: 'error', message: 'Premium required.' })
-      } else {
-        setArchetypeState({ kind: 'error', message: "Couldn't generate the reading. Please try again." })
+      const parsed = parseBackendError(err)
+      if (parsed.kind === 'subscription_required') {
+        await presentPaywall()
+        setArchetypeState({ kind: 'initial' })
+        return
       }
+      if (parsed.kind === 'cap_reached') {
+        setArchetypeState({ kind: 'error', message: "You've reached this month's archetype reading limit. Resets next month." })
+        return
+      }
+      setArchetypeState({ kind: 'error', message: "Couldn't generate the reading. Please try again." })
     }
-  }, [profileReady, buildRequest, setArchetypeReading])
+  }, [profileReady, buildRequest, setArchetypeReading, presentPaywall])
 
   const generateNatalChart = useCallback(async () => {
     if (!profileReady) {
@@ -155,17 +158,19 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
         setNatalChartState({ kind: 'error', message: 'Something went wrong. Please try again.' })
       }
     } catch (err: unknown) {
-      const status   = (err as { response?: { status?: number } })?.response?.status
-      const errorKey = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-      if (status === 429 || errorKey === 'monthly_limit_reached') {
-        setNatalChartState({ kind: 'error', message: "You've reached this month's natal chart limit. Resets next month." })
-      } else if (status === 403 || errorKey === 'subscription_required') {
-        setNatalChartState({ kind: 'error', message: 'Premium required.' })
-      } else {
-        setNatalChartState({ kind: 'error', message: "Couldn't generate the reading. Please try again." })
+      const parsed = parseBackendError(err)
+      if (parsed.kind === 'subscription_required') {
+        await presentPaywall()
+        setNatalChartState({ kind: 'initial' })
+        return
       }
+      if (parsed.kind === 'cap_reached') {
+        setNatalChartState({ kind: 'error', message: "You've reached this month's natal chart limit. Resets next month." })
+        return
+      }
+      setNatalChartState({ kind: 'error', message: "Couldn't generate the reading. Please try again." })
     }
-  }, [profileReady, buildRequest, setNatalChartReading])
+  }, [profileReady, buildRequest, setNatalChartReading, presentPaywall])
 
   const generateForecast = useCallback(async () => {
     if (!profileReady) {
@@ -182,17 +187,19 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
         setForecastState({ kind: 'error', message: 'Something went wrong. Please try again.' })
       }
     } catch (err: unknown) {
-      const status   = (err as { response?: { status?: number } })?.response?.status
-      const errorKey = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-      if (status === 429 || errorKey === 'monthly_limit_reached') {
-        setForecastState({ kind: 'error', message: "You've reached this month's forecast limit. Resets next month." })
-      } else if (status === 403 || errorKey === 'subscription_required') {
-        setForecastState({ kind: 'error', message: 'Premium required.' })
-      } else {
-        setForecastState({ kind: 'error', message: "Couldn't generate the forecast. Please try again." })
+      const parsed = parseBackendError(err)
+      if (parsed.kind === 'subscription_required') {
+        await presentPaywall()
+        setForecastState({ kind: 'initial' })
+        return
       }
+      if (parsed.kind === 'cap_reached') {
+        setForecastState({ kind: 'error', message: "You've reached this month's forecast limit. Resets next month." })
+        return
+      }
+      setForecastState({ kind: 'error', message: "Couldn't generate the forecast. Please try again." })
     }
-  }, [profileReady, buildRequest, setForecastReading])
+  }, [profileReady, buildRequest, setForecastReading, presentPaywall])
 
   // ── Regenerate handlers (Alert-confirmed) ────────────────────────────
 

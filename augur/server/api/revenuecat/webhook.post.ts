@@ -39,6 +39,13 @@ interface RevenueCatWebhookBody {
   api_version?: string
 }
 
+const CONSUMABLE_PRODUCTS: Record<string, { creditType: 'counsel' | 'compat'; delta: number }> = {
+  omenora_compatibility_single: { creditType: 'compat',  delta: 1  },
+  omenora_counsel_spark:        { creditType: 'counsel', delta: 5  },
+  omenora_counsel_insight:      { creditType: 'counsel', delta: 15 },
+  omenora_counsel_ascend:       { creditType: 'counsel', delta: 35 },
+}
+
 function safeCompare(a: string, b: string): boolean {
   if (a.length !== b.length) return false
   try {
@@ -135,6 +142,41 @@ export default defineEventHandler(async (event) => {
   // Skip until they identify (logIn fires app_user_id update).
   if (!evt.app_user_id || evt.app_user_id.startsWith('$RCAnonymousID')) {
     return { received: true, ignored: 'anonymous_user' }
+  }
+
+  // Consumable products (boost packs, single compatibility purchase) carry no
+  // entitlement_ids, so they must be handled before the no-entitlements guard.
+  if (evt.product_id && evt.product_id in CONSUMABLE_PRODUCTS) {
+    const { creditType, delta } = CONSUMABLE_PRODUCTS[evt.product_id]!
+
+    if (!evt.id) {
+      console.warn('[rc-webhook] consumable event missing event id', { product: evt.product_id, type: evt.type })
+      return { received: true, ignored: 'missing_event_id' }
+    }
+
+    if (!evt.app_user_id) {
+      console.warn('[rc-webhook] consumable event missing user id', { product: evt.product_id, type: evt.type })
+      return { received: true, ignored: 'missing_user_id' }
+    }
+
+    try {
+      if (evt.type === 'NON_RENEWING_PURCHASE') {
+        const newBalance = await grantCredits(evt.app_user_id, creditType, delta, evt.id, evt.product_id)
+        return { received: true, granted: { product_id: evt.product_id, credit_type: creditType, delta, new_balance: newBalance } }
+      }
+      else if (evt.type === 'CANCELLATION' || evt.type === 'REFUND' || evt.type === 'EXPIRATION') {
+        const newBalance = await clawbackCredits(evt.app_user_id, creditType, delta, evt.id, evt.product_id)
+        return { received: true, clawed_back: { product_id: evt.product_id, credit_type: creditType, delta, new_balance: newBalance } }
+      }
+      else {
+        console.warn(`[rc-webhook] unexpected event type ${evt.type} for consumable product ${evt.product_id}`)
+        return { received: true, ignored: 'unexpected_consumable_event' }
+      }
+    }
+    catch (err) {
+      console.error('[rc-webhook] credit operation failed:', err instanceof Error ? err.message : String(err), { eventId: evt.id, product: evt.product_id, type: evt.type })
+      return { received: true, error: 'credit_operation_failed' }
+    }
   }
 
   // Multiple entitlements possible per event. Upsert one row per entitlement.

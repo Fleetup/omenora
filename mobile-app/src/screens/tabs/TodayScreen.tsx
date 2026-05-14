@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Moon, Briefcase, Heart, Sparkles, MessageCircle, BookOpen } from 'lucide-react-native'
+import { Moon, MessageCircle, BookOpen } from 'lucide-react-native'
 import { Text } from '../../components/atoms'
 import { Card, DailyCard, LockedCard } from '../../components/organisms'
 import { ErrorState } from '../../components/templates/ErrorState'
@@ -210,52 +210,32 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
         )}
 
         {/* ── 6. Deeper insight — PREMIUM ───────────────────────────── */}
-        <LockedCard
-          placement="feature_archetype_today"
-          lockMessage="Unlock the full daily reading"
-          unlockCtaLabel="Unlock"
-          onUnlockPress={async () => { await presentPaywall() }}
-          preview={
-            <Text variant="caption" color="tertiary">Today's deeper insight…</Text>
-          }
-        >
-          <Text variant="body" color="secondary">{insightDeeper}</Text>
-        </LockedCard>
+        {!isPremium && (
+          <LockedCard
+            placement="feature_archetype_today"
+            lockMessage="Unlock the full daily reading"
+            unlockCtaLabel="Unlock"
+            onUnlockPress={() => { void presentPaywall() }}
+            preview={
+              <Text variant="caption" color="tertiary">Today's deeper insight…</Text>
+            }
+          >
+            <Text variant="body" color="secondary">{insightDeeper}</Text>
+          </LockedCard>
+        )}
 
         {/* ── 7. Today's Dimensions — PREMIUM (only if zodiac) ──────── */}
-        {zodiacContent != null && (
+        {!isPremium && zodiacContent != null && (
           <LockedCard
             placement="feature_dimensions_today"
             lockMessage="Unlock today's life dimensions"
             unlockCtaLabel="Unlock"
-            onUnlockPress={async () => { await presentPaywall() }}
+            onUnlockPress={() => { void presentPaywall() }}
             preview={
               <Text variant="caption" color="tertiary">Career · Love · Wellbeing</Text>
             }
           >
-            <View style={styles.dimensions}>
-              <View style={styles.dimensionRow}>
-                <Briefcase size={16} color={tokens.text.accent} strokeWidth={1.5} />
-                <View style={styles.dimensionText}>
-                  <Text variant="label" color="primary">Career</Text>
-                  <Text variant="body" color="secondary">{zodiacContent.job}</Text>
-                </View>
-              </View>
-              <View style={styles.dimensionRow}>
-                <Heart size={16} color={tokens.text.accent} strokeWidth={1.5} />
-                <View style={styles.dimensionText}>
-                  <Text variant="label" color="primary">Love</Text>
-                  <Text variant="body" color="secondary">{zodiacContent.love}</Text>
-                </View>
-              </View>
-              <View style={styles.dimensionRow}>
-                <Sparkles size={16} color={tokens.text.accent} strokeWidth={1.5} />
-                <View style={styles.dimensionText}>
-                  <Text variant="label" color="primary">Wellbeing</Text>
-                  <Text variant="body" color="secondary">{zodiacContent.health}</Text>
-                </View>
-              </View>
-            </View>
+            <Text variant="body" color="secondary" />
           </LockedCard>
         )}
       </ScrollView>

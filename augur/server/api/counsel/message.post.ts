@@ -38,7 +38,7 @@ const CounselMessageRequestSchema = z.object({
  * Response shape: { success, response, usage: { count, cap, period, resets_at } }
  */
 export default defineEventHandler(async (event) => {
-  const ctx = await requirePremiumWithUsage(event, 'counsel')
+  const ctx = await requirePremiumOrCreditAccess(event, 'counsel', 'counsel')
 
   const config = useRuntimeConfig()
 
@@ -114,11 +114,19 @@ Length: most responses 100-300 words. Match their depth — short turns get shor
     throw createError({ statusCode: 500, message: 'Failed to generate counsel response' })
   }
 
-  await incrementUsage(ctx.userId, ctx.feature, ctx.period)
+  let usagePayload: Record<string, unknown>
+  if (ctx.source === 'premium') {
+    await incrementUsage(ctx.userId, ctx.feature, ctx.period)
+    usagePayload = { source: 'premium', count: ctx.count + 1, cap: ctx.cap, period: ctx.period, resets_at: ctx.resetsAt }
+  }
+  else {
+    const newBalance = await consumeCredit(ctx.userId, 'counsel')
+    usagePayload = { source: 'credit', credit_balance_remaining: newBalance }
+  }
 
   return {
     success:  true,
     response: assistantText,
-    usage:    { count: ctx.count + 1, cap: ctx.cap, period: ctx.period, resets_at: ctx.resetsAt },
+    usage:    usagePayload,
   }
 })

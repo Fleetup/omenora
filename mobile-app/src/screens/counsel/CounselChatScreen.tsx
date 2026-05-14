@@ -10,10 +10,12 @@ import {
 import { ChatBubble, Header } from '../../components/organisms'
 import { ScreenWrapper } from '../../components/templates'
 import { Text, Button, TextInput } from '../../components/atoms'
+import { BoostPackSheet } from '../../components/molecules'
+import type { BoostPackIdentifier } from '../../components/molecules'
 import { useProfileStore } from '../../stores/profileStore'
-import { usePurchases } from '../../context/usePurchases'
 import { CounselDisclosureModal } from './CounselDisclosureModal'
-import api from '../../api/endpoints'
+import api, { type CounselUsage } from '../../api/endpoints'
+import { parseBackendError } from '../../api/errors'
 import { detectCrisisKeywords } from '../../utils/crisis'
 import { timeUntil } from '../../utils/time'
 import { space, layout, tokens } from '../../design/tokens'
@@ -28,12 +30,6 @@ interface ChatMessage {
   isCrisis?: boolean
 }
 
-interface UsageInfo {
-  count:     number
-  cap:       number
-  period:    string
-  resets_at: string
-}
 
 // ── Thinking bubble — self-contained opacity pulse ────────────────────────────
 
@@ -63,22 +59,25 @@ function ThinkingBubble() {
 const nextId = (prefix: string) =>
   `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
 
+// ── Post-purchase confirmation message ────────────────────────────────────────
+
+function getPostPurchaseMessage(packId: 'spark' | 'insight' | 'ascend'): string {
+  switch (packId) {
+    case 'spark':   return '5 conversations added. Send your next message anytime.'
+    case 'insight': return '15 conversations added. Send your next message anytime.'
+    case 'ascend':  return '35 conversations added. Send your next message anytime.'
+  }
+}
+
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function CounselChatScreen({ navigation, route }: CounselChatScreenProps) {
   const hasAcceptedCounselDisclosure = useProfileStore(
     (s) => s.hasAcceptedCounselDisclosure
   )
-  const { isPremium } = usePurchases()
-
   const [disclosureVisible, setDisclosureVisible] = useState(
     !hasAcceptedCounselDisclosure || (route.params?.showDisclosure ?? false)
   )
-
-  // Belt-and-suspenders: non-premium users should never reach this screen
-  useEffect(() => {
-    if (!isPremium) navigation.goBack()
-  }, [isPremium, navigation])
 
   // ── Profile ────────────────────────────────────────────────────────────────
   const {
@@ -95,9 +94,10 @@ export default function CounselChatScreen({ navigation, route }: CounselChatScre
   const [messages,   setMessages]   = useState<ChatMessage[]>([])
   const [input,      setInput]      = useState('')
   const [isSending,  setIsSending]  = useState(false)
-  const [usage,      setUsage]      = useState<UsageInfo | null>(null)
+  const [usage,           setUsage]           = useState<CounselUsage | null>(null)
+  const [boostSheetVisible, setBoostSheetVisible] = useState(false)
 
-  const capReached = usage !== null && usage.count >= usage.cap
+  const capReached = usage !== null && usage.source === 'premium' && usage.count >= usage.cap
   const canSend    = input.trim().length > 0 && !isSending && !capReached && profileReady
 
   // ── Send handler ───────────────────────────────────────────────────────────
@@ -120,17 +120,18 @@ export default function CounselChatScreen({ navigation, route }: CounselChatScre
       return
     }
 
-    // 2. Client-side daily cap check
-    if (usage !== null && usage.count >= usage.cap) {
+    // 2. Client-side cap check
+    if (usage !== null && usage.source === 'premium' && usage.count >= usage.cap) {
       setMessages((prev) => [
         ...prev,
         {
           id:      nextId('sys'),
           role:    'system' as const,
-          content: `Daily limit reached. Resets in ${timeUntil(usage.resets_at)}.`,
+          content: `You've reached this month's counsel limit. Resets in ${timeUntil(usage.resets_at)}. Tap below to add more conversations.`,
         },
       ])
       setInput('')
+      setBoostSheetVisible(true)
       return
     }
 
@@ -171,29 +172,33 @@ export default function CounselChatScreen({ navigation, route }: CounselChatScre
       ])
       setUsage(result.usage)
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : ''
-      if (errMsg.includes('Too many requests')) {
-        const resetsAt =
-          usage?.resets_at ??
-          new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      const parsed = parseBackendError(err)
+      if (parsed.kind === 'cap_reached') {
         setMessages((prev) => [
           ...prev,
           {
             id:      nextId('sys'),
             role:    'system' as const,
-            content: `Daily limit reached. Resets in ${timeUntil(resetsAt)}.`,
+            content: parsed.resetsAt !== ''
+              ? `You've reached this month's counsel limit. Resets in ${timeUntil(parsed.resetsAt)}. Tap below to add more conversations.`
+              : "You've reached this month's counsel limit. Tap below to add more conversations.",
           },
         ])
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id:      nextId('sys'),
-            role:    'system' as const,
-            content: "Couldn't send message. Try again.",
-          },
-        ])
+        setBoostSheetVisible(true)
+        return
       }
+      if (parsed.kind === 'subscription_required') {
+        navigation.goBack()
+        return
+      }
+      setMessages((prev) => [
+        ...prev,
+        {
+          id:      nextId('sys'),
+          role:    'system' as const,
+          content: "Couldn't send message. Try again.",
+        },
+      ])
     } finally {
       setIsSending(false)
     }
@@ -201,6 +206,7 @@ export default function CounselChatScreen({ navigation, route }: CounselChatScre
     input, isSending, messages, usage,
     firstName, archetype, lifePathNumber,
     sunSign, moonSign, risingSign, regionOverride, report,
+    navigation,
   ])
 
   // ── Render FlatList item (Steps D + E) ─────────────────────────────────────
@@ -241,10 +247,17 @@ export default function CounselChatScreen({ navigation, route }: CounselChatScre
       <Header title="Counsel" onBack={() => navigation.goBack()} />
 
       {/* Usage counter — renders only when at least one message has been sent */}
-      {usage !== null && usage.count > 0 && (
+      {usage !== null && usage.source === 'premium' && usage.count > 0 && (
         <View style={styles.usageRow}>
           <Text variant="micro" color="tertiary">
-            {usage.count} / {usage.cap} today
+            {usage.count} / {usage.cap} this month
+          </Text>
+        </View>
+      )}
+      {usage !== null && usage.source === 'credit' && (
+        <View style={styles.usageRow}>
+          <Text variant="micro" color="tertiary">
+            {usage.credit_balance_remaining} conversations remaining
           </Text>
         </View>
       )}
@@ -296,6 +309,22 @@ export default function CounselChatScreen({ navigation, route }: CounselChatScre
       <Text variant="micro" color="tertiary" style={styles.complianceFooter}>
         Counsel is AI — not a substitute for professional support.
       </Text>
+
+      <BoostPackSheet
+        visible={boostSheetVisible}
+        onDismiss={() => setBoostSheetVisible(false)}
+        onPurchaseSuccess={(packId: BoostPackIdentifier) => {
+          setUsage(null)
+          setMessages((prev) => [
+            ...prev,
+            {
+              id:      nextId('sys'),
+              role:    'system' as const,
+              content: getPostPurchaseMessage(packId),
+            },
+          ])
+        }}
+      />
 
       {/* ── Disclosure overlay — visible on first access or via MoreScreen ── */}
       <CounselDisclosureModal
