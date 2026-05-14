@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { View } from 'react-native'
-import { Sun, BookOpen, Settings, Bell, Heart } from 'lucide-react-native'
+import { Pressable, View } from 'react-native'
+import { ChevronLeft, Sun, BookOpen, Settings, Bell, Heart } from 'lucide-react-native'
+import { useNavigation } from '@react-navigation/native'
 
 import {
   Text,
@@ -44,7 +45,7 @@ import {
   ErrorState,
 } from '../../components/templates'
 
-import { space, layout } from '../../design/tokens'
+import { space, layout, tokens } from '../../design/tokens'
 
 const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <View style={{ marginBottom: space['5'] }}>
@@ -54,6 +55,7 @@ const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, ch
 )
 
 export const ComponentsScreen: React.FC = () => {
+  const navigation = useNavigation()
   const [chipSelected, setChipSelected] = useState<string | null>('one')
   const [chipMulti, setChipMulti] = useState<string[]>(['a'])
   const [textValue, setTextValue] = useState('')
@@ -66,6 +68,16 @@ export const ComponentsScreen: React.FC = () => {
 
   return (
     <ScreenWrapper scroll padded>
+      <Pressable
+        onPress={() => navigation.goBack()}
+        accessibilityLabel="Go back"
+        accessibilityRole="button"
+        hitSlop={12}
+        style={{ alignSelf: 'flex-start', minWidth: layout.tapTarget, minHeight: layout.tapTarget, alignItems: 'center', justifyContent: 'center', marginLeft: -space['2'], marginBottom: space['2'] }}
+      >
+        <ChevronLeft size={24} color={tokens.text.secondary} />
+      </Pressable>
+
       <Text variant="display2" color="primary">Components</Text>
 
       <Text variant="body" color="secondary" style={{ marginTop: space['2'], marginBottom: space['8'] }}>
