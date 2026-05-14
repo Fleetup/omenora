@@ -110,15 +110,10 @@ export default function TraditionSwitcherScreen({ navigation }: TraditionSwitche
         ) : (
           <LockedCard
             placement="feature_tradition_switcher"
-            lockMessage="Unlock tradition switching"
-            unlockCtaLabel="Unlock"
+            title="Unlock Tradition Switching"
+            description="Access Western, Vedic, Chinese, and Tarot frameworks — each recalculates your full reading in its tradition."
             onUnlockPress={handleUnlockPress}
-            preview={
-              <Text variant="caption">4 traditions: Western, Vedic, Chinese, Tarot</Text>
-            }
-          >
-            <ChipsList selected="western" onSelect={() => {}} />
-          </LockedCard>
+          />
         )}
 
         <Text variant="caption" style={styles.footer}>

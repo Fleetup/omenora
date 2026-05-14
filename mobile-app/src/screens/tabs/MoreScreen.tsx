@@ -30,7 +30,10 @@ import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
 import { useAuth } from '../../context/useAuth'
 import { tokens, space, layout } from '../../design/tokens'
+import { AtmosphericBackground } from '../../components/atmosphere'
 import type { MoreScreenProps } from '../../navigation/types'
+
+const CARD_BG = 'rgba(42,31,24,0.40)'
 
 export default function MoreScreen({ navigation }: MoreScreenProps) {
   const { languageOverride } = useProfileStore()
@@ -96,13 +99,15 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
   }, [signOut, isAnonymous, navigation])
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
+    <View style={styles.root}>
+      <AtmosphericBackground variant="standard" />
+      <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Account header ─────────────────────────────────────────── */}
-        <Card variant="default" padding="default">
+        <Card variant="default" padding="default" style={{ backgroundColor: CARD_BG }}>
           <Text variant="heading2" color="primary">Account</Text>
           <View style={styles.accountSubRow}>
             <View style={styles.accountIdentity}>
@@ -128,7 +133,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
           <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
             Premium Features
           </Text>
-          <Card variant="default" style={styles.listCard}>
+          <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
             <ListItem
               icon={Heart}
               label="Compatibility"
@@ -157,7 +162,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
           <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
             Account &amp; Settings
           </Text>
-          <Card variant="default" style={styles.listCard}>
+          <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
             {/* Sign-in CTA — only visible for anonymous users */}
             {isAnonymous && (
               <>
@@ -211,7 +216,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
           <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
             Trust &amp; Compliance
           </Text>
-          <Card variant="default" style={styles.listCard}>
+          <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
             {/* navigate() not Linking — web /privacy URL doesn't exist yet */}
             <ListItem
               icon={Shield}
@@ -266,7 +271,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
           <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
             Support
           </Text>
-          <Card variant="default" style={styles.listCard}>
+          <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
             {/* /faq page does not exist on web yet — disabled until it ships */}
             <ListItem
               icon={HelpCircle}
@@ -296,7 +301,7 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
             <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
               Developer (dev-only)
             </Text>
-            <Card variant="default" style={styles.listCard}>
+            <Card variant="default" style={{ ...styles.listCard, backgroundColor: CARD_BG }}>
               <ListItem
                 icon={Layers}
                 label="Component Gallery"
@@ -314,14 +319,18 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
         )}
 
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  safe: {
+  root: {
     flex:            1,
     backgroundColor: tokens.surface.base,
+  },
+  safe: {
+    flex: 1,
   },
   scroll: {
     paddingHorizontal: layout.screenPadding,
@@ -361,8 +370,8 @@ const styles = StyleSheet.create({
     overflow:          'hidden',
   },
   divider: {
-    height:          StyleSheet.hairlineWidth,
-    backgroundColor: tokens.border.subtle,
+    height:           1,
+    backgroundColor:  tokens.border.default,
     marginHorizontal: space['4'],
   },
 })

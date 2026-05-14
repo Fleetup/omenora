@@ -7,9 +7,10 @@ import {
   StyleSheet,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Moon, Briefcase, Heart, Sparkles, MessageCircle, BookOpen } from 'lucide-react-native'
+import { Moon, MessageCircle, BookOpen } from 'lucide-react-native'
 import { Text } from '../../components/atoms'
 import { Card, DailyCard, LockedCard } from '../../components/organisms'
+import { AtmosphericBackground } from '../../components/atmosphere'
 import { ErrorState } from '../../components/templates/ErrorState'
 import { ListItem } from '../../components/molecules'
 import { useProfileStore } from '../../stores/profileStore'
@@ -109,37 +110,46 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
     () => (archetypeContent?.insight ?? '').split('\n\n'),
     [archetypeContent]
   )
-  const insightP1     = insightParagraphs[0] ?? ''
-  const insightDeeper = insightParagraphs.slice(1).join('\n\n')
+  const insightP1 = insightParagraphs[0] ?? ''
 
   // ── Loading state ──────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView edges={['top']} style={styles.safe}>
-        <View style={styles.center}>
-          <ActivityIndicator color={tokens.accent.primary} size="large" />
-        </View>
-      </SafeAreaView>
+      <View style={styles.root}>
+        <AtmosphericBackground variant="standard" />
+        <SafeAreaView edges={['top']} style={styles.safe}>
+          <View style={styles.center}>
+            <ActivityIndicator color={tokens.accent.primary} size="large" />
+          </View>
+        </SafeAreaView>
+      </View>
     )
   }
 
   // ── Error / missing content state ──────────────────────────────────────────
   if (error || !archetypeContent) {
     return (
-      <SafeAreaView edges={['top']} style={styles.safe}>
-        <ErrorState
-          heading="Couldn't load today"
-          body={error ?? undefined}
-          actionLabel="Try again"
-          onActionPress={() => fetchDailyCache()}
-        />
-      </SafeAreaView>
+      <View style={styles.root}>
+        <AtmosphericBackground variant="standard" />
+        <SafeAreaView edges={['top']} style={styles.safe}>
+          <ErrorState
+            heading="Couldn't load today"
+            body={error ?? undefined}
+            actionLabel="Try again"
+            onActionPress={() => fetchDailyCache()}
+          />
+        </SafeAreaView>
+      </View>
     )
   }
 
   // ── Success ────────────────────────────────────────────────────────────────
   return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
+    <View style={styles.root}>
+      <AtmosphericBackground
+        variant="standard"
+      />
+      <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -175,8 +185,8 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
           moonPhase={archetypeContent.moon_phase}
         />
 
-        {/* ── 3. Reflection Card — free ──────────────────────────────── */}
-        <Card variant="raised" padding="default">
+        {/* ── 3. Reflection Card — free ──────────────────────── */}
+        <Card variant="content" padding="default">
           <Text variant="micro" color="tertiary" style={styles.sectionLabel}>
             Reflection
           </Text>
@@ -187,7 +197,7 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
 
         {/* ── 4. Planetary weather — free (only if zodiac available) ─── */}
         {zodiacContent != null && (
-          <Card variant="raised" padding="compact">
+          <Card variant="content" padding="compact">
             <Text variant="micro" color="tertiary" style={styles.sectionLabel}>
               Today's cosmic stage
             </Text>
@@ -197,9 +207,9 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
           </Card>
         )}
 
-        {/* ── 5. Premium-only CTAs ───────────────────────────────────── */}
+        {/* ── 5. Premium-only CTAs ──────────────────────────── */}
         {isPremium && (
-          <Card variant="raised" padding="compact">
+          <Card variant="content" padding="compact">
             <ListItem
               label="Ask Counsel about today"
               icon={MessageCircle}
@@ -215,64 +225,36 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
           </Card>
         )}
 
-        {/* ── 6. Deeper insight — PREMIUM ───────────────────────────── */}
+        {/* ── 6. Deeper insight — PREMIUM ───────────────────── */}
         <LockedCard
           placement="feature_archetype_today"
-          lockMessage="Unlock the full daily reading"
-          unlockCtaLabel="Unlock"
+          title="Your Full Daily Reading"
+          description="Deeper context on today's cosmic stage, your karmic patterns, and the energetic invitation hidden in this transit."
           onUnlockPress={async () => { await presentPaywall() }}
-          preview={
-            <Text variant="caption" color="tertiary">Today's deeper insight…</Text>
-          }
-        >
-          <Text variant="body" color="secondary">{insightDeeper}</Text>
-        </LockedCard>
+        />
 
         {/* ── 7. Today's Dimensions — PREMIUM (only if zodiac) ──────── */}
         {zodiacContent != null && (
           <LockedCard
             placement="feature_dimensions_today"
-            lockMessage="Unlock today's life dimensions"
-            unlockCtaLabel="Unlock"
+            title="Today's Life Dimensions"
+            description="Career, love, and wellbeing — personalized guidance for each dimension based on your full chart and today's transits."
             onUnlockPress={async () => { await presentPaywall() }}
-            preview={
-              <Text variant="caption" color="tertiary">Career · Love · Wellbeing</Text>
-            }
-          >
-            <View style={styles.dimensions}>
-              <View style={styles.dimensionRow}>
-                <Briefcase size={16} color={tokens.text.accent} strokeWidth={1.5} />
-                <View style={styles.dimensionText}>
-                  <Text variant="label" color="primary">Career</Text>
-                  <Text variant="body" color="secondary">{zodiacContent.job}</Text>
-                </View>
-              </View>
-              <View style={styles.dimensionRow}>
-                <Heart size={16} color={tokens.text.accent} strokeWidth={1.5} />
-                <View style={styles.dimensionText}>
-                  <Text variant="label" color="primary">Love</Text>
-                  <Text variant="body" color="secondary">{zodiacContent.love}</Text>
-                </View>
-              </View>
-              <View style={styles.dimensionRow}>
-                <Sparkles size={16} color={tokens.text.accent} strokeWidth={1.5} />
-                <View style={styles.dimensionText}>
-                  <Text variant="label" color="primary">Wellbeing</Text>
-                  <Text variant="body" color="secondary">{zodiacContent.health}</Text>
-                </View>
-              </View>
-            </View>
-          </LockedCard>
+          />
         )}
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  safe: {
+  root: {
     flex:            1,
     backgroundColor: tokens.surface.base,
+  },
+  safe: {
+    flex: 1,
   },
   center: {
     flex:           1,
@@ -305,17 +287,5 @@ const styles = StyleSheet.create({
   },
   reflectionText: {
     fontStyle: 'italic',
-  },
-  dimensions: {
-    gap: space['4'],
-  },
-  dimensionRow: {
-    flexDirection: 'row',
-    alignItems:    'flex-start',
-    gap:           space['3'],
-  },
-  dimensionText: {
-    flex: 1,
-    gap:  space['1'],
   },
 })

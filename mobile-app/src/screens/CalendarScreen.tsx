@@ -14,7 +14,6 @@ import type { CalendarData, CalendarMonth } from '../types/calendar'
 
 // ── Module-level constants ────────────────────────────────────────────────────
 
-const MONTH_ABBREVS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'] as const
 const SHEET_HEIGHT  = Math.round(Dimensions.get('window').height * 0.75)
 
 // ── State machine ─────────────────────────────────────────────────────────────
@@ -321,25 +320,10 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
               <>
                 <LockedCard
                   placement="feature_calendar"
-                  lockMessage="Unlock your 2026 lucky timing"
-                  unlockCtaLabel="Unlock"
+                  title="Your 2026 Lucky Timing"
+                  description="12 months of peak periods, caution dates, and lucky windows — mapped to your personal chart."
                   onUnlockPress={handleUnlockPress}
-                  preview={
-                    <Text variant="caption">
-                      12 months • peak periods • caution dates • lucky days
-                    </Text>
-                  }
-                >
-                  <View style={styles.decorativeGrid}>
-                    {MONTH_ABBREVS.map((abbr) => (
-                      <View key={abbr} style={styles.decorativeCellWrap}>
-                        <View style={styles.decorativeCell}>
-                          <Text variant="micro" style={styles.decorativeCellText}>{abbr}</Text>
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                </LockedCard>
+                />
                 <Pressable
                   onPress={handleBuyCalendar}
                   disabled={isPurchasingCalendar}
@@ -423,22 +407,6 @@ const styles = StyleSheet.create({
     height:       '100%',
     borderRadius: radius.xs,
   },
-  decorativeGrid: {
-    flexDirection:   'row',
-    flexWrap:        'wrap',
-    justifyContent:  'space-between',
-    rowGap:          space['2'],
-    opacity:         0.35,
-    paddingVertical: space['2'],
-  },
-  decorativeCellWrap: { width: '31.5%' },
-  decorativeCell: {
-    backgroundColor: tokens.surface.overlay,
-    borderRadius:    radius.sm,
-    paddingVertical: space['3'],
-    alignItems:      'center',
-  },
-  decorativeCellText: { color: tokens.text.secondary },
   calendarBuyBtn: {
     borderWidth:       1,
     borderColor:       tokens.border.default,

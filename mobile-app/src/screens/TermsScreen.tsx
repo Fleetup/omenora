@@ -1,10 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { TermsScreenProps } from '../navigation/types';
-import { colors } from '../theme/colors';
-import { fonts } from '../theme/fonts';
-import { ScreenHeader } from '../components/ui';
+import React from 'react'
+import { View, StyleSheet, Pressable } from 'react-native'
+import { ChevronLeft } from 'lucide-react-native'
+import { TermsScreenProps } from '../navigation/types'
+import { ScreenWrapper } from '../components/templates'
+import { Text } from '../components/atoms'
+import { tokens, space, layout } from '../design/tokens'
 
 const SECTIONS = [
   {
@@ -38,40 +38,37 @@ const SECTIONS = [
 ];
 
 export const TermsScreen: React.FC<TermsScreenProps> = ({ navigation }) => (
-  <SafeAreaView style={styles.container}>
-    <LinearGradient colors={colors.gradients.cosmic} style={styles.gradient}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+  <ScreenWrapper
+    scroll
+    padded
+    contentContainerStyle={styles.scroll}
+  >
+    <Pressable onPress={() => navigation.goBack()} style={styles.back} hitSlop={12}>
+      <ChevronLeft size={24} color={tokens.text.secondary} />
+    </Pressable>
 
-        <ScreenHeader onBack={() => navigation.goBack()} style={{ marginBottom: 32 }} />
+    <Text variant="micro" color="accent" style={styles.eyebrow}>LEGAL</Text>
+    <Text variant="display2" color="primary" style={styles.heading}>Terms of Service</Text>
+    <Text variant="caption" color="tertiary" style={styles.lastUpdated}>Effective January 2026</Text>
 
-        <Text style={styles.eyebrow}>LEGAL</Text>
-        <Text style={styles.heading}>Terms of Service</Text>
-        <Text style={styles.lastUpdated}>Effective January 2026</Text>
+    <View style={styles.rule} />
 
-        <View style={styles.rule} />
-
-        {SECTIONS.map(({ title, body }) => (
-          <View key={title} style={styles.section}>
-            <Text style={styles.sectionTitle}>{title}</Text>
-            <Text style={styles.sectionBody}>{body}</Text>
-          </View>
-        ))}
-      </ScrollView>
-    </LinearGradient>
-  </SafeAreaView>
-);
+    {SECTIONS.map(({ title, body }) => (
+      <View key={title} style={styles.section}>
+        <Text variant="micro" color="tertiary" style={styles.sectionTitle}>{title}</Text>
+        <Text variant="body" color="secondary">{body}</Text>
+      </View>
+    ))}
+  </ScreenWrapper>
+)
 
 const styles = StyleSheet.create({
-  container:     { flex: 1, backgroundColor: colors.bone },
-  gradient:      { flex: 1 },
-  scroll:        { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 56 },
-
-  eyebrow:       { fontFamily: fonts.inter, fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', color: colors.goldDim, marginBottom: 8 },
-  heading:       { fontFamily: fonts.cormorant, fontSize: 32, fontWeight: '300', color: colors.ink, marginBottom: 6 },
-  lastUpdated:   { fontFamily: fonts.cormorantItalic, fontSize: 12, color: colors.inkDim, marginBottom: 24 },
-  rule:          { height: 1, backgroundColor: colors.inkGhost, marginBottom: 28 },
-
-  section:       { marginBottom: 28 },
-  sectionTitle:  { fontFamily: fonts.inter, fontSize: 10, fontWeight: '600', color: colors.inkFaint, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 },
-  sectionBody:   { fontFamily: fonts.inter, fontSize: 14, color: colors.inkFaint, lineHeight: 24 },
-});
+  scroll:       { paddingTop: space['4'], paddingBottom: space['16'] },
+  back:         { marginBottom: space['8'], alignSelf: 'flex-start', minHeight: layout.tapTarget, justifyContent: 'center' },
+  eyebrow:      { marginBottom: space['2'] },
+  heading:      { marginBottom: space['2'] },
+  lastUpdated:  { marginBottom: space['6'] },
+  rule:         { height: StyleSheet.hairlineWidth, backgroundColor: tokens.border.subtle, marginBottom: space['8'] },
+  section:      { marginBottom: space['8'] },
+  sectionTitle: { marginBottom: space['2'] },
+})

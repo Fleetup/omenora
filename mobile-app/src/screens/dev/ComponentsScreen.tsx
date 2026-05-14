@@ -259,18 +259,13 @@ export const ComponentsScreen: React.FC = () => {
         <ChatBubble variant="system" message="System note, centered." />
       </Row>
 
-      <Row label="LockedCard — conversion-critical">
+      <Row label="LockedCard — conversion card">
         <LockedCard
           placement="dev_preview"
+          title="Premium Feature"
+          description="This is a dev showcase of the LockedCard conversion pattern — eyebrow, headline, body copy, and CTA on a cosmic blue-violet premium card."
           onUnlockPress={() => {}}
-          preview={<Text variant="caption" color="tertiary">Preview text always visible above the lock.</Text>}
-        >
-          <Text variant="body" color="primary">
-            This is the locked content. It's blurred and scrimmed. The unlock CTA appears centered.
-            Multiple lines of locked content help demonstrate the blur effect properly. Lorem ipsum
-            dolor sit amet consectetur adipiscing elit.
-          </Text>
-        </LockedCard>
+        />
       </Row>
 
       <Row label="DailyCard">

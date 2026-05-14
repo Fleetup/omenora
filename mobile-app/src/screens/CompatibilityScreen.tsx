@@ -221,22 +221,10 @@ export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ naviga
           ) : (
             <LockedCard
               placement="feature_compatibility"
-              lockMessage="Unlock compatibility readings"
-              unlockCtaLabel="Unlock"
+              title="Compatibility Reading"
+              description="Seven sections including bond strength, communication style, conflict patterns, and intimacy — your full relationship blueprint."
               onUnlockPress={handleUnlockPress}
-              preview={
-                <Text variant="caption">
-                  7 sections: bond, strength, challenge, communication, dynamic, forecast, advice
-                </Text>
-              }
-            >
-              <View style={styles.decorativeScore}>
-                <Text variant="display1" style={styles.decorativeScorePct}>??%</Text>
-                <Text variant="caption" style={styles.decorativeScoreLabel}>
-                  compatibility score
-                </Text>
-              </View>
-            </LockedCard>
+            />
           )}
         </ScrollView>
       )}

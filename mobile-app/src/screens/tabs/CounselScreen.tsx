@@ -6,6 +6,7 @@ import { Text, Button } from '../../components/atoms'
 import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
 import { tokens, space, layout } from '../../design/tokens'
+import { AtmosphericBackground } from '../../components/atmosphere'
 import type { CounselScreenProps } from '../../navigation/types'
 
 export default function CounselScreen({ navigation }: CounselScreenProps) {
@@ -30,7 +31,9 @@ export default function CounselScreen({ navigation }: CounselScreenProps) {
   }, [presentPaywall])
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
+    <View style={styles.root}>
+      <AtmosphericBackground variant="standard" />
+      <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -88,14 +91,18 @@ export default function CounselScreen({ navigation }: CounselScreenProps) {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  safe: {
+  root: {
     flex:            1,
     backgroundColor: tokens.surface.base,
+  },
+  safe: {
+    flex: 1,
   },
   scroll: {
     paddingHorizontal: layout.screenPadding,

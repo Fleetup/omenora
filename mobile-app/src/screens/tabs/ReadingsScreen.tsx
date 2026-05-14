@@ -16,6 +16,7 @@ import type { ArchetypeReading, NatalChartReading, ForecastReading } from '../..
 import { remapAnswersForBackend } from '../../utils/answers'
 import { isPastDate } from '../../utils/time'
 import { tokens, space, layout } from '../../design/tokens'
+import { AtmosphericBackground } from '../../components/atmosphere'
 import type { ReadingsScreenProps } from '../../navigation/types'
 
 // ── Section state (discriminated union) ───────────────────────────────────
@@ -240,7 +241,9 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
+    <View style={styles.root}>
+      <AtmosphericBackground variant="standard" />
+      <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -371,21 +374,10 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
           ) : (
             <LockedCard
               placement="feature_archetype"
-              lockMessage="Unlock your full archetype reading"
-              unlockCtaLabel="Unlock"
+              title="Your Full Archetype Reading"
+              description="The deep psychological framework of your archetype — shadow work, gifts, life patterns, and how you show up in love and work."
               onUnlockPress={handleUnlockPress}
-              preview={
-                <Text variant="caption" color="tertiary">
-                  {archetypeDisplayName
-                    ? `The deeper psychological framework of ${archetypeDisplayName}`
-                    : 'The deeper psychological framework of your archetype'}
-                </Text>
-              }
-            >
-              <Text variant="body" color="secondary" style={styles.stubText}>
-                Your full archetype reading is being prepared.
-              </Text>
-            </LockedCard>
+            />
           )}
         </View>
 
@@ -504,19 +496,10 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
           ) : (
             <LockedCard
               placement="feature_natal_chart"
-              lockMessage="Unlock your complete natal chart"
-              unlockCtaLabel="Unlock"
+              title="Your Complete Natal Chart"
+              description="Every planet, every aspect, every house — interpreted in the context of your unique cosmic signature."
               onUnlockPress={handleUnlockPress}
-              preview={
-                <Text variant="caption" color="tertiary">
-                  All 10 planets, 12 houses, aspects, and dominant patterns
-                </Text>
-              }
-            >
-              <Text variant="body" color="secondary" style={styles.stubText}>
-                Your natal chart is being prepared.
-              </Text>
-            </LockedCard>
+            />
           )}
         </View>
 
@@ -633,19 +616,10 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
           ) : (
             <LockedCard
               placement="feature_forecast"
-              lockMessage="Unlock your 90-day forecast"
-              unlockCtaLabel="Unlock"
+              title="Your 12-Month Forecast"
+              description="Month-by-month guidance on what's coming — opportunities, challenges, and the cosmic windows you don't want to miss."
               onUnlockPress={handleUnlockPress}
-              preview={
-                <Text variant="caption" color="tertiary">
-                  What's coming, when, and how to meet it
-                </Text>
-              }
-            >
-              <Text variant="body" color="secondary" style={styles.stubText}>
-                Your 90-day forecast is being prepared.
-              </Text>
-            </LockedCard>
+            />
           )}
         </View>
 
@@ -661,14 +635,18 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
          * Will show upcoming planetary transits affecting the user's chart.
          */}
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  safe: {
+  root: {
     flex:            1,
     backgroundColor: tokens.surface.base,
+  },
+  safe: {
+    flex: 1,
   },
   scroll: {
     paddingHorizontal: layout.screenPadding,
