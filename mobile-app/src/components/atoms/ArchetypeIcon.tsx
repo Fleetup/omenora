@@ -34,6 +34,7 @@ export interface ArchetypeIconProps {
   archetype: string
   size?: number
   opacity?: number
+  fill?: string
   style?: ViewStyle
 }
 
@@ -41,15 +42,19 @@ export const ArchetypeIcon: React.FC<ArchetypeIconProps> = ({
   archetype,
   size = 24,
   opacity = 0.65,
+  fill,
   style,
 }) => {
   const SvgComponent = ARCHETYPES[archetype.trim().toLowerCase()]
   if (!SvgComponent) return null
+  const fillColor = fill ?? `rgba(255,255,255,${opacity})`
+  const svgOpacity = fill !== undefined ? opacity : undefined
   return (
     <SvgComponent
       width={size}
       height={size}
-      fill={`rgba(255,255,255,${opacity})`}
+      fill={fillColor}
+      opacity={svgOpacity}
       style={style as SvgProps['style']}
     />
   )

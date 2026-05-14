@@ -67,6 +67,9 @@ export const specialty = {
   cardTintPremium:     'rgba(28,36,72,0.42)',
   /** @deprecated Use cardTokens.background.locked from surface.ts. Remove in 15b. */
   cardTintGlass:       'rgba(20,30,70,0.18)',
+  // Cluster 17c: hero image overlay gradient — warm-black scrim (opaque and transparent ends)
+  heroScrim:            'rgba(21, 17, 13, 1.0)',
+  heroScrimTransparent: 'rgba(10, 6, 4, 0)',
 } as const
 
 export const gradient = {

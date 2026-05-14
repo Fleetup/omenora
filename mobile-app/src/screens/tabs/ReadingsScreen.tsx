@@ -7,15 +7,16 @@ import {
   Alert,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Text, Chip, Button, ZodiacSymbol } from '../../components/atoms'
-import { Card, LockedCard, ReadingCard, TransitCard, SectionHeader } from '../../components/organisms'
+import { Text, Chip, Button, ZodiacSymbol, ArchetypeIcon } from '../../components/atoms'
+import { Card, ReadingCard, TransitCard, SectionHeader, ReadingFeatureCard } from '../../components/organisms'
+import ReadingHero from '../../components/hero/ReadingHero'
 import { useProfileStore } from '../../stores/profileStore'
 import { usePurchases } from '../../context/usePurchases'
 import api from '../../api/endpoints'
 import type { ArchetypeReading, NatalChartReading, ForecastReading } from '../../api/endpoints'
 import { remapAnswersForBackend } from '../../utils/answers'
 import { isPastDate } from '../../utils/time'
-import { tokens, space, layout } from '../../design/tokens'
+import { tokens, space, layout, accent } from '../../design/tokens'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import type { ReadingsScreenProps } from '../../navigation/types'
 
@@ -240,19 +241,20 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
 
   return (
     <View style={styles.root}>
-      <AtmosphericBackground variant="standard" />
+      <AtmosphericBackground variant="muted" />
       <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── 1. Page header ─────────────────────────────────────────── */}
-        <View style={styles.pageHeader}>
-          <Text variant="display2" color="primary">Your Reading</Text>
-          <Text variant="body" color="tertiary" style={styles.subtitle}>
-            Personal to you
-          </Text>
-        </View>
+        {/* ── 1. Reading hero — archetype identity anchor ────────── */}
+        <ReadingHero
+          archetypeKey={archetype}
+          archetypeDisplayName={archetypeDisplayName}
+          element={report?.element ?? null}
+          powerTraits={report?.powerTraits ?? null}
+          identityTeaser={identityTeaser}
+        />
 
         {/* ── 2. Big-Three Card ──────────────────────────────────────── */}
         <Card variant="premium" padding="default">
@@ -272,29 +274,8 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
           ))}
         </Card>
 
-        {/* ── 3. Archetype teaser ────────────────────────────────────── */}
-        <Card variant="default" padding="default">
-          {archetypeDisplayName != null ? (
-            <>
-              <Text variant="heading2" color="primary" style={styles.archetypeHeading}>
-                {`You are ${archetypeDisplayName}`}
-              </Text>
-              <Text variant="body" color="secondary">
-                {identityTeaser ?? 'Your archetype reading is being prepared\u2026'}
-              </Text>
-            </>
-          ) : (
-            <Text variant="body" color="secondary">
-              Your reading is being prepared\u2026
-            </Text>
-          )}
-        </Card>
-
         {/* ── 4. Full archetype reading — PREMIUM ────────────────────── */}
         <View>
-          <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
-            Full archetype reading
-          </Text>
           {isPremium ? (
             <>
               {archetypeState.kind === 'initial' && (
@@ -370,10 +351,20 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
               )}
             </>
           ) : (
-            <LockedCard
+            <ReadingFeatureCard
+              variant="flagship"
               placement="feature_archetype"
-              title="Your Full Archetype Reading"
-              description="The deep psychological framework of your archetype — shadow work, gifts, life patterns, and how you show up in love and work."
+              eyebrow="Full Archetype Reading"
+              title="Shadow, gifts, and the patterns that shape your life"
+              description="The complete psychological framework of your archetype — how you move through the world, your shadow side, your core gifts, and how you show up in love and work."
+              glyph={
+                <ArchetypeIcon
+                  archetype={archetype ?? 'architect'}
+                  size={140}
+                  fill={accent.primary}
+                  opacity={1}
+                />
+              }
               onUnlockPress={handleUnlockPress}
             />
           )}
@@ -381,9 +372,6 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
 
         {/* ── 5. Full natal chart — PREMIUM ──────────────────────────── */}
         <View>
-          <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
-            Full natal chart
-          </Text>
           {isPremium ? (
             <>
               {natalChartState.kind === 'initial' && (
@@ -492,10 +480,19 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
               )}
             </>
           ) : (
-            <LockedCard
+            <ReadingFeatureCard
+              variant="standard"
               placement="feature_natal_chart"
-              title="Your Complete Natal Chart"
-              description="Every planet, every aspect, every house — interpreted in the context of your unique cosmic signature."
+              eyebrow="Complete Natal Chart"
+              title="Every planet. Every house. Your full birth chart."
+              description="All 10 planets in your chart — their signs, houses, aspects, and what each placement means for you personally."
+              glyph={
+                <ZodiacSymbol
+                  sign={sunSign ?? 'Aries'}
+                  size={140}
+                  opacity={1}
+                />
+              }
               onUnlockPress={handleUnlockPress}
             />
           )}
@@ -503,9 +500,6 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
 
         {/* ── 6. 90-day forecast — PREMIUM ───────────────────────────── */}
         <View>
-          <Text variant="micro" color="tertiary" style={styles.sectionHeading}>
-            90-day forecast
-          </Text>
           {isPremium ? (
             <>
               {forecastState.kind === 'initial' && (
@@ -612,10 +606,21 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
               )}
             </>
           ) : (
-            <LockedCard
+            /* TODO: swap phoenix glyph for planet composite icon when assets/symbols/planets/ ships in a future cluster */
+            <ReadingFeatureCard
+              variant="standard"
               placement="feature_forecast"
-              title="Your 12-Month Forecast"
-              description="Month-by-month guidance on what's coming — opportunities, challenges, and the cosmic windows you don't want to miss."
+              eyebrow="90-Day Forecast"
+              title="The major themes, transits, and timing ahead"
+              description="Month-by-month planetary guidance — key transits, peak periods, and how to move through each phase with your chart in mind."
+              glyph={
+                <ArchetypeIcon
+                  archetype="phoenix"
+                  size={140}
+                  fill={accent.primary}
+                  opacity={1}
+                />
+              }
               onUnlockPress={handleUnlockPress}
             />
           )}
@@ -652,12 +657,6 @@ const styles = StyleSheet.create({
     paddingBottom:     space['10'],
     gap:               layout.cardGap,
   },
-  pageHeader: {
-    marginBottom: space['2'],
-  },
-  subtitle: {
-    marginTop: space['1'],
-  },
   cardLabel: {
     marginBottom: space['3'],
   },
@@ -674,12 +673,6 @@ const styles = StyleSheet.create({
   bigThreeText: {
     flex: 1,
     gap:  space['0.5'],
-  },
-  archetypeHeading: {
-    marginBottom: space['3'],
-  },
-  sectionHeading: {
-    marginBottom: space['2'],
   },
   capNote: {
     marginTop: space['2'],

@@ -7,9 +7,10 @@ import {
   StyleSheet,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Moon, MessageCircle, BookOpen } from 'lucide-react-native'
-import { Text } from '../../components/atoms'
-import { Card, DailyCard, LockedCard } from '../../components/organisms'
+import { MessageCircle, BookOpen } from 'lucide-react-native'
+import { Text, DimensionIcon } from '../../components/atoms'
+import { Card } from '../../components/organisms'
+import MoonPhaseHero from '../../components/hero/MoonPhaseHero'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import { ErrorState } from '../../components/templates/ErrorState'
 import { ListItem } from '../../components/molecules'
@@ -24,7 +25,7 @@ import type { TodayScreenProps } from '../../navigation/types'
 export default function TodayScreen({ navigation }: TodayScreenProps) {
   const { firstName, archetype, sunSign, languageOverride } = useProfileStore()
   const { displayName } = useAuth()
-  const { isPremium, presentPaywall } = usePurchases()
+  const { isPremium } = usePurchases()
 
   const [data, setData]           = useState<GetDailyCacheResponse | null>(null)
   const [loading, setLoading]     = useState(true)
@@ -116,7 +117,7 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
   if (loading) {
     return (
       <View style={styles.root}>
-        <AtmosphericBackground variant="standard" />
+        <AtmosphericBackground variant="muted" />
         <SafeAreaView edges={['top']} style={styles.safe}>
           <View style={styles.center}>
             <ActivityIndicator color={tokens.accent.primary} size="large" />
@@ -130,7 +131,7 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
   if (error || !archetypeContent) {
     return (
       <View style={styles.root}>
-        <AtmosphericBackground variant="standard" />
+        <AtmosphericBackground variant="muted" />
         <SafeAreaView edges={['top']} style={styles.safe}>
           <ErrorState
             heading="Couldn't load today"
@@ -147,7 +148,7 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
   return (
     <View style={styles.root}>
       <AtmosphericBackground
-        variant="standard"
+        variant="muted"
       />
       <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView
@@ -161,31 +162,60 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
           />
         }
       >
-        {/* ── 1. Greeting block ──────────────────────────────────────── */}
-        <View style={styles.greeting}>
-          <Text variant="display2" color="primary">{greetingLine}</Text>
-          <Text variant="caption" color="tertiary" style={styles.dateLine}>
-            {formattedDate}
-          </Text>
-          {archetypeContent.moon_phase.length > 0 && (
-            <View style={styles.moonRow}>
-              <Moon size={12} color={tokens.text.accent} strokeWidth={1.5} />
-              <Text variant="caption" style={styles.moonText}>
-                {archetypeContent.moon_phase}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* ── 2. DailyCard — free, paragraph 1 only ─────────────────── */}
-        <DailyCard
-          title={archetypeContent.theme}
-          date={today}
-          body={insightP1}
-          moonPhase={archetypeContent.moon_phase}
+        {/* ── 1. Hero — moon phase atmospheric image + greeting ──── */}
+        <MoonPhaseHero
+          moonPhase={archetypeContent.moon_phase && archetypeContent.moon_phase.length > 0 ? archetypeContent.moon_phase : 'New Moon'}
+          archetypeName={archetype ?? ''}
+          signName={sunSign}
+          greeting={greetingLine}
+          formattedDate={formattedDate}
+          style={{ marginHorizontal: -layout.screenPadding }}
         />
 
-        {/* ── 3. Reflection Card — free ──────────────────────── */}
+        {/* ── 2. Archetype insight — borderless, continuation of hero ──── */}
+        <View style={styles.insightBlock}>
+          <Text variant="caption" color="tertiary" style={[styles.sectionLabel, { textTransform: 'uppercase' }]}>
+            {archetypeContent.theme}
+          </Text>
+          <Text variant="body" color="primary">
+            {insightP1}
+          </Text>
+        </View>
+
+        {/* ── 3. Dimension cards — Love, Work, Health (zodiac only) ── */}
+        {zodiacContent != null && (
+          <>
+            <Card variant="content" padding="default">
+              <View style={styles.dimensionRow}>
+                <DimensionIcon dimension="love" size={48} />
+                <View style={styles.dimensionContent}>
+                  <Text variant="caption" color="tertiary" style={styles.dimensionLabel}>Love</Text>
+                  <Text variant="body" color="primary">{zodiacContent.love}</Text>
+                </View>
+              </View>
+            </Card>
+            <Card variant="content" padding="default">
+              <View style={styles.dimensionRow}>
+                <DimensionIcon dimension="work" size={48} />
+                <View style={styles.dimensionContent}>
+                  <Text variant="caption" color="tertiary" style={styles.dimensionLabel}>Work</Text>
+                  <Text variant="body" color="primary">{zodiacContent.job}</Text>
+                </View>
+              </View>
+            </Card>
+            <Card variant="content" padding="default">
+              <View style={styles.dimensionRow}>
+                <DimensionIcon dimension="health" size={48} />
+                <View style={styles.dimensionContent}>
+                  <Text variant="caption" color="tertiary" style={styles.dimensionLabel}>Health</Text>
+                  <Text variant="body" color="primary">{zodiacContent.health}</Text>
+                </View>
+              </View>
+            </Card>
+          </>
+        )}
+
+        {/* ── 4. Reflection Card — free ──────────────────────── */}
         <Card variant="content" padding="default">
           <Text variant="micro" color="tertiary" style={styles.sectionLabel}>
             Reflection
@@ -195,7 +225,7 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
           </Text>
         </Card>
 
-        {/* ── 4. Planetary weather — free (only if zodiac available) ─── */}
+        {/* ── 5. Planetary weather — free (only if zodiac available) ─── */}
         {zodiacContent != null && (
           <Card variant="content" padding="compact">
             <Text variant="micro" color="tertiary" style={styles.sectionLabel}>
@@ -207,7 +237,7 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
           </Card>
         )}
 
-        {/* ── 5. Premium-only CTAs ──────────────────────────── */}
+        {/* ── 6. Premium-only CTAs ──────────────────────────── */}
         {isPremium && (
           <Card variant="content" padding="compact">
             <ListItem
@@ -225,23 +255,25 @@ export default function TodayScreen({ navigation }: TodayScreenProps) {
           </Card>
         )}
 
-        {/* ── 6. Deeper insight — PREMIUM ───────────────────── */}
-        <LockedCard
+        {/* ── 7. Deeper insight — PREMIUM ───────────────────── */}
+        {/* TODO: 17f-paywall — re-render after paywall cluster ships */}
+        {/* <LockedCard
           placement="feature_archetype_today"
           title="Your Full Daily Reading"
           description="Deeper context on today's cosmic stage, your karmic patterns, and the energetic invitation hidden in this transit."
           onUnlockPress={async () => { await presentPaywall() }}
-        />
+        /> */}
 
-        {/* ── 7. Today's Dimensions — PREMIUM (only if zodiac) ──────── */}
-        {zodiacContent != null && (
+        {/* ── 8. Today's Dimensions — PREMIUM (only if zodiac) ──────── */}
+        {/* TODO: 17f-paywall — re-render after paywall cluster ships */}
+        {/* {zodiacContent != null && (
           <LockedCard
             placement="feature_dimensions_today"
             title="Today's Life Dimensions"
             description="Career, love, and wellbeing — personalized guidance for each dimension based on your full chart and today's transits."
             onUnlockPress={async () => { await presentPaywall() }}
           />
-        )}
+        )} */}
       </ScrollView>
       </SafeAreaView>
     </View>
@@ -263,25 +295,22 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingHorizontal: layout.screenPadding,
-    paddingTop:        space['6'],
     paddingBottom:     space['10'],
     gap:               layout.cardGap,
   },
-  greeting: {
-    marginBottom: space['2'],
-  },
-  dateLine: {
-    marginTop: space['1'],
-  },
-  moonRow: {
+  dimensionRow: {
     flexDirection: 'row',
-    alignItems:    'center',
-    gap:           space['1'],
-    marginTop:     space['2'],
+    gap:           space['4'],
+    alignItems:    'flex-start',
   },
-  moonText: {
-    color: tokens.text.accent,
+  dimensionContent: {
+    flex: 1,
   },
+  dimensionLabel: {
+    textTransform: 'uppercase' as const,
+    marginBottom:  space['1'],
+  },
+  insightBlock: {},
   sectionLabel: {
     marginBottom: space['2'],
   },
