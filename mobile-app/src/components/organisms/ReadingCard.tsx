@@ -41,7 +41,7 @@ export const ReadingCard: React.FC<ReadingCardProps> = ({
   }
 
   const content = (
-    <Card variant="default" padding="default" style={style}>
+    <Card variant="content" padding="default" style={style}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: space['3'] }}>
         {icon != null ? (
           <Icon icon={icon} size={24} color="accent" />

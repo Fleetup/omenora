@@ -20,7 +20,7 @@ export const TransitCard: React.FC<TransitCardProps> = ({
   style,
 }) => {
   return (
-    <Card variant="default" padding="compact" style={style}>
+    <Card variant="content" padding="compact" style={style}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: space['3'] }}>
         <Text
           variant="display2"

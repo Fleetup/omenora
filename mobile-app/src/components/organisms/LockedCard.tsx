@@ -1,33 +1,29 @@
 import React from 'react'
-import { StyleSheet, View, ViewStyle } from 'react-native'
-import { BlurView } from 'expo-blur'
-import { Lock } from 'lucide-react-native'
+import { StyleSheet, ViewStyle } from 'react-native'
 import * as Haptics from 'expo-haptics'
-import { Text, Icon, Button } from '../atoms'
+import { Text, Button } from '../atoms'
 import { Card } from './Card'
-import { tokens, space, layout } from '../../design/tokens'
+import { space } from '../../design/tokens'
 
 export interface LockedCardProps {
-  children: React.ReactNode
-  preview?: React.ReactNode
-  placement: string
+  /** Hero headline — lead with what the user gets */
+  title: string
+  /** Value-prop body copy — specificity sells */
+  description: string
+  /** CTA button label. Defaults to "Unlock". */
+  ctaLabel?: string
   onUnlockPress: () => void
-  lockMessage?: string
-  unlockCtaLabel?: string
-  variant?: 'default' | 'raised' | 'premium' | 'glass'
-  minLockedHeight?: number
+  /** Analytics placement identifier */
+  placement: string
   style?: ViewStyle
 }
 
 export const LockedCard: React.FC<LockedCardProps> = ({
-  children,
-  preview,
-  placement: _placement,
+  title,
+  description,
+  ctaLabel = 'Unlock',
   onUnlockPress,
-  lockMessage = 'Unlock to read more',
-  unlockCtaLabel = 'Unlock',
-  variant = 'glass',
-  minLockedHeight = 200,
+  placement: _placement,
   style,
 }) => {
   const handleUnlockPress = () => {
@@ -36,59 +32,38 @@ export const LockedCard: React.FC<LockedCardProps> = ({
   }
 
   return (
-    <Card variant={variant} padding="default" style={style}>
-      {preview != null && (
-        <View style={styles.preview}>
-          {preview}
-        </View>
-      )}
-      <View style={[styles.lockedRegion, { minHeight: minLockedHeight }]}>
-        <View style={styles.contentFade}>
-          {children}
-        </View>
-        <BlurView
-          intensity={tokens.specialty.lockBlur}
-          tint="dark"
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={[StyleSheet.absoluteFill, styles.scrim]} />
-        <View style={[StyleSheet.absoluteFill, styles.affordance]}>
-          <Icon icon={Lock} size={32} color="accent" />
-          <Text
-            variant="body"
-            color="primary"
-            style={styles.lockMessage}
-          >
-            {lockMessage}
-          </Text>
-          <Button label={unlockCtaLabel} variant="primary" onPress={handleUnlockPress} />
-        </View>
-      </View>
+    <Card variant="premium" padding="premium" style={style}>
+      <Text variant="micro" color="accent" style={styles.eyebrow}>
+        PREMIUM
+      </Text>
+      <Text variant="display2" color="primary" style={styles.title}>
+        {title}
+      </Text>
+      <Text variant="body" color="secondary" style={styles.description}>
+        {description}
+      </Text>
+      <Button
+        label={ctaLabel}
+        variant="premium"
+        fullWidth
+        onPress={handleUnlockPress}
+        style={styles.cta}
+      />
     </Card>
   )
 }
 
 const styles = StyleSheet.create({
-  preview: {
-    marginBottom: layout.cardGap,
+  eyebrow: {
+    letterSpacing: 1.5,
   },
-  lockedRegion: {
-    position: 'relative',
+  title: {
+    marginTop: space['3'],
   },
-  contentFade: {
-    opacity: 0.5,
+  description: {
+    marginTop: space['2'],
   },
-  scrim: {
-    backgroundColor: tokens.specialty.lockScrim,
-  },
-  affordance: {
-    justifyContent: 'center',
-    alignItems:     'center',
-    padding:        layout.cardPaddingDefault,
-  },
-  lockMessage: {
-    textAlign:    'center',
-    marginTop:    space['3'],
-    marginBottom: space['4'],
+  cta: {
+    marginTop: space['4'],
   },
 })

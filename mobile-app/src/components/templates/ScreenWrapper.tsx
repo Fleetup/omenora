@@ -1,6 +1,7 @@
 import React from 'react'
 import { KeyboardAvoidingView, ScrollView, View, ViewStyle } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { AtmosphericBackground } from '../atmosphere'
 import { tokens, layout } from '../../design/tokens'
 
 export interface ScreenWrapperProps {
@@ -17,15 +18,17 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   children,
   scroll = true,
   padded = true,
-  background = 'transparent',
+  background: _background = 'transparent',
   keyboardBehavior = 'none',
   contentContainerStyle,
   style,
 }) => {
-  const outerStyle: ViewStyle = {
+  const rootStyle: ViewStyle = {
     flex: 1,
-    backgroundColor: background === 'base' ? tokens.surface.base : 'transparent',
+    backgroundColor: tokens.surface.base,
   }
+
+  const safeStyle: ViewStyle = { flex: 1 }
 
   const paddingStyle: ViewStyle = padded ? { paddingHorizontal: layout.screenPadding } : {}
 
@@ -43,15 +46,18 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   )
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={[outerStyle, style]}>
-      {keyboardBehavior !== 'none' ? (
-        <KeyboardAvoidingView
-          behavior={keyboardBehavior as 'padding' | 'height'}
-          style={{ flex: 1 }}
-        >
-          {inner}
-        </KeyboardAvoidingView>
-      ) : inner}
-    </SafeAreaView>
+    <View style={[rootStyle, style]}>
+      <AtmosphericBackground variant="standard" />
+      <SafeAreaView edges={['top', 'bottom']} style={safeStyle}>
+        {keyboardBehavior !== 'none' ? (
+          <KeyboardAvoidingView
+            behavior={keyboardBehavior as 'padding' | 'height'}
+            style={{ flex: 1 }}
+          >
+            {inner}
+          </KeyboardAvoidingView>
+        ) : inner}
+      </SafeAreaView>
+    </View>
   )
 }

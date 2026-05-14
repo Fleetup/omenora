@@ -1,32 +1,122 @@
-import React from 'react'
-import { View, StyleSheet, ViewStyle } from 'react-native'
+import React, { useState } from 'react'
+import { View, StyleSheet, ViewStyle, LayoutChangeEvent } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import { tokens, gradient, radius, layout, elevation } from '../../design/tokens'
+import { BlurView } from 'expo-blur'
+import CardGraph from '../../../assets/svg-bg/Card-Graph.svg'
+import { cardTokens, radius, layout, tokens } from '../../design/tokens'
 
 export interface CardProps {
-  variant?: 'default' | 'raised' | 'premium' | 'glass'
+  /**
+   * Visual tier of the card surface:
+   * - content      — solid #18172A, hairline border, content list cards
+   * - elevated     — solid #1F1E33, hairline border, featured content (DailyCard)
+   * - premium      — cosmic deep blue-violet gradient #2E2B5F→#14152A, spotlight from top center
+   * - featured     — warm copper gradient #A87850→#5A3A22, ad-hoc featured moments only
+   * - accent-navy  — vertical gradient deep navy #2A2F5A→#1E2245
+   * - accent-rust  — vertical gradient warm rust #C25A2E→#9A4520
+   * - locked       — solid #18172A, no border
+   *
+   * Deprecated aliases (render as nearest new variant, remove in 15b):
+   * - default → content
+   * - raised  → elevated
+   * - glass   → content
+   * - accent  → accent-rust
+   */
+  variant?: 'content' | 'elevated' | 'premium' | 'featured' | 'accent-navy' | 'accent-rust' | 'locked'
+    | 'default' | 'raised' | 'glass' | 'accent'
   padding?: 'compact' | 'default' | 'premium'
   children: React.ReactNode
   style?: ViewStyle
 }
 
-const solidVariantMap = {
-  default: {
-    backgroundColor: tokens.surface.raised,
-    borderColor:     tokens.border.subtle,
+// Resolve deprecated variant aliases to canonical names
+function resolveVariant(v: NonNullable<CardProps['variant']>): 'content' | 'elevated' | 'premium' | 'featured' | 'accent-navy' | 'accent-rust' | 'locked' {
+  switch (v) {
+    case 'default': return 'content'   // @deprecated
+    case 'raised':  return 'elevated'  // @deprecated
+    case 'glass':   return 'content'   // @deprecated
+    case 'accent':  return 'accent-rust' // @deprecated
+    default:        return v
+  }
+}
+
+// ── Solid variant configs ─────────────────────────────────────────────────────
+type SolidConfig = {
+  kind:            'solid'
+  backgroundColor: string
+  borderWidth:     number
+  borderColor:     string
+  borderRadius:    number
+}
+
+const solidConfig: Record<'content' | 'elevated' | 'locked', SolidConfig> = {
+  content: {
+    kind:            'solid',
+    backgroundColor: cardTokens.background.content,
     borderWidth:     1,
+    borderColor:     cardTokens.border.content,
+    borderRadius:    radius.lg,
   },
-  raised: {
-    backgroundColor: tokens.surface.overlay,
-    borderColor:     tokens.border.default,
+  elevated: {
+    kind:            'solid',
+    backgroundColor: cardTokens.background.elevated,
     borderWidth:     1,
+    borderColor:     cardTokens.border.elevated,
+    borderRadius:    radius.lg,
   },
+  locked: {
+    kind:            'solid',
+    backgroundColor: cardTokens.background.locked,
+    borderWidth:     0,
+    borderColor:     cardTokens.border.locked,
+    borderRadius:    radius.lg,
+  },
+}
+
+// ── Gradient variant configs ──────────────────────────────────────────────────
+type GradientConfig = {
+  kind:         'gradient'
+  colors:       [string, string]
+  borderRadius: number
+}
+
+type GradientConfigFull = GradientConfig & {
+  start: { x: number; y: number }
+  end:   { x: number; y: number }
+}
+
+const gradientConfig: Record<'premium' | 'featured' | 'accent-navy' | 'accent-rust', GradientConfigFull> = {
   premium: {
-    backgroundColor: tokens.surface.raised,
-    borderColor:     tokens.border.accent,
-    borderWidth:     1,
+    kind:         'gradient',
+    colors:       cardTokens.background.premiumGradient,
+    borderRadius: radius.lg,
+    // Spotlight from top-center: slightly above the card top, converges at bottom
+    // Produces a soft "light from above" luminance hierarchy even with LinearGradient
+    start:        { x: 0.5, y: -0.15 },
+    end:          { x: 0.5, y: 1 },
   },
-} as const
+  featured: {
+    kind:         'gradient',
+    colors:       cardTokens.background.featuredGradient,
+    borderRadius: radius.lg,
+    start:        { x: 0.5, y: -0.15 },
+    end:          { x: 0.5, y: 1 },
+  },
+  'accent-navy': {
+    kind:         'gradient',
+    colors:       cardTokens.background.accentNavyGradient,
+    borderRadius: radius.lg,
+    start:        { x: 0, y: 0 },
+    end:          { x: 0, y: 1 },
+  },
+  'accent-rust': {
+    kind:         'gradient',
+    colors:       cardTokens.background.accentRustGradient,
+    borderRadius: radius.lg,
+    start:        { x: 0, y: 0 },
+    end:          { x: 0, y: 1 },
+  },
+}
 
 const paddingMap = {
   compact: layout.cardPaddingCompact,
@@ -35,53 +125,100 @@ const paddingMap = {
 } as const
 
 export const Card: React.FC<CardProps> = ({
-  variant = 'default',
+  variant = 'content',
   padding = 'default',
   children,
   style,
 }) => {
+  const canonical = resolveVariant(variant)
   const pad = paddingMap[padding]
+  const [cardW, setCardW] = useState(0)
+  const [cardH, setCardH] = useState(0)
+  const onLayout = (e: LayoutChangeEvent) => {
+    setCardW(e.nativeEvent.layout.width)
+    setCardH(e.nativeEvent.layout.height)
+  }
 
-  if (variant === 'glass') {
+  if (canonical === 'premium' || canonical === 'featured' || canonical === 'accent-navy' || canonical === 'accent-rust') {
+    const cfg = gradientConfig[canonical]
+    const border = canonical === 'premium'
+      ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }
+      : {}
     return (
-      <View style={[styles.glassShadow, style]}>
+      <View style={[{ borderRadius: cfg.borderRadius, overflow: 'hidden' }, border, style]} onLayout={onLayout}>
         <LinearGradient
-          colors={gradient.cardGlass}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={[styles.glassBase, { padding: pad }]}
+          colors={cfg.colors}
+          start={cfg.start}
+          end={cfg.end}
+          style={styles.shell}
         >
-          {children}
+          <BlurView intensity={20} tint="dark" style={styles.fill}>
+            <View style={styles.glassTint} />
+            {typeof CardGraph === 'function' && cardW > 0 && (
+              <View style={styles.graphicOverlay} pointerEvents="none">
+                <CardGraph
+                  width={cardW}
+                  height={cardH}
+                  preserveAspectRatio="xMidYMid slice"
+                />
+              </View>
+            )}
+            <View style={{ padding: pad }}>
+              {children}
+            </View>
+          </BlurView>
         </LinearGradient>
       </View>
     )
   }
 
+  const cfg = solidConfig[canonical]
   return (
     <View
+      onLayout={onLayout}
       style={[
-        styles.base,
-        solidVariantMap[variant],
-        elevation.cardSubtle,
-        { padding: pad },
+        styles.shell,
+        {
+          backgroundColor: cfg.backgroundColor,
+          borderRadius:    cfg.borderRadius,
+          borderWidth:     cfg.borderWidth,
+          borderColor:     cfg.borderColor,
+        },
         style,
       ]}
     >
-      {children}
+      <BlurView intensity={20} tint="dark" style={styles.fill}>
+        <View style={styles.glassTint} />
+        {typeof CardGraph === 'function' && cardW > 0 && (
+          <View style={styles.graphicOverlay} pointerEvents="none">
+            <CardGraph
+              width={cardW}
+              height={cardH}
+              preserveAspectRatio="xMidYMid slice"
+            />
+          </View>
+        )}
+        <View style={{ padding: pad }}>
+          {children}
+        </View>
+      </BlurView>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  base: {
-    borderRadius: radius.lg,
+  shell: {
+    overflow: 'hidden',  // clips border-radius on child content
   },
-  glassShadow: {
-    borderRadius:  radius.xl,
-    ...elevation.cardShadow,
+  fill: {
+    flex: 1,
   },
-  glassBase: {
-    borderRadius: radius.xl,
-    overflow:     'hidden',
+  glassTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: tokens.specialty.glassTint,
+  },
+  graphicOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.05,
   },
 })
