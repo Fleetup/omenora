@@ -10,8 +10,8 @@ export const layout = {
   screenPadding:      20,
   cardPaddingCompact: 16,
   cardPaddingDefault: 20,
-  cardPaddingPremium: 24,
-  cardGap:            12,
+  cardPaddingPremium: 28,  // Cluster 15a: increased from 24 for premium hero card breathing room
+  cardGap:            16,  // Cluster 15a: increased from 12 for inter-card breathing room
   sectionGap:         32,
   tapTarget:          44,
 } as const

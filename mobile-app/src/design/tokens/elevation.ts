@@ -7,7 +7,10 @@ import { ViewStyle } from 'react-native'
 type ElevationLevel = Pick<ViewStyle, 'shadowColor' | 'shadowOffset' | 'shadowOpacity' | 'shadowRadius' | 'elevation'>
 
 export const elevation: Record<string, ElevationLevel> = {
-  // Subtle resting state — list items, inactive cards
+  /**
+   * @deprecated Cluster 15a — Card.tsx no longer uses drop shadows on default/elevated variants.
+   * Tonal lift replaces shadows. Remove in 15b.
+   */
   cardSubtle: {
     shadowColor:   '#000000',
     shadowOffset:  { width: 0, height: 2 },
@@ -16,7 +19,10 @@ export const elevation: Record<string, ElevationLevel> = {
     elevation:     2,
   },
 
-  // Default card — primary card surfaces
+  /**
+   * @deprecated Cluster 15a — Card.tsx no longer uses drop shadows on default/elevated variants.
+   * Tonal lift replaces shadows. Remove in 15b.
+   */
   cardShadow: {
     shadowColor:   '#000000',
     shadowOffset:  { width: 0, height: 6 },
@@ -25,7 +31,10 @@ export const elevation: Record<string, ElevationLevel> = {
     elevation:     6,
   },
 
-  // Premium card — single-layer fallback; for true multi-layer effect, see cardShadowPremiumLayers
+  /**
+   * @deprecated Cluster 15a — premium card glow is now warmGlow (opacity override 0.18) in Card.tsx.
+   * Remove in 15b.
+   */
   cardShadowPremium: {
     shadowColor:   '#000000',
     shadowOffset:  { width: 0, height: 12 },
@@ -44,17 +53,13 @@ export const elevation: Record<string, ElevationLevel> = {
   },
 } as const
 
-// Multi-layer shadow stacks for premium cards.
-// iOS shadowColor is per-View; to layer shadows, wrap a card in nested Views,
-// each applying one layer from this array. Android stacks via elevation alone.
-// Usage example (in a component):
-//   <View style={cardShadowPremiumLayers[0]}>
-//     <View style={cardShadowPremiumLayers[1]}>
-//       <View style={cardShadowPremiumLayers[2]}>
-//         {cardContent}
-//       </View>
-//     </View>
-//   </View>
+/**
+ * @deprecated Cluster 15a — no longer used. Premium card glow is warmGlow (opacity 0.18) in Card.tsx.
+ * Remove in 15b.
+ *
+ * Multi-layer shadow stacks for premium cards.
+ * iOS shadowColor is per-View; to layer shadows, wrap a card in nested Views.
+ */
 export const cardShadowPremiumLayers: ElevationLevel[] = [
   // Layer 1 — far ambient cool shadow (atmospheric depth)
   {
