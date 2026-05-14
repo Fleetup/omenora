@@ -26,3 +26,5 @@ export { EditorialBenefit } from './EditorialBenefit'
 
 export { ZodiacSymbol } from './ZodiacSymbol'
 export type { ZodiacSymbolProps } from './ZodiacSymbol'
+
+export { PhoenixLoader } from './PhoenixLoader'

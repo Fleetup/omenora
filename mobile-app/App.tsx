@@ -20,24 +20,10 @@ import {
   CormorantGaramond_500Medium,
 } from '@expo-google-fonts/cormorant-garamond';
 import {
-  PlayfairDisplay_400Regular,
-  PlayfairDisplay_400Regular_Italic,
-} from '@expo-google-fonts/playfair-display';
-import {
-  Inter_300Light,
-  Inter_400Regular,
-  Inter_500Medium,
-} from '@expo-google-fonts/inter';
-import {
   Fraunces_300Light,
   Fraunces_300Light_Italic,
   Fraunces_500Medium,
 } from '@expo-google-fonts/fraunces';
-import {
-  HankenGrotesk_400Regular,
-  HankenGrotesk_500Medium,
-  HankenGrotesk_600SemiBold,
-} from '@expo-google-fonts/hanken-grotesk';
 import {
   Poppins_400Regular,
   Poppins_500Medium,
@@ -121,17 +107,9 @@ function App() {
     CormorantGaramond_300Light,
     CormorantGaramond_300Light_Italic,
     CormorantGaramond_500Medium,
-    PlayfairDisplay_400Regular,
-    PlayfairDisplay_400Regular_Italic,
-    Inter_300Light,
-    Inter_400Regular,
-    Inter_500Medium,
     Fraunces_300Light,
     Fraunces_300Light_Italic,
     Fraunces_500Medium,
-    HankenGrotesk_400Regular,
-    HankenGrotesk_500Medium,
-    HankenGrotesk_600SemiBold,
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,
