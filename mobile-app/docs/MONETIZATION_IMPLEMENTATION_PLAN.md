@@ -50,9 +50,20 @@ Steps completed:
 
 Mobile verification: tsc --noEmit exit code 0 across all 12 files modified or created across these 9 steps. No backend regressions (backend changes are tolerated by both old and new clients).
 
-Pending in Phase 2:
-- Step 2.10 — Toast wiring for post-purchase success confirmation
-- Step 2.11 — Verify TraditionSwitcherScreen and CalendarScreen LockedCards still route to paywall (verification only)
+### 2026-05-14 — Phase 2 Steps 2.10–2.11 shipped
+
+Step 2.10 — Toast post-purchase confirmation:
+- 2.10a — Toast component made safe-area aware: `useSafeAreaInsets` + `space['2']` top offset; public props unchanged.
+- 2.10b — CompatibilityScreen wired: success Toast ("Compatibility reading unlocked"), `iapSheetVisible` state added, `handleSubmit` retry preserved on `onPurchaseSuccess`.
+- 2.10c — CounselChatScreen wired: Toast replaces the prior system-chat-bubble post-purchase confirmation pattern; `getPostPurchaseMessage` helper removed; `setUsage(null)` preserved. CounselScreen (tab entry) intentionally excluded — it navigates away immediately on purchase success, making any toast invisible.
+
+Step 2.11 — Calendar IAP plumbing:
+- 2.11a — `MONETIZATION_SPEC_V4.md` updated: 2026 Lucky Timing Calendar added to Premium inclusions in section 1; IAP audience narrowed to "Free users only" in section 2; footnote added in section 6 (RevenueCat product mapping).
+- 2.11b-pre — `restorePurchases` added to `PurchasesContext` + `PurchasesProvider`. Signature: `() => Promise<CustomerInfo>`. Implementation calls `Purchases.restorePurchases()` then `refreshCustomerInfo()`, mirroring existing purchase method discipline.
+- 2.11b — `CalendarIAPSheet` component built (`src/components/molecules/CalendarIAPSheet.tsx`). Mirrors `CompatibilityIAPSheet` structure with an added Restore Purchases affordance required for Apple App Review §3.1.1 compliance on the only non-consumable IAP (`omenora_calendar_2026`). Two options: IAP purchase + subscription upsell. In-sheet error display. No direct react-native-purchases SDK imports (all via context). Added to molecules barrel.
+- 2.11c — `CalendarScreen` consolidated: `LockedCard` `onUnlockPress` now opens `CalendarIAPSheet` (no longer calls `presentPaywall` directly). Inline ghost "Buy 2026 Calendar" button removed. `handleBuyCalendar` handler removed. `Alert.alert` "Purchase failed" error path removed. `isPurchasingCalendar` local state removed. Toast wired for both IAP purchase success ("2026 Calendar unlocked") and restore success ("Purchases restored"). Restore detection via `useRef` pair (`prevHasCalendar` + `sheetWasOpen`). TraditionSwitcher verified clean — no changes required.
+
+Mobile verification: `tsc --noEmit` exit code 0 across all files.
 
 ---
 
@@ -443,7 +454,7 @@ The changes are layered and individually revertible:
 
 ## Phase 2 — Mobile Monetization UI
 
-**Status:** IN PROGRESS — Steps 2.1 through 2.9 shipped; Steps 2.10–2.11 pending
+**Status:** SHIPPED — all steps complete. Phase 2 monetization plumbing functionally complete on the component layer; remaining gates are external dashboard config (Phase 0 Tracks A/B/D).
 
 ### Goal
 Wire the mobile app to the Phase 1 backend so every paid surface enforces gating, every cap-hit surfaces a relevant upgrade path (subscription OR boost pack), every locked feature presents the RevenueCat-hosted paywall, and the API client preserves structured error responses needed for those flows.
@@ -1244,3 +1255,4 @@ Append-only record of plan updates. Every time a phase moves from PENDING SPECIF
 | 2026-05-14 | 0 Track C | Supabase migrations executed; user_credits, credit_transactions, three RPC functions live in scvjjbgejmkomyciabex |
 | 2026-05-14 | 1 | All 7 steps shipped; tsc clean; RPCs verified via 6 manual tests |
 | 2026-05-14 | 2 (partial) | Steps 2.1–2.9 shipped; Steps 2.10–2.11 pending |
+| 2026-05-14 | 2 | Steps 2.10–2.11 shipped; Phase 2 complete on component layer |

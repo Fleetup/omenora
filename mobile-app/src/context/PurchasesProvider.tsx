@@ -218,6 +218,12 @@ export function PurchasesProvider({ children }: Props) {
     return result
   }, [refreshCustomerInfo])
 
+  const restorePurchases = useCallback(async (): Promise<CustomerInfo> => {
+    const restored = await Purchases.restorePurchases()
+    await refreshCustomerInfo()
+    return restored
+  }, [refreshCustomerInfo])
+
   const presentCustomerCenter = useCallback(async (): Promise<void> => {
     await RevenueCatUI.presentCustomerCenter()
   }, [])
@@ -259,6 +265,7 @@ export function PurchasesProvider({ children }: Props) {
         presentPaywall,
         presentPaywallIfNeeded,
         purchaseCalendar,
+        restorePurchases,
         purchaseBoostPack,
         purchaseCompatibilitySingle,
         presentCustomerCenter,

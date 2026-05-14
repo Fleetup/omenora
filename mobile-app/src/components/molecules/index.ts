@@ -27,3 +27,6 @@ export type { CompatibilityIAPSheetProps } from './CompatibilityIAPSheet'
 
 export { BoostPackSheet } from './BoostPackSheet'
 export type { BoostPackSheetProps, BoostPackIdentifier } from './BoostPackSheet'
+
+export { CalendarIAPSheet } from './CalendarIAPSheet'
+export type { CalendarIAPSheetProps } from './CalendarIAPSheet'

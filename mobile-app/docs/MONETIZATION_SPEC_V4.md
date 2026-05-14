@@ -1,6 +1,6 @@
 # OMENORA Monetization Spec v4 (LOCKED)
 
-**Last updated:** 2026-05-14  
+**Last updated:** 2026-05-15  
 **Status:** Locked. Source of truth for all RevenueCat product creation, backend gating logic, and pricing UI.
 
 ---
@@ -25,6 +25,7 @@
 | Counsel Chat conversations | 30 / month |
 | Daily horoscope (zodiac) | Unlimited |
 | Daily archetype insight | Unlimited |
+| 2026 Lucky Timing Calendar | Included (refreshes annually) |
 | Tradition switching (Western / Vedic / BaZi / Tarot) | Unlimited |
 | Today / Readings / Counsel full screen access | Yes |
 
@@ -34,11 +35,12 @@
 
 | Product ID | Price | Description | Audience |
 |---|---|---|---|
-| `omenora_calendar_2026` | $4.99 | 2026 Lucky Timing Calendar | Free + Premium |
+| `omenora_calendar_2026` | $4.99 | 2026 Lucky Timing Calendar | Free users only |
 | `omenora_compatibility_single` | $4.99 | Single compatibility reading | Free users only |
 
 **Notes:**
 - `omenora_calendar_2026` requires annual content refresh — swap to `omenora_calendar_2027` in early 2027.
+- Premium subscribers receive the calendar automatically as part of their subscription. The $4.99 IAP is a standalone path for free users only.
 - No standalone Birth Chart, Destiny Report, or Bundle products on mobile. These are duplicated by Premium subscription scope.
 - Tradition switching included unlimited in Premium — no separate IAP.
 
@@ -100,6 +102,8 @@
 | `omenora_counsel_spark` | Consumable IAP | NONE | Backend ledger: +5 to `counsel_credits` on `NON_RENEWING_PURCHASE` webhook |
 | `omenora_counsel_insight` | Consumable IAP | NONE | Backend ledger: +15 to `counsel_credits` on `NON_RENEWING_PURCHASE` webhook |
 | `omenora_counsel_ascend` | Consumable IAP | NONE | Backend ledger: +35 to `counsel_credits` on `NON_RENEWING_PURCHASE` webhook |
+
+> **Note:** Premium subscribers gain calendar access via the `premium` entitlement (no separate purchase required). The `calendar_2026` entitlement key is granted only via direct IAP purchase by free users.
 
 ### Why consumables have no entitlement
 
