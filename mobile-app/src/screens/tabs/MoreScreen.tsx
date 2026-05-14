@@ -346,16 +346,15 @@ const styles = StyleSheet.create({
   },
   accountIdentity: {
     flex: 1,
-    gap:  2,
+    gap:  space['0.5'],
   },
   accountEmail: {
-    marginTop: 1,
   },
   planBadge: {
     borderWidth:       1,
     borderColor:       tokens.border.subtle,
     borderRadius:      4,
-    paddingVertical:   2,
+    paddingVertical:   space['0.5'],
     paddingHorizontal: space['2'],
   },
   planBadgePremium: {

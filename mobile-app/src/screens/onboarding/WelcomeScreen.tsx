@@ -230,6 +230,10 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     textAlign:     'center',
   },
+  // Intentional override: applies displayItalic family at display1 size (40pt)
+  // for single-word italic emphasis ("born"). No display1Italic variant exists
+  // because this is the only consumer. If a second consumer appears, add
+  // display1Italic to typeScale instead of duplicating this override.
   headlineItalic: {
     fontFamily: fontFamily.displayItalic,
     textAlign:  'center',

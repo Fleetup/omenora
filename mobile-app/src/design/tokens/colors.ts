@@ -54,6 +54,8 @@ export const specialty = {
   glassTint:    'rgba(255,255,255,0.10)',
   white:        '#FFFFFF',
   overlayScrim: 'rgba(0,0,0,0.60)',
+  // Cluster 16b: semantic surface tint for stale forecast content
+  forecastStaleSurface: 'rgba(194, 136, 64, 0.12)',
   // Card frosted-glass tokens — DEPRECATED Cluster 15a. Replaced by surface.ts cardTokens. Remove in 15b.
   /** @deprecated Use cardTokens.background.default from surface.ts. Remove in 15b. */
   cardBlurIntensity:   22,

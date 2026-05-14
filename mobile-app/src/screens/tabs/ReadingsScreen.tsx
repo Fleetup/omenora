@@ -38,8 +38,6 @@ const ARCHETYPE_SECTIONS = [
   'identity', 'science', 'shadow', 'purpose', 'gift', 'affirmation',
 ] as const
 
-const STALE_FORECAST_BG = 'rgba(194, 136, 64, 0.12)'
-
 // ── Component ─────────────────────────────────────────────────────────────
 
 export default function ReadingsScreen({ navigation: _navigation }: ReadingsScreenProps) {
@@ -552,7 +550,7 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
                   <Card
                     variant="default"
                     padding="compact"
-                    style={forecastStale ? { backgroundColor: STALE_FORECAST_BG } : undefined}
+                    style={forecastStale ? { backgroundColor: tokens.specialty.forecastStaleSurface } : undefined}
                   >
                     <Text variant="caption" color={forecastStale ? 'tertiary' : 'secondary'}>
                       {`This forecast covers ${forecastState.data.period.start} – ${forecastState.data.period.end}.`}

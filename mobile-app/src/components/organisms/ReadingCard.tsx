@@ -48,7 +48,7 @@ export const ReadingCard: React.FC<ReadingCardProps> = ({
         ) : symbol != null && isZodiacSign(symbol) ? (
           <ZodiacSymbol sign={symbol} size={32} opacity={0.65} />
         ) : symbol != null ? (
-          <Text variant="display2" style={{ lineHeight: 32, color: text.disabled }}>
+          <Text variant="display2" style={{ lineHeight: 32, /* intentional: clamps display2 (40pt) glyph cell to match adjacent heading2 row height */ color: text.disabled }}>
             {symbol}
           </Text>
         ) : null}

@@ -12,7 +12,7 @@ import { Divider } from '../atoms/Divider'
 import { useAuth } from '../../context/useAuth'
 
 import { useTheme } from '../../design/theme/useTheme'
-import { space } from '../../design/tokens'
+import { space, typeScale, fontFamily, tokens } from '../../design/tokens'
 
 export interface AuthGateProps {
   visible: boolean
@@ -46,10 +46,9 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   googleLabel: {
-    fontFamily:    'Poppins_600SemiBold',
-    fontSize:      17,
-    letterSpacing: 0,
-    color:         '#1F1F1F',
+    ...typeScale.labelLarge,
+    fontFamily: fontFamily.uiSemiBold,
+    color:      tokens.text.inverse,
   },
 })
 

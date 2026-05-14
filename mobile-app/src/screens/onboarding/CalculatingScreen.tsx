@@ -9,7 +9,7 @@ import { useProfileStore } from '../../stores/profileStore'
 import { useAuth } from '../../context/useAuth'
 import { saveProfile, ProfileSaveError } from '../../services/profileService'
 import { supabase } from '../../lib/supabase'
-import { surface, fontFamily, space, layout } from '../../design/tokens'
+import { surface, space, layout } from '../../design/tokens'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import { api } from '../../api/endpoints'
 import { RootStackParamList } from '../../navigation/types'
@@ -214,7 +214,7 @@ export default function CalculatingScreen() {
     <View style={styles.container}>
       <AtmosphericBackground variant="hero" glowPosition="top-center" grain />
       <PhoenixLoader size={80} />
-      <Text variant="display2" style={styles.label}>
+      <Text variant="displayItalic" style={styles.label}>
         {savePhase === 'saving' ? 'Saving your profile…' : LOADING_PHRASES[phraseIndex]}
       </Text>
       {savePhase === 'save-error' && saveErrorMsg && (
@@ -251,7 +251,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontFamily:        fontFamily.displayItalic,
     marginTop:         space['8'],
     textAlign:         'center',
     paddingHorizontal: layout.screenPadding,

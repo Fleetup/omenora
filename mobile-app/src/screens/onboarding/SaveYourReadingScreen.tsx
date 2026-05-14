@@ -17,7 +17,7 @@ import { TextField } from '../../components/molecules'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import { useAuth } from '../../context/useAuth'
 import { useProfileStore } from '../../stores/profileStore'
-import { space, layout, tokens } from '../../design/tokens'
+import { space, layout, tokens, typeScale, fontFamily } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
 
 type SaveYourReadingNavProp = NativeStackNavigationProp<RootStackParamList, 'SaveYourReading'>
@@ -83,10 +83,9 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   googleLabel: {
-    fontFamily:    'Poppins_600SemiBold',
-    fontSize:      17,
-    letterSpacing: 0,
-    color:         '#1F1F1F',
+    ...typeScale.labelLarge,
+    fontFamily: fontFamily.uiSemiBold,
+    color:      tokens.text.inverse,
   },
   declineWrapper: {
     marginTop:  space['6'],

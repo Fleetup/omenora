@@ -24,7 +24,7 @@ export const TransitCard: React.FC<TransitCardProps> = ({
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: space['3'] }}>
         <Text
           variant="display2"
-          style={{ lineHeight: 32, minWidth: 28, textAlign: 'center', color: text.disabled }}
+          style={{ lineHeight: 32, /* intentional: clamps display2 (40pt) glyph cell to match adjacent label row height */ minWidth: 28, textAlign: 'center', color: text.disabled }}
         >
           {symbol}
         </Text>

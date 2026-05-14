@@ -14,7 +14,7 @@ import {
   space,
   layout,
   radius,
-  fontFamily,
+  typeScale,
 } from '../../design/tokens'
 import { Text } from './Text'
 
@@ -188,8 +188,7 @@ const styles = StyleSheet.create({
     zIndex:        1,
   },
   premiumLabel: {
-    fontFamily:    fontFamily.uiMedium,
-    fontSize:      18,
+    ...typeScale.labelLarge,
     letterSpacing: 0.2,
     color:         tokens.text.primary,
   },
