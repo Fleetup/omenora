@@ -27,4 +27,10 @@ export { EditorialBenefit } from './EditorialBenefit'
 export { ZodiacSymbol } from './ZodiacSymbol'
 export type { ZodiacSymbolProps } from './ZodiacSymbol'
 
+export { ArchetypeIcon } from './ArchetypeIcon'
+export type { ArchetypeIconProps } from './ArchetypeIcon'
+
+export { DimensionIcon } from './DimensionIcon'
+export type { DimensionIconProps } from './DimensionIcon'
+
 export { PhoenixLoader } from './PhoenixLoader'

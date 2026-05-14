@@ -67,6 +67,7 @@ export const ComponentsScreen: React.FC = () => {
   return (
     <ScreenWrapper scroll padded>
       <Text variant="display2" color="primary">Components</Text>
+
       <Text variant="body" color="secondary" style={{ marginTop: space['2'], marginBottom: space['8'] }}>
         Design system preview — dev only.
       </Text>
