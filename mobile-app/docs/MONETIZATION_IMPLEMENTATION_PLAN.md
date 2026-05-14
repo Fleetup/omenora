@@ -9,6 +9,53 @@
 
 ---
 
+## Progress Log
+
+Append-only record of implementation work completed. Each entry references the phase step and the verifiable outcome.
+
+### 2026-05-14 — Track C (Supabase migrations) shipped
+
+Three SQL migration files created and executed directly against Supabase project scvjjbgejmkomyciabex:
+- 20260514120000_user_credits_table.sql — table created, backfilled 61 user rows, RLS policy in place
+- 20260514120100_credit_transactions_table.sql — ledger created, UNIQUE constraint on revenuecat_event_id for idempotency, 2 indexes, RLS policy in place
+- 20260514120200_credit_rpc_functions.sql — three SECURITY DEFINER RPCs (grant_credits, clawback_credits, consume_credit), EXECUTE granted to service_role only after locking down anon/authenticated default grants
+
+Verification: all 6 manual RPC tests passed (grant, idempotency on duplicate event_id, additional grant stacking, consume decrement, clawback subtraction, floor-at-zero on excess clawback). Test data cleaned up post-verification.
+
+### 2026-05-14 — Phase 1 (Backend Cap Correction & Credit Infrastructure) shipped
+
+Files modified:
+- server/utils/entitlements.ts — counsel cap flipped from daily to monthly; new SUGGESTED_PRODUCTS constants; new AccessContext discriminated union type; new exported requirePremiumOrCreditAccess helper
+- server/utils/credits.ts (new) — wraps the three RPCs as TypeScript helpers (getCreditBalance, consumeCredit, grantCredits, clawbackCredits)
+- server/api/revenuecat/webhook.post.ts — new CONSUMABLE_PRODUCTS constant; new branch handling NON_RENEWING_PURCHASE, CANCELLATION, REFUND, EXPIRATION for the four consumable products before the existing entitlement-loop path
+- server/api/counsel/message.post.ts — guard swapped to requirePremiumOrCreditAccess; success path branches on ctx.source (premium → incrementUsage; credit → consumeCredit); response shape now includes source field
+- server/api/generate-compatibility.post.ts — same guard swap; credit-source users with previewMode=true forced into full-mode path (paid for full reading); usage field added to response with source branching
+
+Backend verification: tsc --noEmit exit code 0 across all changes. requirePremiumWithUsage and incrementUsage left byte-identical for the 3 other endpoints (archetype, natal_chart, forecast) that don't support credit fallback.
+
+### 2026-05-14 — Phase 2 (Mobile Monetization UI) — Steps 2.1 through 2.9 shipped
+
+Steps completed:
+- 2.1 — src/api/client.ts: 429 interceptor preserves AxiosError body; new getErrorBody helper exported
+- 2.2 — src/api/errors.ts (new): parseBackendError function returns BackendError discriminated union covering subscription_required, cap_reached, auth_required, network, unknown
+- 2.3 — src/api/endpoints.ts: CounselUsage discriminated union exported; CounselMessageResponse.usage and CompatibilityResponse.usage typed as CounselUsage; CounselChatScreen received companion type narrowing
+- 2.4 — src/context/PurchasesContext.ts and PurchasesProvider.tsx: 4 new fields (boostPacksOffering, compatibilityAddonOffering, purchaseBoostPack, purchaseCompatibilitySingle) added to context value; offerings fetched at both init and post-logIn sites
+- 2.5 — TodayScreen LockedCards uncommented (placement: feature_archetype_today and feature_dimensions_today); ReadingsScreen catch blocks for archetype, natal_chart, forecast endpoints use parseBackendError; subscription_required triggers presentPaywall; state resets to 'initial' after paywall dismiss
+- 2.6a — src/components/molecules/CompatibilityIAPSheet.tsx (new): bottom-sheet component listing single $4.99 compat reading + upsell to premium; backdrop-dismiss pattern; userCancelled silent; loading state when offering null
+- 2.6b — CompatibilityScreen.tsx: catch block routes subscription_required and cap_reached to CompatibilityIAPSheet (with fallback to presentPaywall if offering null); sheet renders at screen root; onPurchaseSuccess re-fires handleSubmit
+- 2.7a — src/components/molecules/BoostPackSheet.tsx (new): three-pack sheet (spark/insight/ascend) with badge approach for "MOST POPULAR" (insight) using tokens.accent.emphasis; package lookup via p.identifier; per-row purchase state
+- 2.7b — CounselChatScreen.tsx: cap-check wording updated to monthly; cap_reached and pre-check both open BoostPackSheet; subscription_required catch path navigates back to CounselScreen tab; usage counter shows "this month" for premium and "N conversations remaining" for credit; getPostPurchaseMessage helper added
+- 2.8 — CounselScreen.tsx (tab entry): added Button variant="tertiary" "Or pay per conversation — from $1.99" below "Start chatting" for free users; opens BoostPackSheet; onPurchaseSuccess navigates to CounselChat
+- 2.9 — CounselChatScreen.tsx: removed the !isPremium entry guard useEffect entirely; removed isPremium destructure and usePurchases import (became dead code); free users with credits can now enter and send
+
+Mobile verification: tsc --noEmit exit code 0 across all 12 files modified or created across these 9 steps. No backend regressions (backend changes are tolerated by both old and new clients).
+
+Pending in Phase 2:
+- Step 2.10 — Toast wiring for post-purchase success confirmation
+- Step 2.11 — Verify TraditionSwitcherScreen and CalendarScreen LockedCards still route to paywall (verification only)
+
+---
+
 ## Phase template (applies to every phase below)
 
 Each phase will be filled in with these sub-sections during the per-phase specification pass:
@@ -28,7 +75,7 @@ Each phase will be filled in with these sub-sections during the per-phase specif
 
 ## Phase 0 — Account & Infrastructure Prerequisites
 
-**Status:** READY FOR IMPLEMENTATION
+**Status:** IN PROGRESS — Track C complete; Tracks A/B/D pending external dependencies
 
 ### Goal
 Establish every account, dashboard, and database prerequisite required to create RevenueCat products and accept payment, before any backend or mobile code is written.
@@ -164,7 +211,7 @@ No application files modified in this phase. All work is dashboard configuration
 
 ## Phase 1 — Backend Cap Correction & Credit Infrastructure
 
-**Status:** READY FOR IMPLEMENTATION
+**Status:** SHIPPED — verified via direct RPC tests in Supabase
 
 ### Goal
 Backend-only changes that (a) fix the Counsel cap from daily to monthly, (b) add credit infrastructure for consumable IAPs, (c) extend the RevenueCat webhook to grant credits on purchase and claw them back on refund, (d) extend the Counsel and Compatibility endpoints to fall through from premium-allowance to credits.
@@ -396,7 +443,7 @@ The changes are layered and individually revertible:
 
 ## Phase 2 — Mobile Monetization UI
 
-**Status:** READY FOR IMPLEMENTATION
+**Status:** IN PROGRESS — Steps 2.1 through 2.9 shipped; Steps 2.10–2.11 pending
 
 ### Goal
 Wire the mobile app to the Phase 1 backend so every paid surface enforces gating, every cap-hit surfaces a relevant upgrade path (subscription OR boost pack), every locked feature presents the RevenueCat-hosted paywall, and the API client preserves structured error responses needed for those flows.
@@ -1194,3 +1241,6 @@ Append-only record of plan updates. Every time a phase moves from PENDING SPECIF
 | 2026-05-14 | 4 | Specified and marked READY FOR IMPLEMENTATION |
 | 2026-05-14 | 5 | Specified and marked READY FOR IMPLEMENTATION |
 | 2026-05-14 | 6 | Skeleton specified; full spec deferred to Q4 2026 |
+| 2026-05-14 | 0 Track C | Supabase migrations executed; user_credits, credit_transactions, three RPC functions live in scvjjbgejmkomyciabex |
+| 2026-05-14 | 1 | All 7 steps shipped; tsc clean; RPCs verified via 6 manual tests |
+| 2026-05-14 | 2 (partial) | Steps 2.1–2.9 shipped; Steps 2.10–2.11 pending |
