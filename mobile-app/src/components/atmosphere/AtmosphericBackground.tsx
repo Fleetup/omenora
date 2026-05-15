@@ -302,7 +302,7 @@ export default function AtmosphericBackground({
 const styles = StyleSheet.create({
   graphicOverlay: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.10,
+    opacity: 0.06,
   },
   graphicSvg: {
     width:  SCREEN_W,
