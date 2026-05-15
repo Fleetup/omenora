@@ -98,7 +98,7 @@ const PremiumButtonShell: React.FC<{
             <SunGraph
               width={80}
               height={80}
-              fill="rgba(255,255,255,0.07)"
+              fill="rgba(255,255,255,0.04)"
               preserveAspectRatio="xMidYMid meet"
             />
           </View>
@@ -108,7 +108,7 @@ const PremiumButtonShell: React.FC<{
             <PlanetGraph
               width={90}
               height={90}
-              fill="rgba(255,255,255,0.07)"
+              fill="rgba(255,255,255,0.04)"
               preserveAspectRatio="xMidYMid meet"
             />
           </View>
