@@ -308,9 +308,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase' as const,
     marginBottom:  space['1'],
   },
-  insightBlock: {
-    marginTop: -space['6'], // pull up into hero bottomBleed for seamless continuation
-  },
+  insightBlock: {},
   sectionLabel: {
     marginBottom: space['2'],
   },

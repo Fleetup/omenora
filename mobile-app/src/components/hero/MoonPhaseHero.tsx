@@ -105,9 +105,9 @@ export default function MoonPhaseHero({
         </View>
       </View>
 
-      {/* ── Bottom bleed: opaque at top → transparent at bottom, fades INTO screen bg ── */}
+      {/* ── Bottom bleed: absolutely positioned over the image bottom → fades into screen bg ── */}
       <LinearGradient
-        colors={[specialty.heroScrim, tokens.surface.base]}
+        colors={['rgba(21,17,13,0)', tokens.surface.base]}
         locations={[0, 1]}
         style={styles.bottomBleed}
         pointerEvents="none"
@@ -118,15 +118,15 @@ export default function MoonPhaseHero({
 
 const styles = StyleSheet.create({
   wrapper: {
-    // No overflow here — bottomBleed must extend below
+    // No overflow:hidden — bottomBleed extends below outer
   },
   outer: {
-    height:   320,
+    height:   360,
     overflow: 'hidden', // clips symbols and any absolute children inside the image zone
   },
   bottomBleed: {
-    height:    120,
-    marginTop: -120, // overlap back into the hero image for smooth dissolve
+    height:    160,
+    marginTop: -160, // overlap back into the hero bottom — fades image into screen bg
   },
   content: {
     padding: 0,
