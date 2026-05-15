@@ -53,7 +53,7 @@ export const specialty = {
   chatCounsel:  'rgba(201,169,97,0.10)',
   glassTint:    'rgba(255,255,255,0.10)',
   glassTintBlue:'rgba(160,180,255,0.12)',  // kept for other uses
-  premiumBtnGradient: ['#1E2A4A', '#131A32'] as const,
+  premiumBtnGradient: ['#2C3D62', '#1A2444'] as const,
   premiumBtnOverlay:  'rgba(80,110,180,0.15)',
   white:        '#FFFFFF',
   overlayScrim: 'rgba(0,0,0,0.60)',
