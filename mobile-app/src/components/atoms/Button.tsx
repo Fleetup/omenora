@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import SunGraph from '../../../assets/svg-bg/Card-Graphs/Sun-Graph-Mobile.svg'
+import PlanetGraph from '../../../assets/svg-bg/Card-Graphs/Planet-Graph-Mobile.svg'
 import type { LucideIcon } from 'lucide-react-native'
 import {
   tokens,
@@ -93,11 +94,21 @@ const PremiumButtonShell: React.FC<{
       >
         <View style={styles.premiumSatOverlay} />
         {typeof SunGraph === 'function' && (
-          <View style={styles.btnGraphOverlay} pointerEvents="none">
+          <View style={styles.btnSunOverlay} pointerEvents="none">
             <SunGraph
               width={80}
               height={80}
-              fill="rgba(255,255,255,0.12)"
+              fill="rgba(255,255,255,0.07)"
+              preserveAspectRatio="xMidYMid meet"
+            />
+          </View>
+        )}
+        {typeof PlanetGraph === 'function' && (
+          <View style={styles.btnPlanetOverlay} pointerEvents="none">
+            <PlanetGraph
+              width={90}
+              height={90}
+              fill="rgba(255,255,255,0.07)"
               preserveAspectRatio="xMidYMid meet"
             />
           </View>
@@ -201,11 +212,16 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: tokens.specialty.premiumBtnOverlay,
   },
-  btnGraphOverlay: {
+  btnSunOverlay: {
     position:  'absolute',
     right:     -20,
     top:       '50%',
-    marginTop: -40, // half of height=80 to center vertically
+    marginTop: -40, // center vertically (half of 80)
+  },
+  btnPlanetOverlay: {
+    position: 'absolute',
+    left:     -24,
+    bottom:   -24,
   },
   premiumInner: {
     flexDirection: 'row',
