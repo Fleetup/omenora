@@ -1,12 +1,12 @@
-// Screen-level atmospheric background. Renders 5 static layers (base gradient +
-// primary glow + optional counter glow + optional grain + optional vignette) below
-// children. Variant controls glow intensity. Token-only; never animate.
+// Screen-level atmospheric background. Renders 6 static layers (base gradient +
+// decorative ornament + primary glow + optional counter glow + optional grain +
+// optional vignette) below children. Variant controls glow intensity. Token-only; never animate.
 
 import React from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import Svg, { Circle, Defs, Rect, RadialGradient, Stop } from 'react-native-svg'
-import BackgroundGraph from '../../../assets/Background-Graph.svg'
+import BgOrnaments from '../../../assets/svg-bg/BG-Ornaments-Mobile.svg'
 
 import { tokens } from '../../design/tokens'
 
@@ -127,15 +127,16 @@ export default function AtmosphericBackground({
           style={StyleSheet.absoluteFill}
         />
 
-        {/* Layer 1b — Decorative graphic overlay (standard: always on; manual: opt-in) */}
-        {resolvedGraphic && typeof BackgroundGraph === 'function' && (
+        {/* Layer 1b — Decorative ornament overlay (standard: always on; manual: opt-in)
+             SVG fill #e6e6e6 stripped by transformer — white passed as fill prop, opacity via container */}
+        {resolvedGraphic && typeof BgOrnaments === 'function' && (
           <View style={styles.graphicOverlay} pointerEvents="none">
-            <BackgroundGraph
+            <BgOrnaments
               width={SCREEN_W}
               height={SCREEN_H}
               style={styles.graphicSvg}
               preserveAspectRatio="xMidYMid meet"
-              color="#ffffff"
+              fill="rgba(255,255,255,1)"
             />
           </View>
         )}
@@ -301,7 +302,7 @@ export default function AtmosphericBackground({
 const styles = StyleSheet.create({
   graphicOverlay: {
     ...StyleSheet.absoluteFillObject,
-    opacity:        0.06,
+    opacity:        0.10,
     alignItems:     'center',
     justifyContent: 'center',
   },
