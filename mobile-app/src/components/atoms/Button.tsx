@@ -63,7 +63,8 @@ const PremiumButtonShell: React.FC<{
   fullWidth: boolean
   icon?:     LucideIcon
   label:     string
-}> = ({ onPress, disabled, loading, fullWidth, icon, label }) => {
+  style?:    ViewStyle
+}> = ({ onPress, disabled, loading, fullWidth, icon, label, style }) => {
   const IconComponent = icon
   return (
     <Pressable
@@ -74,6 +75,7 @@ const PremiumButtonShell: React.FC<{
         fullWidth && styles.fullWidth,
         (disabled || loading) && styles.disabled,
         pressed && { opacity: 0.65, transform: [{ scale: 0.98 }] },
+        style,
       ]}
     >
       <BlurView
@@ -126,6 +128,7 @@ export const Button: React.FC<ButtonProps> = ({
         fullWidth={fullWidth}
         icon={icon}
         label={label}
+        style={style}
       />
     )
   }
