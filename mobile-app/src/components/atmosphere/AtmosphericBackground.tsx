@@ -73,7 +73,7 @@ const GLOW_COORDS: Record<
   'top-center':    { cx: SCREEN_W * 0.50, cy: SCREEN_H * -0.05 },
   'bottom-left':   { cx: SCREEN_W * 0.28, cy: SCREEN_H * 0.75 },
   'bottom-right':  { cx: SCREEN_W * 0.72, cy: SCREEN_H * 0.75 },
-  'bottom-center': { cx: SCREEN_W * 0.50, cy: SCREEN_H * 0.92 },
+  'bottom-center': { cx: SCREEN_W * 0.50, cy: SCREEN_H * 1.05 },
 }
 
 // Opposite corner mapping for counter glow
@@ -216,10 +216,7 @@ export default function AtmosphericBackground({
           {/* Layer 2 — Primary glow */}
           <Rect x="0" y="0" width={SCREEN_W} height={SCREEN_H} fill="url(#atmGlowPrimary)" />
 
-          {/* Layer 3 — Counter glow (standard: bottom-center; manual: opposite corner) */}
-          {resolvedCounter && (
-            <Rect x="0" y="0" width={SCREEN_W} height={SCREEN_H} fill="url(#atmGlowCounter)" />
-          )}
+          {/* Layer 3 — Counter glow rendered separately above vignette (Layer 5b) */}
 
           {/* Layer 3b — CTA light pool (optional): wide elliptical warm pool at 82% screen height */}
           {ctaLightPool && (
@@ -259,6 +256,35 @@ export default function AtmosphericBackground({
             style={[styles.vignette, styles.vignetteTop]}
             pointerEvents="none"
           />
+        )}
+
+        {/* Layer 5b — Counter glow rendered AFTER vignette so it bleeds through */}
+        {resolvedCounter && (
+          <Svg
+            style={StyleSheet.absoluteFill}
+            viewBox={`0 0 ${SCREEN_W} ${SCREEN_H}`}
+            preserveAspectRatio="xMidYMid slice"
+            pointerEvents="none"
+          >
+            <Defs>
+              <RadialGradient
+                id="atmGlowCounterTop"
+                cx={counterPos.cx}
+                cy={counterPos.cy}
+                rx={counterR}
+                ry={counterR}
+                fx={counterPos.cx}
+                fy={counterPos.cy}
+                gradientUnits="userSpaceOnUse"
+              >
+                <Stop offset="0"    stopColor={tokens.accent.primary} stopOpacity={stops[0]} />
+                <Stop offset="0.35" stopColor={tokens.accent.primary} stopOpacity={stops[1]} />
+                <Stop offset="0.7"  stopColor={tokens.accent.primary} stopOpacity={stops[2]} />
+                <Stop offset="1"    stopColor={tokens.accent.primary} stopOpacity={stops[3]} />
+              </RadialGradient>
+            </Defs>
+            <Rect x="0" y="0" width={SCREEN_W} height={SCREEN_H} fill="url(#atmGlowCounterTop)" />
+          </Svg>
         )}
       </View>
 

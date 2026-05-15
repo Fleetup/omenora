@@ -74,8 +74,6 @@ export default function WelcomeScreen() {
         variant="hero"
         glowPosition="top-center"
         counterGlow
-        ctaLightPool
-        buttonHalo
         grain
         graphicOverlay
         vignette="bottom"
