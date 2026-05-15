@@ -9,7 +9,7 @@ import { Text, Button } from '../../components/atoms'
 import { TimeField } from '../../components/molecules'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import { useProfileStore } from '../../stores/profileStore'
-import { surface, space, layout, tokens } from '../../design/tokens'
+import { tokens, space, layout } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
 
 type BirthTimeNavProp = NativeStackNavigationProp<RootStackParamList, 'BirthTime'>
@@ -118,7 +118,7 @@ export default function BirthTimeScreen() {
 const styles = StyleSheet.create({
   root: {
     flex:            1,
-    backgroundColor: surface.base,
+    backgroundColor: tokens.surface.base,
   },
   flex: {
     flex: 1,

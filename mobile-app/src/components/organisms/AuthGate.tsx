@@ -11,7 +11,6 @@ import { TextField } from '../molecules/TextField'
 import { Divider } from '../atoms/Divider'
 import { useAuth } from '../../context/useAuth'
 
-import { useTheme } from '../../design/theme/useTheme'
 import { space, typeScale, fontFamily, tokens } from '../../design/tokens'
 
 export interface AuthGateProps {
@@ -59,8 +58,6 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   onClose,
 }) => {
   const { signInWithApple, signInWithGoogle, sendEmailOtp, verifyEmailOtp, isAnonymous } = useAuth()
-  const { tokens } = useTheme()
-
   const [gateState, setGateState] = useState<GateState>('idle')
   const [email,          setEmail]          = useState('')
   const [otp,            setOtp]            = useState('')

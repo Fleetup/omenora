@@ -10,14 +10,7 @@ import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { MotiView } from 'moti'
 
-import {
-  surface,
-  accent,
-  text,
-  space,
-  layout,
-  fontFamily,
-} from '../../design/tokens'
+import { tokens, space, layout, fontFamily } from '../../design/tokens'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import { Text } from '../../components/atoms/Text'
 import { Button } from '../../components/atoms/Button'
@@ -143,7 +136,7 @@ export default function WelcomeScreen() {
           >
             {!isAnonymous && profileHydrating && !hydrationTimedOut ? (
               <View style={styles.actions}>
-                <ActivityIndicator size="small" color={text.disabled} />
+                <ActivityIndicator size="small" color={tokens.text.disabled} />
               </View>
             ) : (
               <View style={styles.actions}>
@@ -203,7 +196,7 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex:            1,
-    backgroundColor: surface.base,
+    backgroundColor: tokens.surface.base,
   },
   safe: {
     flex:              1,
@@ -260,7 +253,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   signInAccent: {
-    color: accent.primary,
+    color: tokens.accent.primary,
   },
   legalRow: {
     flexDirection:  'row',
@@ -269,7 +262,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   legalLink: {
-    color:              text.tertiary,
+    color:              tokens.text.tertiary,
     textDecorationLine: 'underline',
   },
 })

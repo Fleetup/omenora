@@ -16,7 +16,7 @@ import api from '../../api/endpoints'
 import type { ArchetypeReading, NatalChartReading, ForecastReading } from '../../api/endpoints'
 import { remapAnswersForBackend } from '../../utils/answers'
 import { isPastDate } from '../../utils/time'
-import { tokens, space, layout, accent } from '../../design/tokens'
+import { tokens, space, layout } from '../../design/tokens'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import type { ReadingsScreenProps } from '../../navigation/types'
 
@@ -361,7 +361,7 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
                 <ArchetypeIcon
                   archetype={archetype ?? 'architect'}
                   size={140}
-                  fill={accent.primary}
+                  fill={tokens.accent.primary}
                   opacity={1}
                 />
               }
@@ -617,7 +617,7 @@ export default function ReadingsScreen({ navigation: _navigation }: ReadingsScre
                 <ArchetypeIcon
                   archetype="phoenix"
                   size={140}
-                  fill={accent.primary}
+                  fill={tokens.accent.primary}
                   opacity={1}
                 />
               }

@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import Svg, { Circle, Defs, Rect, RadialGradient, Stop } from 'react-native-svg'
 import BackgroundGraph from '../../../assets/Background-Graph.svg'
 
-import { accent, surface } from '../../design/tokens'
+import { tokens } from '../../design/tokens'
 
 export interface AtmosphericBackgroundProps {
   /**
@@ -120,7 +120,7 @@ export default function AtmosphericBackground({
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         {/* Layer 1 — Base linear gradient: surface.deep → base → deep, vertical */}
         <LinearGradient
-          colors={[surface.deep, surface.base, surface.deep]}
+          colors={[tokens.surface.deep, tokens.surface.base, tokens.surface.deep]}
           locations={[0, 0.55, 1]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
@@ -157,10 +157,10 @@ export default function AtmosphericBackground({
               fy={primary.cy}
               gradientUnits="userSpaceOnUse"
             >
-              <Stop offset="0"    stopColor={accent.primary} stopOpacity={stops[0]} />
-              <Stop offset="0.35" stopColor={accent.primary} stopOpacity={stops[1]} />
-              <Stop offset="0.7"  stopColor={accent.primary} stopOpacity={stops[2]} />
-              <Stop offset="1"    stopColor={accent.primary} stopOpacity={stops[3]} />
+              <Stop offset="0"    stopColor={tokens.accent.primary} stopOpacity={stops[0]} />
+              <Stop offset="0.35" stopColor={tokens.accent.primary} stopOpacity={stops[1]} />
+              <Stop offset="0.7"  stopColor={tokens.accent.primary} stopOpacity={stops[2]} />
+              <Stop offset="1"    stopColor={tokens.accent.primary} stopOpacity={stops[3]} />
             </RadialGradient>
             {resolvedCounter && (
               <RadialGradient
@@ -173,9 +173,9 @@ export default function AtmosphericBackground({
                 fy={counterPos.cy}
                 gradientUnits="userSpaceOnUse"
               >
-                <Stop offset="0"   stopColor={accent.primary} stopOpacity="0.20" />
-                <Stop offset="0.5" stopColor={accent.primary} stopOpacity="0.07" />
-                <Stop offset="1"   stopColor={accent.primary} stopOpacity="0"    />
+                <Stop offset="0"   stopColor={tokens.accent.primary} stopOpacity="0.20" />
+                <Stop offset="0.5" stopColor={tokens.accent.primary} stopOpacity="0.07" />
+                <Stop offset="1"   stopColor={tokens.accent.primary} stopOpacity="0"    />
               </RadialGradient>
             )}
             {buttonHalo && (
@@ -189,9 +189,9 @@ export default function AtmosphericBackground({
                 fy={SCREEN_H * 0.82}
                 gradientUnits="userSpaceOnUse"
               >
-                <Stop offset="0"   stopColor={accent.primary} stopOpacity="0.55" />
-                <Stop offset="0.5" stopColor={accent.primary} stopOpacity="0.18" />
-                <Stop offset="1"   stopColor={accent.primary} stopOpacity="0"    />
+                <Stop offset="0"   stopColor={tokens.accent.primary} stopOpacity="0.55" />
+                <Stop offset="0.5" stopColor={tokens.accent.primary} stopOpacity="0.18" />
+                <Stop offset="1"   stopColor={tokens.accent.primary} stopOpacity="0"    />
               </RadialGradient>
             )}
             {ctaLightPool && (
@@ -205,9 +205,9 @@ export default function AtmosphericBackground({
                 fy={SCREEN_H * 0.82}
                 gradientUnits="userSpaceOnUse"
               >
-                <Stop offset="0"   stopColor={accent.primary} stopOpacity="0.32" />
-                <Stop offset="0.5" stopColor={accent.primary} stopOpacity="0.10" />
-                <Stop offset="1"   stopColor={accent.primary} stopOpacity="0"    />
+                <Stop offset="0"   stopColor={tokens.accent.primary} stopOpacity="0.32" />
+                <Stop offset="0.5" stopColor={tokens.accent.primary} stopOpacity="0.10" />
+                <Stop offset="1"   stopColor={tokens.accent.primary} stopOpacity="0"    />
               </RadialGradient>
             )}
           </Defs>
@@ -245,7 +245,7 @@ export default function AtmosphericBackground({
         {/* Layer 5 — Vignette (optional) */}
         {vignette === 'bottom' && (
           <LinearGradient
-            colors={['transparent', surface.deep]}
+            colors={['transparent', tokens.surface.deep]}
             locations={[0, 1]}
             style={[styles.vignette, styles.vignetteBottom]}
             pointerEvents="none"
@@ -253,7 +253,7 @@ export default function AtmosphericBackground({
         )}
         {vignette === 'top' && (
           <LinearGradient
-            colors={[surface.deep, 'transparent']}
+            colors={[tokens.surface.deep, 'transparent']}
             locations={[0, 1]}
             style={[styles.vignette, styles.vignetteTop]}
             pointerEvents="none"

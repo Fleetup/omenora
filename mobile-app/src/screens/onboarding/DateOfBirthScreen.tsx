@@ -10,7 +10,7 @@ import { DateField } from '../../components/molecules'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import { useProfileStore } from '../../stores/profileStore'
 import { calculateLifePathNumber } from '../../utils/lifePathNumber'
-import { surface, space, layout, tokens } from '../../design/tokens'
+import { tokens, space, layout } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
 
 type DateOfBirthNavProp = NativeStackNavigationProp<RootStackParamList, 'DateOfBirth'>
@@ -123,7 +123,7 @@ export default function DateOfBirthScreen() {
 const styles = StyleSheet.create({
   root: {
     flex:            1,
-    backgroundColor: surface.base,
+    backgroundColor: tokens.surface.base,
   },
   flex: {
     flex: 1,

@@ -9,7 +9,7 @@ import { Text, Button } from '../../components/atoms'
 import { CityField } from '../../components/molecules'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import { useProfileStore } from '../../stores/profileStore'
-import { surface, space, layout, tokens } from '../../design/tokens'
+import { tokens, space, layout } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
 import type { Place } from '../../api/nominatim'
 
@@ -113,7 +113,7 @@ export default function BirthCityScreen() {
 const styles = StyleSheet.create({
   root: {
     flex:            1,
-    backgroundColor: surface.base,
+    backgroundColor: tokens.surface.base,
   },
   flex: {
     flex: 1,

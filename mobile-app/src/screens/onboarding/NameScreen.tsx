@@ -9,7 +9,7 @@ import { Text, Button } from '../../components/atoms'
 import { TextField } from '../../components/molecules'
 import { AtmosphericBackground } from '../../components/atmosphere'
 import { useProfileStore } from '../../stores/profileStore'
-import { surface, space, layout, tokens } from '../../design/tokens'
+import { tokens, space, layout } from '../../design/tokens'
 import { RootStackParamList } from '../../navigation/types'
 
 type NameNavProp = NativeStackNavigationProp<RootStackParamList, 'Name'>
@@ -108,7 +108,7 @@ export default function NameScreen() {
 const styles = StyleSheet.create({
   root: {
     flex:            1,
-    backgroundColor: surface.base,
+    backgroundColor: tokens.surface.base,
   },
   flex: {
     flex: 1,
