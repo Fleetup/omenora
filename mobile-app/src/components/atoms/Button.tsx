@@ -6,7 +6,7 @@ import {
   ViewStyle,
   View,
 } from 'react-native'
-import { BlurView } from 'expo-blur'
+import { LinearGradient } from 'expo-linear-gradient'
 import * as Haptics from 'expo-haptics'
 import type { LucideIcon } from 'lucide-react-native'
 import {
@@ -78,13 +78,13 @@ const PremiumButtonShell: React.FC<{
         style,
       ]}
     >
-      <BlurView
-        intensity={18}
-        tint="light"
+      <LinearGradient
+        colors={tokens.specialty.premiumBtnGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={styles.premiumBlur}
       >
-        {/* Soft white tint over blur — makes it read as frosted glass */}
-        <View style={styles.premiumTint} />
+        <View style={styles.premiumSatOverlay} />
         {loading ? (
           <ActivityIndicator size="small" color={tokens.text.primary} />
         ) : (
@@ -95,7 +95,7 @@ const PremiumButtonShell: React.FC<{
             <Text style={styles.premiumLabel}>{label}</Text>
           </View>
         )}
-      </BlurView>
+      </LinearGradient>
     </Pressable>
   )
 }
@@ -180,9 +180,9 @@ const styles = StyleSheet.create({
     alignItems:        'center',
     justifyContent:    'center',
   },
-  premiumTint: {
+  premiumSatOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: tokens.specialty.glassTintBlue,
+    backgroundColor: tokens.specialty.premiumBtnOverlay,
   },
   premiumInner: {
     flexDirection: 'row',
