@@ -73,7 +73,7 @@ const GLOW_COORDS: Record<
   'top-center':    { cx: SCREEN_W * 0.50, cy: SCREEN_H * -0.05 },
   'bottom-left':   { cx: SCREEN_W * 0.28, cy: SCREEN_H * 0.75 },
   'bottom-right':  { cx: SCREEN_W * 0.72, cy: SCREEN_H * 0.75 },
-  'bottom-center': { cx: SCREEN_W * 0.50, cy: SCREEN_H * 1.05 }, // mirror of top-center
+  'bottom-center': { cx: SCREEN_W * 0.50, cy: SCREEN_H * 0.92 },
 }
 
 // Opposite corner mapping for counter glow
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left:     0,
     right:    0,
-    height:   SCREEN_H * 0.42,
+    height:   SCREEN_H * 0.28,
   },
   vignetteBottom: {
     bottom: 0,
