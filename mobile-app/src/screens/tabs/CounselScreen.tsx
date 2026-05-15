@@ -60,7 +60,7 @@ export default function CounselScreen({ navigation }: CounselScreenProps) {
             <View style={styles.ctaBlock}>
               <Button
                 label="Open Counsel"
-                variant="primary"
+                variant="premium"
                 fullWidth
                 onPress={() => navigation.navigate('CounselChat')}
               />
@@ -84,7 +84,7 @@ export default function CounselScreen({ navigation }: CounselScreenProps) {
                 <Button
                   label="Start chatting"
                   onPress={handleStartChat}
-                  variant="primary"
+                  variant="premium"
                   fullWidth
                 />
                 <Button

@@ -167,7 +167,7 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   premiumOuter: {
-    borderRadius: radius.xl,
+    borderRadius: radius.sm,
     overflow:     'hidden',
   },
   premiumBlur: {
