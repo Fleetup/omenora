@@ -52,6 +52,7 @@ export const specialty = {
   chatUser:     '#13122A',
   chatCounsel:  'rgba(201,169,97,0.10)',
   glassTint:    'rgba(255,255,255,0.10)',
+  glassTintBlue:'rgba(160,180,255,0.12)',
   white:        '#FFFFFF',
   overlayScrim: 'rgba(0,0,0,0.60)',
   // Cluster 16b: semantic surface tint for stale forecast content

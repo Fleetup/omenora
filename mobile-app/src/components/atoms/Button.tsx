@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   },
   premiumTint: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: tokens.specialty.glassTint,
+    backgroundColor: tokens.specialty.glassTintBlue,
   },
   premiumInner: {
     flexDirection: 'row',
