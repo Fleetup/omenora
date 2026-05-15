@@ -114,7 +114,7 @@ export default function OptionalQuestionsScreen() {
         <View style={styles.footerActions}>
           <Button
             label={isLast ? 'Finish' : 'Continue'}
-            variant="primary"
+            variant="premium"
             fullWidth
             disabled={!canContinue}
             onPress={handleContinue}
