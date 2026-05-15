@@ -40,75 +40,92 @@ export default function MoonPhaseHero({
   const source = PHASE_IMAGES[moonPhase] ?? FALLBACK_IMAGE
 
   return (
-    <View style={[styles.outer, style]}>
-      <ImageBackground
-        source={source}
-        resizeMode="cover"
-        style={StyleSheet.absoluteFill}
-      />
+    <View style={[styles.wrapper, style]}>
+      {/* ── Fixed-height image container ── */}
+      <View style={styles.outer}>
+        <ImageBackground
+          source={source}
+          resizeMode="cover"
+          style={StyleSheet.absoluteFill}
+        />
 
-      {/* Scrim: transparent top → opaque warm-black bottom */}
+        {/* Scrim: transparent top → semi-transparent bottom — does NOT go fully opaque */}
+        <LinearGradient
+          colors={[
+            specialty.heroScrimTransparent,
+            specialty.heroScrimTransparent,
+            'rgba(21,17,13,0.55)',
+          ]}
+          locations={[0, 0.40, 1]}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+        />
+
+        {/* Content layer */}
+        <View style={[StyleSheet.absoluteFill, styles.content]}>
+
+          {/* Moon phase caption — top-right */}
+          <View style={styles.phaseCaption}>
+            <Text variant="subMicro" style={styles.phaseCaptionText}>
+              {moonPhase.toUpperCase()}
+            </Text>
+          </View>
+
+          {/* Archetype icon — vertically centered in image */}
+          <View style={styles.archetypeWrap}>
+            <ArchetypeIcon
+              archetype={archetypeName}
+              size={120}
+              fill={accent.primary}
+              opacity={0.50}
+            />
+          </View>
+
+          {/* Greeting + date — bottom-left */}
+          <View style={styles.greetingBlock}>
+            <View style={styles.greetingRow}>
+              <Text variant="display2" style={styles.greetingText}>
+                {greeting}
+              </Text>
+              {signName != null && (
+                <ZodiacSymbol
+                  sign={signName}
+                  size={28}
+                  opacity={0.65}
+                  style={styles.zodiacSymbol}
+                />
+              )}
+            </View>
+            <Text variant="caption" style={styles.dateText}>
+              {formattedDate}
+            </Text>
+          </View>
+
+        </View>
+      </View>
+
+      {/* ── Bottom bleed: extends the fade seamlessly into content below ── */}
       <LinearGradient
-        colors={[
-          specialty.heroScrimTransparent,
-          specialty.heroScrimTransparent,
-          specialty.heroScrim,
-          specialty.heroScrim,
-        ]}
-        locations={[0, 0.25, 0.8, 1]}
-        style={StyleSheet.absoluteFill}
+        colors={['rgba(21,17,13,0.55)', specialty.heroScrim]}
+        locations={[0, 1]}
+        style={styles.bottomBleed}
         pointerEvents="none"
       />
-
-      {/* Content layer */}
-      <View style={[StyleSheet.absoluteFill, styles.content]}>
-
-        {/* Moon phase caption — top-right */}
-        <View style={styles.phaseCaption}>
-          <Text variant="subMicro" style={styles.phaseCaptionText}>
-            {moonPhase.toUpperCase()}
-          </Text>
-        </View>
-
-        {/* Archetype icon — centered horizontally, biased upward */}
-        <View style={styles.archetypeWrap}>
-          <ArchetypeIcon
-            archetype={archetypeName}
-            size={120}
-            fill={accent.primary}
-            opacity={0.55}
-          />
-        </View>
-
-        {/* Greeting + date — bottom-left */}
-        <View style={styles.greetingBlock}>
-          <View style={styles.greetingRow}>
-            <Text variant="display2" style={styles.greetingText}>
-              {greeting}
-            </Text>
-            {signName != null && (
-              <ZodiacSymbol
-                sign={signName}
-                size={28}
-                opacity={0.65}
-                style={styles.zodiacSymbol}
-              />
-            )}
-          </View>
-          <Text variant="caption" style={styles.dateText}>
-            {formattedDate}
-          </Text>
-        </View>
-
-      </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    // No overflow:hidden here — lets bottomBleed render below outer
+  },
   outer: {
     height:   320,
     overflow: 'hidden',
+  },
+  bottomBleed: {
+    height:      80,
+    marginTop:   -1, // seam-seal against the outer bottom edge
   },
   content: {
     padding: 0,
@@ -125,7 +142,8 @@ const styles = StyleSheet.create({
   },
   archetypeWrap: {
     position:        'absolute',
-    top:             space['4'],
+    top:             0,
+    bottom:          80,   // stay above greeting block
     left:            0,
     right:           0,
     alignItems:      'center',
