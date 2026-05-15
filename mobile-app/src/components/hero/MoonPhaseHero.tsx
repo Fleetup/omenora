@@ -57,7 +57,7 @@ export default function MoonPhaseHero({
             specialty.heroScrimTransparent,
             specialty.heroScrim,
           ]}
-          locations={[0, 0.35, 1]}
+          locations={[0, 0.20, 1]}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
         />
@@ -84,10 +84,17 @@ export default function MoonPhaseHero({
 
           {/* Greeting + date — bottom-left */}
           <View style={styles.greetingBlock}>
+            {/* Line 1: greeting prefix ("Good morning,") */}
+            <Text variant="display2" style={styles.greetingText}>
+              {greeting.includes(',') ? greeting.split(',')[0] + ',' : greeting}
+            </Text>
+            {/* Line 2: name + zodiac symbol */}
             <View style={styles.greetingRow}>
-              <Text variant="display2" style={styles.greetingText}>
-                {greeting}
-              </Text>
+              {greeting.includes(',') && (
+                <Text variant="display2" style={styles.greetingText}>
+                  {greeting.split(',').slice(1).join(',').trim()}
+                </Text>
+              )}
               {signName != null && (
                 <ZodiacSymbol
                   sign={signName}
@@ -121,12 +128,12 @@ const styles = StyleSheet.create({
     // No overflow:hidden — bottomBleed extends below outer
   },
   outer: {
-    height:   360,
+    height:   380,
     overflow: 'hidden', // clips symbols and any absolute children inside the image zone
   },
   bottomBleed: {
-    height:    160,
-    marginTop: -160, // overlap back into the hero bottom — fades image into screen bg
+    height:    200,
+    marginTop: -200, // overlap back into the hero bottom — fades image into screen bg
   },
   content: {
     padding: 0,
