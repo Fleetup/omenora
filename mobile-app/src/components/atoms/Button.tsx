@@ -94,21 +94,21 @@ const PremiumButtonShell: React.FC<{
       >
         <View style={styles.premiumSatOverlay} />
         {typeof SunGraph === 'function' && (
-          <View style={styles.btnSunOverlay} pointerEvents="none">
+          <View style={[styles.btnSunOverlay, styles.btnGraphMuted]} pointerEvents="none">
             <SunGraph
               width={80}
               height={80}
-              fill="rgba(255,255,255,0.04)"
+              fill="#ffffff"
               preserveAspectRatio="xMidYMid meet"
             />
           </View>
         )}
         {typeof PlanetGraph === 'function' && (
-          <View style={styles.btnPlanetOverlay} pointerEvents="none">
+          <View style={[styles.btnPlanetOverlay, styles.btnGraphMuted]} pointerEvents="none">
             <PlanetGraph
               width={90}
               height={90}
-              fill="rgba(255,255,255,0.04)"
+              fill="#ffffff"
               preserveAspectRatio="xMidYMid meet"
             />
           </View>
@@ -222,6 +222,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left:     -24,
     bottom:   -24,
+  },
+  btnGraphMuted: {
+    opacity: 0.08,
   },
   premiumInner: {
     flexDirection: 'row',

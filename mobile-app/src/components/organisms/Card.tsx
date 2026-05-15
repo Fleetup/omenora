@@ -144,7 +144,7 @@ export const Card: React.FC<CardProps> = ({
       : PlanetGraph  // accent-rust
     const graphFill = canonical === 'accent-rust'
       ? tokens.accent.primary
-      : 'rgba(255,255,255,1)'
+      : '#ffffff'
     return (
       <View style={[{ borderRadius: cfg.borderRadius, overflow: 'hidden' }, border, style]}>
         <LinearGradient
@@ -225,6 +225,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right:    -40,
     bottom:   -40,
-    opacity:  0.07,
+    opacity:  0.09,
   },
 })
