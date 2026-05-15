@@ -97,6 +97,6 @@ const styles = StyleSheet.create({
   },
   message: {
     flex:  1,
-    color: '#FFFFFF',
+    color: tokens.text.primary,
   },
 })

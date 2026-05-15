@@ -2,7 +2,7 @@
 
 **Goal:** One canonical import pattern across every file. Delete the competing system.  
 **Standard pattern:** `import { tokens, space, layout, ... } from '../../design/tokens'`  
-**Status:** [ ] In progress  
+**Status:** [x] COMPLETE  
 **Last verified:** Full exhaustive scan — all files confirmed
 
 ---
@@ -157,10 +157,10 @@ Zero errors = cleanup complete.
 
 ## Progress Tracker
 
-- [ ] Phase 1 — `src/hooks/useReduceMotion.ts` created, 3 consumers updated
-- [ ] Phase 2 — `AuthGate.tsx` `useTheme` removed
-- [ ] Phase 3 — `ThemeProvider.tsx` + `useTheme.ts` deleted, `App.tsx` updated
-- [ ] Phase 4 — 10 screen files updated
-- [ ] Phase 5 — 4 component files updated (ReadingCard, TransitCard, AtmosphericBackground, Badge)
-- [ ] Phase 6 — `tsc --noEmit` = 0 errors
-- [ ] Git commit
+- [x] Phase 1 — `src/hooks/useReduceMotion.ts` created, 3 consumers updated
+- [x] Phase 2 — `AuthGate.tsx` `useTheme` removed
+- [x] Phase 3 — `ThemeProvider.tsx` + `useTheme.ts` deleted, `App.tsx` updated
+- [x] Phase 4 — 10 screen files updated
+- [x] Phase 5 — 4 component files updated (ReadingCard, TransitCard, AtmosphericBackground, Badge)
+- [x] Phase 6 — `tsc --noEmit` = 0 errors
+- [x] Git commit — ce9f7d9 on feature/phase-5-counsel
