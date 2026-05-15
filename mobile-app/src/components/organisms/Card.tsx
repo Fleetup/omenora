@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
-import { View, StyleSheet, ViewStyle, LayoutChangeEvent } from 'react-native'
+import React from 'react'
+import { View, StyleSheet, ViewStyle } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
-import CardGraph from '../../../assets/svg-bg/Card-Graph.svg'
 import { cardTokens, radius, layout, tokens } from '../../design/tokens'
 
 export interface CardProps {
@@ -132,12 +131,6 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const canonical = resolveVariant(variant)
   const pad = paddingMap[padding]
-  const [cardW, setCardW] = useState(0)
-  const [cardH, setCardH] = useState(0)
-  const onLayout = (e: LayoutChangeEvent) => {
-    setCardW(e.nativeEvent.layout.width)
-    setCardH(e.nativeEvent.layout.height)
-  }
 
   if (canonical === 'premium' || canonical === 'featured' || canonical === 'accent-navy' || canonical === 'accent-rust') {
     const cfg = gradientConfig[canonical]
@@ -145,7 +138,7 @@ export const Card: React.FC<CardProps> = ({
       ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }
       : {}
     return (
-      <View style={[{ borderRadius: cfg.borderRadius, overflow: 'hidden' }, border, style]} onLayout={onLayout}>
+      <View style={[{ borderRadius: cfg.borderRadius, overflow: 'hidden' }, border, style]}>
         <LinearGradient
           colors={cfg.colors}
           start={cfg.start}
@@ -154,15 +147,6 @@ export const Card: React.FC<CardProps> = ({
         >
           <BlurView intensity={20} tint="dark" style={styles.fill}>
             <View style={styles.glassTint} />
-            {typeof CardGraph === 'function' && cardW > 0 && (
-              <View style={styles.graphicOverlay} pointerEvents="none">
-                <CardGraph
-                  width={cardW}
-                  height={cardH}
-                  preserveAspectRatio="xMidYMid slice"
-                />
-              </View>
-            )}
             <View style={{ padding: pad }}>
               {children}
             </View>
@@ -175,7 +159,6 @@ export const Card: React.FC<CardProps> = ({
   const cfg = solidConfig[canonical]
   return (
     <View
-      onLayout={onLayout}
       style={[
         styles.shell,
         {
@@ -189,15 +172,6 @@ export const Card: React.FC<CardProps> = ({
     >
       <BlurView intensity={20} tint="dark" style={styles.fill}>
         <View style={styles.glassTint} />
-        {typeof CardGraph === 'function' && cardW > 0 && (
-          <View style={styles.graphicOverlay} pointerEvents="none">
-            <CardGraph
-              width={cardW}
-              height={cardH}
-              preserveAspectRatio="xMidYMid slice"
-            />
-          </View>
-        )}
         <View style={{ padding: pad }}>
           {children}
         </View>
@@ -216,9 +190,5 @@ const styles = StyleSheet.create({
   glassTint: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: tokens.specialty.glassTint,
-  },
-  graphicOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.05,
   },
 })
