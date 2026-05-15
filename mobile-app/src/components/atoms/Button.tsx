@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import type { LucideIcon } from 'lucide-react-native'
 import {
@@ -82,6 +83,11 @@ const PremiumButtonShell: React.FC<{
         colors={tokens.specialty.premiumBtnGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <BlurView
+        intensity={28}
+        tint="dark"
         style={styles.premiumBlur}
       >
         <View style={styles.premiumSatOverlay} />
@@ -95,7 +101,7 @@ const PremiumButtonShell: React.FC<{
             <Text style={styles.premiumLabel}>{label}</Text>
           </View>
         )}
-      </LinearGradient>
+      </BlurView>
     </Pressable>
   )
 }
