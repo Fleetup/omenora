@@ -135,7 +135,7 @@ export default function AtmosphericBackground({
               width={SCREEN_W}
               height={SCREEN_H}
               style={styles.graphicSvg}
-              preserveAspectRatio="xMidYMid meet"
+              preserveAspectRatio="xMidYMid slice"
               fill="rgba(255,255,255,1)"
             />
           </View>
@@ -302,9 +302,7 @@ export default function AtmosphericBackground({
 const styles = StyleSheet.create({
   graphicOverlay: {
     ...StyleSheet.absoluteFillObject,
-    opacity:        0.10,
-    alignItems:     'center',
-    justifyContent: 'center',
+    opacity: 0.10,
   },
   graphicSvg: {
     width:  SCREEN_W,
