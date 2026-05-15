@@ -6,6 +6,7 @@ import { ArchetypeIcon } from '../atoms/ArchetypeIcon'
 import { ZodiacSymbol } from '../atoms/ZodiacSymbol'
 import { accent, specialty, text } from '../../design/tokens/colors'
 import { space } from '../../design/tokens/spacing'
+import { tokens } from '../../design/tokens'
 
 const PHASE_IMAGES: Record<string, number> = {
   'New Moon':       require('../../../assets/hero/moon-phases/hero_new_moon.webp'),
@@ -49,14 +50,14 @@ export default function MoonPhaseHero({
           style={StyleSheet.absoluteFill}
         />
 
-        {/* Scrim: transparent top → semi-transparent bottom — does NOT go fully opaque */}
+        {/* Scrim: transparent top → fully opaque at bottom — complete coverage */}
         <LinearGradient
           colors={[
             specialty.heroScrimTransparent,
             specialty.heroScrimTransparent,
-            'rgba(21,17,13,0.55)',
+            specialty.heroScrim,
           ]}
-          locations={[0, 0.40, 1]}
+          locations={[0, 0.35, 1]}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
         />
@@ -104,9 +105,9 @@ export default function MoonPhaseHero({
         </View>
       </View>
 
-      {/* ── Bottom bleed: extends the fade seamlessly into content below ── */}
+      {/* ── Bottom bleed: opaque at top → transparent at bottom, fades INTO screen bg ── */}
       <LinearGradient
-        colors={['rgba(21,17,13,0.55)', specialty.heroScrim]}
+        colors={[specialty.heroScrim, tokens.surface.base]}
         locations={[0, 1]}
         style={styles.bottomBleed}
         pointerEvents="none"
@@ -117,15 +118,15 @@ export default function MoonPhaseHero({
 
 const styles = StyleSheet.create({
   wrapper: {
-    // No overflow:hidden here — lets bottomBleed render below outer
+    // No overflow here — bottomBleed must extend below
   },
   outer: {
     height:   320,
-    overflow: 'hidden',
+    overflow: 'hidden', // clips symbols and any absolute children inside the image zone
   },
   bottomBleed: {
-    height:      80,
-    marginTop:   -1, // seam-seal against the outer bottom edge
+    height:    120,
+    marginTop: -120, // overlap back into the hero image for smooth dissolve
   },
   content: {
     padding: 0,
