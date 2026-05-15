@@ -100,9 +100,9 @@ export default function AtmosphericBackground({
   vignette        = 'none',
   children,
 }: AtmosphericBackgroundProps) {
-  // 'standard' preset: top-center + bottom-center glows, grain, graphic SVG
+  // 'standard' preset: hero intensity, top-center + bottom-center glows, grain, graphic SVG
   const isStandard    = variant === 'standard'
-  const resolvedVariant: 'hero' | 'default' | 'muted' = isStandard ? 'default' : variant
+  const resolvedVariant: 'hero' | 'default' | 'muted' = isStandard ? 'hero' : variant
   const resolvedPosition  = isStandard ? 'top-center'    : glowPosition
   const resolvedCounter   = isStandard ? true            : counterGlow
   const resolvedGrain     = isStandard ? true            : grain
