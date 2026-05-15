@@ -2,6 +2,8 @@ import React from 'react'
 import { View, StyleSheet, ViewStyle } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
+import PlanetGraph from '../../../assets/svg-bg/Card-Graphs/Planet-Graph-Mobile.svg'
+import StarGraph from '../../../assets/svg-bg/Card-Graphs/Star-Graph-Mobile.svg'
 import { cardTokens, radius, layout, tokens } from '../../design/tokens'
 
 export interface CardProps {
@@ -137,6 +139,12 @@ export const Card: React.FC<CardProps> = ({
     const border = canonical === 'premium'
       ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }
       : {}
+    const GraphComponent = (canonical === 'premium' || canonical === 'featured' || canonical === 'accent-navy')
+      ? StarGraph
+      : PlanetGraph  // accent-rust
+    const graphFill = canonical === 'accent-rust'
+      ? tokens.accent.primary
+      : 'rgba(255,255,255,1)'
     return (
       <View style={[{ borderRadius: cfg.borderRadius, overflow: 'hidden' }, border, style]}>
         <LinearGradient
@@ -147,6 +155,16 @@ export const Card: React.FC<CardProps> = ({
         >
           <BlurView intensity={20} tint="dark" style={styles.fill}>
             <View style={styles.glassTint} />
+            {typeof GraphComponent === 'function' && (
+              <View style={styles.graphOverlay} pointerEvents="none">
+                <GraphComponent
+                  width={220}
+                  height={220}
+                  fill={graphFill}
+                  preserveAspectRatio="xMaxYMid meet"
+                />
+              </View>
+            )}
             <View style={{ padding: pad }}>
               {children}
             </View>
@@ -157,6 +175,8 @@ export const Card: React.FC<CardProps> = ({
   }
 
   const cfg = solidConfig[canonical]
+  // locked variant gets no graph decoration
+  const showGraph = canonical !== 'locked'
   return (
     <View
       style={[
@@ -172,6 +192,16 @@ export const Card: React.FC<CardProps> = ({
     >
       <BlurView intensity={20} tint="dark" style={styles.fill}>
         <View style={styles.glassTint} />
+        {showGraph && typeof PlanetGraph === 'function' && (
+          <View style={styles.graphOverlay} pointerEvents="none">
+            <PlanetGraph
+              width={220}
+              height={220}
+              fill={tokens.accent.primary}
+              preserveAspectRatio="xMaxYMid meet"
+            />
+          </View>
+        )}
         <View style={{ padding: pad }}>
           {children}
         </View>
@@ -190,5 +220,11 @@ const styles = StyleSheet.create({
   glassTint: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: tokens.specialty.glassTint,
+  },
+  graphOverlay: {
+    position: 'absolute',
+    right:    -40,
+    bottom:   -40,
+    opacity:  0.07,
   },
 })

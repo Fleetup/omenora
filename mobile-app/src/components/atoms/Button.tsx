@@ -9,6 +9,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
+import SunGraph from '../../../assets/svg-bg/Card-Graphs/Sun-Graph-Mobile.svg'
 import type { LucideIcon } from 'lucide-react-native'
 import {
   tokens,
@@ -91,6 +92,16 @@ const PremiumButtonShell: React.FC<{
         style={styles.premiumBlur}
       >
         <View style={styles.premiumSatOverlay} />
+        {typeof SunGraph === 'function' && (
+          <View style={styles.btnGraphOverlay} pointerEvents="none">
+            <SunGraph
+              width={80}
+              height={80}
+              fill="rgba(255,255,255,0.12)"
+              preserveAspectRatio="xMidYMid meet"
+            />
+          </View>
+        )}
         {loading ? (
           <ActivityIndicator size="small" color={tokens.text.primary} />
         ) : (
@@ -189,6 +200,12 @@ const styles = StyleSheet.create({
   premiumSatOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: tokens.specialty.premiumBtnOverlay,
+  },
+  btnGraphOverlay: {
+    position:  'absolute',
+    right:     -20,
+    top:       '50%',
+    marginTop: -40, // half of height=80 to center vertically
   },
   premiumInner: {
     flexDirection: 'row',
