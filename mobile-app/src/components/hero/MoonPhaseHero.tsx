@@ -62,7 +62,15 @@ export default function MoonPhaseHero({
           pointerEvents="none"
         />
 
-        {/* Content layer */}
+        {/* Bottom fade: absolute bottom of image → surface.base — only fades the image, not text */}
+        <LinearGradient
+          colors={['rgba(21,17,13,0)', tokens.surface.base]}
+          locations={[0, 1]}
+          style={styles.bottomBleed}
+          pointerEvents="none"
+        />
+
+        {/* Content layer — renders above all gradients */}
         <View style={[StyleSheet.absoluteFill, styles.content]}>
 
           {/* Moon phase caption — top-right */}
@@ -112,13 +120,6 @@ export default function MoonPhaseHero({
         </View>
       </View>
 
-      {/* ── Bottom bleed: absolutely positioned over the image bottom → fades into screen bg ── */}
-      <LinearGradient
-        colors={['rgba(21,17,13,0)', tokens.surface.base]}
-        locations={[0, 1]}
-        style={styles.bottomBleed}
-        pointerEvents="none"
-      />
     </View>
   )
 }
@@ -132,8 +133,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden', // clips symbols and any absolute children inside the image zone
   },
   bottomBleed: {
-    height:    200,
-    marginTop: -200, // overlap back into the hero bottom — fades image into screen bg
+    position: 'absolute',
+    bottom:   0,
+    left:     0,
+    right:    0,
+    height:   200, // fades bottom 200px of the image into surface.base
   },
   content: {
     padding: 0,
