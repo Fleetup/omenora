@@ -112,7 +112,7 @@ export default function AtmosphericBackground({
   const glowRadius  = SCREEN_W * GLOW_RADIUS[resolvedVariant]
   const primary     = GLOW_COORDS[resolvedPosition]
   const counterPos  = GLOW_COORDS[OPPOSITE_CORNER[resolvedPosition]]
-  const counterR    = SCREEN_W * 0.75  // bottom-center counter glow needs wider radius to fill screen base
+  const counterR    = glowRadius  // mirror of primary — same radius
 
   return (
     <>
@@ -173,9 +173,10 @@ export default function AtmosphericBackground({
                 fy={counterPos.cy}
                 gradientUnits="userSpaceOnUse"
               >
-                <Stop offset="0"   stopColor={tokens.accent.primary} stopOpacity="0.20" />
-                <Stop offset="0.5" stopColor={tokens.accent.primary} stopOpacity="0.07" />
-                <Stop offset="1"   stopColor={tokens.accent.primary} stopOpacity="0"    />
+                <Stop offset="0"    stopColor={tokens.accent.primary} stopOpacity={stops[0]} />
+                <Stop offset="0.35" stopColor={tokens.accent.primary} stopOpacity={stops[1]} />
+                <Stop offset="0.7"  stopColor={tokens.accent.primary} stopOpacity={stops[2]} />
+                <Stop offset="1"    stopColor={tokens.accent.primary} stopOpacity={stops[3]} />
               </RadialGradient>
             )}
             {buttonHalo && (
