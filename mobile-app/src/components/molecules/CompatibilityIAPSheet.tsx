@@ -75,7 +75,7 @@ export const CompatibilityIAPSheet: React.FC<CompatibilityIAPSheetProps> = ({
             style={styles.sheet}
             accessibilityLabel="Compatibility purchase options"
           >
-            <Card variant="raised" padding="default">
+            <Card variant="elevated" padding="default">
               {compatibilityAddonOffering === null ? (
                 <Text variant="body" color="tertiary" style={styles.loadingText}>
                   Loading purchase options…

@@ -84,7 +84,7 @@ export const BoostPackSheet: React.FC<BoostPackSheetProps> = ({
             style={styles.sheet}
             accessibilityLabel="Counsel boost pack options"
           >
-            <Card variant="raised" padding="default">
+            <Card variant="elevated" padding="default">
               {boostPacksOffering === null ? (
                 <Text variant="body" color="tertiary" style={styles.loadingText}>
                   Loading purchase options…

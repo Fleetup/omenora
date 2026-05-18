@@ -89,7 +89,7 @@ export const CalendarIAPSheet: React.FC<CalendarIAPSheetProps> = ({
             style={styles.sheet}
             accessibilityLabel="Calendar purchase options"
           >
-            <Card variant="raised" padding="default">
+            <Card variant="elevated" padding="default">
               {calendarProduct === null ? (
                 <Text variant="body" color="tertiary" style={styles.loadingText}>
                   Loading purchase options…
