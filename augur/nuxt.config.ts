@@ -23,6 +23,7 @@ export default defineNuxtConfig({
     stripeDailyPriceId: '',
     // stripeCompatPlusPriceId: '', // DEPRECATED — Compatibility Plus subscription removed (Phase 2)
     stripeCompatSinglePriceId: '',
+    stripeFoundingPriceId: '',
     emailJobSecret: '',
     cronSecret: '',
     inngestEventKey: '',
