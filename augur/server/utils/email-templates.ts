@@ -1,4 +1,5 @@
 import { unsubscribeToken } from '~~/server/api/unsubscribe.get'
+import { EMAIL_ADDRESS_LINE, emailFooterText, emailFooterHtml, emailFooterHtmlMinimal } from '~~/server/utils/email-footer'
 
 export interface EmailPersonalization {
   email: string
@@ -527,12 +528,12 @@ export function buildTestimonialRequestEmail(personalization: {
 <body style="margin:0;padding:40px 20px;background:#ffffff;font-family:Georgia,serif;font-size:16px;color:#333;line-height:1.7;">
 ${bodyText.split('\n\n').map(p => `<p style="margin:0 0 16px 0;">${p.replace(/\n/g, '<br>')}</p>`).join('\n')}
 <p style="margin:24px 0 0 0;font-size:12px;color:#aaa;">OMENORA</p>
+${emailFooterHtmlMinimal(`https://omenora.com/api/unsubscribe?token=invalid&e=`)}
 </body>
 </html>`
 
   return { subject, html }
 }
-
 
 // ── Founding Member Confirmation Email ────────────────────────────────────────
 
@@ -728,6 +729,7 @@ export function buildFoundingMemberEmail(data: FoundingMemberEmailData): {
 
   return { subject, html, text }
 }
+
 function buildHtmlEmail({
   emoji,
   title,
@@ -777,7 +779,7 @@ function buildHtmlEmail({
     `---`,
     `For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.`,
     ``,
-    `OMENORA · To unsubscribe: ${unsubUrl}`,
+    emailFooterText(unsubUrl),
   ].join('\n')
 
   const html = `<!DOCTYPE html>
@@ -855,14 +857,7 @@ function buildHtmlEmail({
             </td>
           </tr>
 
-          <!-- Unsubscribe -->
-          <tr>
-            <td style="text-align:center;padding-top:16px;border-top:1px solid #1a1a1a;">
-              <p style="margin:0;font-size:11px;color:#444;font-family:sans-serif;">
-                OMENORA · <a href="${unsubUrl}" style="color:#555;">Unsubscribe</a>
-              </p>
-            </td>
-          </tr>
+          ${emailFooterHtml(unsubUrl)}
 
         </table>
       </td>
