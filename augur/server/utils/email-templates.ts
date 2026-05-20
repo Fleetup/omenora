@@ -533,6 +533,201 @@ ${bodyText.split('\n\n').map(p => `<p style="margin:0 0 16px 0;">${p.replace(/\n
   return { subject, html }
 }
 
+
+// ── Founding Member Confirmation Email ────────────────────────────────────────
+
+export interface FoundingMemberEmailData {
+  email: string
+}
+
+/**
+ * Builds the transactional confirmation email for a founding-member purchase.
+ * Follows the same dark-theme visual identity as the abandonment-sequence emails.
+ * No CTA button — this is a confirmation, not a conversion email.
+ * Returns both html and text built from the same content source.
+ */
+export function buildFoundingMemberEmail(data: FoundingMemberEmailData): {
+  subject: string
+  html: string
+  text: string
+} {
+  const subject = `You're in. Welcome to OMENORA, Founding Member.`
+
+  const benefits = [
+    { label: 'Lifetime 50% off subscriptions', detail: 'When paid tiers launch, you pay half. Forever.' },
+    { label: 'Early access to Compatibility & Counsel', detail: 'First to use features before public release.' },
+    { label: 'Founder badge in the app', detail: 'Visible on your profile at public launch.' },
+    { label: 'Name in the credits', detail: 'Listed at public launch as a founding member.' },
+  ]
+
+  const unsubUrl = `https://omenora.com/api/unsubscribe?token=invalid&e=${encodeURIComponent(data.email)}`
+
+  // ── Plain-text version ──────────────────────────────────────────────────────
+  const text = [
+    `OMENORA`,
+    ``,
+    `You're in. Welcome, Founding Member.`,
+    ``,
+    `Your founding membership is confirmed. This is the beginning of something we're building carefully — and you're part of it from day one.`,
+    ``,
+    `What you've unlocked:`,
+    ``,
+    ...benefits.map(b => `- ${b.label}\n  ${b.detail}`),
+    ``,
+    `What happens next:`,
+    ``,
+    `Paid features — Compatibility and Counsel — are still in development. You'll receive periodic updates as we build, and you'll be the first we contact when features go live. No specific launch date promised, but you'll know before anyone else.`,
+    ``,
+    `Refund policy:`,
+    ``,
+    `14 days, no questions asked. Email support@omenora.com with the subject "Founding Member Refund." Full details: https://omenora.com/refund-policy`,
+    ``,
+    `Thank you for being here from the start.`,
+    ``,
+    `— The OMENORA Team`,
+    ``,
+    `---`,
+    `For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.`,
+    ``,
+    emailFooterText(unsubUrl),
+  ].join('\n')
+
+  // ── HTML version ────────────────────────────────────────────────────────────
+  const benefitsHtml = benefits.map(b => `
+            <tr>
+              <td style="padding:12px 0;border-bottom:1px solid #1e1e28;">
+                <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">
+                  ${b.label}
+                </p>
+                <p style="margin:0;font-size:13px;color:#7a7060;font-family:Georgia,serif;line-height:1.5;">
+                  ${b.detail}
+                </p>
+              </td>
+            </tr>`).join('')
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0a0a0f;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0f;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding-bottom:32px;text-align:center;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.2em;color:#666;text-transform:uppercase;">OMENORA</p>
+            </td>
+          </tr>
+
+          <!-- Status badge -->
+          <tr>
+            <td style="padding-bottom:20px;text-align:center;">
+              <span style="display:inline-block;font-size:10px;letter-spacing:0.18em;color:#4B3F8C;text-transform:uppercase;border:1px solid #2a2050;padding:5px 14px;">
+                Founding Member
+              </span>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding-bottom:24px;text-align:center;">
+              <h1 style="margin:0;font-size:26px;font-weight:400;color:#f0ece4;font-family:Georgia,serif;line-height:1.35;font-style:italic;">
+                You're in. Welcome.
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <hr style="border:none;border-top:1px solid #222;margin:0;">
+            </td>
+          </tr>
+
+          <!-- Opening -->
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+              <p style="margin:0 0 14px;">Your founding membership is confirmed.</p>
+              <p style="margin:0;">This is the beginning of something we're building carefully — and you're part of it from day one.</p>
+            </td>
+          </tr>
+
+          <!-- Benefits heading -->
+          <tr>
+            <td style="padding-bottom:12px;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.15em;color:#4B3F8C;text-transform:uppercase;font-family:sans-serif;">What you've unlocked</p>
+            </td>
+          </tr>
+
+          <!-- Benefits table -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${benefitsHtml}
+              </table>
+            </td>
+          </tr>
+
+          <!-- What happens next -->
+          <tr>
+            <td style="padding-bottom:12px;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.15em;color:#4B3F8C;text-transform:uppercase;font-family:sans-serif;">What happens next</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+              <p style="margin:0;">Paid features — Compatibility and Counsel — are still in development. You'll receive periodic updates as we build, and you'll be the first we contact when features go live. No specific launch date promised, but you'll know before anyone else.</p>
+            </td>
+          </tr>
+
+          <!-- Refund reminder -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <div style="border-left:2px solid #2a2050;padding:14px 18px;background:rgba(75,63,140,0.06);">
+                <p style="margin:0 0 6px;font-size:12px;color:#7a7060;font-family:Georgia,serif;line-height:1.6;">
+                  <strong style="color:#a09880;">14-day refund policy.</strong> If this isn't right for you, email
+                  <a href="mailto:support@omenora.com" style="color:#a09880;">support@omenora.com</a>
+                  within 14 days — no questions asked. Full details at
+                  <a href="https://omenora.com/refund-policy" style="color:#a09880;">omenora.com/refund-policy</a>.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Closing -->
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+              <p style="margin:0 0 14px;">Thank you for being here from the start.</p>
+              <p style="margin:0;color:#7a7060;">— The OMENORA Team</p>
+            </td>
+          </tr>
+
+          <!-- Disclaimer -->
+          <tr>
+            <td style="text-align:center;padding:16px 0 8px;">
+              <p style="margin:0;font-size:10px;color:#3a3a3a;font-family:sans-serif;line-height:1.5;">
+                For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.
+              </p>
+            </td>
+          </tr>
+
+          ${emailFooterHtml(unsubUrl)}
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+
+  return { subject, html, text }
+}
 function buildHtmlEmail({
   emoji,
   title,
