@@ -36,6 +36,8 @@
           <NuxtLink to="/privacy" class="annotation footer-link">Privacy</NuxtLink>
           <span class="annotation" style="opacity:0.3">·</span>
           <NuxtLink to="/terms" class="annotation footer-link">Terms</NuxtLink>
+          <span class="annotation" style="opacity:0.3">·</span>
+          <NuxtLink to="/refund-policy" class="annotation footer-link">Refunds</NuxtLink>
         </nav>
 
         <span class="annotation">All rights reserved</span>

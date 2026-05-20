@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { CalendarSchema } from '~~/server/utils/ai-schemas'
 import { he } from '~~/server/utils/report-email-builder'
+import { EMAIL_FOOTER_HTML_DIV_MAILTO, EMAIL_FOOTER_TEXT_MAILTO } from '~~/server/utils/email-footer'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -164,10 +165,7 @@ export default defineEventHandler(async (event) => {
       <p style="font-size:10px; color:#181620; margin:0 0 6px;">
         ${he(email)}
       </p>
-      <p style="font-size:10px; color:#181620; margin:0;">
-        OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·
-        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe" style="color:#2a2840; text-decoration:underline;">Unsubscribe</a>
-      </p>
+      ${EMAIL_FOOTER_HTML_DIV_MAILTO}
     </div>
 
   </div>
@@ -200,8 +198,7 @@ export default defineEventHandler(async (event) => {
     ].filter(Boolean).join('\n')).join('\n\n'),
     ``,
     `---`,
-    `OMENORA · omenora.com`,
-    `To unsubscribe, email unsubscribe@omenora.com`,
+    EMAIL_FOOTER_TEXT_MAILTO,
   ].filter(s => s !== '').join('\n')
 
   const { error } = await resend.emails.send({

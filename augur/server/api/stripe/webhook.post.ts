@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
-import { buildTestimonialRequestEmail } from '~~/server/utils/email-templates'
+import { buildTestimonialRequestEmail, buildFoundingMemberEmail } from '~~/server/utils/email-templates'
 import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
 import { inngest, subscriberWelcomeSend, stripeCheckoutCompleted } from '~~/inngest/client'
@@ -132,18 +132,24 @@ export default defineEventHandler(async (event) => {
 
   // ── B-4: Chargeback logging ────────────────────────────────────────────────
   if (stripeEvent.type === 'charge.dispute.created') {
-    try {
-      const dispute = stripeEvent.data.object as Stripe.Dispute
-      const chargeId = typeof dispute.charge === 'string' ? dispute.charge : dispute.charge?.id
+    const disputeObj = stripeEvent.data.object as Stripe.Dispute
+    const disputeChargeId = typeof disputeObj.charge === 'string' ? disputeObj.charge : disputeObj.charge?.id
 
+    // Hoist PI extraction so it is accessible to the founding row update below
+    let disputePi: string | null = null
+    try {
+      const disputeCharge = await stripe.charges.retrieve(disputeChargeId ?? '', { expand: ['payment_intent'] })
+      const disputePiObj = disputeCharge.payment_intent as Stripe.PaymentIntent | null
+      disputePi = disputePiObj?.id ?? null
+    } catch { /* best effort */ }
+
+    try {
       // Look up the original charge to get payment_intent, then find our report metadata
       let reportMeta: Record<string, string> = {}
-      if (chargeId) {
+      if (disputeChargeId) {
         try {
-          const charge = await stripe.charges.retrieve(chargeId, { expand: ['payment_intent'] })
-          const pi = charge.payment_intent as Stripe.PaymentIntent | null
-          const checkoutSessions = pi?.id
-            ? await stripe.checkout.sessions.list({ payment_intent: pi.id, limit: 1 })
+          const checkoutSessions = disputePi
+            ? await stripe.checkout.sessions.list({ payment_intent: disputePi, limit: 1 })
             : null
           reportMeta = checkoutSessions?.data?.[0]?.metadata ?? {}
         } catch { /* best effort — log what we have */ }
@@ -163,12 +169,12 @@ export default defineEventHandler(async (event) => {
 
       console.warn('[B-4] chargeback', {
         event: 'charge.dispute.created',
-        dispute_id: dispute.id,
-        charge_id: chargeId,
-        amount_cents: dispute.amount,
-        currency: dispute.currency,
-        reason: dispute.reason,
-        status: dispute.status,
+        dispute_id: disputeObj.id,
+        charge_id: disputeChargeId,
+        amount_cents: disputeObj.amount,
+        currency: disputeObj.currency,
+        reason: disputeObj.reason,
+        status: disputeObj.status,
         archetype: dbRow?.archetype ?? reportMeta.archetype ?? 'unknown',
         region: dbRow?.region ?? reportMeta.region ?? 'unknown',
         language: reportMeta.language ?? 'unknown',
@@ -178,19 +184,53 @@ export default defineEventHandler(async (event) => {
     } catch (err: unknown) {
       console.error('[B-4] chargeback logging failed (non-blocking):', err instanceof Error ? err.message : String(err))
     }
+
+    // ── Founding-member dispute row update (non-blocking) ─────────────────────
+    if (disputePi) {
+      try {
+        const disputeSupabase = createSupabaseAdmin()
+        const { data: foundingDisputeRow } = await disputeSupabase
+          .from('founding_members')
+          .select('id')
+          .eq('stripe_payment_intent_id', disputePi)
+          .maybeSingle()
+
+        if (foundingDisputeRow) {
+          const { error: disputeUpdateErr } = await disputeSupabase
+            .from('founding_members')
+            .update({ status: 'disputed' })
+            .eq('stripe_payment_intent_id', disputePi)
+
+          if (disputeUpdateErr) {
+            console.error('[stripe-webhook] founding_member dispute update failed:', { pi: disputePi, error: disputeUpdateErr.message })
+          } else {
+            console.info('[stripe-webhook] founding_member marked disputed:', { pi: disputePi })
+          }
+        }
+        // If no founding row found, dispute belongs to a different product — no action needed.
+      } catch (foundingDisputeEx: unknown) {
+        console.error('[stripe-webhook] founding_member dispute row update exception (non-blocking):', {
+          pi: disputePi,
+          error: foundingDisputeEx instanceof Error ? foundingDisputeEx.message : String(foundingDisputeEx),
+        })
+      }
+    }
+
     return { received: true }
   }
 
   // ── B-4: Refund logging ──────────────────────────────────────────────────────
   if (stripeEvent.type === 'charge.refunded') {
-    try {
-      const charge = stripeEvent.data.object as Stripe.Charge
-      const pi = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id
+    const refundCharge = stripeEvent.data.object as Stripe.Charge
+    const refundPi = typeof refundCharge.payment_intent === 'string'
+      ? refundCharge.payment_intent
+      : refundCharge.payment_intent?.id
 
+    try {
       let reportMeta: Record<string, string> = {}
-      if (pi) {
+      if (refundPi) {
         try {
-          const sessions = await stripe.checkout.sessions.list({ payment_intent: pi, limit: 1 })
+          const sessions = await stripe.checkout.sessions.list({ payment_intent: refundPi, limit: 1 })
           reportMeta = sessions.data?.[0]?.metadata ?? {}
         } catch { /* best effort */ }
       }
@@ -206,13 +246,13 @@ export default defineEventHandler(async (event) => {
         dbRow = data
       }
 
-      const refundAmountCents = charge.amount_refunded
+      const refundAmountCents = refundCharge.amount_refunded
       console.warn('[B-4] refund', {
         event: 'charge.refunded',
-        charge_id: charge.id,
-        payment_intent: pi,
+        charge_id: refundCharge.id,
+        payment_intent: refundPi,
         refund_amount_cents: refundAmountCents,
-        currency: charge.currency,
+        currency: refundCharge.currency,
         archetype: dbRow?.archetype ?? reportMeta.archetype ?? 'unknown',
         region: dbRow?.region ?? reportMeta.region ?? 'unknown',
         language: reportMeta.language ?? 'unknown',
@@ -222,6 +262,38 @@ export default defineEventHandler(async (event) => {
     } catch (err: unknown) {
       console.error('[B-4] refund logging failed (non-blocking):', err instanceof Error ? err.message : String(err))
     }
+
+    // ── Founding-member refund row update (non-blocking) ──────────────────────
+    if (refundPi) {
+      try {
+        const refundSupabase = createSupabaseAdmin()
+        const { data: foundingRefundRow } = await refundSupabase
+          .from('founding_members')
+          .select('id')
+          .eq('stripe_payment_intent_id', refundPi)
+          .maybeSingle()
+
+        if (foundingRefundRow) {
+          const { error: refundUpdateErr } = await refundSupabase
+            .from('founding_members')
+            .update({ status: 'refunded', refunded_at: new Date().toISOString() })
+            .eq('stripe_payment_intent_id', refundPi)
+
+          if (refundUpdateErr) {
+            console.error('[stripe-webhook] founding_member refund update failed:', { pi: refundPi, error: refundUpdateErr.message })
+          } else {
+            console.info('[stripe-webhook] founding_member marked refunded:', { pi: refundPi })
+          }
+        }
+        // If no founding row found, refund belongs to a different product — no action needed.
+      } catch (foundingRefundEx: unknown) {
+        console.error('[stripe-webhook] founding_member refund row update exception (non-blocking):', {
+          pi: refundPi,
+          error: foundingRefundEx instanceof Error ? foundingRefundEx.message : String(foundingRefundEx),
+        })
+      }
+    }
+
     return { received: true }
   }
 
@@ -429,6 +501,116 @@ export default defineEventHandler(async (event) => {
     }
 
     return { received: true, processed: 'compatibility', sessionId }
+  }
+
+  // ── Handle founding-member checkout ─────────────────────────────────────────
+  if (meta.type === 'founding_member') {
+    const foundingEmail = (session.customer_details?.email || '').toLowerCase().trim()
+    const paymentIntent = typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : (session.payment_intent as Stripe.PaymentIntent | null)?.id ?? null
+    const customerId = typeof session.customer === 'string' ? session.customer : null
+
+    // Retrieve the charge id from the PaymentIntent if available (best-effort)
+    let chargeIdForFounding: string | null = null
+    if (paymentIntent) {
+      try {
+        const pi = await stripe.paymentIntents.retrieve(paymentIntent, { expand: ['latest_charge'] })
+        const latestCharge = pi.latest_charge
+        chargeIdForFounding = typeof latestCharge === 'string'
+          ? latestCharge
+          : (latestCharge as Stripe.Charge | null)?.id ?? null
+      } catch { /* best-effort */ }
+    }
+
+    // Locate the pending row — must exist or this was not our session
+    const foundingSupabase = createSupabaseAdmin()
+    const { data: foundingRow, error: foundingLookupErr } = await foundingSupabase
+      .from('founding_members')
+      .select('id, status')
+      .eq('stripe_checkout_session_id', sessionId)
+      .maybeSingle()
+
+    if (foundingLookupErr) {
+      console.error('[stripe-webhook] founding_members lookup error:', { sessionId, error: foundingLookupErr.message })
+    }
+
+    if (!foundingRow) {
+      // No row — our system never created this session. Log and ack to Stripe.
+      console.error('[stripe-webhook] founding_member — no row for session, possible external session:', { sessionId })
+      return { received: true, warning: 'founding_no_row', sessionId }
+    }
+
+    // Application-level idempotency — second line of defense after stripe_webhook_events
+    if (foundingRow.status === 'paid') {
+      console.info('[stripe-webhook] founding_member — already paid, ack duplicate:', { sessionId })
+      return { received: true, skipped: 'founding_already_paid', sessionId }
+    }
+
+    // Update row to paid in a single statement
+    const { error: foundingUpdateErr } = await foundingSupabase
+      .from('founding_members')
+      .update({
+        status:                    'paid',
+        paid_at:                   new Date().toISOString(),
+        stripe_payment_intent_id:  paymentIntent,
+        stripe_charge_id:          chargeIdForFounding,
+        stripe_customer_id:        customerId,
+        email:                     foundingEmail || null,
+      })
+      .eq('stripe_checkout_session_id', sessionId)
+
+    if (foundingUpdateErr) {
+      console.error('[stripe-webhook] founding_members update failed:', { sessionId, error: foundingUpdateErr.message })
+      // Return 200 — Stripe must not retry; we have the event recorded in stripe_webhook_events.
+      // Manual reconciliation required.
+      return { received: true, warning: 'founding_update_failed', sessionId }
+    }
+
+    console.info('[stripe-webhook] founding_member paid:', { sessionId, paymentIntent, customerId })
+
+    // Send confirmation email if we have a valid address
+    if (isValidEmail(foundingEmail)) {
+      const resendKey = config.resendApiKey as string | undefined
+      if (resendKey) {
+        try {
+          const confirmEmail = buildFoundingMemberEmail({ email: foundingEmail })
+          const resendClient = new Resend(resendKey)
+          const { error: emailErr } = await resendClient.emails.send({
+            from:    'OMENORA <reading@omenora.com>',
+            replyTo: 'support@omenora.com',
+            to:      foundingEmail,
+            subject: confirmEmail.subject,
+            html:    confirmEmail.html,
+            text:    confirmEmail.text,
+            headers: { 'Idempotency-Key': `founding-confirm-${sessionId}` },
+          })
+
+          if (emailErr) {
+            console.error('[stripe-webhook] founding_member confirmation email failed (non-blocking):', { sessionId, error: emailErr })
+          } else {
+            // Stamp confirmation_email_sent_at — best-effort, never re-raises
+            await foundingSupabase
+              .from('founding_members')
+              .update({ confirmation_email_sent_at: new Date().toISOString() })
+              .eq('stripe_checkout_session_id', sessionId)
+
+            console.info('[stripe-webhook] founding_member confirmation email sent:', { sessionId, to: foundingEmail })
+          }
+        } catch (emailEx: unknown) {
+          console.error('[stripe-webhook] founding_member email exception (non-blocking):', {
+            sessionId,
+            error: emailEx instanceof Error ? emailEx.message : String(emailEx),
+          })
+        }
+      } else {
+        console.warn('[stripe-webhook] founding_member — NUXT_RESEND_API_KEY not set, email skipped:', { sessionId })
+      }
+    } else {
+      console.warn('[stripe-webhook] founding_member — no valid email, confirmation skipped:', { sessionId })
+    }
+
+    return { received: true, processed: 'founding_member', sessionId }
   }
 
   // ── Check idempotency: skip if report already saved & email sent ───────────

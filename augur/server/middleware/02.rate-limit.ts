@@ -23,6 +23,8 @@ const RULES: Rule[] = [
   { pattern: /^\/api\/create-/,                             maxRequests: 10, windowMs: 15 * 60_000 },
   { pattern: /^\/api\/calculate-chart/,                     maxRequests: 10, windowMs: 60_000 },
   { pattern: /^\/api\/(?:save|get|check|mark|verify)-/,     maxRequests: 30, windowMs: 60_000 },
+  // Founding-member payment namespace — same protection as other payment endpoints
+  { pattern: /^\/api\/founding\//,                          maxRequests: 10, windowMs: 15 * 60_000 },
   { pattern: /^\/api\/stripe\/webhook/,                     maxRequests: 200, windowMs: 60_000 },
   { pattern: /^\/api\//,                                    maxRequests: 60, windowMs: 60_000 },
 ]

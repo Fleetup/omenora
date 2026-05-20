@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { CompatibilitySchema, BirthChartSchema, type BirthChartType } from '~~/server/utils/ai-schemas'
 import { he } from '~~/server/utils/report-email-builder'
+import { EMAIL_BRAND_LINE, EMAIL_ADDRESS_LINE, EMAIL_FOOTER_TEXT_MAILTO } from '~~/server/utils/email-footer'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -249,10 +250,13 @@ export default defineEventHandler(async (event) => {
         This reading was generated for ${he(email)}
       </p>
 
-      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0;">
-        OMENORA &middot; 1309 Coffeen Ave STE 1200, Sheridan, WY 82801
+      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0 0 4px;">
+        ${EMAIL_BRAND_LINE}
       </p>
-      <p style="font-size: 10px; color: rgba(255,255,255,0.10); margin: 6px 0 0;">
+      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0 0 6px;">
+        ${EMAIL_ADDRESS_LINE}
+      </p>
+      <p style="font-size: 10px; color: rgba(255,255,255,0.10); margin: 0;">
         ${tier === 'subscription'
           ? `<a href="https://omenora.com/account" style="color: rgba(200,180,255,0.4); text-decoration: underline; margin-right: 12px;">Manage your subscription</a><br><span style="font-size: 10px; color: rgba(255,255,255,0.12);">To cancel: click &ldquo;Manage your subscription&rdquo; above &rarr; Cancel plan. Takes 10 seconds.</span>`
           : ''}
@@ -317,10 +321,8 @@ export default defineEventHandler(async (event) => {
       ...(partnerBirthChartNoonFallback ? [`Note: Houses calculated using 12:00 PM as birth time.`] : []),
     ] : []),
     ``,
-    `---`,
-    `OMENORA · omenora.com`,
-    ...(tier === 'subscription' ? [`Manage your subscription: https://omenora.com/account`, `To cancel: visit the link above → Cancel plan. Takes 10 seconds.`] : []),
-    `To unsubscribe, email unsubscribe@omenora.com`,
+    ...(tier === 'subscription' ? [`---`, `Manage your subscription: https://omenora.com/account`, `To cancel: visit the link above → Cancel plan. Takes 10 seconds.`] : []),
+    EMAIL_FOOTER_TEXT_MAILTO,
   ].filter(s => s !== '').join('\n\n')
 
   const { error } = await resend.emails.send({
