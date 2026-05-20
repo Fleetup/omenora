@@ -191,6 +191,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
+const { $trackPurchase } = useNuxtApp()
+
 // ── SEO ────────────────────────────────────────────────────────────────────────
 useSeoMeta({
   title: 'Welcome, founding member — OMENORA',
@@ -240,6 +242,18 @@ async function verifySession(sessionId: string): Promise<void> {
     if (data.status === 'paid' && data.email && data.purchasedAt) {
       stopPolling()
       verifiedData.value = { email: data.email, purchasedAt: data.purchasedAt }
+      pageState.value    = 'paid'
+
+      // ── Purchase pixel — idempotent, matches pattern in report.vue / compatibility.vue ──
+      try {
+        const pixelKey = `omenora_purchase_tracked_${sessionId}`
+        if (!sessionStorage.getItem(pixelKey)) {
+          sessionStorage.setItem(pixelKey, '1')
+          $trackPurchase({ value: 20, currency: 'USD', content_name: 'Founding Membership' })
+        }
+      } catch (pixelErr) {
+        console.warn('[thank-you] trackPurchase error:', pixelErr)
+      }
       return
     }
 

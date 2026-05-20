@@ -244,6 +244,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+const { $trackInitiateCheckout } = useNuxtApp()
+
 // ── SEO ────────────────────────────────────────────────────────────────────────
 useSeoMeta({
   title: 'Founding Membership — OMENORA',
@@ -324,6 +326,12 @@ async function handleCheckout() {
     for (const key of utmKeys) {
       const val = query.get(key)
       if (val) body[key] = val
+    }
+
+    try {
+      $trackInitiateCheckout({ value: 20, currency: 'USD', content_name: 'Founding Membership' })
+    } catch (pixelErr) {
+      console.warn('[founding] trackInitiateCheckout error:', pixelErr)
     }
 
     const res = await $fetch<{ url: string }>('/api/founding/create-checkout', {
