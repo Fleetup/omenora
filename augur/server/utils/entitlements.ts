@@ -28,7 +28,7 @@ const FEATURE_CAPS: Record<string, FeatureCap> = {
   natal_chart:   { cap: 1,  period: 'monthly' },
   forecast:      { cap: 4,  period: 'monthly' },
   compatibility: { cap: 10, period: 'monthly' },
-  counsel:       { cap: 30, period: 'daily' },
+  counsel:       { cap: 30, period: 'monthly' },
 }
 
 const SUGGESTED_PRODUCTS_FREE: Record<'counsel' | 'compatibility', string[]> = {
