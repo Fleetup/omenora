@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { unsubscribeToken } from '~~/server/api/unsubscribe.get'
+import { emailFooterText, emailFooterHtmlDiv } from '~~/server/utils/email-footer'
 
 const SYMBOL_TO_ID: Record<string, string> = {
   '●': 'phoenix',
@@ -488,10 +489,7 @@ export async function sendReportEmail(
       <p style="font-size: 11px; color: rgba(255,255,255,0.1); margin: 0 0 8px;">
         This report was generated for ${sanitizedEmail}
       </p>
-      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0;">
-        OMENORA · 1309 Coffeen Ave STE 1200, Sheridan, WY 82801 ·
-        <a href="${unsubUrl}" style="color: rgba(255,255,255,0.15); text-decoration: underline;">Unsubscribe</a>
-      </p>
+      ${emailFooterHtmlDiv(unsubUrl)}
     </div>
   </div>
 </body>
@@ -517,8 +515,7 @@ export async function sendReportEmail(
     `Visit omenora.com to view your full report.`,
     ``,
     `---`,
-    `OMENORA · omenora.com`,
-    `To unsubscribe: ${unsubUrl}`,
+    emailFooterText(unsubUrl),
   ].join('\n')
 
   const resend = new Resend(resendApiKey)

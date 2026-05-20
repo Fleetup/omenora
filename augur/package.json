@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lint": "ESLINT_USE_FLAT_CONFIG=true eslint .",
-    "typecheck": "npx tsc --noEmit"
+    "typecheck": "npx tsc --noEmit",
+    "dev:test": "dotenv -e .env.test -- nuxt dev"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.86.1",
@@ -46,6 +47,7 @@
     "@types/node": "^25.5.2",
     "@types/pdfkit": "^0.17.5",
     "@vue/test-utils": "^2.4.5",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^8.57.0",
     "happy-dom": "^20.9.0",
     "node-gyp": "^12.2.0",
