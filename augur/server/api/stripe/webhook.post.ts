@@ -50,6 +50,18 @@ function deriveStripeStatus(stripeStatus: string): string {
 }
 
 /**
+ * Map of metadata.type values to credit grant configurations.
+ * Mirrors CONSUMABLE_PRODUCTS in server/api/revenuecat/webhook.post.ts so
+ * web Stripe and mobile RC purchases credit the same balance via the same RPC.
+ */
+const STRIPE_CREDIT_PRODUCTS: Record<string, { creditType: 'counsel' | 'compat'; delta: number }> = {
+  compat_credit:         { creditType: 'compat',  delta: 1  },
+  counsel_boost_spark:   { creditType: 'counsel', delta: 5  },
+  counsel_boost_insight: { creditType: 'counsel', delta: 15 },
+  counsel_boost_ascend:  { creditType: 'counsel', delta: 35 },
+}
+
+/**
  * POST /api/stripe/webhook
  *
  * Server-side fulfillment for all Stripe payments. Handles:
@@ -489,6 +501,70 @@ export default defineEventHandler(async (event) => {
         // (the idempotency row is already written), so we log for manual recovery.
         console.error('[stripe-webhook] inngest.send failed — welcome insight not queued for:', subEmail, inngestErr instanceof Error ? inngestErr.message : String(inngestErr))
       }
+    }
+
+    return { received: true }
+  }
+
+  // ── Handle calendar_2026 checkout — permanent unlock ─────────────────────────
+  if (meta.type === 'calendar_2026') {
+    const calEmail = session.customer_email || meta.email || ''
+    if (!isValidEmail(calEmail)) {
+      console.warn('[stripe-webhook] calendar_2026 missing valid email', { eventId: stripeEvent.id })
+      return { received: true }
+    }
+
+    try {
+      const { userId } = await findOrCreateAuthUserByEmail(calEmail)
+      const supabaseCal = createSupabaseAdmin()
+      const { error: calErr } = await supabaseCal
+        .from('subscriptions')
+        .upsert(
+          {
+            user_id:            userId,
+            entitlement_id:     'calendar_2026',
+            product_id:         session.metadata?.product_id || null,
+            store:              'web_billing',
+            status:             'active',
+            is_in_trial_period: false,
+            is_sandbox:         !stripeEvent.livemode,
+            purchased_at:       new Date().toISOString(),
+            expires_at:         null,
+            rc_event_id:        stripeEvent.id,
+          },
+          { onConflict: 'user_id,entitlement_id' },
+        )
+
+      if (calErr) {
+        console.error('[stripe-webhook] calendar_2026 subscriptions upsert failed:', calErr.message, { eventId: stripeEvent.id, calEmail })
+      } else {
+        console.info('[stripe-webhook] calendar_2026 entitlement written:', { userId })
+      }
+    } catch (bridgeErr: unknown) {
+      console.error('[stripe-webhook] calendar_2026 auth-bridge failed:', bridgeErr instanceof Error ? bridgeErr.message : String(bridgeErr), { eventId: stripeEvent.id, calEmail })
+    }
+
+    return { received: true }
+  }
+
+  // ── Handle credit-grant IAP products ─────────────────────────────────────────
+  // compat_credit | counsel_boost_spark | counsel_boost_insight | counsel_boost_ascend
+  if (meta.type && meta.type in STRIPE_CREDIT_PRODUCTS) {
+    const creditEmail = session.customer_email || meta.email || ''
+    if (!isValidEmail(creditEmail)) {
+      console.warn(`[stripe-webhook] ${meta.type} missing valid email`, { eventId: stripeEvent.id })
+      return { received: true }
+    }
+
+    const { creditType, delta } = STRIPE_CREDIT_PRODUCTS[meta.type]!
+
+    try {
+      const { userId } = await findOrCreateAuthUserByEmail(creditEmail)
+      const productId = session.metadata?.product_id || meta.type
+      const newBalance = await grantCredits(userId, creditType, delta, stripeEvent.id, productId)
+      console.info(`[stripe-webhook] ${meta.type} granted:`, { userId, creditType, delta, newBalance })
+    } catch (bridgeErr: unknown) {
+      console.error(`[stripe-webhook] ${meta.type} credit grant failed:`, bridgeErr instanceof Error ? bridgeErr.message : String(bridgeErr), { eventId: stripeEvent.id, creditEmail })
     }
 
     return { received: true }
