@@ -10,21 +10,16 @@
             <span class="hero__display-italic">Omen</span>ora
           </h1>
           <div class="hero__rule" />
-          <p class="pull-quote hero__pull">
-            Six traditions. One reading.
-            Built from your exact planetary positions.
-          </p>
-          <p class="hero__body">
-            Most horoscopes are written for 1 in 12 people.
-            Omenora calculates your exact planetary positions
-            at the minute you were born — then reads them across
-            Western, Vedic, BaZi, Tarot, Mayan, and Chinese
-            traditions to build something written for you alone.
-            Free. No account. 60 seconds.
-          </p>
+          <p class="pull-quote hero__pull">{{ heroVariant.headline }}</p>
+          <p class="label-caps hero__variant-sub">{{ heroVariant.subhead }}</p>
+          <p class="hero__body">{{ heroVariant.bodyText }}</p>
           <div class="hero__actions">
-            <CTAButton to="/analysis" :arrow="true">Begin the reading</CTAButton>
-            <CTAButton to="/compatibility-quiz" variant="outline">Check compatibility</CTAButton>
+            <CTAButton :to="heroVariant.primaryCtaTo" :arrow="true">{{ heroVariant.primaryCtaText }}</CTAButton>
+            <CTAButton
+              v-if="heroVariant.secondaryCtaText"
+              :to="heroVariant.secondaryCtaTo!"
+              variant="outline"
+            >{{ heroVariant.secondaryCtaText }}</CTAButton>
           </div>
         </div>
 
@@ -65,7 +60,7 @@
       <div class="trust-strip__grid">
         <div class="trust-item">
           <span class="annotation trust-item__num">[01]</span>
-          <span class="trust-item__label">No subscription</span>
+          <span class="trust-item__label">Founding Member offer</span>
         </div>
         <div class="trust-item">
           <span class="annotation trust-item__num">[02]</span>
@@ -253,8 +248,111 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-const { $trackLandingView } = useNuxtApp() as any
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+const { $trackLandingView, $trackCustomEvent } = useNuxtApp() as any
+const route = useRoute()
+const { trackEvent: clarityTrack } = useClarity()
+
+// ── Hero variant system ───────────────────────────────────────────────
+interface HeroVariant {
+  variantKey:       string
+  headline:         string
+  subhead:          string
+  bodyText:         string
+  primaryCtaText:   string
+  primaryCtaTo:     string
+  secondaryCtaText: string | null
+  secondaryCtaTo:   string | null
+}
+
+const DEFAULT_HERO: HeroVariant = {
+  variantKey:       'default_founding',
+  headline:         'Six traditions. One reading. Built from your exact birth.',
+  subhead:          'Become a Founding Member of OMENORA before public launch.',
+  bodyText:         'Most horoscopes are written for 1 in 12 people. OMENORA reads your exact chart across Western, Vedic, BaZi, Tarot, Mayan, and Chinese traditions. Join as a Founding Member for $20 today — get 50% off Premium for life when the mobile app launches.',
+  primaryCtaText:   'Become a Founding Member — $20',
+  primaryCtaTo:     '/founding',
+  secondaryCtaText: 'Try the free reading',
+  secondaryCtaTo:   '/analysis',
+}
+
+function resolveHeroVariant(utmCreative: string): HeroVariant {
+  const c = utmCreative.toLowerCase()
+
+  if (c.includes('archetype')) {
+    return {
+      variantKey:       'archetype',
+      headline:         'One of twelve archetypes is yours.',
+      subhead:          'Find out which one in 60 seconds.',
+      bodyText:         'Your exact planetary positions at the minute you were born map to one of twelve cosmic archetypes. Free reading. No account. 60 seconds.',
+      primaryCtaText:   'Find your archetype',
+      primaryCtaTo:     '/analysis',
+      secondaryCtaText: null,
+      secondaryCtaTo:   null,
+    }
+  }
+
+  if (c.includes('compat') || c.includes('relationship')) {
+    return {
+      variantKey:       'compatibility',
+      headline:         'Are you actually compatible?',
+      subhead:          'Real birth chart comparison. Not a sun sign quiz.',
+      bodyText:         'Two birth charts read against each other across seven dimensions of compatibility. Bond, strength, challenge, communication, power dynamic, forecast, and advice. Free preview in 60 seconds.',
+      primaryCtaText:   'Check compatibility',
+      primaryCtaTo:     '/compatibility-quiz',
+      secondaryCtaText: null,
+      secondaryCtaTo:   null,
+    }
+  }
+
+  if (c.includes('accuracy') || c.includes('shock')) {
+    return {
+      variantKey:       'accuracy',
+      headline:         'This will read you better than your therapist.',
+      subhead:          'Real planetary calculations. Not vague horoscope text.',
+      bodyText:         'OMENORA uses Swiss Ephemeris — the same software professional astrologers use — to calculate your exact birth chart. Then it reads you across six traditions to find the patterns you already know are true.',
+      primaryCtaText:   'See what it knows about you',
+      primaryCtaTo:     '/analysis',
+      secondaryCtaText: null,
+      secondaryCtaTo:   null,
+    }
+  }
+
+  if (c.includes('pattern')) {
+    return {
+      variantKey:       'pattern',
+      headline:         'The pattern you keep seeing isn\'t random.',
+      subhead:          'It\'s in your chart.',
+      bodyText:         'The things you keep attracting, the situations that keep repeating, the way you keep responding — these are written in your planetary positions. OMENORA reads them and shows you the pattern.',
+      primaryCtaText:   'Read my chart',
+      primaryCtaTo:     '/analysis',
+      secondaryCtaText: null,
+      secondaryCtaTo:   null,
+    }
+  }
+
+  if (c.includes('disappear')) {
+    return {
+      variantKey:       'disappear',
+      headline:         'Why people keep disappearing from your life.',
+      subhead:          'Your birth chart explains the pattern.',
+      bodyText:         'When the same kind of person keeps leaving, it\'s not random. Your chart shows the dynamic you keep recreating — and how to break it. Read in 60 seconds.',
+      primaryCtaText:   'See the pattern',
+      primaryCtaTo:     '/analysis',
+      secondaryCtaText: null,
+      secondaryCtaTo:   null,
+    }
+  }
+
+  return { ...DEFAULT_HERO }
+}
+
+const heroVariant = computed<HeroVariant>(() => {
+  const src = route.query.utm_source as string | undefined
+  if (!src) return { ...DEFAULT_HERO }
+  const creative = (route.query.utm_creative as string) || ''
+  return resolveHeroVariant(creative)
+})
 
 useSeoMeta({
   title: 'OMENORA — Free Daily Horoscope & Personal Astrology Reading',
@@ -385,9 +483,9 @@ const faqItems = [
   { question: 'Do I need to know my exact birth time?', answer: 'Birth time is optional. If you don\'t know it, we calculate your chart using solar noon as a default. The reading will still be accurate for your Sun, Moon, and most planetary positions — only your Rising sign and house placements require an exact time.' },
   { question: 'What traditions are included?', answer: 'Your reading covers six traditions: Western astrology, Vedic Nakshatra, Chinese BaZi (Four Pillars), Tarot archetypes, your Personality Archetype (synthesized from Sun, Moon, and Rising), and your Numerology Life Path number. Your initial reading is generated in one tradition — you can switch to any other tradition from the report page.' },
   { question: 'How long does it take?', answer: 'About 30 seconds to enter your birth details, then roughly 60 seconds for the AI to compute and write your full reading. The free preview is available immediately — no account, no subscription required.' },
-  { question: 'Is the free preview really free?', answer: 'Yes. Your personality archetype and the Identity section of your reading are unlocked at no cost. The full report — all seven sections including your 2026 forecast — is available for a one-time payment starting at $4.99.' },
+  { question: 'Is the free preview really free?', answer: 'Yes. Your personality archetype and the Identity section of your reading are unlocked at no cost. The full report — all seven sections including your 2026 forecast — is available for a one-time $4.99 payment, OR included with Premium subscription, OR free for Founding Members.' },
   { question: 'Do two people born on the same day get the same reading?', answer: 'No. Birth time and city change every planetary position. Two people born on the same day but in different cities or at different hours will have meaningfully different charts, different archetypes, and different readings.' },
-  { question: 'Is there a subscription?', answer: 'The natal reading is a one-time payment — no subscription, no recurring charges.' },
+  { question: 'Is there a subscription?', answer: 'OMENORA Premium is a $14.99/month subscription that unlocks the full mobile app experience — daily insights, unlimited Counsel, compatibility readings, and your complete birth chart. Web-only one-time purchases remain available if you prefer no subscription. Founding Members get 50% off Premium for life.' },
 ]
 
 onUnmounted(() => {
@@ -418,6 +516,8 @@ onMounted(async () => {
   }
 
   $trackLandingView()
+  try { $trackCustomEvent?.('landing_hero_variant', { variant: heroVariant.value.variantKey }) } catch { /* never block UI */ }
+  clarityTrack('landing_hero_variant_' + heroVariant.value.variantKey)
 
   // If the magic link email lands on the root URL instead of /account
   // (e.g. browser auto-strips the path), forward to /account preserving
@@ -466,7 +566,8 @@ section {
 }
 .hero__display-italic { font-style: italic; }
 .hero__rule { width: 64px; height: 1px; background: var(--color-ink-mid); margin-bottom: 36px; }
-.hero__pull { max-width: 38ch; margin-bottom: 24px; color: var(--color-ink); }
+.hero__pull { max-width: 38ch; margin-bottom: 12px; color: var(--color-ink); }
+.hero__variant-sub { color: var(--color-ink-faint); margin-bottom: 20px; max-width: 48ch; }
 .hero__body { font-size: var(--text-body); line-height: 1.7; max-width: 48ch; color: var(--color-ink-mid); margin-bottom: 40px; }
 .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 48px; }
 
