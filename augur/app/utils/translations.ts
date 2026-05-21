@@ -284,7 +284,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     paywallHeading: 'Your reading is ready',
     paywallSubtitle: 'Unlock everything with Premium — or get your forecast for a one-time fee',
-    paywallCtaPremium: 'Start Premium — 7 days free',
+    paywallCtaPremium: 'Start Premium',
     paywallTrustSubscription: 'Cancel any time. No commitment.',
 
     compatIAPPrice: '$4.99',
@@ -590,7 +590,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     paywallHeading: 'Tu lectura está lista',
     paywallSubtitle: 'Desbloquea todo con Premium — o consigue tu pronóstico por un pago único',
-    paywallCtaPremium: 'Iniciar Premium — 7 días gratis',
+    paywallCtaPremium: 'Iniciar Premium',
     paywallTrustSubscription: 'Cancela en cualquier momento. Sin compromiso.',
 
     compatIAPPrice: '$4.99',
@@ -896,7 +896,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     paywallHeading: 'Sua leitura está pronta',
     paywallSubtitle: 'Desbloqueie tudo com Premium — ou obtenha seu pronóstico com pagamento único',
-    paywallCtaPremium: 'Iniciar Premium — 7 dias grátis',
+    paywallCtaPremium: 'Iniciar Premium',
     paywallTrustSubscription: 'Cancele a qualquer momento. Sem compromisso.',
 
     compatIAPPrice: '$4.99',
@@ -1134,7 +1134,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     paywallHeading: 'आपकी रीडिंग तैयार है',
     paywallSubtitle: 'Premium के साथ सब कुछ अनलॉक करें — या एक बार के भुगतान से अपना पूर्वानुमान पाएं',
-    paywallCtaPremium: 'Premium शुरू करें — 7 दिन फ्री',
+    paywallCtaPremium: 'Premium शुरू करें', // REVIEW
     paywallTrustSubscription: 'कभी भी रद्द करें। कोई प्रतिबद्धता नहीं।', // REVIEW
 
     compatIAPPrice: '$4.99',
@@ -1498,7 +1498,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     paywallHeading: '리딩이 준비되었습니다',
     paywallSubtitle: 'Premium으로 모든 것을 잠금 해제 — 또는 일회성 결제로 예측 받기',
-    paywallCtaPremium: 'Premium 시작 — 7일 무료',
+    paywallCtaPremium: 'Premium 시작',
     paywallTrustSubscription: '언제든 취소 가능. 약정 없음.',
 
     compatIAPPrice: '$4.99',
@@ -1802,7 +1802,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     paywallHeading: '你的解读已准备好',
     paywallSubtitle: '使用 Premium 解锁一切 — 或一次性付费获得预测',
-    paywallCtaPremium: '开始 Premium — 7天免费',
+    paywallCtaPremium: '开始 Premium',
     paywallTrustSubscription: '随时取消。无承诺。',
 
     compatIAPPrice: '$4.99',
