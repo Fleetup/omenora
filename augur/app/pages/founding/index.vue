@@ -242,7 +242,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const { $trackInitiateCheckout } = useNuxtApp()
 
@@ -304,6 +304,25 @@ const FAQ = [
   },
 ] as const
 
+// ── Attribution bridge ─────────────────────────────────────────────────────────
+const previewUtms = ref<Record<string, string>>({})
+
+onMounted(() => {
+  if (!import.meta.client) return
+  try {
+    const raw = sessionStorage.getItem('omenora_preview_context')
+    if (raw) {
+      const ctx = JSON.parse(raw) as Record<string, string>
+      const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'] as const
+      const utms: Record<string, string> = {}
+      for (const k of UTM_KEYS) { if (ctx[k]) utms[k] = ctx[k]! }
+      previewUtms.value = utms
+    }
+  } catch {
+    // sessionStorage unavailable or corrupt — proceed without context
+  }
+})
+
 // ── Checkout logic ──────────────────────────────────────────────────────────────
 const loading = ref(false)
 const errorMessage = ref<string | null>(null)
@@ -326,6 +345,11 @@ async function handleCheckout() {
     for (const key of utmKeys) {
       const val = query.get(key)
       if (val) body[key] = val
+    }
+
+    // Merge sessionStorage UTMs from /preview context — URL query params take precedence
+    for (const [k, v] of Object.entries(previewUtms.value)) {
+      if (!body[k] && v) body[k] = v
     }
 
     try {

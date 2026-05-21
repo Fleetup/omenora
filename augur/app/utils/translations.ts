@@ -312,6 +312,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     reportPremiumCta: 'Want unlimited readings?',
     reportPremiumSubtitle: 'Daily insights, unlimited Counsel, compatibility readings, and your full birth chart — all in the OMENORA mobile app.',
+
+    foundingCtaPreview: 'Become a Founding Member — $20',
+    foundingCtaReport: 'Become a Founding Member',
+    foundingCtaSubtitle: 'One-time $20 · Lifetime 50% off Premium · Early access to the app',
   },
 
   es: {
@@ -618,6 +622,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     reportPremiumCta: '¿Quieres lecturas ilimitadas?',
     reportPremiumSubtitle: 'Perspectivas diarias, Counsel ilimitado, lecturas de compatibilidad y tu carta natal completa — todo en la app móvil OMENORA.',
+
+    foundingCtaPreview: 'Conviértete en Miembro Fundador — $20',
+    foundingCtaReport: 'Conviértete en Miembro Fundador',
+    foundingCtaSubtitle: 'Pago único $20 · 50% de descuento de por vida en Premium · Acceso anticipado a la app',
   },
 
   pt: {
@@ -924,6 +932,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     reportPremiumCta: 'Quer leituras ilimitadas?',
     reportPremiumSubtitle: 'Insights diários, Counsel ilimitado, leituras de compatibilidade e seu mapa natal completo — tudo no app móvel OMENORA.',
+
+    foundingCtaPreview: 'Torne-se Membro Fundador — $20',
+    foundingCtaReport: 'Torne-se Membro Fundador',
+    foundingCtaSubtitle: 'Pagamento único $20 · 50% de desconto vitalício no Premium · Acesso antecipado ao app',
   },
 
   hi: {
@@ -1222,6 +1234,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     reportPremiumCta: 'असीमित रीडिंग चाहते हैं?', // REVIEW
     reportPremiumSubtitle: 'दैनिक अंतर्दृष्टि, असीमित Counsel, अनुकूलता रीडिंग, और आपकी पूर्ण जन्म कुंडली — सब कुछ OMENORA मोबाइल एप में।', // REVIEW
+
+    foundingCtaPreview: 'फाउंडिंग मेंबर बनें — $20', // REVIEW
+    foundingCtaReport: 'फाउंडिंग मेंबर बनें', // REVIEW
+    foundingCtaSubtitle: 'एकमुश्त $20 · Premium पर आजीवन 50% छूट · ऐप तक प्रारंभिक एक्सेस', // REVIEW
   },
 
   ko: {
@@ -1526,6 +1542,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
 
     reportPremiumCta: '무제한 리딩을 원하시나요?',
     reportPremiumSubtitle: '일일 인사이트, 무제한 Counsel, 궁합 리딩, 완전한 출생 차트 — 모두 OMENORA 모바일 앱에서.',
+
+    foundingCtaPreview: '파운딩 멤버 되기 — $20', // REVIEW
+    foundingCtaReport: '파운딩 멤버 되기', // REVIEW
+    foundingCtaSubtitle: '일회성 $20 · Premium 평생 50% 할인 · 앱 조기 액세스', // REVIEW
   },
 
   zh: {
@@ -1829,7 +1849,11 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistSuccess: '您已加入名单。我们会联系您。',
 
     reportPremiumCta: '想要无限解读吗？',
-    reportPremiumSubtitle: '每日洞察、无限 Counsel、合盘解读和完整星盘 — 全部在 OMENORA 移动应用中。'
+    reportPremiumSubtitle: '每日洞察、无限 Counsel、合盘解读和完整星盘 — 全部在 OMENORA 移动应用中。',
+
+    foundingCtaPreview: '成为创始会员 — $20',
+    foundingCtaReport: '成为创始会员',
+    foundingCtaSubtitle: '一次性 $20 · Premium 终身 50% 折扣 · 应用提前访问',
   },
 }
 

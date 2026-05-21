@@ -187,9 +187,19 @@
           />
         </div>
 
-        <!-- Single Premium CTA -->
+        <!-- Founding Member CTA (primary) -->
         <button
           class="paywall__cta"
+          :disabled="isProcessingPayment || isApplyingFreeAccess || !email"
+          @click="handleFoundingCta()"
+        >
+          <span>{{ t('foundingCtaPreview') }}</span>
+        </button>
+        <p class="annotation paywall__founding-sub">{{ t('foundingCtaSubtitle') }}</p>
+
+        <!-- Premium CTA (secondary) -->
+        <button
+          class="paywall__cta paywall__cta--secondary"
           :class="{ 'paywall__cta--processing': isProcessingPayment || isApplyingFreeAccess }"
           :disabled="isProcessingPayment || isApplyingFreeAccess || !email"
           @click="appliedPromo?.codeType === 'full_access' ? applyFreeAccess() : handlePremiumCta()"
@@ -571,6 +581,50 @@ async function onEmailBlur() {
     // Silent fail — never block the UI
   }
 }
+async function handleFoundingCta() {
+  if (isProcessingPayment.value) return
+  if (!email.value) return
+
+  $trackTierSelected({
+    tier: 'founding' as any,
+    price: 20,
+    archetype: store.archetype,
+    language: store.language,
+  })
+  $trackInitiateCheckout({
+    value: 20,
+    currency: 'USD',
+    content_name: 'Founding Membership',
+  })
+  useClarity().trackEvent('founding_cta_clicked')
+
+  store.setEmail(email.value)
+
+  try {
+    const utms = sessionStorage.getItem('omenora_utms')
+    const utmParams: Record<string, string> = utms ? JSON.parse(utms) : {}
+
+    const context = {
+      firstName:      store.firstName,
+      email:          email.value,
+      archetype:      store.archetype,
+      lifePathNumber: store.lifePathNumber,
+      dateOfBirth:    store.dateOfBirth,
+      timeOfBirth:    store.timeOfBirth,
+      city:           store.city,
+      region:         store.region,
+      language:       store.language,
+      tempId:         store.tempId,
+      ...utmParams,
+    }
+    sessionStorage.setItem('omenora_preview_context', JSON.stringify(context))
+  } catch {
+    // sessionStorage unavailable — proceed without context
+  }
+
+  await navigateTo('/founding')
+}
+
 async function handlePremiumCta() {
   if (isProcessingPayment.value) return
   if (!email.value) return
@@ -1122,6 +1176,26 @@ async function handlePayment() {
 .paywall__cta--processing {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+.paywall__cta--secondary {
+  background: transparent;
+  border: 1px solid var(--color-ink-ghost);
+  color: var(--color-ink-mid);
+  font-size: 13px;
+  margin-top: 0;
+}
+
+.paywall__cta--secondary:hover:not(:disabled) {
+  background: rgba(26, 22, 18, 0.04);
+  transform: none;
+}
+
+.paywall__founding-sub {
+  color: var(--color-ink-faint);
+  margin-top: -12px;
+  margin-bottom: 20px;
+  max-width: 480px;
 }
 
 /* ── Guarantee & trust ── */

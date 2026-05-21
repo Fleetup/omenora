@@ -489,7 +489,11 @@
         <p class="label-caps upsell-section__eyebrow">Premium</p>
         <h3 class="upsell-section__heading font-serif-italic">{{ t('reportPremiumCta') }}</h3>
         <p class="annotation upsell-section__sub">{{ t('reportPremiumSubtitle') }}</p>
-        <NuxtLink to="/subscribe" class="upsell-cta-btn upsell-cta-btn--link">
+        <NuxtLink to="/founding" class="upsell-cta-btn upsell-cta-btn--link">
+          {{ t('foundingCtaReport') }}
+        </NuxtLink>
+        <p class="annotation upsell-section__founding-sub">{{ t('foundingCtaSubtitle') }}</p>
+        <NuxtLink to="/subscribe" class="upsell-cta-btn upsell-cta-btn--link upsell-cta-btn--secondary">
           {{ t('subscribeCtaMonthly') }}
         </NuxtLink>
       </div>
@@ -2678,6 +2682,12 @@ async function downloadReportPDF() {
 
 .upsell-section__sub {
   margin: 0;
+}
+
+.upsell-section__founding-sub {
+  color: var(--color-ink-faint);
+  margin-top: -4px;
+  margin-bottom: 12px;
 }
 
 .upsell-section__header-row {
