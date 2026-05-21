@@ -50,6 +50,26 @@ function deriveStripeStatus(stripeStatus: string): string {
 }
 
 /**
+ * Resolve a Stripe customer ID to its email. Returns null if customer
+ * is deleted, missing, or has no email on record. Used by subscription
+ * cancellation/update handlers which receive stripeSubscription.customer
+ * (a string ID) rather than an email.
+ */
+async function getEmailFromStripeCustomer(
+  stripe: Stripe,
+  customerId: string,
+): Promise<string | null> {
+  try {
+    const customer = await stripe.customers.retrieve(customerId)
+    if (customer.deleted) return null
+    return (customer as Stripe.Customer).email || null
+  } catch (err) {
+    console.error('[stripe-webhook] customers.retrieve failed:', err instanceof Error ? err.message : String(err), { customerId })
+    return null
+  }
+}
+
+/**
  * Map of metadata.type values to credit grant configurations.
  * Mirrors CONSUMABLE_PRODUCTS in server/api/revenuecat/webhook.post.ts so
  * web Stripe and mobile RC purchases credit the same balance via the same RPC.
@@ -151,6 +171,74 @@ export default defineEventHandler(async (event) => {
         console.info('[stripe-webhook] Subscriber deactivated on payment failure:', customerId)
       }
     }
+    // ── Mirror billing issue to public.subscriptions ──
+    try {
+      const invoice = stripeEvent.data.object as Stripe.Invoice
+      const invCustId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+      if (invCustId) {
+        const invEmail = await getEmailFromStripeCustomer(stripe, invCustId)
+        if (invEmail) {
+          const { userId } = await findOrCreateAuthUserByEmail(invEmail)
+          const supabaseInvSubs = createSupabaseAdmin()
+          const { error: invSubsErr } = await supabaseInvSubs
+            .from('subscriptions')
+            .update({
+              status:                     'billing_issue',
+              billing_issues_detected_at: new Date().toISOString(),
+              rc_event_id:                stripeEvent.id,
+              updated_at:                 new Date().toISOString(),
+            })
+            .eq('user_id', userId)
+            .eq('entitlement_id', 'premium')
+          if (invSubsErr) {
+            console.error('[stripe-webhook] subscriptions billing_issue update failed (non-blocking):', invSubsErr.message, { eventId: stripeEvent.id, userId })
+          } else {
+            console.info('[stripe-webhook] subscription marked billing_issue:', { userId })
+          }
+        }
+      }
+    } catch (invMirrorErr: unknown) {
+      console.error('[stripe-webhook] payment_failed mirror failed (non-blocking):', invMirrorErr instanceof Error ? invMirrorErr.message : String(invMirrorErr), { eventId: stripeEvent.id })
+    }
+    return { received: true }
+  }
+
+  if (stripeEvent.type === 'customer.subscription.updated') {
+    try {
+      const subUpd = stripeEvent.data.object as Stripe.Subscription
+      const custId = typeof subUpd.customer === 'string' ? subUpd.customer : subUpd.customer?.id
+      if (custId) {
+        const updEmail = await getEmailFromStripeCustomer(stripe, custId)
+        if (updEmail) {
+          const { userId } = await findOrCreateAuthUserByEmail(updEmail)
+          const supabaseUpd = createSupabaseAdmin()
+          const newStatus  = deriveStripeStatus(subUpd.status)
+          const isTrialing = subUpd.status === 'trialing'
+          const itemPeriodEnd = subUpd.items.data[0]?.current_period_end ?? null
+          const expiresAt = itemPeriodEnd
+            ? new Date(itemPeriodEnd * 1000).toISOString()
+            : null
+          const { error: updErr } = await supabaseUpd
+            .from('subscriptions')
+            .update({
+              status:             newStatus,
+              is_in_trial_period: isTrialing,
+              expires_at:         expiresAt,
+              rc_event_id:        stripeEvent.id,
+              updated_at:         new Date().toISOString(),
+            })
+            .eq('user_id', userId)
+            .eq('entitlement_id', 'premium')
+          if (updErr) {
+            console.error('[stripe-webhook] subscriptions status update failed (non-blocking):', updErr.message, { eventId: stripeEvent.id, userId })
+          } else {
+            console.info('[stripe-webhook] subscription updated:', { userId, status: newStatus, isTrialing })
+          }
+        }
+      }
+    } catch (updErr: unknown) {
+      console.error('[stripe-webhook] subscription update handler failed (non-blocking):', updErr instanceof Error ? updErr.message : String(updErr), { eventId: stripeEvent.id })
+    }
     return { received: true }
   }
 
@@ -168,6 +256,36 @@ export default defineEventHandler(async (event) => {
       } else {
         console.info('[stripe-webhook] Subscriber deactivated on subscription deletion:', customerId)
       }
+    }
+    // ── Mirror cancellation to public.subscriptions ──
+    try {
+      const subDel = stripeEvent.data.object as Stripe.Subscription
+      const custId = typeof subDel.customer === 'string' ? subDel.customer : subDel.customer?.id
+      if (custId) {
+        const delEmail = await getEmailFromStripeCustomer(stripe, custId)
+        if (delEmail) {
+          const { userId } = await findOrCreateAuthUserByEmail(delEmail)
+          const supabaseDel = createSupabaseAdmin()
+          const { error: delErr } = await supabaseDel
+            .from('subscriptions')
+            .update({
+              status:                  'cancelled',
+              cancelled_at:            new Date().toISOString(),
+              unsubscribe_detected_at: new Date().toISOString(),
+              rc_event_id:             stripeEvent.id,
+              updated_at:              new Date().toISOString(),
+            })
+            .eq('user_id', userId)
+            .eq('entitlement_id', 'premium')
+          if (delErr) {
+            console.error('[stripe-webhook] subscriptions cancel update failed (non-blocking):', delErr.message, { eventId: stripeEvent.id, userId })
+          } else {
+            console.info('[stripe-webhook] subscription cancelled:', { userId, subId: subDel.id })
+          }
+        }
+      }
+    } catch (cancelErr: unknown) {
+      console.error('[stripe-webhook] cancellation mirror failed (non-blocking):', cancelErr instanceof Error ? cancelErr.message : String(cancelErr), { eventId: stripeEvent.id })
     }
     return { received: true }
   }
@@ -334,6 +452,53 @@ export default defineEventHandler(async (event) => {
           error: foundingRefundEx instanceof Error ? foundingRefundEx.message : String(foundingRefundEx),
         })
       }
+    }
+
+    // ── Credit clawback for refunded IAP charges ──
+    // charge.metadata.type carries the original metadata.type from checkout.
+    // If it matches a STRIPE_CREDIT_PRODUCTS key, clawback the same delta.
+    try {
+      const charge = stripeEvent.data.object as Stripe.Charge
+      const chargeMetaType = charge.metadata?.type
+
+      if (chargeMetaType && chargeMetaType in STRIPE_CREDIT_PRODUCTS) {
+        const { creditType, delta } = STRIPE_CREDIT_PRODUCTS[chargeMetaType]!
+        const refundEmail = charge.billing_details?.email || charge.receipt_email || null
+        if (refundEmail && isValidEmail(refundEmail)) {
+          const { userId } = await findOrCreateAuthUserByEmail(refundEmail)
+          const productId = charge.metadata?.product_id || chargeMetaType
+          const newBalance = await clawbackCredits(userId, creditType, delta, stripeEvent.id, productId)
+          console.info(`[stripe-webhook] refund clawback ${chargeMetaType}:`, { userId, creditType, delta, newBalance })
+        } else {
+          console.warn('[stripe-webhook] refunded charge has no resolvable email — skipping clawback', { eventId: stripeEvent.id, chargeId: charge.id })
+        }
+      }
+
+      // ── Calendar refund: mark subscriptions row expired ──
+      if (chargeMetaType === 'calendar_2026') {
+        const refundEmail = charge.billing_details?.email || charge.receipt_email || null
+        if (refundEmail && isValidEmail(refundEmail)) {
+          const { userId } = await findOrCreateAuthUserByEmail(refundEmail)
+          const supabaseCalRef = createSupabaseAdmin()
+          const { error: calRefErr } = await supabaseCalRef
+            .from('subscriptions')
+            .update({
+              status:      'expired',
+              expires_at:  new Date().toISOString(),
+              rc_event_id: stripeEvent.id,
+              updated_at:  new Date().toISOString(),
+            })
+            .eq('user_id', userId)
+            .eq('entitlement_id', 'calendar_2026')
+          if (calRefErr) {
+            console.error('[stripe-webhook] calendar refund mark-expired failed:', calRefErr.message, { eventId: stripeEvent.id, userId })
+          } else {
+            console.info('[stripe-webhook] calendar_2026 expired via refund:', { userId })
+          }
+        }
+      }
+    } catch (refundErr: unknown) {
+      console.error('[stripe-webhook] charge.refunded clawback/expire failed (non-blocking):', refundErr instanceof Error ? refundErr.message : String(refundErr), { eventId: stripeEvent.id })
     }
 
     return { received: true }
