@@ -272,12 +272,12 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeCtaMonthly: 'Start Premium — $14.99/month',
     subscribeCtaYearly: 'Start Premium — $99.99/year',
     subscribeIncludesHeading: "What's included",
-    subscribeInclude1: 'Unlimited daily cosmic insights',
-    subscribeInclude2: 'Full Counsel access',
-    subscribeInclude3: 'Compatibility readings',
-    subscribeInclude4: 'Full birth chart',
-    subscribeInclude5: 'Priority access to new features',
-    subscribeMobileDisclosure: 'Mobile app subscriptions managed in-app (iOS/Android). Web subscription managed at omenora.com.',
+    subscribeInclude1: 'Daily cosmic insights delivered to the OMENORA app',
+    subscribeInclude2: 'Unlimited Counsel — your AI astrology guide, in-app',
+    subscribeInclude3: 'Compatibility readings for partners, family, and friends',
+    subscribeInclude4: 'Your complete birth chart — Western, Vedic, BaZi, Tarot',
+    subscribeInclude5: 'iOS and Android — your reading travels with you',
+    subscribeMobileDisclosure: 'After checkout, download the OMENORA app for iOS or Android. Your subscription unlocks the full experience in the app.',
     subscribeRefundClause: '7-day refund window. Contact support@omenora.com.',
     subscribeAlreadyPremium: 'You have an active Premium subscription',
     preparingCheckout: 'Preparing checkout…',
@@ -311,7 +311,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistSuccess: "You're on the list. We'll be in touch.",
 
     reportPremiumCta: 'Want unlimited readings?',
-    reportPremiumSubtitle: 'Daily insights, full Counsel access, compatibility readings, and your full birth chart — all included with Premium.',
+    reportPremiumSubtitle: 'Daily insights, unlimited Counsel, compatibility readings, and your full birth chart — all in the OMENORA mobile app.',
   },
 
   es: {
@@ -578,12 +578,12 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeCtaMonthly: 'Iniciar Premium — $14.99/mes',
     subscribeCtaYearly: 'Iniciar Premium — $99.99/año',
     subscribeIncludesHeading: 'Qué incluye',
-    subscribeInclude1: 'Perspectivas cósmicas diarias ilimitadas',
-    subscribeInclude2: 'Acceso completo a Counsel',
-    subscribeInclude3: 'Lecturas de compatibilidad',
-    subscribeInclude4: 'Carta natal completa',
-    subscribeInclude5: 'Acceso prioritario a nuevas funciones',
-    subscribeMobileDisclosure: 'Las suscripciones de la aplicación móvil se gestionan en la app (iOS/Android). La suscripción web se gestiona en omenora.com.',
+    subscribeInclude1: 'Perspectivas cósmicas diarias entregadas en la app OMENORA',
+    subscribeInclude2: 'Counsel ilimitado — tu guía astrológica con IA, en la app',
+    subscribeInclude3: 'Lecturas de compatibilidad para parejas, familia y amigos',
+    subscribeInclude4: 'Tu carta natal completa — Occidental, Védica, BaZi, Tarot',
+    subscribeInclude5: 'iOS y Android — tu lectura te acompaña',
+    subscribeMobileDisclosure: 'Después del pago, descarga la app OMENORA para iOS o Android. Tu suscripción desbloquea la experiencia completa en la app.',
     subscribeRefundClause: 'Ventana de reembolso de 7 días. Contacta a support@omenora.com.',
     subscribeAlreadyPremium: 'Tienes una suscripción Premium activa',
     preparingCheckout: 'Preparando pago…',
@@ -617,7 +617,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistSuccess: 'Estás en la lista. Estaremos en contacto.',
 
     reportPremiumCta: '¿Quieres lecturas ilimitadas?',
-    reportPremiumSubtitle: 'Perspectivas diarias, acceso completo a Counsel, lecturas de compatibilidad y tu carta natal completa — todo incluido con Premium.',
+    reportPremiumSubtitle: 'Perspectivas diarias, Counsel ilimitado, lecturas de compatibilidad y tu carta natal completa — todo en la app móvil OMENORA.',
   },
 
   pt: {
@@ -884,12 +884,12 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeCtaMonthly: 'Iniciar Premium — $14.99/mês',
     subscribeCtaYearly: 'Iniciar Premium — $99.99/ano',
     subscribeIncludesHeading: 'O que está incluído',
-    subscribeInclude1: 'Insights cósmicos diários ilimitados',
-    subscribeInclude2: 'Acesso completo ao Counsel',
-    subscribeInclude3: 'Leituras de compatibilidade',
-    subscribeInclude4: 'Mapa natal completo',
-    subscribeInclude5: 'Acesso prioritário a novos recursos',
-    subscribeMobileDisclosure: 'Assinaturas do app móvel são gerenciadas no app (iOS/Android). Assinatura web é gerenciada em omenora.com.',
+    subscribeInclude1: 'Insights cósmicos diários entregues no app OMENORA',
+    subscribeInclude2: 'Counsel ilimitado — seu guia astrológico de IA, no app',
+    subscribeInclude3: 'Leituras de compatibilidade para parceiros, família e amigos',
+    subscribeInclude4: 'Seu mapa natal completo — Ocidental, Védico, BaZi, Tarot',
+    subscribeInclude5: 'iOS e Android — sua leitura vai com você',
+    subscribeMobileDisclosure: 'Após o pagamento, baixe o app OMENORA para iOS ou Android. Sua assinatura desbloqueia a experiência completa no app.',
     subscribeRefundClause: 'Janela de reembolso de 7 dias. Contate support@omenora.com.',
     subscribeAlreadyPremium: 'Você tem uma assinatura Premium ativa',
     preparingCheckout: 'Preparando checkout…',
@@ -923,7 +923,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistSuccess: 'Você está na lista. Entraremos em contato.',
 
     reportPremiumCta: 'Quer leituras ilimitadas?',
-    reportPremiumSubtitle: 'Insights diários, acesso completo ao Counsel, leituras de compatibilidade e seu mapa natal completo — tudo incluído com Premium.',
+    reportPremiumSubtitle: 'Insights diários, Counsel ilimitado, leituras de compatibilidade e seu mapa natal completo — tudo no app móvel OMENORA.',
   },
 
   hi: {
@@ -1122,12 +1122,12 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeCtaMonthly: 'Premium शुरू करें — $14.99/माह', // REVIEW
     subscribeCtaYearly: 'Premium शुरू करें — $99.99/वर्ष', // REVIEW
     subscribeIncludesHeading: 'क्या शामिल है',
-    subscribeInclude1: 'असीमित दैनिक कॉस्मिक अंतर्दृष्टि',
-    subscribeInclude2: 'पूर्ण Counsel एक्सेस',
-    subscribeInclude3: 'अनुकूलता रीडिंग',
-    subscribeInclude4: 'पूर्ण जन्म कुंडली',
-    subscribeInclude5: 'नई सुविधाओं तक प्राथमिकता एक्सेस',
-    subscribeMobileDisclosure: 'मोबाइल ऐप सब्सक्रिप्शन ऐप में प्रबंधित होती हैं (iOS/Android)। वेब सब्सक्रिप्शन omenora.com पर प्रबंधित होती है।',
+    subscribeInclude1: 'OMENORA एप में दैनिक कॉस्मिक अंतर्दृष्टि', // REVIEW
+    subscribeInclude2: 'असीमित Counsel — आपका AI ज्योतिष मार्गदर्शक, एप में', // REVIEW
+    subscribeInclude3: 'पार्टनर, परिवार और दोस्तों के लिए अनुकूलता रीडिंग', // REVIEW
+    subscribeInclude4: 'आपकी पूर्ण जन्म कुंडली — पाश्चात्य, वैदिक, BaZi, टैरो', // REVIEW
+    subscribeInclude5: 'iOS और Android — आपकी रीडिंग आपके साथ', // REVIEW
+    subscribeMobileDisclosure: 'भुगतान के बाद, iOS या Android के लिए OMENORA ऐप डाउनलोड करें। आपकी सदस्यता ऐप में पूरा अनुभव अनलॉक करती है।', // REVIEW
     subscribeRefundClause: '7-दिन रिफंड विंडो। support@omenora.com पर संपर्क करें।',
     subscribeAlreadyPremium: 'आपके पास सक्रिय Premium सब्सक्रिप्शन है',
     preparingCheckout: 'चेकआउट तैयार हो रहा है…', // REVIEW
@@ -1221,7 +1221,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatTerms: 'शर्तें', // REVIEW
 
     reportPremiumCta: 'असीमित रीडिंग चाहते हैं?', // REVIEW
-    reportPremiumSubtitle: 'दैनिक अंतर्दृष्टि, पूर्ण Counsel एक्सेस, अनुकूलता रीडिंग, और आपकी पूर्ण जन्म कुंडली — सब Premium के साथ शामिल।', // REVIEW
+    reportPremiumSubtitle: 'दैनिक अंतर्दृष्टि, असीमित Counsel, अनुकूलता रीडिंग, और आपकी पूर्ण जन्म कुंडली — सब कुछ OMENORA मोबाइल एप में।', // REVIEW
   },
 
   ko: {
@@ -1486,12 +1486,12 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeCtaMonthly: 'Premium 시작 — $14.99/월',
     subscribeCtaYearly: 'Premium 시작 — $99.99/년',
     subscribeIncludesHeading: '포함된 내용',
-    subscribeInclude1: '무제한 데일리 코스믹 인사이트',
-    subscribeInclude2: '전체 Counsel 액세스',
-    subscribeInclude3: '궁합 리딩',
-    subscribeInclude4: '완전한 출생 차트',
-    subscribeInclude5: '새 기능 우선 액세스',
-    subscribeMobileDisclosure: '모바일 앱 구독은 앱 내에서 관리됩니다 (iOS/Android). 웹 구독은 omenora.com에서 관리됩니다.',
+    subscribeInclude1: 'OMENORA 앱에서 매일 코스믹 인사이트 전달',
+    subscribeInclude2: '무제한 Counsel — AI 점성술 가이드, 앱 내',
+    subscribeInclude3: '파트너, 가족, 친구를 위한 궁합 리딩',
+    subscribeInclude4: '완전한 출생 차트 — 서양, 베다, BaZi, 타로',
+    subscribeInclude5: 'iOS 및 Android — 리딩이 당신과 함께',
+    subscribeMobileDisclosure: '결제 후 iOS 또는 Android용 OMENORA 앱을 다운로드하세요. 구독으로 앱에서 전체 경험이 잠금 해제됩니다.',
     subscribeRefundClause: '7일 환불 기간. support@omenora.com 으로 문의.',
     subscribeAlreadyPremium: '활성 Premium 구독을 보유하고 있습니다',
     preparingCheckout: '결제 준비 중…',
@@ -1525,7 +1525,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistSuccess: '명단에 등록되었습니다. 곧 연락드리겠습니다.',
 
     reportPremiumCta: '무제한 리딩을 원하시나요?',
-    reportPremiumSubtitle: '일일 인사이트, 전체 Counsel 액세스, 궁합 리딩, 그리고 완전한 출생 차트 — 모두 Premium에 포함.',
+    reportPremiumSubtitle: '일일 인사이트, 무제한 Counsel, 궁합 리딩, 완전한 출생 차트 — 모두 OMENORA 모바일 앱에서.',
   },
 
   zh: {
@@ -1790,12 +1790,12 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeCtaMonthly: '开始 Premium — $14.99/月',
     subscribeCtaYearly: '开始 Premium — $99.99/年',
     subscribeIncludesHeading: '包含内容',
-    subscribeInclude1: '无限每日宇宙洞察',
-    subscribeInclude2: '完整 Counsel 访问',
-    subscribeInclude3: '合盘解读',
-    subscribeInclude4: '完整星盘',
-    subscribeInclude5: '新功能优先访问',
-    subscribeMobileDisclosure: '移动应用订阅在应用内管理 (iOS/Android)。网页订阅在 omenora.com 管理。',
+    subscribeInclude1: 'OMENORA 应用每日宇宙洞察推送',
+    subscribeInclude2: '无限 Counsel — 你的 AI 占星指南，应用内',
+    subscribeInclude3: '为伴侣、家人和朋友的合盘解读',
+    subscribeInclude4: '完整星盘 — 西方、吠陀、八字、塔罗',
+    subscribeInclude5: 'iOS 和 Android — 你的解读随身携带',
+    subscribeMobileDisclosure: '付款后，下载 iOS 或 Android 版 OMENORA 应用。订阅在应用内解锁完整体验。',
     subscribeRefundClause: '7天退款窗口。联系 support@omenora.com。',
     subscribeAlreadyPremium: '您拥有有效的 Premium 订阅',
     preparingCheckout: '准备结账…',
@@ -1829,7 +1829,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistSuccess: '您已加入名单。我们会联系您。',
 
     reportPremiumCta: '想要无限解读吗？',
-    reportPremiumSubtitle: '每日洞察、完整 Counsel 访问、合盘解读和你的完整星盘 — Premium 全部包含。',
+    reportPremiumSubtitle: '每日洞察、无限 Counsel、合盘解读和完整星盘 — 全部在 OMENORA 移动应用中。'
   },
 }
 
