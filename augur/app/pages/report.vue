@@ -185,27 +185,6 @@
       </button>
     </div>
 
-    <!-- Birth chart: has time of birth, not yet purchased -->
-    <div v-else-if="store.timeOfBirth" class="upsell-inline upsell-inline--active">
-      <div class="upsell-inline__info">
-        <p class="label-caps upsell-inline__title">{{ t('birthChartReady') }}</p>
-        <p class="annotation upsell-inline__desc">{{ t('birthChartPrice') }}</p>
-      </div>
-      <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
-        {{ isLoadingBirthChart ? t('loadingBirthChart') : t('unlockBirthChart') }}
-      </button>
-    </div>
-
-    <!-- Birth chart: no time of birth -->
-    <div v-else class="upsell-inline upsell-inline--active">
-      <div class="upsell-inline__info">
-        <p class="label-caps upsell-inline__title">{{ t('birthChartUnlockedLabel') }}</p>
-        <p class="annotation upsell-inline__desc">{{ t('birthChartRequiresTime') }}</p>
-      </div>
-      <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
-        {{ isLoadingBirthChart ? t('loadingBirthChart') : '$4.99 — Unlock' }}
-      </button>
-    </div>
 
     <!-- ── CORE REPORT SECTIONS ── -->
     <div class="report-body">
@@ -370,7 +349,7 @@
       <div class="tradition-switcher__header">
         <p class="label-caps tradition-switcher__label">{{ t('traditionSwitcherLabel') }}</p>
         <p class="annotation tradition-switcher__sub">
-          {{ store.oraclePurchased ? t('traditionSwitcherSubOracle') : t('traditionSwitcherSubPaid') }}
+          {{ t('traditionSwitcherSubOracle') }}
         </p>
       </div>
       <div class="tradition-options">
@@ -393,7 +372,7 @@
           </span>
           <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active label-caps">{{ t('currentLabel') }}</span>
           <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free label-caps">{{ t('freeLabel') }}</span>
-          <span v-else class="tradition-opt-tag tradition-opt-tag--paid label-caps">$2.99</span>
+          <span v-else class="tradition-opt-tag tradition-opt-tag--free label-caps">{{ t('freeLabel') }}</span>
         </button>
       </div>
     </section>
@@ -503,76 +482,18 @@
       </div>
     </section>
 
-    <!-- ── UPSELLS (basic report buyers only) ── -->
-
-    <!-- Bundle upsell -->
-    <section v-if="!store.bundlePurchased && !store.oraclePurchased" class="upsell-section">
+    <!-- ── PREMIUM UPGRADE CTA ── -->
+    <section v-if="store.report && !store.subscriptionActive && !store.bundlePurchased && !store.oraclePurchased" class="upsell-section upsell-section--premium">
       <div class="editorial-rule" />
       <div class="upsell-section__inner">
-        <p class="label-caps upsell-section__eyebrow">Bundle</p>
-        <h3 class="upsell-section__heading font-serif-italic">{{ t('bundleHeadline') }}</h3>
-        <p class="annotation upsell-section__sub">{{ t('bundleDescription') }}</p>
-        <div class="upsell-items">
-          <div class="upsell-item">
-            <div class="upsell-item__info">
-              <p class="upsell-item__name">{{ t('bundleIncludes1') }}</p>
-            </div>
-            <span class="upsell-item__check">✓</span>
-          </div>
-          <div class="upsell-item">
-            <div class="upsell-item__info">
-              <p class="upsell-item__name">{{ t('bundleIncludes2') }}</p>
-            </div>
-            <span class="upsell-item__check">✓</span>
-          </div>
-        </div>
-        <div class="upsell-section__price-row">
-          <span class="upsell-section__price font-serif">$9.99</span>
-        </div>
-        <button class="upsell-cta-btn" :disabled="isLoadingBundle" @click="buyBundle">
-          {{ isLoadingBundle ? 'Loading...' : t('unlockBundle') }}
-        </button>
-        <p class="annotation upsell-section__note">{{ t('oneTimePurchase') }}</p>
+        <p class="label-caps upsell-section__eyebrow">Premium</p>
+        <h3 class="upsell-section__heading font-serif-italic">{{ t('reportPremiumCta') }}</h3>
+        <p class="annotation upsell-section__sub">{{ t('reportPremiumSubtitle') }}</p>
+        <NuxtLink to="/subscribe" class="upsell-cta-btn upsell-cta-btn--link">
+          {{ t('subscribeCtaMonthly') }}
+        </NuxtLink>
       </div>
       <div class="editorial-rule" />
-    </section>
-
-    <!-- Calendar upsell -->
-    <section v-if="!store.calendarPurchased && !store.bundlePurchased && !store.oraclePurchased" class="upsell-section">
-      <div class="upsell-section__inner">
-        <div class="upsell-section__header-row">
-          <div>
-            <p class="label-caps upsell-section__eyebrow">Timing</p>
-            <h3 class="upsell-section__heading font-serif-italic">Your 2026 Lucky Timing Calendar</h3>
-            <p class="annotation upsell-section__sub">Month-by-month destiny forecast</p>
-          </div>
-          <span class="upsell-section__price font-serif">$4.99</span>
-        </div>
-        <div class="upsell-features">
-          <p class="annotation upsell-feature">Peak months for love &amp; money</p>
-          <p class="annotation upsell-feature">Monthly lucky days highlighted</p>
-          <p class="annotation upsell-feature">Career &amp; purpose windows</p>
-          <p class="annotation upsell-feature">Caution periods to navigate</p>
-        </div>
-        <div class="cal-preview">
-          <div class="cal-bar-row">
-            <span class="annotation cal-bar-label">January</span>
-            <div class="cal-bar-track"><div class="cal-bar-fill" style="width:65%" /></div>
-          </div>
-          <div class="cal-bar-row">
-            <span class="annotation cal-bar-label">April</span>
-            <div class="cal-bar-track"><div class="cal-bar-fill" style="width:90%;opacity:0.9" /></div>
-          </div>
-          <div class="cal-bar-row">
-            <span class="annotation cal-bar-label">July</span>
-            <div class="cal-bar-track"><div class="cal-bar-fill" style="width:45%;opacity:0.5" /></div>
-          </div>
-        </div>
-        <button class="upsell-cta-btn" :disabled="isLoadingCalendar" @click="buyCalendar">
-          {{ isLoadingCalendar ? 'Processing...' : 'Unlock My 2026 Calendar →' }}
-        </button>
-        <p class="annotation upsell-section__note">One-time purchase · Instant access</p>
-      </div>
     </section>
 
     <!-- Subscription upsell — end of content -->
@@ -968,14 +889,6 @@ onMounted(async () => {
 
   isLoadingReport.value = true
 
-
-  if (sessionId && _isTraditionSwitch) {
-    // Tradition-switch return: the dedicated onMounted below handles everything.
-    // Skip normal session-based report loading to avoid clobbering store state.
-    isLoadingReport.value = false
-    return
-  }
-
   if (sessionId) {
     try {
       // STEP 1: Check if report already exists in DB
@@ -1270,8 +1183,8 @@ function trackPurchasePixel(sessionId: string, meta: Record<string, string>) {
 
   const purchaseAmount = meta.oracle === 'true' ? 24.99
     : meta.bundle === 'true' ? 9.99
-    : meta.birth_chart === 'true' ? 2.99
-    : 2.99
+    : meta.birth_chart === 'true' ? 4.99
+    : 4.99
 
   const contentName = meta.oracle === 'true' ? 'Oracle Bundle'
     : meta.bundle === 'true' ? 'Most Popular Bundle'
@@ -1285,39 +1198,6 @@ function trackPurchasePixel(sessionId: string, meta: Record<string, string>) {
   })
 }
 
-const isLoadingBundle = ref(false)
-
-async function buyBundle() {
-  if (isLoadingBundle.value) return
-  $trackUpsellViewed({ type: 'bundle', archetype: store.archetype, language: store.language })
-  isLoadingBundle.value = true
-  try {
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-      '/api/create-bundle-payment',
-      {
-        method: 'POST',
-        body: {
-          email: store.email,
-          firstName: store.firstName,
-          archetype: store.archetype,
-          lifePathNumber: store.lifePathNumber,
-          dateOfBirth: store.dateOfBirth,
-          tempId: store.tempId,
-          region: store.region,
-          language: store.language,
-          origin: window.location.origin,
-        },
-      }
-    )
-    if (url) {
-      $trackUpsellAccepted({ type: 'bundle', price: 9.99, archetype: store.archetype, language: store.language })
-      window.location.href = url
-    }
-  } catch {
-    console.error('Bundle purchase failed')
-    isLoadingBundle.value = false
-  }
-}
 
 
 const isDownloading = ref(false)
@@ -1368,35 +1248,6 @@ const partnerName = ref('')
 const partnerDob = ref('')
 const partnerCity = ref('')
 
-const isLoadingCalendar = ref(false)
-
-async function buyCalendar() {
-  if (isLoadingCalendar.value) return
-  $trackUpsellViewed({ type: 'calendar', archetype: store.archetype, language: store.language })
-  isLoadingCalendar.value = true
-  try {
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-      '/api/create-calendar-payment',
-      {
-        method: 'POST',
-        body: {
-          email: store.email,
-          firstName: store.firstName,
-          tempId: store.tempId,
-          language: store.language,
-          origin: window.location.origin,
-        },
-      }
-    )
-    if (url) {
-      $trackUpsellAccepted({ type: 'calendar', price: 4.99, archetype: store.archetype, language: store.language })
-      window.location.href = url
-    }
-  } catch {
-    console.error('Calendar purchase failed')
-    isLoadingCalendar.value = false
-  }
-}
 
 const isLoadingBirthChart = ref(false)
 
@@ -1441,33 +1292,7 @@ async function buyBirthChart() {
     await generateBirthChartAuto()
     return
   }
-  $trackUpsellViewed({ type: 'birthChart', archetype: store.archetype, language: store.language })
-  isLoadingBirthChart.value = true
-  try {
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-      '/api/create-birth-chart-payment',
-      {
-        method: 'POST',
-        body: {
-          email: store.email,
-          firstName: store.firstName,
-          tempId: store.tempId,
-          timeOfBirth: store.timeOfBirth,
-          dateOfBirth: store.dateOfBirth,
-          language: store.language,
-          origin: window.location.origin,
-        },
-      }
-    )
-    if (url) {
-      $trackUpsellAccepted({ type: 'birthChart', price: 4.99, archetype: store.archetype, language: store.language })
-      window.location.href = url
-    }
-  } catch {
-    console.error('Birth chart purchase failed')
-  } finally {
-    isLoadingBirthChart.value = false
-  }
+  navigateTo('/subscribe')
 }
 
 const isStartingSub = ref(false)
@@ -1569,122 +1394,10 @@ async function handleTraditionSwitch(newTradition: string) {
       isSwitchingTradition.value = false
     }
   } else {
-    // Paid switch: redirect to Stripe
-    isSwitchingTradition.value = true
-    try {
-      const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-        '/api/create-tradition-payment',
-        {
-          method: 'POST',
-          body: {
-            firstName:      store.firstName,
-            email:          store.email,
-            reportId:       store.tempId || store.reportSessionId,
-            newTradition,
-            archetype:      store.archetype,
-            lifePathNumber: store.lifePathNumber,
-            language:       store.language,
-            origin:         window.location.origin,
-          },
-        },
-      )
-      if (url) window.location.href = url
-    } catch {
-      console.error('Tradition payment creation failed')
-      isSwitchingTradition.value = false
-    }
+    navigateTo('/subscribe')
   }
 }
 
-// Handle returning from a tradition_switch Stripe payment
-const _traditionSwitchSessionId = route.query.session_id as string | undefined
-const _isTraditionSwitch = route.query.tradition_switch === 'true'
-
-if (_isTraditionSwitch && _traditionSwitchSessionId) {
-  onMounted(async () => {
-    try {
-      const paymentData = await $fetch<{
-        paid: boolean
-        metadata: Record<string, string> | null
-      }>('/api/verify-payment', {
-        method: 'POST',
-        body: { sessionId: _traditionSwitchSessionId },
-      })
-
-      if (!paymentData.paid) {
-        navigateTo('/preview')
-        return
-      }
-
-      const meta = paymentData.metadata ?? {}
-      if (meta.type !== 'tradition_switch' || !meta.newTradition || !meta.reportId) {
-        navigateTo('/')
-        return
-      }
-
-      // Restore store state from Stripe metadata (lost on page reload after redirect)
-      if (!store.firstName && meta.firstName)      store.firstName = meta.firstName
-      if (!store.archetype && meta.archetype)      store.setArchetype(meta.archetype)
-      if (!store.language && meta.language)        store.setLanguage(meta.language)
-      if (meta.lifePathNumber && !store.lifePathNumber) store.lifePathNumber = Number.parseInt(meta.lifePathNumber)
-
-      // Pre-load existing report from DB so the page has content while the switch runs
-      if (!store.report) {
-        try {
-          const existsData = await $fetch<{
-            exists: boolean
-            report?: { report_data: any; first_name: string; archetype: string; life_path_number: number; region?: string }
-          }>('/api/check-report-exists', {
-            method: 'POST',
-            body: { sessionId: meta.reportId },
-          })
-          if (existsData.exists && existsData.report) {
-            store.setReport(existsData.report.report_data)
-            if (!store.firstName)      store.firstName      = existsData.report.first_name
-            if (!store.archetype)      store.setArchetype(existsData.report.archetype)
-            if (!store.lifePathNumber) store.lifePathNumber = existsData.report.life_path_number
-            if (!store.region && existsData.report.region) store.setRegion(existsData.report.region, store.country)
-          }
-        } catch {
-          // Non-fatal: switch-tradition will still work without the pre-loaded report
-        }
-      }
-
-      store.setReportSessionId(meta.reportId)
-      isLoadingReport.value = false
-
-      const newTradition = meta.newTradition
-      isSwitchingTradition.value = true
-      const opt = TRADITION_OPTIONS.value.find((o: { value: string }) => o.value === newTradition)
-      switchingTraditionLabel.value = opt?.label ?? newTradition
-
-      const result = await $fetch<{ success: boolean; report: any; tradition: string }>(
-        '/api/switch-tradition',
-        {
-          method: 'POST',
-          body: {
-            sessionId:    _traditionSwitchSessionId,
-            reportId:     meta.reportId,
-            newTradition,
-            freeSwitch:   false,
-          },
-        },
-      )
-      store.setReport(result.report)
-      store.setRegion(newTradition, store.country)
-      unlockedTraditions.value = [...new Set([...unlockedTraditions.value, newTradition])]
-      await loadRegionalSection()
-      switchedTraditionLabel.value = opt?.label ?? newTradition
-      isSwitchComplete.value = true
-      setTimeout(() => { isSwitchComplete.value = false }, 4000)
-    } catch {
-      console.error('Tradition switch post-payment failed')
-      isLoadingReport.value = false
-    } finally {
-      isSwitchingTradition.value = false
-    }
-  })
-}
 
 const _currentMonthNumber = new Date().getMonth() + 1
 const visibleCalendarMonths = computed(() => {
@@ -3130,6 +2843,12 @@ async function downloadReportPDF() {
   background: none;
   border-color: var(--color-ink-ghost, rgba(26,22,18,0.08));
   color: var(--color-ink-faint, rgba(26,22,18,0.45));
+}
+
+.upsell-cta-btn--link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
 }
 
 /* ── Calendar bar preview ── */

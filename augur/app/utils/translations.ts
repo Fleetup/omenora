@@ -309,6 +309,9 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistBody: "Join the waitlist and we'll email you the day it launches.",
     androidWaitlistCta: 'Join the waitlist',
     androidWaitlistSuccess: "You're on the list. We'll be in touch.",
+
+    reportPremiumCta: 'Want unlimited readings?',
+    reportPremiumSubtitle: 'Daily insights, full Counsel access, compatibility readings, and your full birth chart — all included with Premium.',
   },
 
   es: {
@@ -612,6 +615,9 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistBody: 'Únete a la lista de espera y te avisaremos el día del lanzamiento.',
     androidWaitlistCta: 'Únete a la lista de espera',
     androidWaitlistSuccess: 'Estás en la lista. Estaremos en contacto.',
+
+    reportPremiumCta: '¿Quieres lecturas ilimitadas?',
+    reportPremiumSubtitle: 'Perspectivas diarias, acceso completo a Counsel, lecturas de compatibilidad y tu carta natal completa — todo incluido con Premium.',
   },
 
   pt: {
@@ -915,6 +921,9 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistBody: 'Entre na lista de espera e te avisaremos no dia do lançamento.',
     androidWaitlistCta: 'Entre na lista de espera',
     androidWaitlistSuccess: 'Você está na lista. Entraremos em contato.',
+
+    reportPremiumCta: 'Quer leituras ilimitadas?',
+    reportPremiumSubtitle: 'Insights diários, acesso completo ao Counsel, leituras de compatibilidade e seu mapa natal completo — tudo incluído com Premium.',
   },
 
   hi: {
@@ -1210,6 +1219,9 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatDownloadCta: 'अपना कार्ड डाउनलोड करें', // REVIEW
     compatPrivacy: 'गोपनीयता', // REVIEW
     compatTerms: 'शर्तें', // REVIEW
+
+    reportPremiumCta: 'असीमित रीडिंग चाहते हैं?', // REVIEW
+    reportPremiumSubtitle: 'दैनिक अंतर्दृष्टि, पूर्ण Counsel एक्सेस, अनुकूलता रीडिंग, और आपकी पूर्ण जन्म कुंडली — सब Premium के साथ शामिल।', // REVIEW
   },
 
   ko: {
@@ -1511,6 +1523,9 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistBody: '대기자 명단에 등록하시면 출시일에 이메일로 알려드립니다.',
     androidWaitlistCta: '대기자 명단 등록',
     androidWaitlistSuccess: '명단에 등록되었습니다. 곧 연락드리겠습니다.',
+
+    reportPremiumCta: '무제한 리딩을 원하시나요?',
+    reportPremiumSubtitle: '일일 인사이트, 전체 Counsel 액세스, 궁합 리딩, 그리고 완전한 출생 차트 — 모두 Premium에 포함.',
   },
 
   zh: {
@@ -1812,6 +1827,9 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistBody: '加入等候名单，我们将在发布当天通过邮件通知您。',
     androidWaitlistCta: '加入等候名单',
     androidWaitlistSuccess: '您已加入名单。我们会联系您。',
+
+    reportPremiumCta: '想要无限解读吗？',
+    reportPremiumSubtitle: '每日洞察、完整 Counsel 访问、合盘解读和你的完整星盘 — Premium 全部包含。',
   },
 }
 
