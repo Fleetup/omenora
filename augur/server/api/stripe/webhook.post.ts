@@ -6,6 +6,7 @@ import { sendReportEmail } from '~~/server/utils/report-email-builder'
 import { buildTestimonialRequestEmail, buildFoundingMemberEmail } from '~~/server/utils/email-templates'
 import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
+import { findOrCreateAuthUserByEmail } from '~~/server/utils/auth-bridge'
 import { inngest, subscriberWelcomeSend, stripeCheckoutCompleted } from '~~/inngest/client'
 import type { createSupabaseAdmin as _createSupabaseAdmin } from '~~/server/utils/auth'
 
@@ -369,6 +370,65 @@ export default defineEventHandler(async (event) => {
       console.info('[stripe-webhook] Subscriber saved:', { subId, subCustomer })
     } catch (err: unknown) {
       console.error('[stripe-webhook] save-subscriber failed (non-blocking):', err instanceof Error ? err.message : String(err))
+    }
+
+    // ── Write premium entitlement to public.subscriptions (cross-platform bridge) ──
+    // Resolves the Stripe customer email to a Supabase auth.users UUID via
+    // findOrCreateAuthUserByEmail, then upserts a 'premium' row into
+    // public.subscriptions. This is the same table the mobile RC webhook writes
+    // to, enabling the entitlement guard in entitlements.ts to work for both
+    // web-Stripe and mobile-RevenueCat subscribers.
+    //
+    // rc_event_id column stores the Stripe event ID here (column name is RC-era;
+    // the schema accepts any webhook event ID as an idempotency aid).
+    //
+    // Failure handling: the block is non-throwing. save-subscriber and the
+    // Inngest welcome event have already succeeded (or failed independently).
+    // Log with context and fall through so Stripe gets 200 and does not retry
+    // the entire webhook (which would re-fire save-subscriber and Inngest).
+    if (isValidEmail(subEmail) && subId) {
+      try {
+        const stripeSub = await stripe.subscriptions.retrieve(subId, {
+          expand: ['items.data.price'],
+        })
+
+        const priceId       = stripeSub.items.data[0]?.price?.id ?? null
+        const subStatus     = stripeSub.status === 'trialing' ? 'active' : stripeSub.status
+        const isTrialing    = stripeSub.status === 'trialing'
+        const purchasedAt   = new Date(stripeSub.created * 1000).toISOString()
+        const expiresAt     = stripeSub.billing_cycle_anchor
+          ? new Date(stripeSub.billing_cycle_anchor * 1000).toISOString()
+          : null
+
+        const { userId } = await findOrCreateAuthUserByEmail(subEmail)
+
+        const supabaseSubs = createSupabaseAdmin()
+        const { error: subsErr } = await supabaseSubs
+          .from('subscriptions')
+          .upsert(
+            {
+              user_id:            userId,
+              entitlement_id:     'premium',
+              product_id:         priceId,
+              store:              'web_billing',
+              status:             subStatus,
+              is_in_trial_period: isTrialing,
+              is_sandbox:         !stripeEvent.livemode,
+              purchased_at:       purchasedAt,
+              expires_at:         expiresAt,
+              rc_event_id:        stripeEvent.id,
+            },
+            { onConflict: 'user_id,entitlement_id' },
+          )
+
+        if (subsErr) {
+          console.error('[stripe-webhook] subscriptions upsert failed (non-blocking):', subsErr.message, { eventId: stripeEvent.id, subEmail, subId })
+        } else {
+          console.info('[stripe-webhook] premium entitlement written to subscriptions:', { userId, subId, priceId })
+        }
+      } catch (bridgeErr: unknown) {
+        console.error('[stripe-webhook] auth-bridge or subscriptions write failed (non-blocking):', bridgeErr instanceof Error ? bridgeErr.message : String(bridgeErr), { eventId: stripeEvent.id, subEmail, subId })
+      }
     }
 
     // ── Fire subscriber/welcome.send Inngest event (replaces inline Claude + Resend) ──
