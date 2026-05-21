@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
-import { buildTestimonialRequestEmail, buildFoundingMemberEmail } from '~~/server/utils/email-templates'
+import { buildTestimonialRequestEmail, buildFoundingMemberEmail, sendPremiumWelcomeEmail } from '~~/server/utils/email-templates'
 import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
 import { findOrCreateAuthUserByEmail } from '~~/server/utils/auth-bridge'
@@ -610,7 +610,7 @@ export default defineEventHandler(async (event) => {
           ? new Date(itemPeriodEnd * 1000).toISOString()
           : null
 
-        const { userId } = await findOrCreateAuthUserByEmail(subEmail)
+        const { userId, isNew } = await findOrCreateAuthUserByEmail(subEmail)
 
         const supabaseSubs = createSupabaseAdmin()
         const { error: subsErr } = await supabaseSubs
@@ -635,6 +635,37 @@ export default defineEventHandler(async (event) => {
           console.error('[stripe-webhook] subscriptions upsert failed (non-blocking):', subsErr.message, { eventId: stripeEvent.id, subEmail, subId })
         } else {
           console.info('[stripe-webhook] premium entitlement written to subscriptions:', { userId, subId, priceId })
+        }
+
+        // ── Send Premium welcome email with magic-link (new users only) ──
+        // Only fires for brand-new auth users (isNew=true from findOrCreateAuthUserByEmail).
+        // Returning users (isNew=false) already have an account — skip to avoid duplicate emails.
+        // The Inngest subscriber/welcome.send event fires unconditionally below (insight email).
+        if (isNew) {
+          try {
+            const resendKey = config.resendApiKey as string | undefined
+            if (resendKey) {
+              const supabaseForLink = createSupabaseAdmin()
+              const { data: linkData, error: linkErr } = await supabaseForLink.auth.admin.generateLink({
+                type:  'magiclink',
+                email: subEmail,
+              })
+              if (linkErr || !linkData?.properties?.hashed_token) {
+                console.error('[stripe-webhook] generateLink failed (non-blocking):', linkErr?.message, { eventId: stripeEvent.id, subEmail })
+              } else {
+                await sendPremiumWelcomeEmail(
+                  subEmail,
+                  subFirstName,
+                  linkData.properties.hashed_token,
+                  resendKey,
+                )
+              }
+            } else {
+              console.warn('[stripe-webhook] NUXT_RESEND_API_KEY not set — premium welcome email skipped', { subEmail })
+            }
+          } catch (welcomeErr: unknown) {
+            console.error('[stripe-webhook] premium welcome email failed (non-blocking):', welcomeErr instanceof Error ? welcomeErr.message : String(welcomeErr), { eventId: stripeEvent.id, subEmail })
+          }
         }
       } catch (bridgeErr: unknown) {
         console.error('[stripe-webhook] auth-bridge or subscriptions write failed (non-blocking):', bridgeErr instanceof Error ? bridgeErr.message : String(bridgeErr), { eventId: stripeEvent.id, subEmail, subId })

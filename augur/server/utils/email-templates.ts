@@ -1,3 +1,4 @@
+import { Resend } from 'resend'
 import { unsubscribeToken } from '~~/server/api/unsubscribe.get'
 import { EMAIL_ADDRESS_LINE, emailFooterText, emailFooterHtml, emailFooterHtmlMinimal } from '~~/server/utils/email-footer'
 
@@ -867,4 +868,247 @@ function buildHtmlEmail({
 </html>`
 
   return { html, text }
+}
+
+// ── Premium Welcome Email ──────────────────────────────────────────────────────
+
+export interface PremiumWelcomeEmailData {
+  firstName: string
+  email: string
+  tokenHash: string
+}
+
+/**
+ * Builds the transactional welcome email for a new Premium subscriber.
+ * Contains a Supabase magic-link CTA so the user can authenticate on web
+ * immediately after purchase and set up their account for the mobile app.
+ *
+ * Magic-link URL format matches the pattern expected by useAuth.confirmMagicLink:
+ *   https://omenora.com/account?token_hash={tokenHash}
+ *
+ * Returns { subject, html, text } — same shape as buildFoundingMemberEmail.
+ */
+export function buildPremiumWelcomeEmail(data: PremiumWelcomeEmailData): {
+  subject: string
+  html: string
+  text: string
+} {
+  const subject = `Welcome to OMENORA Premium — your reading awaits`
+  const ctaUrl  = `https://omenora.com/account?token_hash=${encodeURIComponent(data.tokenHash)}`
+  const unsubUrl = `https://omenora.com/api/unsubscribe?token=invalid&e=${encodeURIComponent(data.email)}`
+
+  // ── Plain-text version ──────────────────────────────────────────────────────
+  const text = [
+    `OMENORA`,
+    ``,
+    `Welcome to Premium, ${data.firstName}.`,
+    ``,
+    `Your subscription is confirmed. Your 7-day free trial is now active.`,
+    ``,
+    `Click the link below to access your reading on web and complete your account setup:`,
+    ``,
+    ctaUrl,
+    ``,
+    `This link is one-time use. If it expires, you can request a new sign-in link at omenora.com/account.`,
+    ``,
+    `What's included in Premium:`,
+    ``,
+    `- Unlimited daily cosmic insights`,
+    `- Full Counsel access (coming in the mobile app)`,
+    `- Compatibility readings`,
+    `- Priority access to new features`,
+    ``,
+    `The OMENORA mobile app is coming soon. When it launches, sign in with this email address — your Premium subscription will be waiting.`,
+    ``,
+    `Questions? Email support@omenora.com.`,
+    ``,
+    `— The OMENORA Team`,
+    ``,
+    `---`,
+    `For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.`,
+    ``,
+    emailFooterText(unsubUrl),
+  ].join('\n')
+
+  // ── HTML version ─────────────────────────────────────────────────────────────
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#07070D;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#07070D;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding-bottom:32px;text-align:center;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.2em;color:#555;text-transform:uppercase;font-family:sans-serif;">OMENORA</p>
+            </td>
+          </tr>
+
+          <!-- Status badge -->
+          <tr>
+            <td style="padding-bottom:20px;text-align:center;">
+              <span style="display:inline-block;font-size:10px;letter-spacing:0.18em;color:#8B6FE0;text-transform:uppercase;border:1px solid #3a2a70;padding:5px 14px;font-family:sans-serif;">
+                Premium — Active
+              </span>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding-bottom:24px;text-align:center;">
+              <h1 style="margin:0;font-size:26px;font-weight:400;color:#f0ece4;font-family:Georgia,serif;line-height:1.35;font-style:italic;">
+                Welcome, ${data.firstName}.
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <hr style="border:none;border-top:1px solid #1a1a24;margin:0;">
+            </td>
+          </tr>
+
+          <!-- Opening -->
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:28px;">
+              <p style="margin:0 0 14px;">Your subscription is confirmed. Your 7-day free trial is now active.</p>
+              <p style="margin:0;">Click below to access your reading and complete your account — the same account you'll use when the OMENORA mobile app launches.</p>
+            </td>
+          </tr>
+
+          <!-- CTA Button -->
+          <tr>
+            <td style="padding-bottom:32px;text-align:center;">
+              <a href="${ctaUrl}"
+                 style="display:inline-block;background-color:#6B48E0;color:#ffffff;font-family:Georgia,serif;font-size:15px;padding:18px 36px;text-decoration:none;border-radius:2px;letter-spacing:0.05em;">
+                Access your Premium account
+              </a>
+            </td>
+          </tr>
+
+          <!-- Link note -->
+          <tr>
+            <td style="padding-bottom:32px;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#444;font-family:sans-serif;">
+                One-time link. If it expires, visit
+                <a href="https://omenora.com/account" style="color:#6B48E0;">omenora.com/account</a>
+                to request a new one.
+              </p>
+            </td>
+          </tr>
+
+          <!-- What's included -->
+          <tr>
+            <td style="padding-bottom:12px;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.15em;color:#6B48E0;text-transform:uppercase;font-family:sans-serif;">What's included</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr><td style="padding:10px 0;border-bottom:1px solid #141420;">
+                  <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">Unlimited daily cosmic insights</p>
+                  <p style="margin:0;font-size:13px;color:#665e50;font-family:Georgia,serif;line-height:1.5;">Personalised to your archetype. Delivered every morning.</p>
+                </td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #141420;">
+                  <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">Counsel access</p>
+                  <p style="margin:0;font-size:13px;color:#665e50;font-family:Georgia,serif;line-height:1.5;">Full guidance sessions — launching in the mobile app.</p>
+                </td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #141420;">
+                  <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">Compatibility readings</p>
+                  <p style="margin:0;font-size:13px;color:#665e50;font-family:Georgia,serif;line-height:1.5;">Unlimited cross-pattern compatibility analysis.</p>
+                </td></tr>
+                <tr><td style="padding:10px 0;">
+                  <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">Priority access to new features</p>
+                  <p style="margin:0;font-size:13px;color:#665e50;font-family:Georgia,serif;line-height:1.5;">You'll be first when new capabilities ship.</p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Mobile handoff note -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <div style="border-left:2px solid #3a2a70;padding:14px 18px;background:rgba(107,72,224,0.06);">
+                <p style="margin:0;font-size:13px;color:#7a7060;font-family:Georgia,serif;line-height:1.6;">
+                  <strong style="color:#a09880;">Mobile app coming soon.</strong> Sign in with this email address when OMENORA launches on iOS and Android — your Premium subscription will be waiting.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Closing -->
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+              <p style="margin:0 0 14px;">Questions? Reply to this email or contact <a href="mailto:support@omenora.com" style="color:#a09880;">support@omenora.com</a>.</p>
+              <p style="margin:0;color:#665e50;">— The OMENORA Team</p>
+            </td>
+          </tr>
+
+          <!-- Disclaimer -->
+          <tr>
+            <td style="text-align:center;padding:16px 0 8px;">
+              <p style="margin:0;font-size:10px;color:#2e2e3a;font-family:sans-serif;line-height:1.5;">
+                For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.
+              </p>
+            </td>
+          </tr>
+
+          ${emailFooterHtml(unsubUrl)}
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+
+  return { subject, html, text }
+}
+
+/**
+ * Send the Premium welcome email via Resend.
+ * Generates a Supabase magic-link and delivers the branded welcome email.
+ *
+ * Non-throwing — caller must wrap in try/catch if needed, but this function
+ * internally catches Resend errors and logs them.
+ *
+ * @param email      Subscriber email address
+ * @param firstName  Subscriber first name (may be empty string for anonymous users)
+ * @param tokenHash  Supabase magic-link hashed_token from auth.admin.generateLink
+ * @param resendKey  Resend API key (from useRuntimeConfig().resendApiKey)
+ */
+export async function sendPremiumWelcomeEmail(
+  email: string,
+  firstName: string,
+  tokenHash: string,
+  resendKey: string,
+): Promise<void> {
+  const { subject, html, text } = buildPremiumWelcomeEmail({ firstName, email, tokenHash })
+  try {
+    const resendClient = new Resend(resendKey)
+    const { error: resendErr } = await resendClient.emails.send({
+      from:    'OMENORA <reading@omenora.com>',
+      replyTo: 'support@omenora.com',
+      to:      email,
+      subject,
+      html,
+      text,
+    })
+    if (resendErr) {
+      console.error('[premium-welcome] Resend send failed (non-blocking):', resendErr, { email })
+    } else {
+      console.info('[premium-welcome] welcome email sent:', { email })
+    }
+  } catch (err: unknown) {
+    console.error('[premium-welcome] Resend exception (non-blocking):', err instanceof Error ? err.message : String(err), { email })
+  }
 }
