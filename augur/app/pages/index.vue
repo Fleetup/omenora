@@ -3,52 +3,113 @@
 
     <!-- ① HERO -->
     <section class="hero">
+      <picture class="hero__bg">
+        <source media="(max-width: 768px)" type="image/avif" srcset="/images/hero/hero-bg-mobile.avif" />
+        <source media="(max-width: 768px)" type="image/webp" srcset="/images/hero/hero-bg-mobile.webp" />
+        <source type="image/avif" srcset="/images/hero/hero-bg-desktop.avif" />
+        <source type="image/webp" srcset="/images/hero/hero-bg-desktop.webp" />
+        <img
+          src="/images/hero/hero-bg-desktop.webp"
+          alt=""
+          width="1440"
+          height="900"
+          loading="eager"
+          fetchpriority="high"
+          class="hero__bg-img"
+        />
+      </picture>
+      <div class="hero__scrim" aria-hidden="true" />
+
       <div class="hero__layout">
         <div class="hero__inner">
-          <p class="label-caps hero__issue">№ 001 — Six Traditions · Swiss Ephemeris Precision</p>
+          <p class="label-caps hero__issue">№ 001 · OMENORA</p>
+
           <h1 class="hero__display">
-            <span class="hero__display-italic">Omen</span>ora
+            <span
+              v-for="(w, i) in headlineWords"
+              :key="i"
+              class="hero__word"
+              :style="{ '--d': (300 + i * 80) + 'ms' }"
+            ><em v-if="w.emphasis" class="hero__display-em">{{ w.text }}</em><template v-else>{{ w.text }}</template></span>
           </h1>
-          <div class="hero__rule" />
-          <p class="pull-quote hero__pull">{{ heroVariant.headline }}</p>
-          <p v-if="heroVariant.subhead" class="label-caps hero__variant-sub">{{ heroVariant.subhead }}</p>
-          <p class="hero__body">{{ heroVariant.bodyText }}</p>
+
+          <p
+            v-if="heroVariant.subhead"
+            class="hero__subhead"
+            :style="{ '--d': delays.subhead }"
+          >{{ heroVariant.subhead }}</p>
+
+          <p class="hero__body" :style="{ '--d': delays.body }">{{ heroVariant.bodyText }}</p>
+
+          <p
+            v-if="showPricing"
+            class="hero__pricing"
+            :style="{ '--d': delays.pricing }"
+          >Founding deposit: <span class="hero__pricing-amount">$20</span> · One-time · Refundable for 7 days</p>
+
           <div class="hero__actions">
-            <CTAButton :to="heroVariant.primaryCtaTo" :arrow="true">{{ heroVariant.primaryCtaText }}</CTAButton>
-            <CTAButton
+            <div
+              class="hero__cta-wrap hero__cta-wrap--primary"
+              :style="{ '--d': delays.primary, '--cta-pulse-delay': delays.primaryPulse }"
+            >
+              <CTAButton :to="heroVariant.primaryCtaTo" variant="cta" :full="true">{{ heroVariant.primaryCtaText }}</CTAButton>
+            </div>
+            <div
               v-if="heroVariant.secondaryCtaText"
-              :to="heroVariant.secondaryCtaTo!"
-              variant="outline"
-            >{{ heroVariant.secondaryCtaText }}</CTAButton>
+              class="hero__cta-wrap hero__cta-wrap--secondary"
+              :style="{ '--d': delays.secondary }"
+            >
+              <CTAButton :to="heroVariant.secondaryCtaTo!" variant="outline" :full="true">{{ heroVariant.secondaryCtaText }}</CTAButton>
+            </div>
           </div>
+
+          <p class="hero__social" :style="{ '--d': delays.social }">
+            <span class="hero__social-count">{{ readingCount }}</span> charts read · No subscription required · 60 seconds
+          </p>
         </div>
 
-        <div class="hero__archetypes" aria-hidden="true">
-          <div class="hero__archetypes-grid">
-            <button
-              v-for="(a, i) in archetypeSymbols"
-              :key="a.key"
-              class="hero__archetype-item"
-              :class="{ 'hero__archetype-item--lit': litIndex === i }"
-              @mouseenter="litIndex = i"
-              @mouseleave="litIndex = highlightIndex"
-              @click="navigateTo('/analysis')"
-            >
-              <img
-                :src="`/symbols/${a.file}`"
-                :alt="a.name"
-                class="hero__archetype-img"
-              />
-            </button>
-          </div>
+        <div class="hero__visual" aria-hidden="true">
+          <img
+            src="/images/hero/archetype-glow.webp"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            class="hero__glow"
+          />
+          <img
+            src="/images/hero/hero-celestial.webp"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            class="hero__celestial"
+          />
+          <div class="hero__archetypes">
+            <div class="hero__archetypes-grid">
+              <button
+                v-for="(a, i) in archetypeSymbols"
+                :key="a.key"
+                class="hero__archetype-item"
+                :class="{ 'hero__archetype-item--lit': litIndex === i }"
+                @mouseenter="litIndex = i"
+                @mouseleave="litIndex = highlightIndex"
+                @click="navigateTo('/analysis')"
+              >
+                <img
+                  :src="`/symbols/${a.file}`"
+                  :alt="a.name"
+                  class="hero__archetype-img"
+                />
+              </button>
+            </div>
 
-          <div class="hero__archetypes-hook">
-            <p class="hero__archetypes-question font-serif">
-              One of these is yours.
-            </p>
-            <NuxtLink to="/analysis" class="label-caps hero__archetypes-cta">
-              Find out which →
-            </NuxtLink>
+            <div class="hero__archetypes-hook">
+              <p class="hero__archetypes-question font-serif">
+                One of these is yours.
+              </p>
+              <NuxtLink to="/analysis" class="label-caps hero__archetypes-cta">
+                Find out which →
+              </NuxtLink>
+            </div>
           </div>
         </div>
       </div>
@@ -257,6 +318,7 @@ const { trackEvent: clarityTrack } = useClarity()
 interface HeroVariant {
   variantKey:       string
   headline:         string
+  headlineEmphasis?: string   // single word italicized in the display headline
   subhead:          string
   bodyText:         string
   primaryCtaText:   string
@@ -267,9 +329,10 @@ interface HeroVariant {
 
 const DEFAULT_HERO: HeroVariant = {
   variantKey:       'default_founding',
-  headline:         'Six traditions. One reading. Built from your exact birth.',
-  subhead:          'Become a Founding Member of OMENORA before public launch.',
-  bodyText:         'Most horoscopes are written for 1 in 12 people. OMENORA reads your exact chart across Western, Vedic, BaZi, Tarot, Mayan, and Chinese traditions. Join as a Founding Member for $20 today — get 50% off Premium for life when the mobile app launches.',
+  headline:         'Find out who you actually are.',
+  headlineEmphasis: 'actually',
+  subhead:          'Six traditions. One reading. Built from your exact planetary positions, in 60 seconds.',
+  bodyText:         'Most horoscopes are written for 1 in 12 people. OMENORA reads your exact birth chart across six traditions. Join before public launch — $20 today, 50% off Premium for life.',
   primaryCtaText:   'Become a Founding Member — $20',
   primaryCtaTo:     '/founding',
   secondaryCtaText: 'Try the free reading',
@@ -352,6 +415,39 @@ const heroVariant = computed<HeroVariant>(() => {
   if (!src) return { ...DEFAULT_HERO }
   const creative = (route.query.utm_creative as string) || ''
   return resolveHeroVariant(creative)
+})
+
+// ── Hero entrance choreography ────────────────────────────────────────
+// Headline reveals word-by-word; downstream stages cascade from word count.
+const headlineWords = computed(() =>
+  heroVariant.value.headline.split(' ').map((text) => ({
+    text,
+    emphasis: !!heroVariant.value.headlineEmphasis
+      && text.replace(/[.,!?;:]+$/, '') === heroVariant.value.headlineEmphasis,
+  }))
+)
+
+// Pricing strip only shows on the founding-deposit funnel, hidden on free-reading variants.
+const showPricing = computed(() => heroVariant.value.primaryCtaTo === '/founding')
+
+// Stage delays (ms), derived from headline length so the cascade adapts per variant.
+const delays = computed(() => {
+  const n = headlineWords.value.length
+  const subhead = 300 + n * 80 + 200
+  const body = subhead + 200
+  const pricing = body + 200
+  const primary = (showPricing.value ? pricing : body) + 200
+  const secondary = primary + 100
+  const social = secondary + 100
+  return {
+    subhead:      `${subhead}ms`,
+    body:         `${body}ms`,
+    pricing:      `${pricing}ms`,
+    primary:      `${primary}ms`,
+    primaryPulse: `${primary + 500}ms`,
+    secondary:    `${secondary}ms`,
+    social:       `${social}ms`,
+  }
 })
 
 useSeoMeta({
@@ -541,35 +637,155 @@ section {
 
 /* ── ① Hero ── */
 .hero {
-  padding-top: clamp(64px, 12vw, 120px);
-  padding-bottom: clamp(40px, 8vw, 80px);
+  position: relative;
+  padding-top: clamp(56px, 12vw, 120px);
+  padding-bottom: clamp(48px, 8vw, 80px);
+  overflow: hidden;
+}
+.hero__bg { position: absolute; inset: 0; z-index: 0; }
+.hero__bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  animation: heroBgIn 800ms var(--ease-out-expo) both;
+}
+.hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(26, 14, 34, 0.58) 0%,
+    rgba(26, 14, 34, 0.32) 38%,
+    rgba(26, 14, 34, 0.82) 100%
+  );
 }
 .hero__layout {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 64px;
+  gap: 56px;
   align-items: center;
 }
 @media (min-width: 900px) {
-  .hero__layout { grid-template-columns: 1fr 1fr; gap: 80px; }
+  .hero__layout { grid-template-columns: 1.05fr 0.95fr; gap: 72px; }
 }
-.hero__inner { max-width: 820px; }
-.hero__issue { color: var(--color-ink-faint); margin-bottom: 28px; }
+.hero__inner { max-width: 540px; }
+@media (min-width: 900px) { .hero__inner { max-width: 600px; } }
+
+.hero__issue {
+  color: var(--color-ink-faint);
+  margin: 0 0 22px;
+  animation: heroDrop 400ms var(--ease-out-expo) 100ms both;
+}
+
 .hero__display {
   font-family: 'Fraunces', serif;
   font-weight: 300;
-  font-size: var(--text-display);
-  line-height: 0.88;
-  letter-spacing: -0.04em;
-  margin: 0 0 40px;
+  font-size: var(--text-hero-headline);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  margin: 0 0 22px;
   color: var(--color-ink);
 }
-.hero__display-italic { font-style: italic; }
-.hero__rule { width: 64px; height: 1px; background: var(--color-ink-mid); margin-bottom: 36px; }
-.hero__pull { max-width: 38ch; margin-bottom: 12px; color: var(--color-ink); }
-.hero__variant-sub { color: var(--color-ink-mid); font-style: italic; font-size: 11px; letter-spacing: 0.06em; text-transform: none; margin-top: 0; margin-bottom: 24px; max-width: 48ch; }
-.hero__body { font-size: var(--text-body); line-height: 1.7; max-width: 48ch; color: var(--color-ink-mid); margin-bottom: 40px; }
-.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 48px; }
+@media (min-width: 900px) {
+  .hero__display { font-size: clamp(48px, 5vw, 66px); line-height: 0.98; }
+}
+.hero__word {
+  display: inline-block;
+  margin-right: 0.26em;
+  animation: heroRise 600ms var(--ease-out-expo) var(--d, 0ms) both;
+}
+.hero__display-em { font-style: italic; }
+
+.hero__subhead {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: var(--text-subhead);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.35;
+  color: var(--color-ink-mid);
+  max-width: 30ch;
+  margin: 0 0 22px;
+  --rise: 8px;
+  animation: heroRise 500ms var(--ease-out-expo) var(--d, 0ms) both;
+}
+
+.hero__body {
+  font-size: var(--text-body);
+  line-height: 1.62;
+  max-width: 32ch;
+  color: var(--color-ink);
+  margin: 0 0 24px;
+  animation: heroFade 500ms var(--ease-out-expo) var(--d, 0ms) both;
+}
+@media (min-width: 900px) { .hero__body { max-width: 42ch; } }
+
+.hero__pricing {
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: var(--text-pricing-meta);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-mid);
+  margin: 0 0 22px;
+  animation: heroFade 400ms var(--ease-out-expo) var(--d, 0ms) both;
+}
+.hero__pricing-amount { color: var(--color-gold); font-weight: 700; }
+
+.hero__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  margin-bottom: 22px;
+}
+.hero__cta-wrap { width: 100%; }
+.hero__cta-wrap--primary {
+  --rise: 8px;
+  animation: heroRise 500ms var(--ease-out-expo) var(--d, 0ms) both;
+}
+.hero__cta-wrap--secondary {
+  animation: heroFade 400ms var(--ease-out-expo) var(--d, 0ms) both;
+}
+
+.hero__social {
+  font-size: var(--text-caption);
+  line-height: 1.5;
+  color: var(--color-ink-faint);
+  margin: 0;
+  animation: heroFade 400ms var(--ease-out-expo) var(--d, 0ms) both;
+}
+.hero__social-count { color: var(--color-gold); font-weight: 600; }
+
+/* Entrance keyframes (Level 2 premium consumer-brand cascade) */
+/* Scale-only settle (no opacity fade): keeps the full-bleed bg a valid FCP/LCP
+   candidate from first paint — an opacity-0 start delays both metrics. */
+@keyframes heroBgIn   { from { transform: scale(1.05); } to { transform: scale(1); } }
+@keyframes heroDrop   { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes heroRise   { from { opacity: 0; transform: translateY(var(--rise, 12px)); } to { opacity: 1; transform: translateY(0); } }
+@keyframes heroFade   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes celestialIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 0.7; transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__bg-img,
+  .hero__issue,
+  .hero__word,
+  .hero__subhead,
+  .hero__body,
+  .hero__pricing,
+  .hero__cta-wrap--primary,
+  .hero__cta-wrap--secondary,
+  .hero__social {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hero__celestial { animation: none !important; transform: none !important; }
+}
 
 /* ── ② Trust strip ── */
 .trust-strip { padding-top: 0; padding-bottom: 0; }
@@ -705,17 +921,56 @@ section {
 .tradition-item__name { font-size: 20px; font-weight: 400; letter-spacing: -0.01em; margin: 0 0 8px; color: var(--color-ink); }
 .tradition-item__desc { font-size: var(--text-caption); line-height: 1.65; color: var(--color-ink-mid); margin: 0; }
 
-/* ── Hero archetype grid ── */
+/* ── Hero right-column visual (desktop only): celestial portal + archetype grid ── */
+.hero__visual { display: none; }
+@media (min-width: 900px) {
+  .hero__visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 480px;
+  }
+}
+.hero__glow {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 96%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: 0.38;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero__celestial {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  object-fit: contain;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 1;
+  animation: celestialIn 1000ms var(--ease-out-expo) 100ms both;
+}
 .hero__archetypes {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 28px;
-  align-items: flex-start;
+  align-items: center;
+  width: 100%;
+  max-width: 360px;
 }
 .hero__archetypes-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 14px;
   width: 100%;
 }
 .hero__archetype-item {
@@ -729,14 +984,14 @@ section {
   aspect-ratio: 1;
   border-radius: 50%;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  opacity: 0.18;
+  opacity: 0.3;
 }
 .hero__archetype-item:hover {
-  opacity: 0.95;
+  opacity: 1;
   transform: scale(1.08);
 }
 .hero__archetype-item--lit {
-  opacity: 0.9;
+  opacity: 1;
   transform: scale(1.06);
 }
 .hero__archetype-img {
@@ -744,13 +999,20 @@ section {
   height: auto;
   aspect-ratio: 1;
   object-fit: contain;
-  filter: brightness(0) saturate(100%);
+  filter: brightness(0) invert(1);
   display: block;
+  transition: filter 0.3s ease;
+}
+.hero__archetype-item--lit .hero__archetype-img,
+.hero__archetype-item:hover .hero__archetype-img {
+  filter: brightness(0) invert(1) drop-shadow(0 0 12px var(--color-gold-glow));
 }
 .hero__archetypes-hook {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  align-items: center;
+  text-align: center;
 }
 .hero__archetypes-question {
   font-family: 'Cormorant Garamond', serif;
@@ -762,15 +1024,15 @@ section {
   line-height: 1.2;
 }
 .hero__archetypes-cta {
-  color: var(--color-ink-faint);
+  color: var(--color-gold-dim);
   text-decoration: none;
   font-size: 10px;
   letter-spacing: 0.3em;
   transition: color 0.2s;
 }
-.hero__archetypes-cta:hover { color: var(--color-ink); }
-@media (max-width: 900px) {
-  .hero__archetypes { display: none; }
+.hero__archetypes-cta:hover { color: var(--color-gold); }
+@media (max-width: 899px) {
+  .hero__visual { display: none; }
 }
 
 /* ── ④ Archetype slideshow ── */

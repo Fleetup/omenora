@@ -162,6 +162,11 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
         { rel: 'manifest', href: '/site.webmanifest' },
         { rel: 'sitemap', type: 'application/xml', href: 'https://omenora.com/sitemap.xml' },
+        // Hero LCP imagery — preload AVIF (the format the <picture> actually serves to modern
+        // browsers). `type` gates the hint so non-AVIF browsers ignore it and fall back to the
+        // WebP <source> without a wasted double-download. Per-breakpoint via media.
+        { rel: 'preload', as: 'image', href: '/images/hero/hero-bg-mobile.avif', type: 'image/avif', media: '(max-width: 768px)', fetchpriority: 'high' },
+        { rel: 'preload', as: 'image', href: '/images/hero/hero-bg-desktop.avif', type: 'image/avif', media: '(min-width: 769px)', fetchpriority: 'high' },
         // Fraunces + Cormorant Garamond + Hanken Grotesk + JetBrains Mono — Editorial design system
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },

@@ -19,7 +19,7 @@
 import { NuxtLink } from '#components'
 
 withDefaults(defineProps<{
-  variant?: 'solid' | 'outline'   // default: 'solid'
+  variant?: 'solid' | 'outline' | 'cta'   // default: 'solid'
   to?: string                      // renders as NuxtLink if provided
   type?: 'button' | 'submit'
   arrow?: boolean
@@ -65,6 +65,32 @@ withDefaults(defineProps<{
 
 .cta-btn--outline:hover {
   border-color: var(--color-ink);
+}
+
+/* Saturated conversion variant (14.5i hero) — gold-glow entrance pulse, pink hover glow */
+.cta-btn--cta {
+  background: var(--color-cta);
+  color: var(--color-ink);
+  padding: 16px 30px;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.25s;
+  animation: ctaPulse 1200ms cubic-bezier(0.16, 1, 0.3, 1) var(--cta-pulse-delay, 800ms) 1;
+}
+
+.cta-btn--cta:hover {
+  background: var(--color-cta-hover);
+  opacity: 1;
+  box-shadow: 0 0 32px var(--color-cta-glow);
+  transform: translateY(-2px);
+}
+
+@keyframes ctaPulse {
+  0%   { box-shadow: 0 0 0 0 var(--color-gold-glow); }
+  55%  { box-shadow: 0 0 32px 2px var(--color-gold-glow); }
+  100% { box-shadow: 0 0 0 0 var(--color-gold-glow); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-btn--cta { animation: none !important; }
 }
 
 .cta-btn--full {

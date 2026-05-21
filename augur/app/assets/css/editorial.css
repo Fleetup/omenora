@@ -39,6 +39,13 @@
   /* Spacing rhythm */
   --space-section: clamp(64px, 10vw, 120px);
   --space-block:   clamp(32px, 5vw, 56px);
+
+  /* Hero rebuild (14.5i) — mobile-first cosmic hero */
+  --color-gold-glow:    rgba(201, 168, 76, 0.45);  /* CTA pulse + lit-archetype halo; gold, distinct from pink --color-cta-glow */
+  --text-hero-headline: clamp(34px, 9vw, 52px);    /* hero sentence headline, not the wordmark scale of --text-display */
+  --text-subhead:       clamp(19px, 4.5vw, 24px);  /* Cormorant italic subhead, between --text-pull and --text-body */
+  --text-pricing-meta:  12px;                       /* fine-print pricing strip, one notch under --text-caption */
+  --ease-out-expo:      cubic-bezier(0.16, 1, 0.3, 1); /* shared decisive entrance easing */
 }
 
 /* ── Typography utilities ── */
