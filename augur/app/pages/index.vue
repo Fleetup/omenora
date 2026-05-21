@@ -11,7 +11,7 @@
           </h1>
           <div class="hero__rule" />
           <p class="pull-quote hero__pull">{{ heroVariant.headline }}</p>
-          <p class="label-caps hero__variant-sub">{{ heroVariant.subhead }}</p>
+          <p v-if="heroVariant.subhead" class="label-caps hero__variant-sub">{{ heroVariant.subhead }}</p>
           <p class="hero__body">{{ heroVariant.bodyText }}</p>
           <div class="hero__actions">
             <CTAButton :to="heroVariant.primaryCtaTo" :arrow="true">{{ heroVariant.primaryCtaText }}</CTAButton>
@@ -567,7 +567,7 @@ section {
 .hero__display-italic { font-style: italic; }
 .hero__rule { width: 64px; height: 1px; background: var(--color-ink-mid); margin-bottom: 36px; }
 .hero__pull { max-width: 38ch; margin-bottom: 12px; color: var(--color-ink); }
-.hero__variant-sub { color: var(--color-ink-faint); margin-bottom: 20px; max-width: 48ch; }
+.hero__variant-sub { color: var(--color-ink-mid); font-style: italic; font-size: 11px; letter-spacing: 0.06em; text-transform: none; margin-top: 0; margin-bottom: 24px; max-width: 48ch; }
 .hero__body { font-size: var(--text-body); line-height: 1.7; max-width: 48ch; color: var(--color-ink-mid); margin-bottom: 40px; }
 .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 48px; }
 
