@@ -122,92 +122,14 @@
         <TrustpilotWidget />
       </div>
 
-      <!-- ── PAYWALL (standard pricing) ── -->
+      <!-- ── PAYWALL (subscription CTA) ── -->
       <section v-if="!appliedPromo || appliedPromo.codeType !== 'full_access'" class="paywall">
         <div class="editorial-rule" />
 
         <div class="paywall__header">
-          <p class="paywall__personal font-serif">{{ store.firstName }}, your {{ archetypeShortName }} reading is 85% complete.</p>
-          <p class="annotation paywall__sub">What you just read is the surface. The sections below go into the patterns that actually run your life.</p>
+          <p class="paywall__personal font-serif">{{ store.firstName }}, {{ t('paywallHeading') }}</p>
+          <p class="annotation paywall__sub">{{ t('paywallSubtitle') }}</p>
         </div>
-
-        <!-- Tier cards -->
-        <div class="paywall__tiers">
-
-          <!-- Tier 1: Basic (decoy) -->
-          <div
-            class="tier tier--basic"
-            :class="{ 'tier--selected': selectedTier === 1, 'tier--deprioritized': isPriceTest }"
-            @click="selectedTier = 1"
-          >
-            <div v-if="isPriceTest" class="tier__debug">variant: deprioritize-1</div>
-            <div class="tier__info">
-              <p class="tier__name label-caps">{{ t('basicReport') }}</p>
-              <p class="annotation tier__desc">Full 7-section {{ archetypeShortName }} reading revealing why you operate the way you do</p>
-            </div>
-            <p class="tier__price font-serif">$4.99</p>
-          </div>
-
-          <!-- Tier 2: Most Popular (target) -->
-          <div
-            class="tier tier--popular"
-            :class="{ 'tier--selected-popular': selectedTier === 2 }"
-            @click="selectedTier = 2"
-          >
-            <div class="tier__badge label-caps">★ Most Popular</div>
-            <div class="tier__popular-inner">
-              <div class="tier__info">
-                <p class="tier__name tier__name--popular label-caps">{{ t('popularBundle') }}</p>
-                <p class="annotation tier__desc tier__desc--popular">❆ Full {{ archetypeShortName }} reading + your 2026 destiny windows + compatibility with one person</p>
-              </div>
-              <div class="tier__price-block">
-                <p class="tier__price tier__price--popular font-serif">$9.99</p>
-                <p class="annotation tier__price-note">one-time payment</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tier 3: Oracle (anchor) — hidden in 2-tier canary -->
-          <template v-if="!isTwoTierVariant">
-            <div
-              class="tier tier--oracle"
-              :class="{ 'tier--selected-oracle': selectedTier === 3 }"
-              @click="selectedTier = 3"
-            >
-              <div class="tier__badge tier__badge--oracle label-caps">★ Premium</div>
-              <div class="tier__oracle-inner">
-                <div class="tier__info">
-                  <p class="tier__name tier__name--oracle label-caps">{{ t('oracleHeadline') }}</p>
-                  <p class="annotation tier__desc tier__desc--oracle">{{ t('oracleDescription') }}</p>
-                  <ul class="tier__includes">
-                    <li class="annotation tier__includes-item">✓ {{ t('oracleIncludes1') }}</li>
-                    <li class="annotation tier__includes-item">✓ {{ t('oracleIncludes2') }}</li>
-                    <li class="annotation tier__includes-item">✓ {{ t('oracleIncludes3') }}</li>
-                    <li class="annotation tier__includes-item">✓ {{ t('oracleIncludes4') }}</li>
-                  </ul>
-                </div>
-                <div class="tier__price-block">
-                  <p class="tier__price tier__price--oracle font-serif">$24.99</p>
-                </div>
-              </div>
-            </div>
-          </template>
-          <div v-if="isTwoTierVariant" class="tier__debug">variant: 2-tier</div>
-
-        </div>
-
-        <!--
-          PRICE VERIFICATION — last checked 2026-04-17
-          Basic:  display $4.99 = Stripe 499 ✓
-          Middle: display $9.99 = Stripe 999 ✓
-          Oracle: display $24.99 = Stripe 2499 ✓
-
-          If display prices change, update corresponding Stripe unit_amount in:
-            server/api/create-payment.post.ts (basic)
-            server/api/create-bundle-payment.post.ts (middle)
-            server/api/create-oracle-payment.post.ts (oracle)
-          Never change display without updating Stripe.
-        -->
 
         <!-- Promo code -->
         <div class="paywall__promo">
@@ -250,7 +172,7 @@
           </template>
         </div>
 
-        <!-- Email -->
+        <!-- Email capture (kept for abandonment sequence) -->
         <div class="paywall__email">
           <label class="label-caps paywall__email-label" for="email-address">Where should we send your full reading?</label>
           <input
@@ -265,30 +187,24 @@
           />
         </div>
 
-        <!-- CTA -->
+        <!-- Single Premium CTA -->
         <button
           class="paywall__cta"
-          :class="{
-            'paywall__cta--processing': isProcessingPayment || isApplyingFreeAccess,
-            'paywall__cta--basic': selectedTier === 1 && !appliedPromo,
-            'paywall__cta--oracle': selectedTier === 3 && !appliedPromo,
-          }"
+          :class="{ 'paywall__cta--processing': isProcessingPayment || isApplyingFreeAccess }"
           :disabled="isProcessingPayment || isApplyingFreeAccess || !email"
-          @click="appliedPromo?.codeType === 'full_access' ? applyFreeAccess() : handlePayment()"
+          @click="appliedPromo?.codeType === 'full_access' ? applyFreeAccess() : handlePremiumCta()"
         >
           <span v-if="isProcessingPayment || isApplyingFreeAccess">Processing…</span>
           <span v-else-if="appliedPromo?.codeType === 'full_access'">Get My Complete Reading →</span>
-          <span v-else-if="selectedTier === 1">{{ t('unlockBasic') }}</span>
-          <span v-else-if="selectedTier === 2">{{ t('unlockPopular') }}</span>
-          <span v-else>{{ t('unlockOracle') }}</span>
+          <span v-else>{{ t('paywallCtaPremium') }}</span>
         </button>
 
-        <!-- Guarantee & trust -->
+        <!-- Trust line: refund + subscription -->
         <div class="paywall__guarantee annotation">
           <span class="paywall__guarantee-check">✦</span>
-          <span>If it doesn't feel like it was written for you — full refund, same day, no form to fill.</span>
+          <span>{{ t('subscribeRefundClause') }}</span>
         </div>
-        <p class="annotation paywall__trust-onetime">One-time payment. Nothing recurring. Your reading arrives by email within seconds.</p>
+        <p class="annotation paywall__trust-onetime">{{ t('paywallTrustSubscription') }}</p>
         <p class="annotation paywall__trust-secure">{{ t('securedStripe') }}</p>
       </section>
 
@@ -655,48 +571,68 @@ async function onEmailBlur() {
     // Silent fail — never block the UI
   }
 }
-const selectedTier = ref<1 | 2 | 3>(2)
-
-// ── B6-2: 2-tier paywall canary (?preview_variant=2tier) ────────────
-const previewVariant = computed(() => route.query.preview_variant as string | undefined)
-const isTwoTierVariant = computed(() => previewVariant.value === '2tier')
-
-// ── B6-3: Tier 1 de-emphasis canary (?price_test=deprioritize1) ─────
-const isPriceTest = computed(() => route.query.price_test === 'deprioritize1')
-
-async function handlePayment() {
+async function handlePremiumCta() {
   if (isProcessingPayment.value) return
   if (!email.value) return
 
-  const tierValues: Record<number, number> = { 1: 4.99, 2: 9.99, 3: 24.99 }
   $trackTierSelected({
-    tier: selectedTier.value,
-    price: tierValues[selectedTier.value] || 4.99,
+    tier: 'premium' as any,
+    price: 14.99,
     archetype: store.archetype,
     language: store.language,
   })
   $trackInitiateCheckout({
-    value: tierValues[selectedTier.value] || 4.99,
+    value: 14.99,
     currency: 'USD',
-    content_name: 'Destiny Reading',
+    content_name: 'Premium Subscription',
   })
   useClarity().trackEvent('initiate_checkout')
+
+  store.setEmail(email.value)
+
+  try {
+    const utms = sessionStorage.getItem('omenora_utms')
+    const utmParams: Record<string, string> = utms ? JSON.parse(utms) : {}
+
+    const context = {
+      firstName:     store.firstName,
+      email:         email.value,
+      archetype:     store.archetype,
+      lifePathNumber: store.lifePathNumber,
+      dateOfBirth:   store.dateOfBirth,
+      timeOfBirth:   store.timeOfBirth,
+      city:          store.city,
+      region:        store.region,
+      language:      store.language,
+      tempId:        store.tempId,
+      ...utmParams,
+    }
+    sessionStorage.setItem('omenora_preview_context', JSON.stringify(context))
+  } catch {
+    // sessionStorage unavailable — proceed without context
+  }
+
+  await navigateTo('/subscribe')
+}
+
+async function handlePayment() {
+  if (isProcessingPayment.value) return
+  if (!email.value) return
 
   isProcessingPayment.value = true
 
   store.setEmail(email.value)
 
   try {
-    // If a discount promo code is applied, route through apply-promo-discount
+    // Discount promo code path — routes through apply-promo-discount
     if (appliedPromo.value?.codeType === 'discount_percent') {
-      const tierName = selectedTier.value === 1 ? 'basic' : selectedTier.value === 2 ? 'bundle' : 'oracle'
       const { url } = await $fetch<{ sessionId: string; url: string | null }>('/api/apply-promo-discount', {
         method: 'POST',
         body: {
           codeId:        appliedPromo.value.codeId,
           code:          promoCodeInput.value.trim(),
           email:         email.value,
-          tier:          tierName,
+          tier:          'bundle',
           firstName:     store.firstName,
           archetype:     store.archetype,
           lifePathNumber: store.lifePathNumber,
@@ -711,33 +647,6 @@ async function handlePayment() {
       if (url) window.location.href = url
       return
     }
-
-    let endpoint = '/api/create-payment'
-
-    if (selectedTier.value === 2) {
-      endpoint = '/api/create-bundle-payment'
-    } else if (selectedTier.value === 3) {
-      endpoint = '/api/create-oracle-payment'
-    }
-
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>(endpoint, {
-      method: 'POST',
-      body: {
-        email: email.value,
-        firstName: store.firstName,
-        archetype: store.archetype,
-        lifePathNumber: store.lifePathNumber,
-        dateOfBirth: store.dateOfBirth,
-        timeOfBirth: store.timeOfBirth,
-        tempId: store.tempId,
-        region: store.region,
-        language: store.language,
-        city: store.city,
-        origin: window.location.origin,
-      },
-    })
-
-    if (url) window.location.href = url
   } catch {
     console.error('Payment processing failed')
     isProcessingPayment.value = false
@@ -1082,139 +991,6 @@ async function handlePayment() {
 
 .paywall__sub { color: var(--color-ink-mid); }
 
-/* ── Tier cards ── */
-.paywall__tiers {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 28px;
-  max-width: 560px;
-}
-
-.tier {
-  padding: 18px 20px;
-  border: 1px solid var(--color-ink-ghost);
-  background: transparent;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.tier:hover {
-  border-color: rgba(26, 22, 18, 0.3);
-  background: rgba(26, 22, 18, 0.02);
-}
-
-.tier--selected {
-  border-color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.04);
-}
-
-.tier--deprioritized { opacity: 0.55; }
-
-.tier__info { flex: 1; }
-
-.tier__name {
-  color: var(--color-ink);
-  margin-bottom: 4px;
-}
-
-.tier__desc {
-  color: var(--color-ink-faint);
-  line-height: 1.4;
-}
-
-.tier__price {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 28px;
-  font-weight: 400;
-  color: var(--color-ink);
-  flex-shrink: 0;
-}
-
-/* Popular tier */
-.tier--popular {
-  border-color: var(--color-ink-mid);
-  padding: 0;
-  overflow: hidden;
-}
-
-.tier--selected-popular {
-  border-color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.04);
-}
-
-.tier__badge {
-  background: var(--color-ink);
-  color: var(--color-bone);
-  padding: 6px 16px;
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-weight: 700;
-}
-
-.tier__popular-inner,
-.tier__oracle-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 20px;
-}
-
-.tier__name--popular,
-.tier__name--oracle {
-  color: var(--color-ink);
-  margin-bottom: 4px;
-}
-
-.tier__desc--popular,
-.tier__desc--oracle {
-  color: var(--color-ink-faint);
-  line-height: 1.4;
-}
-
-.tier__price-block {
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.tier__price--popular,
-.tier__price--oracle {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 28px;
-  font-weight: 400;
-  color: var(--color-ink);
-}
-
-.tier__price-note {
-  color: var(--color-ink-faint);
-  font-size: 10px;
-  white-space: nowrap;
-}
-
-.tier__price-note--oracle { color: var(--color-ink-mid); }
-
-/* Oracle tier */
-.tier--oracle { border-color: var(--color-ink-ghost); }
-
-.tier--selected-oracle {
-  border-color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.04);
-}
-
-.tier__debug {
-  font-size: 9px;
-  color: var(--color-ink-faint);
-  padding: 4px 8px;
-  background: rgba(26, 22, 18, 0.05);
-  font-family: monospace;
-}
-
 /* ── Promo code ── */
 .paywall__promo {
   margin-bottom: 24px;
@@ -1348,16 +1124,6 @@ async function handlePayment() {
   cursor: not-allowed;
 }
 
-.paywall__cta--basic {
-  background: transparent;
-  color: var(--color-ink);
-  border: 1px solid var(--color-ink-mid);
-}
-
-.paywall__cta--basic:hover:not(:disabled) {
-  background: rgba(26, 22, 18, 0.06);
-}
-
 /* ── Guarantee & trust ── */
 .paywall__guarantee {
   display: flex;
@@ -1412,9 +1178,6 @@ async function handlePayment() {
 /* ── Responsive ── */
 @media (max-width: 480px) {
   .report-header__title { font-size: clamp(36px, 12vw, 64px); }
-  .tier__popular-inner,
-  .tier__oracle-inner { flex-direction: column; align-items: flex-start; }
-  .tier__price-block { text-align: left; }
 }
 
 @media (prefers-reduced-motion: reduce) {
