@@ -280,6 +280,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeMobileDisclosure: 'Mobile app subscriptions managed in-app (iOS/Android). Web subscription managed at omenora.com.',
     subscribeRefundClause: '7-day refund window. Contact support@omenora.com.',
     subscribeAlreadyPremium: 'You have an active Premium subscription',
+    preparingCheckout: 'Preparing checkout…',
 
     paywallHeading: 'Your reading is ready',
     paywallSubtitle: 'Unlock everything with Premium — or get your forecast for a one-time fee',
@@ -581,6 +582,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeMobileDisclosure: 'Las suscripciones de la aplicación móvil se gestionan en la app (iOS/Android). La suscripción web se gestiona en omenora.com.',
     subscribeRefundClause: 'Ventana de reembolso de 7 días. Contacta a support@omenora.com.',
     subscribeAlreadyPremium: 'Tienes una suscripción Premium activa',
+    preparingCheckout: 'Preparando pago…',
 
     paywallHeading: 'Tu lectura está lista',
     paywallSubtitle: 'Desbloquea todo con Premium — o consigue tu pronóstico por un pago único',
@@ -882,6 +884,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeMobileDisclosure: 'Assinaturas do app móvel são gerenciadas no app (iOS/Android). Assinatura web é gerenciada em omenora.com.',
     subscribeRefundClause: 'Janela de reembolso de 7 dias. Contate support@omenora.com.',
     subscribeAlreadyPremium: 'Você tem uma assinatura Premium ativa',
+    preparingCheckout: 'Preparando checkout…',
 
     paywallHeading: 'Sua leitura está pronta',
     paywallSubtitle: 'Desbloqueie tudo com Premium — ou obtenha seu pronóstico com pagamento único',
@@ -1115,6 +1118,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeMobileDisclosure: 'मोबाइल ऐप सब्सक्रिप्शन ऐप में प्रबंधित होती हैं (iOS/Android)। वेब सब्सक्रिप्शन omenora.com पर प्रबंधित होती है।',
     subscribeRefundClause: '7-दिन रिफंड विंडो। support@omenora.com पर संपर्क करें।',
     subscribeAlreadyPremium: 'आपके पास सक्रिय Premium सब्सक्रिप्शन है',
+    preparingCheckout: 'चेकआउट तैयार हो रहा है…', // REVIEW
 
     paywallHeading: 'आपकी रीडिंग तैयार है',
     paywallSubtitle: 'Premium के साथ सब कुछ अनलॉक करें — या एक बार के भुगतान से अपना पूर्वानुमान पाएं',
@@ -1474,6 +1478,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeMobileDisclosure: '모바일 앱 구독은 앱 내에서 관리됩니다 (iOS/Android). 웹 구독은 omenora.com에서 관리됩니다.',
     subscribeRefundClause: '7일 환불 기간. support@omenora.com 으로 문의.',
     subscribeAlreadyPremium: '활성 Premium 구독을 보유하고 있습니다',
+    preparingCheckout: '결제 준비 중…',
 
     paywallHeading: '리딩이 준비되었습니다',
     paywallSubtitle: 'Premium으로 모든 것을 잠금 해제 — 또는 일회성 결제로 예측 받기',
@@ -1773,6 +1778,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeMobileDisclosure: '移动应用订阅在应用内管理 (iOS/Android)。网页订阅在 omenora.com 管理。',
     subscribeRefundClause: '7天退款窗口。联系 support@omenora.com。',
     subscribeAlreadyPremium: '您拥有有效的 Premium 订阅',
+    preparingCheckout: '准备结账…',
 
     paywallHeading: '你的解读已准备好',
     paywallSubtitle: '使用 Premium 解锁一切 — 或一次性付费获得预测',
