@@ -1142,6 +1142,66 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     androidWaitlistBody: 'वेटलिस्ट में शामिल हों और लॉन्च के दिन हम आपको ईमेल करेंगे।',
     androidWaitlistCta: 'वेटलिस्ट में शामिल हों',
     androidWaitlistSuccess: 'आप सूची में हैं। हम संपर्क में रहेंगे।',
+
+    quizStep1Headline: 'अपनी जन्म तिथि बताएं', // REVIEW
+    quizStep2Headline: 'अब उनकी बारी', // REVIEW
+    quizStep3Headline: 'अंतिम विवरण', // REVIEW
+    quizMyBirthDate: 'मेरी जन्म तिथि', // REVIEW
+    quizMyBirthCity: 'मेरा जन्म शहर', // REVIEW
+    quizTheirBirthDate: 'उनकी जन्म तिथि', // REVIEW
+    quizTheirBirthCity: 'उनका जन्म शहर', // REVIEW
+    quizBirthTime: 'जन्म समय', // REVIEW
+    quizBirthTimeHint: 'वैकल्पिक · सटीकता बढ़ाता है', // REVIEW
+    quizSkip: 'छोड़ें', // REVIEW
+    quizYouLabel: 'आप', // REVIEW
+    quizThemLabel: 'वे', // REVIEW
+    quizLifePath: 'जीवन पथ', // REVIEW
+    quizSynastryHint: 'दोनों चार्ट तुलना के लिए तैयार', // REVIEW
+    quizCalculate: 'गणना करें', // REVIEW
+    quizContinue: 'जारी रखें', // REVIEW
+    quizBack: 'वापस', // REVIEW
+    quizLoadingMsg1: 'आपकी अनुकूलता का विश्लेषण हो रहा है...', // REVIEW
+    quizLoadingMsg2: 'दोनों जन्म चार्ट की तुलना...', // REVIEW
+    quizLoadingMsg3: 'आपका व्यक्तिगत पूर्वानुमान तैयार किया जा रहा है...', // REVIEW
+    quizErrorMsg: 'कुछ गलत हुआ। कृपया पुनः प्रयास करें।', // REVIEW
+    quizRetry: 'पुनः प्रयास करें', // REVIEW
+    quizTrustFooter: 'सुरक्षित · निजी · केवल आपके लिए', // REVIEW
+    quizCityPlaceholder: 'जैसे मुंबई, भारत', // REVIEW
+
+    compatSessionExpired: 'आपका सत्र समाप्त हो गया', // REVIEW
+    compatRestartQuiz: 'क्विज़ फिर से शुरू करें', // REVIEW
+    compatFreeBadge: 'मुफ़्त पूर्वावलोकन', // REVIEW
+    compatCanceled: 'भुगतान रद्द किया गया', // REVIEW
+    compatDestinyLabel: 'नियति अनुकूलता', // REVIEW
+    compatChallengeKicker: 'आपकी सबसे बड़ी चुनौती', // REVIEW
+    compatLockedLabel: 'अनलॉक करने के लिए जारी रखें', // REVIEW
+    compatHowCalculated: 'इसकी गणना कैसे हुई', // REVIEW
+    compatBornPrefix: 'जन्म', // REVIEW
+    compatBornIn: 'में', // REVIEW
+    compatCalcSource: 'वास्तविक जन्म चार्ट तुलना · AI नहीं', // REVIEW
+    compatLifePathLabel: 'जीवन पथ संख्या', // REVIEW
+    compatTrustLine: '$1 की सोलमेट स्केच नहीं। मानसिक चैट नहीं। बस वास्तविक जन्म चार्ट की तुलना।', // REVIEW
+    compatUnlockHeading: 'अपना पूरा पूर्वानुमान अनलॉक करें', // REVIEW
+    compatUnlockSub: 'सात खंडों में आपकी जोड़ी का गहन विश्लेषण', // REVIEW
+    compatYourName: 'आपका नाम', // REVIEW
+    compatYourNamePlaceholder: 'आपका पहला नाम', // REVIEW
+    compatTheirName: 'उनका नाम', // REVIEW
+    compatTheirNamePlaceholder: 'उनका पहला नाम', // REVIEW
+    compatEmailLabel: 'हम आपकी रीडिंग कहां भेजें?', // REVIEW
+    compatSingleName: 'बस यह पूर्वानुमान', // REVIEW
+    compatSinglePrice: '$4.99', // REVIEW
+    compatSingleFreq: 'एकमुश्त', // REVIEW
+    compatSingleBullet1: 'इस जोड़ी के लिए पूर्ण अनुकूलता विश्लेषण', // REVIEW
+    compatSingleBullet2: 'सभी 7 खंड अनलॉक — बंधन, ताकत, चुनौती, संचार, शक्ति गतिकी, पूर्वानुमान और सलाह', // REVIEW
+    compatSingleBullet3: 'शेयर करने योग्य पूर्वानुमान कार्ड शामिल', // REVIEW
+    compatSingleCta: 'यह पूर्वानुमान प्राप्त करें — $4.99', // REVIEW
+    compatProcessing: 'प्रोसेसिंग…', // REVIEW
+    compatSecurePayment: 'Stripe द्वारा सुरक्षित भुगतान', // REVIEW
+    compatShareCardKicker: 'नियति अनुकूलता', // REVIEW
+    compatDownloadGenerating: 'जेनरेट हो रहा है…', // REVIEW
+    compatDownloadCta: 'अपना कार्ड डाउनलोड करें', // REVIEW
+    compatPrivacy: 'गोपनीयता', // REVIEW
+    compatTerms: 'शर्तें', // REVIEW
   },
 
   ko: {
