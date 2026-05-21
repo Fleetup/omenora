@@ -1,26 +1,31 @@
 :root {
   /* Palette */
-  --color-bone:       #F2EBDD;
-  --color-bone-dim:   #EAE2CF;
-  --color-ink:        #1A1612;
-  --color-ink-mid:    #3D3530;
-  --color-ink-faint:  rgba(26, 22, 18, 0.45);
-  --color-ink-ghost:  rgba(26, 22, 18, 0.18);
+  --color-bone:       #1A0E22;
+  --color-bone-dim:   #2A1838;
+  --color-ink:        #F4F1EA;
+  --color-ink-mid:    #C9C0D4;
+  --color-ink-faint:  rgba(244, 241, 234, 0.45);
+  --color-ink-ghost:  rgba(244, 241, 234, 0.18);
   --color-gold:       #c9a84c;
   --color-gold-dim:   rgba(201, 168, 76, 0.55);
 
+  /* CTA accent — high-saturation, conversion-optimized */
+  --color-cta:        #D94668;
+  --color-cta-hover:  #E55879;
+  --color-cta-glow:   rgba(217, 70, 104, 0.32);
+
   /* Ink alpha tokens */
-  --color-ink-alpha-02: rgba(26, 22, 18, 0.02);
-  --color-ink-alpha-03: rgba(26, 22, 18, 0.03);
-  --color-ink-alpha-04: rgba(26, 22, 18, 0.04);
-  --color-ink-alpha-05: rgba(26, 22, 18, 0.05);
-  --color-ink-alpha-06: rgba(26, 22, 18, 0.06);
-  --color-ink-alpha-08: rgba(26, 22, 18, 0.08);
-  --color-ink-alpha-12: rgba(26, 22, 18, 0.12);
-  --color-ink-alpha-15: rgba(26, 22, 18, 0.15);
-  --color-ink-alpha-30: rgba(26, 22, 18, 0.30);
-  --color-ink-alpha-35: rgba(26, 22, 18, 0.35);
-  --color-ink-alpha-40: rgba(26, 22, 18, 0.40);
+  --color-ink-alpha-02: rgba(244, 241, 234, 0.02);
+  --color-ink-alpha-03: rgba(244, 241, 234, 0.03);
+  --color-ink-alpha-04: rgba(244, 241, 234, 0.04);
+  --color-ink-alpha-05: rgba(244, 241, 234, 0.05);
+  --color-ink-alpha-06: rgba(244, 241, 234, 0.06);
+  --color-ink-alpha-08: rgba(244, 241, 234, 0.08);
+  --color-ink-alpha-12: rgba(244, 241, 234, 0.12);
+  --color-ink-alpha-15: rgba(244, 241, 234, 0.15);
+  --color-ink-alpha-30: rgba(244, 241, 234, 0.30);
+  --color-ink-alpha-35: rgba(244, 241, 234, 0.35);
+  --color-ink-alpha-40: rgba(244, 241, 234, 0.40);
 
   /* Typography scale */
   --text-display:  clamp(64px, 16vw, 160px);
@@ -136,9 +141,9 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #F2EBDD inset !important;
-  box-shadow: 0 0 0 1000px #F2EBDD inset !important;
-  -webkit-text-fill-color: #1A1612 !important;
-  caret-color: #1A1612;
+  -webkit-box-shadow: 0 0 0 1000px #1A0E22 inset !important;
+  box-shadow: 0 0 0 1000px #1A0E22 inset !important;
+  -webkit-text-fill-color: #F4F1EA !important;
+  caret-color: #F4F1EA;
   transition: background-color 9999s ease-in-out 0s;
 }
