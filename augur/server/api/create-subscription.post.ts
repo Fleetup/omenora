@@ -16,6 +16,13 @@ export default defineEventHandler(async (event) => {
   const region         = sanitizeString(body.region ?? '', 20)
   const plan           = sanitizeString(body.plan ?? 'monthly', 10)
 
+  const utmSource   = sanitizeString(body.utm_source   ?? '', 200)
+  const utmCampaign = sanitizeString(body.utm_campaign  ?? '', 200)
+  const utmAdset    = sanitizeString(body.utm_adset     ?? '', 200)
+  const utmCreative = sanitizeString(body.utm_creative  ?? '', 200)
+  const utmMedium   = sanitizeString(body.utm_medium    ?? '', 200)
+  const utmContent  = sanitizeString(body.utm_content   ?? '', 200)
+
   assertInput(isValidEmail(email), 'Valid email is required')
   assertInput(isValidRedirectOrigin(originRaw), 'Invalid origin')
   assertInput(plan === 'monthly' || plan === 'yearly', 'Invalid plan')
@@ -80,6 +87,12 @@ export default defineEventHandler(async (event) => {
         city,
         element,
         region,
+        ...(utmSource   && { utm_source:   utmSource }),
+        ...(utmCampaign && { utm_campaign:  utmCampaign }),
+        ...(utmAdset    && { utm_adset:     utmAdset }),
+        ...(utmCreative && { utm_creative:  utmCreative }),
+        ...(utmMedium   && { utm_medium:    utmMedium }),
+        ...(utmContent  && { utm_content:   utmContent }),
       },
     })
 

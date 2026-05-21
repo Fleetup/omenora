@@ -284,12 +284,29 @@ const firstName = ref('')
 const email     = ref('')
 const city      = ref('')
 
+const previewUtms = ref<Record<string, string>>({})
+
 onMounted(async () => {
   const hasSession = await restoreSession()
   if (hasSession && store.subscriptionActive) {
     sessionStorage.setItem('omenora-account-flash', t('subscribeAlreadyPremium'))
     await navigateTo('/account')
     return
+  }
+
+  try {
+    const raw = sessionStorage.getItem('omenora_preview_context')
+    if (raw) {
+      const ctx = JSON.parse(raw) as Record<string, string>
+      if (ctx.firstName && !firstName.value) firstName.value = ctx.firstName
+      if (ctx.email    && !email.value)     email.value     = ctx.email
+      const UTM_KEYS = ['utm_source', 'utm_campaign', 'utm_adset', 'utm_creative', 'utm_medium', 'utm_content'] as const
+      const utms: Record<string, string> = {}
+      for (const k of UTM_KEYS) { if (ctx[k]) utms[k] = ctx[k]! }
+      previewUtms.value = utms
+    }
+  } catch {
+    // sessionStorage unavailable or corrupt — proceed without context
   }
   nextTick(() => {
     const defaultYearIdx = yearOptions.indexOf('1990') >= 0 ? yearOptions.indexOf('1990') : 0
@@ -626,6 +643,7 @@ async function handleSubmit() {
         region:         '',
         plan:           selectedPlan.value,
         origin:         window.location.origin,
+        ...previewUtms.value,
       },
     }) as { sessionId: string; url: string }
 
