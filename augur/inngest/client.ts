@@ -29,7 +29,7 @@ export const inngest = new Inngest({
  *   lifePathNumber  — numerology life path number (0 if unavailable)
  *   element         — elemental affinity (e.g. "Earth")
  *   region          — regional style variant (e.g. "western")
- *   planType        — subscription tier: "daily_horoscope" | "compatibility_plus"
+ *   planType        — subscription tier: "premium" | "daily_horoscope" | "compatibility_plus"
  *   sessionId       — Stripe checkout session ID — used as the Inngest idempotency key
  */
 export const subscriberWelcomeSend = eventType(
@@ -42,7 +42,7 @@ export const subscriberWelcomeSend = eventType(
       lifePathNumber: number
       element:        string
       region:         string
-      planType:       'daily_horoscope' | 'compatibility_plus'
+      planType:       'premium' | 'daily_horoscope' | 'compatibility_plus'
       sessionId:      string
     }>(),
   },

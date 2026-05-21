@@ -5,34 +5,64 @@
 
     <!-- Masthead -->
     <div class="subscribe-masthead">
-      <p class="label-caps subscribe-masthead__eyebrow">Subscribe</p>
-      <h1 class="subscribe-masthead__headline font-display-italic">Your daily reading,<br>written for you alone.</h1>
+      <p class="label-caps subscribe-masthead__eyebrow">Premium</p>
+      <h1 class="subscribe-masthead__headline font-display-italic">{{ t('subscribePremiumTitle') }}</h1>
+      <p class="subscribe-masthead__sub">{{ t('subscribePremiumSubtitle') }}</p>
       <div class="editorial-rule" />
     </div>
 
-    <!-- Price banner -->
-    <div class="price-banner">
-      <span class="price-label label-caps">Personal Daily Horoscope</span>
-      <span class="price-amount font-serif">$6.99<span class="price-period">/month</span></span>
+    <!-- Trial badge -->
+    <div class="trial-badge">
+      <span class="trial-badge__text label-caps">{{ t('subscribeTrialBadge') }}</span>
     </div>
 
-    <!-- Feature list -->
-    <div class="feature-list">
-      <div class="birth-unlock-row">
-        <span class="birth-unlock-icon">✦</span>
-        <span class="birth-unlock-text">Daily horoscope — love, work &amp; health</span>
-      </div>
-      <div class="birth-unlock-row">
-        <span class="birth-unlock-icon">✦</span>
-        <span class="birth-unlock-text">Personalized to your exact birth chart — not your sun sign</span>
-      </div>
-      <div class="birth-unlock-row">
-        <span class="birth-unlock-icon">✦</span>
-        <span class="birth-unlock-text">Delivered to your inbox every morning</span>
-      </div>
-      <div class="birth-unlock-row">
-        <span class="birth-unlock-icon">✦</span>
-        <span class="birth-unlock-text">Real planetary transits calculated daily with Swiss Ephemeris</span>
+    <!-- Plan toggle -->
+    <div class="plan-toggle">
+      <button
+        type="button"
+        class="plan-option"
+        :class="{ active: selectedPlan === 'monthly' }"
+        @click="selectedPlan = 'monthly'"
+      >
+        <span class="plan-price font-serif">{{ t('subscribeMonthlyPrice') }}</span>
+        <span class="plan-label">{{ t('subscribeMonthlyLabel') }}</span>
+      </button>
+      <button
+        type="button"
+        class="plan-option"
+        :class="{ active: selectedPlan === 'yearly' }"
+        @click="selectedPlan = 'yearly'"
+      >
+        <span class="plan-price font-serif">{{ t('subscribeYearlyPrice') }}</span>
+        <span class="plan-label">{{ t('subscribeYearlyLabel') }}</span>
+        <span class="plan-savings label-caps">{{ t('subscribeYearlySavings') }}</span>
+      </button>
+    </div>
+
+    <!-- What's included -->
+    <div class="includes-block">
+      <p class="includes-heading label-caps">{{ t('subscribeIncludesHeading') }}</p>
+      <div class="includes-list">
+        <div class="include-row">
+          <span class="include-icon">✦</span>
+          <span class="include-text">{{ t('subscribeInclude1') }}</span>
+        </div>
+        <div class="include-row">
+          <span class="include-icon">✦</span>
+          <span class="include-text">{{ t('subscribeInclude2') }}</span>
+        </div>
+        <div class="include-row">
+          <span class="include-icon">✦</span>
+          <span class="include-text">{{ t('subscribeInclude3') }}</span>
+        </div>
+        <div class="include-row">
+          <span class="include-icon">✦</span>
+          <span class="include-text">{{ t('subscribeInclude4') }}</span>
+        </div>
+        <div class="include-row">
+          <span class="include-icon">✦</span>
+          <span class="include-text">{{ t('subscribeInclude5') }}</span>
+        </div>
       </div>
     </div>
 
@@ -41,14 +71,14 @@
 
       <!-- First name -->
       <div class="field-wrapper" :class="{ focused: focusedField === 'firstName' }">
-        <div class="field-label">First Name</div>
+        <div class="field-label">{{ t('firstName') }}</div>
         <input
           id="sub-firstName"
           v-model="firstName"
           type="text"
           name="firstName"
           autocomplete="given-name"
-          placeholder="Your first name"
+          :placeholder="t('firstNamePlaceholder')"
           class="field-input"
           @focus="focusedField = 'firstName'"
           @blur="focusedField = null"
@@ -57,7 +87,7 @@
 
       <!-- Email -->
       <div class="field-wrapper" :class="{ focused: focusedField === 'email' }">
-        <div class="field-label">Email</div>
+        <div class="field-label">{{ t('email') }}</div>
         <input
           id="sub-email"
           v-model="email"
@@ -73,7 +103,7 @@
 
       <!-- Date of birth -->
       <div class="date-group">
-        <div class="field-label">Date of Birth</div>
+        <div class="field-label">{{ t('dateOfBirth') }}</div>
         <div class="wheel-row">
           <!-- Day wheel -->
           <div class="wheel-col">
@@ -133,8 +163,8 @@
       <!-- Time of birth (optional) -->
       <div class="time-group">
         <div class="field-header-row">
-          <div class="field-label">Time of Birth</div>
-          <span class="field-optional-badge">Optional</span>
+          <div class="field-label">{{ t('birthTime') }}</div>
+          <span class="field-optional-badge">{{ t('optional') }}</span>
         </div>
         <div class="wheel-row">
           <!-- Hour wheel -->
@@ -184,20 +214,20 @@
         </div>
         <div v-if="timeOfBirth" class="birth-unlock-row">
           <span class="birth-unlock-icon">✦</span>
-          <span class="birth-unlock-text">Birth chart unlocked</span>
+          <span class="birth-unlock-text">{{ t('birthChartUnlocked') }}</span>
         </div>
       </div>
 
       <!-- City of birth -->
       <div class="field-wrapper" :class="{ focused: focusedField === 'city' }">
-        <div class="field-label">City of Birth</div>
+        <div class="field-label">{{ t('cityCountry') }}</div>
         <input
           id="sub-city"
           v-model="city"
           type="text"
           name="city"
           autocomplete="address-level2"
-          placeholder="e.g. New York, USA"
+          :placeholder="t('cityPlaceholder')"
           class="field-input"
           @focus="focusedField = 'city'"
           @blur="focusedField = null"
@@ -215,31 +245,72 @@
         :disabled="isLoading"
       >
         <span v-if="isLoading" class="spinner" aria-hidden="true" />
-        {{ isLoading ? 'Preparing checkout…' : 'Start Personal Horoscope →' }}
+        <template v-else>
+          {{ selectedPlan === 'yearly' ? t('subscribeCtaYearly') : t('subscribeCtaMonthly') }}
+        </template>
+        <template v-if="isLoading">{{ t('preparingCheckout') }}</template>
       </button>
 
     </form>
 
-    <p class="sub-note">Cancel anytime. Billed monthly via Stripe.</p>
+    <!-- Mobile disclosure + refund clause -->
+    <p class="sub-note">{{ t('subscribeMobileDisclosure') }}</p>
+    <p class="sub-note sub-note--refund">{{ t('subscribeRefundClause') }}</p>
 
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { useAnalysisStore } from '~/stores/analysisStore'
+import { useLanguage } from '~/composables/useLanguage'
+import { useAuth } from '~/composables/useAuth'
+
+const store = useAnalysisStore()
+const { t } = useLanguage()
+const { restoreSession } = useAuth()
 
 useSeoMeta({
-  title: 'Personal Daily Horoscope — OMENORA',
+  title: t('subscribePremiumTitle') + ' — OMENORA',
   robots: 'noindex',
 })
 
-const focusedField = ref<string | null>(null)
-const isLoading    = ref(false)
-const submitError  = ref<string | null>(null)
+const focusedField  = ref<string | null>(null)
+const isLoading     = ref(false)
+const submitError   = ref<string | null>(null)
+const selectedPlan  = ref<'monthly' | 'yearly'>('yearly')
 
 const firstName = ref('')
 const email     = ref('')
 const city      = ref('')
+
+onMounted(async () => {
+  const hasSession = await restoreSession()
+  if (hasSession && store.subscriptionActive) {
+    sessionStorage.setItem('omenora-account-flash', t('subscribeAlreadyPremium'))
+    await navigateTo('/account')
+    return
+  }
+  nextTick(() => {
+    const defaultYearIdx = yearOptions.indexOf('1990') >= 0 ? yearOptions.indexOf('1990') : 0
+    birthDay.value    = dayOptions[0]!
+    birthMonth.value  = monthOptions[0]!
+    birthYear.value   = yearOptions[defaultYearIdx]!
+    scrollWheelToIndex(dayWheelRef.value, 0)
+    scrollWheelToIndex(monthWheelRef.value, 0)
+    scrollWheelToIndex(yearWheelRef.value, defaultYearIdx)
+    scrollWheelToIndex(hourWheelRef.value, 0)
+    scrollWheelToIndex(minuteWheelRef.value, 0)
+    scrollWheelToIndex(ampmWheelRef.value, 0)
+
+    if (dayWheelRef.value)    attachWheelListener('day',    dayWheelRef.value)
+    if (monthWheelRef.value)  attachWheelListener('month',  monthWheelRef.value)
+    if (yearWheelRef.value)   attachWheelListener('year',   yearWheelRef.value)
+    if (hourWheelRef.value)   attachWheelListener('hour',   hourWheelRef.value)
+    if (minuteWheelRef.value) attachWheelListener('minute', minuteWheelRef.value)
+    if (ampmWheelRef.value)   attachWheelListener('ampm',   ampmWheelRef.value)
+  })
+})
 
 // ── Wheel options ─────────────────────────────────────────────────────────────
 const currentYear  = new Date().getFullYear()
@@ -489,28 +560,6 @@ onUnmounted(() => {
   wheelListenerCleanups.forEach(fn => fn())
 })
 
-onMounted(() => {
-  nextTick(() => {
-    const defaultYearIdx = yearOptions.indexOf('1990') >= 0 ? yearOptions.indexOf('1990') : 0
-    birthDay.value    = dayOptions[0]!
-    birthMonth.value  = monthOptions[0]!
-    birthYear.value   = yearOptions[defaultYearIdx]!
-    scrollWheelToIndex(dayWheelRef.value, 0)
-    scrollWheelToIndex(monthWheelRef.value, 0)
-    scrollWheelToIndex(yearWheelRef.value, defaultYearIdx)
-    scrollWheelToIndex(hourWheelRef.value, 0)
-    scrollWheelToIndex(minuteWheelRef.value, 0)
-    scrollWheelToIndex(ampmWheelRef.value, 0)
-
-    if (dayWheelRef.value)    attachWheelListener('day',    dayWheelRef.value)
-    if (monthWheelRef.value)  attachWheelListener('month',  monthWheelRef.value)
-    if (yearWheelRef.value)   attachWheelListener('year',   yearWheelRef.value)
-    if (hourWheelRef.value)   attachWheelListener('hour',   hourWheelRef.value)
-    if (minuteWheelRef.value) attachWheelListener('minute', minuteWheelRef.value)
-    if (ampmWheelRef.value)   attachWheelListener('ampm',   ampmWheelRef.value)
-  })
-})
-
 // ── Derived values ────────────────────────────────────────────────────────────
 const dateOfBirth = computed(() => {
   if (!birthDay.value || !birthMonth.value || !birthYear.value) return ''
@@ -575,6 +624,7 @@ async function handleSubmit() {
         city:           city.value.trim(),
         element:        '',
         region:         '',
+        plan:           selectedPlan.value,
         origin:         window.location.origin,
       },
     }) as { sessionId: string; url: string }
@@ -642,43 +692,127 @@ async function handleSubmit() {
 
 
 /* ─────────────────────────────────────────────
-   PRICE BANNER
+   MASTHEAD SUB
 ───────────────────────────────────────────── */
-.price-banner {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  border: 1px solid var(--color-gold);
-  padding: 14px 18px;
-  margin-top: 32px;
-  margin-bottom: 24px;
-}
-
-.price-label {
-  font-size: 10px;
-  color: var(--color-gold);
-}
-
-.price-amount {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--color-gold);
-  letter-spacing: 0.03em;
-}
-
-.price-period {
-  font-size: 13px;
-  color: var(--color-gold-dim);
-  letter-spacing: 0.01em;
+.subscribe-masthead__sub {
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 14px;
+  color: var(--color-ink-mid);
+  letter-spacing: 0.02em;
+  margin: 0 0 28px;
+  line-height: 1.5;
 }
 
 
 /* ─────────────────────────────────────────────
-   FEATURE LIST
+   TRIAL BADGE
 ───────────────────────────────────────────── */
-.feature-list {
-  margin-bottom: 24px;
+.trial-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 28px 0 0;
+}
+
+.trial-badge__text {
+  color: var(--color-gold);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  border: 1px solid var(--color-gold);
+  padding: 6px 16px;
+}
+
+
+/* ─────────────────────────────────────────────
+   PLAN TOGGLE
+───────────────────────────────────────────── */
+.plan-toggle {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.plan-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 12px;
+  background: rgba(26, 22, 18, 0.03);
+  border: 1px solid var(--color-ink-ghost);
+  cursor: pointer;
+  transition: border-color 0.22s ease, background 0.22s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.plan-option.active {
+  border-color: var(--color-gold);
+  background: rgba(201, 169, 97, 0.06);
+}
+
+.plan-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--color-ink);
+  letter-spacing: 0.02em;
+}
+
+.plan-label {
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 11px;
+  color: var(--color-ink-faint);
+  letter-spacing: 0.08em;
+}
+
+.plan-savings {
+  font-size: 9px;
+  color: var(--color-gold);
+  letter-spacing: 0.15em;
+  margin-top: 2px;
+}
+
+
+/* ─────────────────────────────────────────────
+   INCLUDES BLOCK
+───────────────────────────────────────────── */
+.includes-block {
+  margin-bottom: 28px;
+}
+
+.includes-heading {
+  font-size: 9px;
+  color: var(--color-ink-faint);
+  letter-spacing: 0.2em;
+  margin-bottom: 14px;
+}
+
+.includes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.include-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.include-icon {
+  font-size: 10px;
+  color: var(--color-gold);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.include-text {
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 13px;
+  color: var(--color-ink-mid);
+  letter-spacing: 0.02em;
+  line-height: 1.5;
 }
 
 
@@ -998,6 +1132,12 @@ async function handleSubmit() {
   text-align: center;
   margin: 16px 0 0;
   letter-spacing: 0.05em;
+}
+
+.sub-note--refund {
+  font-size: 10px;
+  margin-top: 8px;
+  opacity: 0.7;
 }
 
 

@@ -555,7 +555,7 @@ export default defineEventHandler(async (event) => {
     const subCustomer  = session.customer as string
     const subId        = session.subscription as string
 
-    const planType = 'daily_horoscope'
+    const planType = 'premium'
 
     try {
       await $fetch('/api/save-subscriber', {
