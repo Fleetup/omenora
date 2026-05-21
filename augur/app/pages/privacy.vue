@@ -709,7 +709,7 @@ useHead({
 .data-table th {
   text-align: left;
   padding: 10px 12px;
-  background: rgba(26, 22, 18, 0.04);
+  background: var(--color-ink-alpha-04);
   color: var(--color-ink-faint);
   font-weight: 600;
   font-size: 9px;
@@ -728,7 +728,7 @@ useHead({
 }
 
 .data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: rgba(26, 22, 18, 0.02); }
+.data-table tr:hover td { background: var(--color-ink-alpha-02); }
 
 .table-note {
   font-size: 12px;

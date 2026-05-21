@@ -6,8 +6,21 @@
   --color-ink-mid:    #3D3530;
   --color-ink-faint:  rgba(26, 22, 18, 0.45);
   --color-ink-ghost:  rgba(26, 22, 18, 0.18);
-  --color-gold:       #C9A961;
-  --color-gold-dim:   rgba(201, 169, 97, 0.55);
+  --color-gold:       #c9a84c;
+  --color-gold-dim:   rgba(201, 168, 76, 0.55);
+
+  /* Ink alpha tokens */
+  --color-ink-alpha-02: rgba(26, 22, 18, 0.02);
+  --color-ink-alpha-03: rgba(26, 22, 18, 0.03);
+  --color-ink-alpha-04: rgba(26, 22, 18, 0.04);
+  --color-ink-alpha-05: rgba(26, 22, 18, 0.05);
+  --color-ink-alpha-06: rgba(26, 22, 18, 0.06);
+  --color-ink-alpha-08: rgba(26, 22, 18, 0.08);
+  --color-ink-alpha-12: rgba(26, 22, 18, 0.12);
+  --color-ink-alpha-15: rgba(26, 22, 18, 0.15);
+  --color-ink-alpha-30: rgba(26, 22, 18, 0.30);
+  --color-ink-alpha-35: rgba(26, 22, 18, 0.35);
+  --color-ink-alpha-40: rgba(26, 22, 18, 0.40);
 
   /* Typography scale */
   --text-display:  clamp(64px, 16vw, 160px);
@@ -21,10 +34,6 @@
   /* Spacing rhythm */
   --space-section: clamp(64px, 10vw, 120px);
   --space-block:   clamp(32px, 5vw, 56px);
-
-  /* Borders */
-  --rule-ink:  1px solid rgba(26, 22, 18, 0.2);
-  --rule-gold: 1px solid rgba(201, 169, 97, 0.5);
 }
 
 /* ── Typography utilities ── */

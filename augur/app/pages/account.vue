@@ -962,12 +962,12 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 
 .account-nav__item:hover {
   color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.04);
+  background: var(--color-ink-alpha-04);
 }
 
 .account-nav__item--active {
   color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.06);
+  background: var(--color-ink-alpha-06);
 }
 
 .account-signout {
@@ -1240,7 +1240,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 .cancel-reason__option--selected {
   border-color: var(--color-ink);
   color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.05);
+  background: var(--color-ink-alpha-05);
 }
 
 .cancel-confirm__actions {

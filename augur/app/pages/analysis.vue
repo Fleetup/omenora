@@ -567,7 +567,7 @@ async function handleSubmit() {
   color: var(--color-ink);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
+  border-bottom: 1px solid var(--color-ink-alpha-30);
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;
@@ -623,13 +623,13 @@ input[type="time"] {
 }
 
 .quiz-option:hover {
-  border-color: rgba(26, 22, 18, 0.35);
-  background: rgba(26, 22, 18, 0.03);
+  border-color: var(--color-ink-alpha-35);
+  background: var(--color-ink-alpha-03);
 }
 
 .quiz-option--selected {
   border-color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.06);
+  background: var(--color-ink-alpha-06);
 }
 
 .quiz-option__letter {

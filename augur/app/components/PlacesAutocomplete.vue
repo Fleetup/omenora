@@ -235,7 +235,7 @@ watch(() => props.modelValue, (val) => {
   color: var(--color-ink);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
+  border-bottom: 1px solid var(--color-ink-alpha-30);
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;
@@ -256,7 +256,7 @@ watch(() => props.modelValue, (val) => {
   left: 0;
   right: 0;
   background: var(--color-bone);
-  border: 1px solid rgba(26, 22, 18, 0.15);
+  border: 1px solid var(--color-ink-alpha-15);
   border-top: none;
   z-index: 100;
   max-height: 280px;
@@ -271,7 +271,7 @@ watch(() => props.modelValue, (val) => {
   padding: 12px 16px;
   background: none;
   border: none;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.06);
+  border-bottom: 1px solid var(--color-ink-alpha-06);
   cursor: pointer;
   text-align: left;
   transition: background 0.12s;
@@ -283,7 +283,7 @@ watch(() => props.modelValue, (val) => {
 
 .places-suggestion-item:hover,
 .places-suggestion-item--highlighted {
-  background: rgba(26, 22, 18, 0.04);
+  background: var(--color-ink-alpha-04);
 }
 
 .places-suggestion-item__main {

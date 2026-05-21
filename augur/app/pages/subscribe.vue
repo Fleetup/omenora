@@ -757,7 +757,7 @@ async function handleSubmit() {
   align-items: center;
   gap: 4px;
   padding: 16px 12px;
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--color-ink-alpha-03);
   border: 1px solid var(--color-ink-ghost);
   cursor: pointer;
   transition: border-color 0.22s ease, background 0.22s ease;
@@ -847,7 +847,7 @@ async function handleSubmit() {
    FIELD WRAPPERS
 ───────────────────────────────────────────── */
 .field-wrapper {
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--color-ink-alpha-03);
   border: 1px solid var(--color-ink-ghost);
   padding: 14px 16px;
   margin-bottom: 12px;
@@ -913,7 +913,7 @@ async function handleSubmit() {
 ───────────────────────────────────────────── */
 .date-group,
 .time-group {
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--color-ink-alpha-03);
   border: 1px solid var(--color-ink-ghost);
   padding: 16px 16px 14px;
   margin-bottom: 12px;
@@ -962,7 +962,7 @@ async function handleSubmit() {
   width: 100%;
   height: 132px;
   overflow: hidden;
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--color-ink-alpha-03);
   border: 1px solid var(--color-ink-ghost);
   position: relative;
   touch-action: none;

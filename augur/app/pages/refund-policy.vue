@@ -218,7 +218,7 @@ useHead({
   border-left: 3px solid var(--color-ink-mid);
   padding: 14px 18px;
   margin-top: 16px;
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--color-ink-alpha-03);
 }
 
 .notice-box p {

@@ -9,7 +9,7 @@ const INK        = '#1A1612'
 const INK_MID    = '#3D3530'
 const INK_FAINT  = '#7A6E66'   // PDFKit needs hex, not rgba
 const INK_GHOST  = '#DDD5C8'   // light rule color on bone
-const GOLD       = '#C9A961'
+const GOLD       = '#c9a84c'
 
 const SYMBOL_TO_ID: Record<string, string> = {
   '●': 'phoenix',

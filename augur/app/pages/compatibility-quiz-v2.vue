@@ -276,7 +276,7 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(26, 22, 18, 0.04);
+  background: var(--color-ink-alpha-04);
   border: 1px solid var(--color-ink-ghost);
   border-radius: 40px;
   padding: 6px 14px 6px 10px;
@@ -408,7 +408,7 @@ onMounted(() => {
   color: var(--color-ink);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
+  border-bottom: 1px solid var(--color-ink-alpha-30);
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;

@@ -256,7 +256,7 @@ onUnmounted(() => {
 
 .app-header__pill:hover {
   border-color: var(--color-ink-mid);
-  background: rgba(26, 22, 18, 0.04);
+  background: var(--color-ink-alpha-04);
 }
 
 .app-header__pill--ghost {
@@ -314,7 +314,7 @@ onUnmounted(() => {
   position: fixed;
   inset: 0;
   z-index: 299;
-  background: rgba(26, 22, 18, 0.35);
+  background: var(--color-ink-alpha-35);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
 }
@@ -332,7 +332,7 @@ onUnmounted(() => {
   flex-direction: column;
   overflow-y: auto;
   padding: 0 clamp(24px, 6vw, 48px) calc(48px + env(safe-area-inset-bottom, 0px));
-  box-shadow: -1px 0 0 rgba(26, 22, 18, 0.08), -24px 0 80px rgba(26, 22, 18, 0.12);
+  box-shadow: -1px 0 0 var(--color-ink-alpha-08), -24px 0 80px var(--color-ink-alpha-12);
 }
 
 /* ── Drawer head ── */
@@ -446,7 +446,7 @@ onUnmounted(() => {
 .lang-pill--active {
   border-color: var(--color-ink);
   color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.04);
+  background: var(--color-ink-alpha-04);
 }
 
 .lang-pill__flag {

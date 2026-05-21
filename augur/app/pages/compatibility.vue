@@ -1515,7 +1515,7 @@ onMounted(async () => {
   color: var(--color-ink);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
+  border-bottom: 1px solid var(--color-ink-alpha-30);
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;

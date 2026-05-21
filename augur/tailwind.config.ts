@@ -7,8 +7,8 @@ export default {
         ink:      '#1A1612',
         inkMid:   '#3D3530',
         inkFaint: 'rgba(26,22,18,0.45)',
-        gold:     '#C9A961',
-        goldDim:  'rgba(201,169,97,0.55)',
+        gold:     '#c9a84c',
+        goldDim:  'rgba(201,168,76,0.55)',
       },
       fontFamily: {
         display: ['Fraunces', 'serif'],

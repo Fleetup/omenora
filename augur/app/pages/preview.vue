@@ -1094,7 +1094,7 @@ async function handlePayment() {
 
 .paywall__promo-apply:hover:not(:disabled) {
   border-color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.04);
+  background: var(--color-ink-alpha-04);
 }
 
 .paywall__promo-apply:disabled {
@@ -1128,7 +1128,7 @@ async function handlePayment() {
   color: var(--color-ink);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
+  border-bottom: 1px solid var(--color-ink-alpha-30);
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;
@@ -1187,7 +1187,7 @@ async function handlePayment() {
 }
 
 .paywall__cta--secondary:hover:not(:disabled) {
-  background: rgba(26, 22, 18, 0.04);
+  background: var(--color-ink-alpha-04);
   transform: none;
 }
 

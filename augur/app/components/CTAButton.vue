@@ -60,7 +60,7 @@ withDefaults(defineProps<{
 .cta-btn--outline {
   background: transparent;
   color: var(--color-ink);
-  border: 1px solid rgba(26, 22, 18, 0.4);
+  border: 1px solid var(--color-ink-alpha-40);
 }
 
 .cta-btn--outline:hover {

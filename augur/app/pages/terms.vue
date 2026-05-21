@@ -445,7 +445,7 @@ useHead({
   border-left: 3px solid var(--color-ink-mid);
   padding: 14px 18px;
   margin-bottom: 32px;
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--color-ink-alpha-03);
 }
 
 .notice-box p {
@@ -542,7 +542,7 @@ useHead({
   border-left: 3px solid var(--color-ink-mid);
   padding: 14px 18px;
   margin: 16px 0;
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--color-ink-alpha-03);
 }
 
 .highlight-box p {

@@ -24,7 +24,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   size: 160,
   pad: 26,
-  accent: '#d4a73a',
+  accent: '#c9a84c',
   starfield: true,
 })
 

@@ -9,7 +9,7 @@ const INK       = '#1A1612'
 const INK_MID   = '#3D3530'
 const INK_FAINT = 'rgba(26,22,18,0.45)'
 const INK_GHOST = 'rgba(26,22,18,0.15)'
-const GOLD      = '#C9A961'
+const GOLD      = '#c9a84c'
 
 // ── Archetype identity lines ─────────────────────────────────────────────────
 const IDENTITY_LINES: Record<string, string> = {
