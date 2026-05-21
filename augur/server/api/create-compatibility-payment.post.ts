@@ -1,8 +1,8 @@
 import Stripe from 'stripe'
 
-const VALID_TIERS  = ['single', 'with_charts'] as const
+const VALID_TIERS  = ['single'] as const
 type Tier          = typeof VALID_TIERS[number]
-const TIER_PRICES: Record<Tier, number> = { single: 999, with_charts: 1499 }
+const TIER_PRICES: Record<Tier, number> = { single: 499 }
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -27,13 +27,6 @@ export default defineEventHandler(async (event) => {
   const utmCampaign  = sanitizeString(body.utmCampaign  || '', 100)
   const utmMedium    = sanitizeString(body.utmMedium    || '', 100)
 
-  const rawTier = sanitizeString(body.tier ?? '', 20)
-  assertInput(
-    (VALID_TIERS as readonly string[]).includes(rawTier),
-    'Invalid tier — must be "single" or "with_charts"',
-  )
-  const tier: Tier = rawTier as Tier
-
   // ── Input validation ──────────────────────────────────────────────────────
 
   assertInput(!!firstName, 'firstName is required')
@@ -43,10 +36,6 @@ export default defineEventHandler(async (event) => {
   if (partnerDob) {
     assertInput(isValidDateOfBirth(partnerDob), 'Invalid partnerDob — expected YYYY-MM-DD')
   }
-  if (tier === 'with_charts') {
-    assertInput(isValidDateOfBirth(dateOfBirth), 'dateOfBirth is required for with_charts tier')
-  }
-
   const base = safeOrigin(originRaw)
 
   // ── Shared metadata ───────────────────────────────────────────────────────
@@ -57,8 +46,7 @@ export default defineEventHandler(async (event) => {
     email: isValidEmail(email) ? email : '',
     tempId,
     language,
-    type: 'compatibility',
-    tier,
+    type: 'compat_credit',
     ...(partnerDob         ? { partnerDob }                        : {}),
     ...(partnerCity        ? { partnerCity }                       : {}),
     ...(dateOfBirth        ? { dateOfBirth }                       : {}),
@@ -85,14 +73,10 @@ export default defineEventHandler(async (event) => {
       price_data: {
         currency: 'usd',
         product_data: {
-          name: tier === 'with_charts'
-            ? 'OMENORA Compatibility Reading + Birth Charts'
-            : 'OMENORA Compatibility Reading',
-          description: tier === 'with_charts'
-            ? 'Destiny Compatibility Analysis — includes full natal birth charts for both you and your partner'
-            : 'Destiny Compatibility Analysis',
+          name: 'OMENORA Compatibility Reading',
+          description: 'Destiny Compatibility Analysis',
         },
-        unit_amount: TIER_PRICES[tier],
+        unit_amount: TIER_PRICES['single'],
       },
       quantity: 1,
     }],
@@ -112,7 +96,7 @@ export default defineEventHandler(async (event) => {
     if (code === 'rate_limit') throw createError({ statusCode: 429, message: 'Payment service busy — please try again.' })
     if (status === 401 || status === 403) throw createError({ statusCode: 503, message: 'Payment service temporarily unavailable.' })
     if (code === 'resource_missing') {
-      console.error('[create-compatibility-payment] Invalid Stripe price ID for tier:', tier)
+      console.error('[create-compatibility-payment] Invalid Stripe price configuration')
       throw createError({ statusCode: 503, message: 'Payment product not configured. Please contact support.' })
     }
     if (status >= 500 || err?.type === 'StripeConnectionError' || err?.type === 'StripeAPIError') throw createError({ statusCode: 503, message: 'Payment service temporarily unavailable — please try again.' })

@@ -368,59 +368,40 @@
       </CTAButton>
     </div>
 
-    <!-- Paywall block -->
+    <!-- Paywall block (single $4.99 IAP) -->
     <div v-if="!compatAppliedPromo" class="paywall">
       <h2 class="paywall__heading font-display-italic">{{ t('compatUnlockHeading') }}</h2>
-      <p class="paywall__sub annotation">{{ t('compatUnlockSub') }}</p>
 
       <div v-if="checkoutError" class="compat-checkout-error annotation" role="alert">
         {{ checkoutError }}
       </div>
 
-      <!-- Urgency line -->
-      <p class="paywall__urgency annotation">Your reading is ready — unlock it before this session expires.</p>
-
-      <!-- Option 1: With Charts (featured — primary) -->
-      <div class="pay-card pay-card--primary">
-        <span class="pay-card__badge label-caps">❖ {{ t('compatWithChartsHeader') }}</span>
-        <p class="pay-card__name">{{ t('compatWithChartsName') }}</p>
-        <p class="pay-card__price font-serif">{{ t('compatWithChartsPrice') }}<span class="pay-card__freq annotation"> {{ t('compatWithChartsFreq') }}</span></p>
+      <!-- Single IAP card -->
+      <div class="pay-card pay-card--single">
+        <p class="pay-card__price font-serif">
+          {{ t('compatIAPPrice') }}<span class="pay-card__freq annotation"> {{ t('compatIAPLabel') }}</span>
+        </p>
         <ul class="pay-card__bullets annotation">
-          <li>{{ t('compatWithChartsBullet1') }}</li>
-          <li>{{ t('compatWithChartsBullet2') }}</li>
-          <li>{{ t('compatWithChartsBullet3') }}</li>
-          <li>{{ t('compatWithChartsBullet4') }}</li>
+          <li>{{ t('compatIAPBullet1') }}</li>
+          <li>{{ t('compatIAPBullet2') }}</li>
+          <li>{{ t('compatIAPBullet3') }}</li>
         </ul>
         <CTAButton
           :arrow="false"
           :disabled="isProcessing"
           class="pay-card__btn"
-          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'with_charts' }"
-          @click="handleCheckout('with_charts')"
+          :class="{ 'pay-card__btn--processing': isProcessing }"
+          @click="handleCheckout()"
         >
-          <span v-if="isProcessing && activeTier === 'with_charts'">{{ t('compatProcessing') }}</span>
-          <span v-else>{{ t('compatWithChartsCta') }}</span>
+          <span v-if="isProcessing">{{ t('compatProcessing') }}</span>
+          <span v-else>{{ t('compatIAPCta') }}</span>
         </CTAButton>
       </div>
 
-      <!-- Option 2: Single reading only -->
-      <div class="pay-card pay-card--secondary">
-        <p class="pay-card__name">{{ t('compatSingleName') }}</p>
-        <p class="pay-card__price font-serif">{{ t('compatSinglePrice') }}<span class="pay-card__freq annotation"> {{ t('compatSingleFreq') }}</span></p>
-        <ul class="pay-card__bullets annotation">
-          <li>{{ t('compatSingleBullet1') }}</li>
-          <li>{{ t('compatSingleBullet2') }}</li>
-          <li>{{ t('compatSingleBullet3') }}</li>
-        </ul>
-        <button
-          class="pay-card__btn--secondary"
-          :disabled="isProcessing"
-          @click="handleCheckout('single')"
-        >
-          <span v-if="isProcessing && activeTier === 'single'">{{ t('compatProcessing') }}</span>
-          <span v-else>{{ t('compatSingleCta') }}</span>
-        </button>
-      </div>
+      <!-- Subtle upsell link to /subscribe -->
+      <NuxtLink to="/subscribe" class="paywall__premium-link annotation">
+        {{ t('compatOrPremium') }}
+      </NuxtLink>
 
       <!-- Name + email capture -->
       <div class="capture-block">
@@ -733,29 +714,23 @@ async function applyCompatFreeAccess() {
 
 // ── Checkout ──────────────────────────────────────────────────────────────────
 const isProcessing  = ref(false)
-const activeTier    = ref<'single' | 'with_charts' | null>(null)
 const checkoutError = ref('')
 
-async function handleCheckout(tier: 'single' | 'with_charts') {
+async function handleCheckout() {
   if (isProcessing.value) return
-
-  const tierValue = tier === 'with_charts' ? 14.99 : 9.99
-  const tierLabel = tier === 'with_charts' ? 'Compatibility Reading + Birth Charts' : 'Compatibility Reading'
 
   try {
     $trackInitiateCheckout?.({
-      value:        tierValue,
+      value:        4.99,
       currency:     'USD',
-      content_name: tierLabel,
+      content_name: 'Compatibility Reading',
     })
   } catch { /* never block UI */ }
   trackEvent('initiate_checkout', {
-    tier,
-    value: tierValue,
+    value: 4.99,
   })
 
   isProcessing.value  = true
-  activeTier.value    = tier
   checkoutError.value = ''
 
   const email       = emailInput.value.trim()   || store.email       || ''
@@ -775,7 +750,6 @@ async function handleCheckout(tier: 'single' | 'with_charts') {
       {
         method: 'POST',
         body: {
-          tier,
           firstName,
           partnerName,
           dateOfBirth: store.dateOfBirth,
@@ -797,9 +771,8 @@ async function handleCheckout(tier: 'single' | 'with_charts') {
     if (url) window.location.href = url
   } catch {
     isProcessing.value  = false
-    activeTier.value    = null
     checkoutError.value = 'Payment service unavailable. Please try again.'
-    trackEvent('checkout_failed', { tier, error: 'api_error' })
+    trackEvent('checkout_failed', { error: 'api_error' })
   }
 }
 
@@ -1040,11 +1013,11 @@ onMounted(async () => {
         const pixelKey = `omenora_purchase_tracked_${sessionId}`
         if (!sessionStorage.getItem(pixelKey)) {
           sessionStorage.setItem(pixelKey, '1')
-          const purchaseValue = paymentData.amountTotal ?? 9.99
+          const purchaseValue = paymentData.amountTotal ?? 4.99
           $trackPurchase?.({
             value: purchaseValue,
             currency: 'USD',
-            content_name: meta.tier === 'with_charts' ? 'Compatibility Reading + Birth Charts' : 'Compatibility Reading',
+            content_name: 'Compatibility Reading',
           })
         }
       } catch { /* never block UI */ }
@@ -1583,40 +1556,9 @@ onMounted(async () => {
   position: relative;
 }
 
-.pay-card--primary {
+.pay-card--single {
   border: 1px solid var(--color-ink-mid);
   border-left: 2px solid var(--color-ink);
-  padding-top: 36px;
-}
-
-.pay-card--secondary {
-  border: 1px solid var(--color-ink-ghost);
-}
-
-.pay-card__badge {
-  position: absolute;
-  top: -1px;
-  left: 24px;
-  color: var(--color-ink);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  background: var(--color-bone);
-  padding: 0 8px;
-  transform: translateY(-50%);
-}
-
-.pay-card__name {
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-ink);
-  margin: 0 0 8px;
-  letter-spacing: 0.02em;
-}
-
-.pay-card--secondary .pay-card__name {
-  color: var(--color-ink-mid);
-  font-weight: 500;
 }
 
 .pay-card__price {
@@ -1626,11 +1568,6 @@ onMounted(async () => {
   color: var(--color-ink);
   margin: 0 0 16px;
   line-height: 1;
-}
-
-.pay-card--secondary .pay-card__price {
-  font-size: clamp(26px, 5vw, 36px);
-  color: var(--color-ink-mid);
 }
 
 .pay-card__freq {
@@ -1673,33 +1610,18 @@ onMounted(async () => {
   pointer-events: none;
 }
 
-.pay-card__btn--secondary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 48px;
-  padding: 14px 24px;
-  background: transparent;
-  border: 1px solid var(--color-ink-ghost);
+.paywall__premium-link {
+  display: block;
+  margin-top: 4px;
+  margin-bottom: 20px;
+  color: var(--color-ink-faint);
+  text-decoration: none;
+  font-style: italic;
+  transition: color 0.2s;
+}
+
+.paywall__premium-link:hover {
   color: var(--color-ink-mid);
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-  margin-bottom: 8px;
-}
-
-.pay-card__btn--secondary:hover:not(:disabled) {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
-}
-
-.pay-card__btn--secondary:disabled {
-  opacity: 0.35;
-  pointer-events: none;
 }
 
 .pay-card__footnote {
