@@ -21,6 +21,35 @@ interface WebhookRuntimeConfig {
 }
 
 /**
+ * Map Stripe Subscription.status (8 possible values) to the 5 values
+ * accepted by public.subscriptions.status:
+ *   active|expired|cancelled|billing_issue|in_grace_period
+ *
+ * Mirrors the deriveStatus pattern in server/api/revenuecat/webhook.post.ts
+ * for cross-source consistency.
+ */
+function deriveStripeStatus(stripeStatus: string): string {
+  switch (stripeStatus) {
+    case 'active':
+    case 'trialing':
+      return 'active'
+    case 'past_due':
+    case 'unpaid':
+      return 'billing_issue'
+    case 'canceled':
+      return 'cancelled'
+    case 'incomplete':
+    case 'incomplete_expired':
+      return 'expired'
+    case 'paused':
+      return 'in_grace_period'
+    default:
+      console.warn('[stripe-webhook] unknown Stripe subscription status — defaulting to active:', stripeStatus)
+      return 'active'
+  }
+}
+
+/**
  * POST /api/stripe/webhook
  *
  * Server-side fulfillment for all Stripe payments. Handles:
@@ -393,11 +422,15 @@ export default defineEventHandler(async (event) => {
         })
 
         const priceId       = stripeSub.items.data[0]?.price?.id ?? null
-        const subStatus     = stripeSub.status === 'trialing' ? 'active' : stripeSub.status
+        const subStatus     = deriveStripeStatus(stripeSub.status)
         const isTrialing    = stripeSub.status === 'trialing'
         const purchasedAt   = new Date(stripeSub.created * 1000).toISOString()
-        const expiresAt     = stripeSub.billing_cycle_anchor
-          ? new Date(stripeSub.billing_cycle_anchor * 1000).toISOString()
+        // expires_at = end of current billing period (when access lapses if not renewed).
+        // For trial subs this is the trial_end; for paid subs it's the next billing cycle.
+        // current_period_end lives on SubscriptionItem in Stripe SDK v2026-03-25.dahlia.
+        const itemPeriodEnd = stripeSub.items.data[0]?.current_period_end ?? null
+        const expiresAt     = itemPeriodEnd
+          ? new Date(itemPeriodEnd * 1000).toISOString()
           : null
 
         const { userId } = await findOrCreateAuthUserByEmail(subEmail)
