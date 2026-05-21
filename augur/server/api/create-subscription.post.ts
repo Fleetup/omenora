@@ -71,7 +71,6 @@ export default defineEventHandler(async (event) => {
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      subscription_data: { trial_period_days: 7 },
       success_url: `${base}/subscription?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${base}/subscribe`,
       metadata: {
