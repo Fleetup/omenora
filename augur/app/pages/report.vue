@@ -2,8 +2,8 @@
   <!-- ── Loading state ── -->
   <div v-if="isLoadingReport" class="report-loading-page">
     <div class="report-loading-content">
-      <p class="rload-eyebrow label-caps">Omenora</p>
-      <p class="rload-msg font-serif-italic">{{ t('craftingReport') }}</p>
+      <AppEyebrow class="rload-eyebrow">Omenora</AppEyebrow>
+      <AppSubhead class="rload-msg">{{ t('craftingReport') }}</AppSubhead>
       <div class="rload-track">
         <div class="rload-fill" />
       </div>
@@ -14,15 +14,15 @@
   <!-- ── Error state ── -->
   <div v-else-if="hasError" class="report-state-page">
     <div class="report-state-inner">
-      <p class="label-caps report-state__eyebrow">Something went wrong</p>
-      <h2 class="report-state__heading font-display-italic">{{ t('reportErrorMsg') }}</h2>
-      <p class="annotation report-state__sub">{{ t('reportErrorEmail') }}</p>
+      <AppEyebrow class="report-state__eyebrow">Something went wrong</AppEyebrow>
+      <AppHeadline as="h2" class="report-state__heading">{{ t('reportErrorMsg') }}</AppHeadline>
+      <AppCaption as="p" class="report-state__sub">{{ t('reportErrorEmail') }}</AppCaption>
       <div class="report-state__actions">
         <button class="report-state-btn" @click="reloadPage">{{ t('tryAgain') }}</button>
-        <p class="annotation">
+        <AppCaption as="p">
           {{ t('needHelp') }}
           <a href="mailto:support@omenora.com" class="report-state-link">support@omenora.com</a>
-        </p>
+        </AppCaption>
       </div>
     </div>
   </div>
@@ -31,9 +31,9 @@
   <div v-else-if="!store.report" class="report-state-page">
     <div class="report-state-inner">
       <PhoenixLoader :size="88" class="report-state__phoenix" />
-      <p class="label-caps report-state__eyebrow">Forecast complete</p>
-      <h2 class="report-state__heading font-display-italic">{{ t('reportReady') }}</h2>
-      <p class="annotation report-state__sub">{{ t('checkEmail') }}</p>
+      <AppEyebrow class="report-state__eyebrow">Forecast complete</AppEyebrow>
+      <AppHeadline as="h2" class="report-state__heading">{{ t('reportReady') }}</AppHeadline>
+      <AppCaption as="p" class="report-state__sub">{{ t('checkEmail') }}</AppCaption>
     </div>
   </div>
 
@@ -43,9 +43,9 @@
     <!-- Payment confirmation banner -->
     <Transition name="banner-fade">
       <div v-if="showPaymentBanner" class="payment-banner">
-        <span class="payment-banner__text annotation">
+        <AppCaption class="payment-banner__text">
           ❆ Your complete forecast has been sent to {{ store.email }}
-        </span>
+        </AppCaption>
         <button class="payment-banner__dismiss" aria-label="Dismiss" @click="showPaymentBanner = false">×</button>
       </div>
     </Transition>
@@ -71,13 +71,13 @@
     <section class="report-masthead">
       <div class="report-masthead__inner">
 
-        <p class="label-caps report-masthead__eyebrow">
+        <AppEyebrow class="report-masthead__eyebrow">
           Complete Natal Forecast · {{ store.firstName }}
-        </p>
+        </AppEyebrow>
 
-        <h1 class="report-masthead__name font-display-italic">
+        <AppHeadline as="h1" class="report-masthead__name">
           {{ store.report.archetypeName }}
-        </h1>
+        </AppHeadline>
 
         <div v-if="archetypeFile" class="report-masthead__symbol">
           <img
@@ -91,8 +91,8 @@
         <div class="report-masthead__planets">
           <div v-for="p in keyPlanets" :key="p.label" class="planet-cell">
             <img :src="`/symbols/${p.sign}.svg`" :alt="p.sign" class="planet-cell__zodiac" aria-hidden="true" />
-            <span class="planet-cell__sign annotation">{{ p.sign }}</span>
-            <span class="planet-cell__label annotation">{{ p.label }}</span>
+            <AppCaption class="planet-cell__sign">{{ p.sign }}</AppCaption>
+            <AppCaption class="planet-cell__label">{{ p.label }}</AppCaption>
           </div>
         </div>
 
@@ -100,13 +100,13 @@
 
         <!-- Meta strip -->
         <div class="report-masthead__meta">
-          <span class="annotation">{{ store.dateOfBirth }}</span>
-          <span class="annotation" style="opacity:0.3">·</span>
-          <span class="annotation">{{ store.city }}</span>
-          <span class="annotation" style="opacity:0.3">·</span>
-          <span class="annotation">Life Path {{ store.lifePathNumber }}</span>
-          <span class="annotation" style="opacity:0.3">·</span>
-          <span class="annotation">{{ store.report.element }}</span>
+          <AppCaption>{{ store.dateOfBirth }}</AppCaption>
+          <AppCaption style="opacity:0.3">·</AppCaption>
+          <AppCaption>{{ store.city }}</AppCaption>
+          <AppCaption style="opacity:0.3">·</AppCaption>
+          <AppCaption>Life Path {{ store.lifePathNumber }}</AppCaption>
+          <AppCaption style="opacity:0.3">·</AppCaption>
+          <AppCaption>{{ store.report.element }}</AppCaption>
         </div>
 
         <!-- Power traits -->
@@ -123,12 +123,12 @@
     <div v-if="store.bundlePurchased || store.oraclePurchased" class="unlock-notice">
       <span class="unlock-notice__icon">✦</span>
       <div>
-        <p class="label-caps unlock-notice__title">
+        <AppEyebrow class="unlock-notice__title">
           {{ store.oraclePurchased ? t('oracleUnlocked') : t('bundleUnlocked') }}
-        </p>
-        <p class="annotation unlock-notice__desc">
+        </AppEyebrow>
+        <AppCaption as="p" class="unlock-notice__desc">
           {{ store.oraclePurchased ? t('oracleDesc') : t('bundleDesc') }}
-        </p>
+        </AppCaption>
       </div>
     </div>
 
@@ -136,40 +136,40 @@
     <!-- Generated data display -->
     <section v-if="store.birthChartData" class="report-section birth-chart-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">✦</span>
+        <AppCaption class="report-section__num">✦</AppCaption>
         <div>
-          <p class="label-caps report-section__tradition">{{ t('fullBirthChart') }}</p>
-          <h2 class="report-section__heading font-serif">{{ store.birthChartData.chartTitle }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('fullBirthChart') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ store.birthChartData.chartTitle }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="birth-chart-signs-grid">
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">{{ t('risingLabel') }}</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.risingSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">{{ t('risingLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.risingSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">{{ t('sunLabel') }}</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.sunSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">{{ t('sunLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.sunSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">{{ t('moonLabel') }}</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.moonSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">{{ t('moonLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.moonSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">{{ t('planetLabel') }}</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.dominantPlanet }}</p>
+            <AppEyebrow class="bc-sign-cell__label">{{ t('planetLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.dominantPlanet }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Power House</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.powerHouse }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Power House</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.powerHouse }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__para">{{ store.birthChartData.reading }}</p>
         <div class="bc-forecast-box">
-          <p class="label-caps bc-forecast-box__label">{{ t('planetaryForecast') }}</p>
-          <p class="bc-forecast-box__text font-serif-italic">{{ store.birthChartData.forecast2026 }}</p>
+          <AppEyebrow class="bc-forecast-box__label">{{ t('planetaryForecast') }}</AppEyebrow>
+          <AppSubhead as="p" class="bc-forecast-box__text">{{ store.birthChartData.forecast2026 }}</AppSubhead>
         </div>
       </div>
     </section>
@@ -177,8 +177,8 @@
     <!-- Birth chart: oracle/purchased — generate button -->
     <div v-else-if="(store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth" class="upsell-inline upsell-inline--active">
       <div class="upsell-inline__info">
-        <p class="label-caps upsell-inline__title">✦ {{ store.oraclePurchased ? t('birthChartIncluded') : t('birthChartUnlockedLabel') }}</p>
-        <p class="annotation upsell-inline__desc">{{ store.oraclePurchased ? t('birthChartPositionsIncluded') : t('birthChartPositionsUnlocked') }}</p>
+        <AppEyebrow class="upsell-inline__title">✦ {{ store.oraclePurchased ? t('birthChartIncluded') : t('birthChartUnlockedLabel') }}</AppEyebrow>
+        <AppCaption as="p" class="upsell-inline__desc">{{ store.oraclePurchased ? t('birthChartPositionsIncluded') : t('birthChartPositionsUnlocked') }}</AppCaption>
       </div>
       <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
         {{ isLoadingBirthChart ? t('generatingBirthChart') : t('generateBirthChart') }}
@@ -194,22 +194,22 @@
           :id="`section-${key}`"
         >
           <div class="report-section__header">
-            <span class="annotation report-section__num">{{ String(idx + 1).padStart(2, '0') }}</span>
+            <AppCaption class="report-section__num">{{ String(idx + 1).padStart(2, '0') }}</AppCaption>
             <div>
-              <p class="label-caps report-section__tradition">
+              <AppEyebrow class="report-section__tradition">
                 {{ sectionTraditionLabel(key) }}
-              </p>
-              <h2 class="report-section__heading font-serif">
+              </AppEyebrow>
+              <AppSubhead as="h2" variant="strong" class="report-section__heading">
                 {{ store.report.sections[key].title }}
-              </h2>
+              </AppSubhead>
             </div>
           </div>
           <div class="editorial-rule" />
           <div class="report-section__body">
             <div v-if="key === 'affirmation'" class="affirmation-block">
-              <p class="affirmation-block__text font-serif-italic">
+              <AppSubhead as="p" class="affirmation-block__text">
                 {{ store.report.sections[key].content }}
-              </p>
+              </AppSubhead>
             </div>
             <p v-else class="report-section__para">{{ store.report.sections[key].content }}</p>
           </div>
@@ -222,17 +222,17 @@
         >
           <div class="editorial-rule" />
           <div class="upsell-section__inner">
-            <p class="label-caps upsell-section__eyebrow">What's next</p>
-            <h3 class="upsell-section__heading font-serif-italic">
+            <AppEyebrow class="upsell-section__eyebrow">What's next</AppEyebrow>
+            <AppSubhead as="h3" class="upsell-section__heading">
               Continue tomorrow, {{ store.firstName || store.report.archetypeName }}
-            </h3>
-            <p class="annotation upsell-section__sub">
+            </AppSubhead>
+            <AppCaption as="p" class="upsell-section__sub">
               Your forecast just covered the months ahead. See what tomorrow holds for the {{ store.report.archetypeName.replace('The ', '') }} in you, every morning.
-            </p>
+            </AppCaption>
             <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription('mid_content')">
               {{ isStartingSub ? 'Loading...' : 'Start my 7-day free trial' }}
             </button>
-            <p class="annotation upsell-section__note">Free 7 days · Cancel anytime</p>
+            <AppCaption as="p" class="upsell-section__note">Free 7 days · Cancel anytime</AppCaption>
           </div>
           <div class="editorial-rule" />
         </section>
@@ -246,29 +246,29 @@
       <div class="report-section__header">
         <img src="/symbols/Life Path Number copy.svg" alt="" class="report-section__tradition-symbol" aria-hidden="true" />
         <div>
-          <p class="label-caps report-section__tradition">{{ t('vedicReadingLabel') }}</p>
-          <h2 class="report-section__heading font-serif">{{ vedicData.vedicTitle }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('vedicReadingLabel') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ vedicData.vedicTitle }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="regional-pills">
           <div class="regional-pill">
-            <p class="label-caps regional-pill__label">{{ t('nakshatraLabel') }}</p>
-            <p class="regional-pill__value font-serif">{{ vedicData.nakshatraName }}</p>
+            <AppEyebrow class="regional-pill__label">{{ t('nakshatraLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="regional-pill__value">{{ vedicData.nakshatraName }}</AppSubhead>
           </div>
           <div class="regional-pill">
-            <p class="label-caps regional-pill__label">{{ t('rulingPlanetLabel') }}</p>
-            <p class="regional-pill__value font-serif">{{ vedicData.rulingPlanet }}</p>
+            <AppEyebrow class="regional-pill__label">{{ t('rulingPlanetLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="regional-pill__value">{{ vedicData.rulingPlanet }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__para">{{ vedicData.reading }}</p>
         <div class="regional-highlight">
-          <p class="label-caps regional-highlight__label">{{ t('karmicMissionLabel') }}</p>
-          <p class="regional-highlight__text font-serif-italic">{{ vedicData.karmicMission }}</p>
+          <AppEyebrow class="regional-highlight__label">{{ t('karmicMissionLabel') }}</AppEyebrow>
+          <AppSubhead as="p" class="regional-highlight__text">{{ vedicData.karmicMission }}</AppSubhead>
         </div>
         <div class="regional-tags">
-          <span class="annotation regional-tags__label">{{ t('practice2026') }}</span>
+          <AppCaption class="regional-tags__label">{{ t('practice2026') }}</AppCaption>
           <span class="regional-tag">{{ vedicData.remedy }}</span>
         </div>
       </div>
@@ -279,29 +279,29 @@
       <div class="report-section__header">
         <img src="/symbols/Destiny Forecast copy.svg" alt="" class="report-section__tradition-symbol" aria-hidden="true" />
         <div>
-          <p class="label-caps report-section__tradition">{{ t('baziReadingLabel') }}</p>
-          <h2 class="report-section__heading font-serif">{{ baziData.baziTitle }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('baziReadingLabel') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ baziData.baziTitle }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="regional-pills">
           <div class="regional-pill">
-            <p class="label-caps regional-pill__label">{{ t('dayMasterLabel') }}</p>
-            <p class="regional-pill__value font-serif">{{ baziData.dayMaster }}</p>
+            <AppEyebrow class="regional-pill__label">{{ t('dayMasterLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="regional-pill__value">{{ baziData.dayMaster }}</AppSubhead>
           </div>
           <div class="regional-pill">
-            <p class="label-caps regional-pill__label">{{ t('dominantElementLabel') }}</p>
-            <p class="regional-pill__value font-serif">{{ baziData.dominantElement }}</p>
+            <AppEyebrow class="regional-pill__label">{{ t('dominantElementLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="regional-pill__value">{{ baziData.dominantElement }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__para">{{ baziData.reading }}</p>
         <div class="regional-highlight">
-          <p class="label-caps regional-highlight__label">{{ t('wealthLuck2026') }}</p>
-          <p class="regional-highlight__text font-serif-italic">{{ baziData.wealthLuck2026 }}</p>
+          <AppEyebrow class="regional-highlight__label">{{ t('wealthLuck2026') }}</AppEyebrow>
+          <AppSubhead as="p" class="regional-highlight__text">{{ baziData.wealthLuck2026 }}</AppSubhead>
         </div>
         <div class="regional-tags">
-          <span class="annotation regional-tags__label">{{ t('luckyDirections') }}</span>
+          <AppCaption class="regional-tags__label">{{ t('luckyDirections') }}</AppCaption>
           <span v-for="dir in baziData.luckyDirections" :key="dir" class="regional-tag">{{ dir }}</span>
         </div>
       </div>
@@ -312,26 +312,26 @@
       <div class="report-section__header">
         <img src="/symbols/Love & Relationship Patterns copy.svg" alt="" class="report-section__tradition-symbol" aria-hidden="true" />
         <div>
-          <p class="label-caps report-section__tradition">{{ t('tarotReadingLabel') }}</p>
-          <h2 class="report-section__heading font-serif">{{ tarotData.soulCard }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('tarotReadingLabel') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ tarotData.soulCard }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="regional-highlight regional-highlight--center">
-          <p class="regional-highlight__text font-serif-italic">{{ tarotData.soulCardMeaning }}</p>
+          <AppSubhead as="p" class="regional-highlight__text">{{ tarotData.soulCardMeaning }}</AppSubhead>
         </div>
         <p class="report-section__para">{{ tarotData.reading }}</p>
         <div class="regional-highlight">
-          <p class="label-caps regional-highlight__label">{{ t('loveDstiny') }}</p>
-          <p class="regional-highlight__text font-serif-italic">{{ tarotData.loveMessage }}</p>
+          <AppEyebrow class="regional-highlight__label">{{ t('loveDstiny') }}</AppEyebrow>
+          <AppSubhead as="p" class="regional-highlight__text">{{ tarotData.loveMessage }}</AppSubhead>
         </div>
         <div class="regional-highlight regional-highlight--center">
-          <p class="label-caps regional-highlight__label">{{ t('blessingLabel') }}</p>
-          <p class="regional-highlight__text font-serif-italic">{{ tarotData.blessing }}</p>
+          <AppEyebrow class="regional-highlight__label">{{ t('blessingLabel') }}</AppEyebrow>
+          <AppSubhead as="p" class="regional-highlight__text">{{ tarotData.blessing }}</AppSubhead>
         </div>
         <div class="regional-tags">
-          <span class="annotation regional-tags__label">{{ t('protectiveCharm') }}</span>
+          <AppCaption class="regional-tags__label">{{ t('protectiveCharm') }}</AppCaption>
           <span class="regional-tag">{{ tarotData.luckyCharm }}</span>
         </div>
       </div>
@@ -339,18 +339,18 @@
 
     <!-- Regional loading -->
     <div v-if="isLoadingRegional" class="regional-loading">
-      <p class="annotation regional-loading__text">
+      <AppCaption as="p" class="regional-loading__text">
         {{ store.region === 'india' ? t('loadingVedic') : store.region === 'china' ? t('loadingBazi') : t('loadingSpiritual') }}
-      </p>
+      </AppCaption>
     </div>
 
     <!-- ── TRADITION SWITCHER ── -->
     <section v-if="store.report && !isSwitchingTradition && !isSwitchComplete" class="tradition-switcher">
       <div class="tradition-switcher__header">
-        <p class="label-caps tradition-switcher__label">{{ t('traditionSwitcherLabel') }}</p>
-        <p class="annotation tradition-switcher__sub">
+        <AppEyebrow class="tradition-switcher__label">{{ t('traditionSwitcherLabel') }}</AppEyebrow>
+        <AppCaption as="p" class="tradition-switcher__sub">
           {{ t('traditionSwitcherSubOracle') }}
-        </p>
+        </AppCaption>
       </div>
       <div class="tradition-options">
         <button
@@ -380,29 +380,29 @@
     <!-- Tradition switching state -->
     <div v-if="isSwitchingTradition" class="tradition-loading">
       <div class="tradition-loading__ring" />
-      <p class="annotation tradition-loading__text">{{ t('traditionGenerating').replace('{tradition}', switchingTraditionLabel) }}</p>
+      <AppCaption as="p" class="tradition-loading__text">{{ t('traditionGenerating').replace('{tradition}', switchingTraditionLabel) }}</AppCaption>
     </div>
 
     <!-- Tradition switch success -->
     <div v-if="isSwitchComplete" class="tradition-success">
       <span class="tradition-success__icon">✦</span>
-      <p class="label-caps tradition-success__text">{{ t('traditionUnlocked').replace('{tradition}', switchedTraditionLabel) }}</p>
+      <AppEyebrow class="tradition-success__text">{{ t('traditionUnlocked').replace('{tradition}', switchedTraditionLabel) }}</AppEyebrow>
     </div>
 
     <!-- ── DESTINY CALENDAR (bundle/oracle) ── -->
     <section v-if="(store.bundlePurchased || store.oraclePurchased) && store.calendarData" class="report-section calendar-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">◈</span>
+        <AppCaption class="report-section__num">◈</AppCaption>
         <div>
-          <p class="label-caps report-section__tradition">YOUR 2026 DESTINY CALENDAR</p>
-          <h2 class="report-section__heading font-serif">{{ store.calendarData.overallTheme }}</h2>
+          <AppEyebrow class="report-section__tradition">YOUR 2026 DESTINY CALENDAR</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ store.calendarData.overallTheme }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="calendar-peaks">
-          <span v-for="m in store.calendarData.peakMonths" :key="m" class="cal-peak-chip label-caps">{{ m }} ★</span>
-          <span v-for="m in store.calendarData.cautionMonths" :key="m" class="cal-caution-chip label-caps">{{ m }} ⚠</span>
+          <AppEyebrow as="span" v-for="m in store.calendarData.peakMonths" :key="m" class="cal-peak-chip">{{ m }} ★</AppEyebrow>
+          <AppEyebrow as="span" v-for="m in store.calendarData.cautionMonths" :key="m" class="cal-caution-chip">{{ m }} ⚠</AppEyebrow>
         </div>
         <div class="calendar-months">
           <div
@@ -414,22 +414,22 @@
             <div class="month-card__header">
               <div>
                 <p class="month-card__name">{{ month.month }}</p>
-                <p class="annotation month-card__theme">{{ month.theme }}</p>
+                <AppCaption as="p" class="month-card__theme">{{ month.theme }}</AppCaption>
               </div>
               <div class="month-card__energy">
-                <span class="annotation month-card__energy-label">Energy</span>
+                <AppCaption class="month-card__energy-label">Energy</AppCaption>
                 <div class="month-card__energy-track">
                   <div class="month-card__energy-fill" :style="{ width: month.energyLevel + '%', background: month.color || 'var(--accent-gold)' }" />
                 </div>
               </div>
             </div>
             <div class="month-card__insights">
-              <p class="month-card__insight annotation"><HoroscopeSymbol type="love" :size="14" class="month-card__icon" /> {{ month.love }}</p>
-              <p class="month-card__insight annotation"><HoroscopeSymbol type="work" :size="14" class="month-card__icon" /> {{ month.money }}</p>
-              <p class="month-card__insight annotation"><HoroscopeSymbol type="health" :size="14" class="month-card__icon" /> {{ month.career }}</p>
-              <p v-if="month.warning" class="month-card__warning annotation">⚠ {{ month.warning }}</p>
+              <AppCaption as="p" class="month-card__insight"><HoroscopeSymbol type="love" :size="14" class="month-card__icon" /> {{ month.love }}</AppCaption>
+              <AppCaption as="p" class="month-card__insight"><HoroscopeSymbol type="work" :size="14" class="month-card__icon" /> {{ month.money }}</AppCaption>
+              <AppCaption as="p" class="month-card__insight"><HoroscopeSymbol type="health" :size="14" class="month-card__icon" /> {{ month.career }}</AppCaption>
+              <AppCaption as="p" v-if="month.warning" class="month-card__warning">⚠ {{ month.warning }}</AppCaption>
             </div>
-            <p class="annotation month-card__lucky">{{ t('luckyDays') }} {{ month.luckyDays?.join(', ') }}</p>
+            <AppCaption as="p" class="month-card__lucky">{{ t('luckyDays') }} {{ month.luckyDays?.join(', ') }}</AppCaption>
           </div>
         </div>
       </div>
@@ -437,31 +437,31 @@
 
     <!-- Calendar generating -->
     <div v-if="(store.bundlePurchased || store.oraclePurchased) && !store.calendarData && isGeneratingCalendar" class="regional-loading">
-      <p class="annotation regional-loading__text">{{ t('generatingCalendar') }}</p>
+      <AppCaption as="p" class="regional-loading__text">{{ t('generatingCalendar') }}</AppCaption>
     </div>
 
     <!-- ── COMPATIBILITY (bundle/oracle) ── -->
     <section v-if="store.bundlePurchased || store.oraclePurchased" class="report-section compat-free-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">◎</span>
+        <AppCaption class="report-section__num">◎</AppCaption>
         <div>
-          <p class="label-caps report-section__tradition">{{ t('compatReadingLabel') }}</p>
-          <h2 class="report-section__heading font-serif">{{ t('compatIncluded') }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('compatReadingLabel') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ t('compatIncluded') }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
-        <p class="annotation report-section__para">{{ t('compatEnterDetails') }}</p>
+        <AppCaption as="p" class="report-section__para">{{ t('compatEnterDetails') }}</AppCaption>
 
         <!-- Result -->
         <div v-if="bundleCompatibilityResult" class="compat-result">
           <div class="compat-result__score-block">
-            <p class="label-caps compat-result__score-label">{{ t('compatScore') }}</p>
-            <p class="compat-result__score font-serif">{{ bundleCompatibilityResult.compatibilityScore }}%</p>
-            <p class="annotation compat-result__title">{{ bundleCompatibilityResult.compatibilityTitle }}</p>
+            <AppEyebrow class="compat-result__score-label">{{ t('compatScore') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="compat-result__score">{{ bundleCompatibilityResult.compatibilityScore }}%</AppSubhead>
+            <AppCaption as="p" class="compat-result__title">{{ bundleCompatibilityResult.compatibilityTitle }}</AppCaption>
           </div>
           <div v-for="(section, key) in bundleCompatibilityResult.sections" :key="key" class="compat-result__section">
-            <p class="label-caps compat-result__section-title">{{ section.title }}</p>
+            <AppEyebrow class="compat-result__section-title">{{ section.title }}</AppEyebrow>
             <p class="report-section__para">{{ section.content }}</p>
           </div>
         </div>
@@ -486,13 +486,13 @@
     <section v-if="store.report && !store.subscriptionActive && !store.bundlePurchased && !store.oraclePurchased" class="upsell-section upsell-section--premium">
       <div class="editorial-rule" />
       <div class="upsell-section__inner">
-        <p class="label-caps upsell-section__eyebrow">Premium</p>
-        <h3 class="upsell-section__heading font-serif-italic">{{ t('reportPremiumCta') }}</h3>
-        <p class="annotation upsell-section__sub">{{ t('reportPremiumSubtitle') }}</p>
+        <AppEyebrow class="upsell-section__eyebrow">Premium</AppEyebrow>
+        <AppSubhead as="h3" class="upsell-section__heading">{{ t('reportPremiumCta') }}</AppSubhead>
+        <AppCaption as="p" class="upsell-section__sub">{{ t('reportPremiumSubtitle') }}</AppCaption>
         <NuxtLink to="/founding" class="upsell-cta-btn upsell-cta-btn--link">
           {{ t('foundingCtaReport') }}
         </NuxtLink>
-        <p class="annotation upsell-section__founding-sub">{{ t('foundingCtaSubtitle') }}</p>
+        <AppCaption as="p" class="upsell-section__founding-sub">{{ t('foundingCtaSubtitle') }}</AppCaption>
         <NuxtLink to="/subscribe" class="upsell-cta-btn upsell-cta-btn--link upsell-cta-btn--secondary">
           {{ t('subscribeCtaMonthly') }}
         </NuxtLink>
@@ -506,24 +506,24 @@
       <div class="upsell-section__inner">
         <div class="upsell-section__header-row">
           <div>
-            <p class="label-caps upsell-section__eyebrow">Daily forecast</p>
-            <h3 class="upsell-section__heading font-serif-italic">Tomorrow, for {{ store.report.archetypeName }}</h3>
-            <p class="annotation upsell-section__sub">Your natal chart, read every morning at 6am</p>
+            <AppEyebrow class="upsell-section__eyebrow">Daily forecast</AppEyebrow>
+            <AppSubhead as="h3" class="upsell-section__heading">Tomorrow, for {{ store.report.archetypeName }}</AppSubhead>
+            <AppCaption as="p" class="upsell-section__sub">Your natal chart, read every morning at 6am</AppCaption>
           </div>
           <div class="upsell-section__price-block">
-            <p class="annotation upsell-section__trial-label">Free 7 days, then</p>
-            <span class="upsell-section__price font-serif">$6.99<span class="upsell-section__price-period">/mo</span></span>
+            <AppCaption as="p" class="upsell-section__trial-label">Free 7 days, then</AppCaption>
+            <AppSubhead as="span" variant="strong" class="upsell-section__price">$6.99<span class="upsell-section__price-period">/mo</span></AppSubhead>
           </div>
         </div>
         <div class="upsell-features">
-          <p class="annotation upsell-feature">✦ Tailored to your {{ store.report.archetypeName }} archetype</p>
-          <p class="annotation upsell-feature">✦ Delivered each morning, written by your stars</p>
-          <p class="annotation upsell-feature">✦ Cancel anytime — keep your reading</p>
+          <AppCaption as="p" class="upsell-feature">✦ Tailored to your {{ store.report.archetypeName }} archetype</AppCaption>
+          <AppCaption as="p" class="upsell-feature">✦ Delivered each morning, written by your stars</AppCaption>
+          <AppCaption as="p" class="upsell-feature">✦ Cancel anytime — keep your reading</AppCaption>
         </div>
         <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription('end_content')">
           {{ isStartingSub ? 'Loading...' : 'Start my 7-day free trial' }}
         </button>
-        <p class="annotation upsell-section__note">Cancel anytime · No charge until day 8 · Your card stays secure with Stripe</p>
+        <AppCaption as="p" class="upsell-section__note">Cancel anytime · No charge until day 8 · Your card stays secure with Stripe</AppCaption>
       </div>
       <div class="editorial-rule" />
     </section>
@@ -532,23 +532,23 @@
     <!-- ── SHARE & EXPORT ── -->
     <section class="report-section share-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">◇</span>
+        <AppCaption class="report-section__num">◇</AppCaption>
         <div>
-          <p class="label-caps report-section__tradition">Export</p>
-          <h2 class="report-section__heading font-serif">{{ t('shareDestiny') }}</h2>
+          <AppEyebrow class="report-section__tradition">Export</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ t('shareDestiny') }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
-        <p class="annotation report-section__para">{{ t('shareDesc') }}</p>
+        <AppCaption as="p" class="report-section__para">{{ t('shareDesc') }}</AppCaption>
 
         <!-- Share card preview -->
         <div class="share-card">
-          <p class="label-caps share-card__archetype">{{ store.report.archetypeName }}</p>
+          <AppEyebrow class="share-card__archetype">{{ store.report.archetypeName }}</AppEyebrow>
           <div class="share-card__traits">
-            <span v-for="trait in store.report.powerTraits" :key="trait" class="share-card__trait annotation">{{ trait }}</span>
+            <AppCaption v-for="trait in store.report.powerTraits" :key="trait" class="share-card__trait">{{ trait }}</AppCaption>
           </div>
-          <p class="annotation share-card__domain">omenora.com</p>
+          <AppCaption as="p" class="share-card__domain">omenora.com</AppCaption>
         </div>
 
         <div class="share-actions">
@@ -559,7 +559,7 @@
             {{ isDownloadingPDF ? 'Generating...' : t('downloadPDF') }}
           </button>
         </div>
-        <p v-if="cardDownloadError" class="share-error annotation">{{ cardDownloadError }}</p>
+        <AppCaption as="p" v-if="cardDownloadError" class="share-error">{{ cardDownloadError }}</AppCaption>
 
         <div v-if="store.email" class="share-email-row">
           <button
@@ -579,9 +579,9 @@
     <section class="report-footer-cta">
       <div class="editorial-rule" />
       <div class="report-footer-cta__inner">
-        <h2 class="font-display-italic report-footer-cta__headline">
+        <AppHeadline as="h2" class="report-footer-cta__headline">
           Your forecast is complete.
-        </h2>
+        </AppHeadline>
         <p class="report-footer-cta__body">
           Return tomorrow for your daily forecast,
           tailored to your {{ store.report.archetypeName }} archetype.
@@ -604,7 +604,7 @@
       <span class="report-footer-sep" aria-hidden="true">·</span>
       <NuxtLink to="/terms" class="report-footer-link">Terms of Service</NuxtLink>
     </nav>
-    <p class="report-footer-crisis annotation">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
+    <AppCaption as="p" class="report-footer-crisis">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</AppCaption>
   </footer>
 </template>
 
