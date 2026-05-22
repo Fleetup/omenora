@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
-import { CompatibilitySchema, type CompatibilityType, PreviewCompatibilitySchema, type CompatibilityReceiptType } from '~~/server/utils/ai-schemas'
+import { CompatibilitySectionsSchema, PreviewCompatibilitySchema, type CompatibilityReceiptType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
 import { getSunSign, getLifePathNumber } from '~~/server/utils/quick-signs'
 import { getPlanetaryTransits } from '~~/server/utils/planetaryTransits'
@@ -328,6 +328,11 @@ Return ONLY valid JSON, no markdown:
 
   // ── FULL PATH (post-payment) ───────────────────────────────────────────────
   // Generates all 7 sections. Only reached when previewMode === false.
+  // Score and title are computed deterministically (same functions as preview path)
+  // so users see identical values before and after payment.
+
+  const compatibilityScore = computeCompatibilityScore(lifePathNumber, partnerLifePath, element || 'Unknown', partnerElement)
+  const compatibilityTitle = computeCompatibilityTitle(archetype, partnerSunSign.name, element || 'Unknown', partnerElement)
 
   const todayDate  = new Date().toISOString().split('T')[0]!
   const sevenDaysFromNow = new Date()
@@ -371,12 +376,15 @@ CURRENT PLANETARY WINDOW (${todayDate} – ${forecastEndDate}):
 - Venus: ${currentTransits.venus.sign} ${currentTransits.venus.degree}° → ${forecastTransits.venus.sign} ${forecastTransits.venus.degree}°
 - Mars: ${currentTransits.mars.sign} ${currentTransits.mars.degree}° → ${forecastTransits.mars.sign} ${forecastTransits.mars.degree}°
 
+PRE-COMPUTED VALUES (do not change these — write sections that match this framing):
+- Compatibility Score: ${compatibilityScore}
+- Compatibility Title: ${compatibilityTitle}
+
 Generate exactly 7 sections. Each section MUST be specific to this exact pairing — never a generic template.
+The title above frames the dynamic — write sections that are tonally consistent with it.
 
 Return ONLY valid JSON, no markdown:
 {
-  "compatibilityScore": 85,
-  "compatibilityTitle": "The Alchemist meets The Storm — transformation through tension",
   "sections": {
     "bond": {
       "title": "The Bond That Holds You Together",
@@ -412,8 +420,6 @@ Return ONLY valid JSON, no markdown:
   const compatibilityJsonSchema = {
     type: 'object',
     properties: {
-      compatibilityScore: { type: 'number' },
-      compatibilityTitle: { type: 'string' },
       sections: {
         type: 'object',
         properties: {
@@ -428,7 +434,7 @@ Return ONLY valid JSON, no markdown:
         required: ['bond', 'strength', 'challenge', 'communication', 'powerDynamic', 'forecast', 'advice'],
       },
     },
-    required: ['compatibilityScore', 'compatibilityTitle', 'sections'],
+    required: ['sections'],
   } as const
 
   const message = await withAiRetry('generate-compatibility', () =>
@@ -457,7 +463,7 @@ Return ONLY valid JSON, no markdown:
     throw createError({ statusCode: 500, message: 'Failed to parse compatibility report' })
   }
 
-  const zodResult = CompatibilitySchema.safeParse(rawParsed)
+  const zodResult = CompatibilitySectionsSchema.safeParse(rawParsed)
   if (!zodResult.success) {
     console.error('[generate-compatibility] Schema validation failed after structured output', {
       endpoint: 'generate-compatibility',
@@ -470,7 +476,7 @@ Return ONLY valid JSON, no markdown:
     throw createError({ statusCode: 500, message: 'Failed to parse compatibility report' })
   }
 
-  const compatibilityData: CompatibilityType = zodResult.data
+  const sectionsData = zodResult.data.sections
 
   // ── Calculation receipt ───────────────────────────────────────────────────
 
@@ -506,9 +512,9 @@ Return ONLY valid JSON, no markdown:
   return {
     success: true,
     compatibility: {
-      compatibilityScore: compatibilityData.compatibilityScore,
-      compatibilityTitle: compatibilityData.compatibilityTitle,
-      sections:           compatibilityData.sections,
+      compatibilityScore,
+      compatibilityTitle,
+      sections: sectionsData,
       calculationReceipt,
     },
   }
