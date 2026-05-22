@@ -102,7 +102,7 @@
 
       <!-- Rule -->
       <div class="page-wrapper">
-        <EditorialRule ornament="◇" />
+        <AppDivider variant="labeled" label="◇" spacing="lg" />
       </div>
 
       <!-- A. What's next -->
@@ -166,7 +166,7 @@
 
       <!-- Rule -->
       <div class="page-wrapper">
-        <EditorialRule ornament="◇" />
+        <AppDivider variant="labeled" label="◇" spacing="lg" />
       </div>
 
       <!-- C. Final CTA -->

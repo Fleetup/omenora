@@ -75,7 +75,7 @@
 
     <!-- ── RULE ───────────────────────────────────────────────────────────── -->
     <div class="page-wrapper">
-      <EditorialRule ornament="◇" />
+      <AppDivider variant="labeled" label="◇" spacing="lg" />
     </div>
 
     <!-- ── A. WHAT THIS IS ───────────────────────────────────────────────── -->
@@ -160,7 +160,7 @@
 
     <!-- ── RULE ───────────────────────────────────────────────────────────── -->
     <div class="page-wrapper">
-      <EditorialRule ornament="◇" />
+      <AppDivider variant="labeled" label="◇" spacing="lg" />
     </div>
 
     <!-- ── D. FAQ ─────────────────────────────────────────────────────────── -->
@@ -205,7 +205,7 @@
 
     <!-- ── RULE ───────────────────────────────────────────────────────────── -->
     <div class="page-wrapper">
-      <EditorialRule ornament="◇" />
+      <AppDivider variant="labeled" label="◇" spacing="lg" />
     </div>
 
     <!-- ── E. FINAL CTA ───────────────────────────────────────────────────── -->

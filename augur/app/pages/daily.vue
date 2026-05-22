@@ -62,7 +62,7 @@
             </div>
           </div>
 
-          <EditorialRule />
+          <AppDivider variant="rule" spacing="lg" />
 
           <div class="reading-empty">
             <p class="label-caps reading-empty__label">{{ todayFormatted }}</p>
@@ -93,7 +93,7 @@
             </div>
           </div>
 
-          <EditorialRule />
+          <AppDivider variant="rule" spacing="lg" />
 
           <div class="reading-content">
             <div class="reading-content__theme">
@@ -101,7 +101,7 @@
               <p class="pull-quote reading-content__theme-text">{{ featuredSignReading.theme }}</p>
             </div>
 
-            <EditorialRule />
+            <AppDivider variant="rule" spacing="lg" />
 
             <p class="annotation reading-moon-line">
               ☽ Moon in {{ featuredSignReading.moon_sign }} · {{ featuredSignReading.moon_phase }}
@@ -126,12 +126,12 @@
             </div>
 
             <div v-if="featuredSignReading.planetary_weather" class="reading-weather">
-              <EditorialRule />
+              <AppDivider variant="rule" spacing="lg" />
               <p class="annotation reading-weather__text">{{ featuredSignReading.planetary_weather }}</p>
             </div>
 
             <div class="reading-cta">
-              <EditorialRule ornament="◇" />
+              <AppDivider variant="labeled" label="◇" spacing="lg" />
               <p class="pull-quote reading-cta__pull">
                 This is your sun sign forecast. Your natal chart gives the full picture.
               </p>
@@ -220,7 +220,7 @@
             </div>
           </div>
 
-          <EditorialRule />
+          <AppDivider variant="rule" spacing="lg" />
 
           <div class="reading-empty">
             <p class="label-caps reading-empty__label">{{ todayFormatted }}</p>
@@ -250,7 +250,7 @@
             </div>
           </div>
 
-          <EditorialRule />
+          <AppDivider variant="rule" spacing="lg" />
 
           <div class="reading-content">
             <div class="reading-content__theme">
@@ -258,7 +258,7 @@
               <p class="pull-quote reading-content__theme-text">{{ featuredReading.theme }}</p>
             </div>
 
-            <EditorialRule />
+            <AppDivider variant="rule" spacing="lg" />
 
             <div class="reading-content__body">
               <p class="reading-content__para">{{ featuredReading.insight }}</p>
@@ -270,7 +270,7 @@
             </div>
 
             <div class="reading-cta">
-              <EditorialRule ornament="◇" />
+              <AppDivider variant="labeled" label="◇" spacing="lg" />
               <p class="pull-quote reading-cta__pull">Don't know your archetype yet?</p>
               <AppButton variant="primary" to="/analysis" :arrow="true">Discover yours</AppButton>
             </div>
@@ -325,7 +325,7 @@
 
     <!-- ── CTA STRIP ── -->
     <div class="daily-cta-strip">
-      <EditorialRule />
+      <AppDivider variant="rule" spacing="lg" />
       <div class="daily-cta-strip__inner">
         <p class="pull-quote daily-cta-strip__pull">
           <template v-if="featuredSign">See what YOUR chart says beyond {{ signDisplayName(featuredSign) }}</template>
