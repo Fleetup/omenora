@@ -2,7 +2,7 @@
   <!-- ── STATE: Loading ── -->
   <div v-if="isLoading" class="account-state-page">
     <PhoenixLoader :size="72" />
-    <p class="annotation" style="margin-top: 16px; color: var(--color-ink-faint);">Loading your account…</p>
+    <p class="annotation" style="margin-top: 16px; color: var(--text-tertiary);">Loading your account…</p>
   </div>
 
   <!-- ── STATE: Magic link pending (click-to-confirm) ── -->
@@ -59,7 +59,7 @@
       </template>
 
       <div v-else class="auth-sent">
-        <p class="label-caps" style="color: var(--color-gold); margin-bottom: 12px;">✦ Check your email</p>
+        <p class="label-caps" style="color: var(--accent-gold); margin-bottom: 12px;">✦ Check your email</p>
         <p class="auth-card__body">We sent a sign-in link to <strong>{{ emailInput }}</strong>. It expires in 1 hour.</p>
       </div>
     </div>
@@ -228,7 +228,7 @@
               <template v-else-if="cancelState === 'cancelled'">
                 <div class="cancel-done">
                   <div class="editorial-rule" />
-                  <p class="label-caps" style="color: var(--color-ink-faint)">Cancellation initiated</p>
+                  <p class="label-caps" style="color: var(--text-tertiary)">Cancellation initiated</p>
                   <p class="cancel-done__body font-serif">
                     Your access continues until the end of the billing period. We hope to see you again.
                   </p>
@@ -257,7 +257,7 @@
 
           <!-- Natal / Archetype readings -->
           <template v-if="reports.length > 0">
-            <p class="label-caps" style="color: var(--color-ink-faint); margin-bottom: 16px;">Natal Readings</p>
+            <p class="label-caps" style="color: var(--text-tertiary); margin-bottom: 16px;">Natal Readings</p>
             <div
               v-for="report in reports.filter((r: any) => r.type !== 'compatibility')"
               :key="report.id"
@@ -273,7 +273,7 @@
 
           <!-- Daily insights (subscribers only) -->
           <template v-if="subscriptionActive && dailyInsights.length > 0">
-            <p class="label-caps" style="color: var(--color-ink-faint); margin-top: 32px; margin-bottom: 16px;">Recent Daily Readings</p>
+            <p class="label-caps" style="color: var(--text-tertiary); margin-top: 32px; margin-bottom: 16px;">Recent Daily Readings</p>
             <div
               v-for="insight in dailyInsights"
               :key="insight.sent_date"
@@ -344,7 +344,7 @@
 
           <!-- Compatibility readings -->
           <template v-if="compatibilityReadings.length > 0">
-            <p class="label-caps" style="color: var(--color-ink-faint); margin-top: 32px; margin-bottom: 16px;">Compatibility Readings</p>
+            <p class="label-caps" style="color: var(--text-tertiary); margin-top: 32px; margin-bottom: 16px;">Compatibility Readings</p>
             <div
               v-for="reading in compatibilityReadings"
               :key="reading.id"
@@ -642,7 +642,7 @@ function toggleInsight(date: string) {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 80) return 'var(--color-gold)'
+  if (score >= 80) return 'var(--accent-gold)'
   if (score >= 60) return 'rgba(200, 150, 50, 0.9)'
   return 'rgba(180, 80, 80, 0.9)'
 }

@@ -901,7 +901,7 @@ async function handlePayment() {
 }
 
 .report-preview__text {
-  font-size: var(--text-body, 16px);
+  font-size: var(--text-base);
   line-height: 1.75;
   color: var(--text-secondary);
   margin-bottom: 28px;
@@ -922,7 +922,7 @@ async function handlePayment() {
 }
 
 .report-preview__blurred p {
-  font-size: var(--text-body, 16px);
+  font-size: var(--text-base);
   line-height: 1.75;
   color: var(--text-secondary);
   margin: 0;

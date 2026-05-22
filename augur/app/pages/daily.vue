@@ -1043,7 +1043,7 @@ onMounted(async () => {
 }
 
 .reading-content__para {
-  font-size: var(--text-body, 17px);
+  font-size: var(--text-base);
   line-height: 1.8;
   color: var(--text-secondary);
   margin-bottom: 20px;
@@ -1081,7 +1081,7 @@ onMounted(async () => {
 }
 
 .section-text {
-  font-size: var(--text-caption, 13px);
+  font-size: var(--text-sm);
   line-height: 1.65;
   color: var(--text-secondary);
 }
@@ -1090,7 +1090,7 @@ onMounted(async () => {
 .reading-weather__text {
   color: var(--text-tertiary);
   font-style: italic;
-  font-size: var(--text-caption, 13px);
+  font-size: var(--text-sm);
 }
 
 /* ── Reflection block ── */
