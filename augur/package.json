@@ -44,6 +44,8 @@
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^0.3.0",
+    "@nuxt/fonts": "^0.14.0",
+    "@nuxt/image": "^2.0.0",
     "@playwright/test": "^1.43.0",
     "@types/node": "^25.5.2",
     "@types/pdfkit": "^0.17.5",
