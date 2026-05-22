@@ -620,16 +620,16 @@ onMounted(async () => {
   border: none;
   cursor: pointer;
   padding: 0;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   transition: color 0.2s;
 }
 
 .daily-tab--active {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .daily-tab-sep {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   opacity: 0.5;
   font-size: 12px;
 }
@@ -644,25 +644,25 @@ onMounted(async () => {
 }
 
 .daily-header__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
 .daily-header__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(40px, 9vw, 80px);
   line-height: 1.0;
   letter-spacing: -0.03em;
   margin: 0 0 32px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .daily-header__rule {
   width: 48px;
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   margin-bottom: 40px;
 }
 
@@ -680,13 +680,13 @@ onMounted(async () => {
 .daily-loading__bar {
   width: 160px;
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   overflow: hidden;
 }
 
 .daily-loading__fill {
   height: 100%;
-  background: var(--color-gold);
+  background: var(--accent-gold);
   width: 0;
   animation: load-sweep 1.8s ease-in-out infinite;
 }
@@ -699,7 +699,7 @@ onMounted(async () => {
 
 .daily-empty {
   padding: clamp(20px, 5vw, 48px);
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 .reading-empty {
@@ -710,7 +710,7 @@ onMounted(async () => {
 }
 
 .reading-empty__label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 .reading-empty__msg {
@@ -719,7 +719,7 @@ onMounted(async () => {
 }
 
 .reading-empty__sub {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   max-width: 44ch;
 }
 
@@ -733,7 +733,7 @@ onMounted(async () => {
 }
 
 .sign-selector__prompt {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 28px;
 }
 
@@ -741,8 +741,8 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: var(--color-ink-ghost);
-  border: 1px solid var(--color-ink-ghost);
+  background: var(--border-subtle);
+  border: 1px solid var(--border-subtle);
   max-width: 680px;
 }
 
@@ -760,7 +760,7 @@ onMounted(async () => {
   align-items: center;
   gap: 10px;
   padding: 24px 12px 20px;
-  background: var(--color-bone);
+  background: var(--surface-base);
   border: none;
   cursor: pointer;
   transition: background 0.15s;
@@ -768,7 +768,7 @@ onMounted(async () => {
 }
 
 .sign-tile:hover {
-  background: var(--color-bone-dim);
+  background: var(--surface-raised);
 }
 
 .sign-tile__img {
@@ -786,11 +786,11 @@ onMounted(async () => {
 }
 
 .sign-tile__name {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .sign-tile__dates {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 /* ─────────────────────────────────────────────
@@ -806,14 +806,14 @@ onMounted(async () => {
   align-items: center;
   gap: 6px;
   padding: 18px 12px;
-  background: var(--color-bone);
+  background: var(--surface-base);
   text-decoration: none;
   transition: background 0.15s;
   text-align: center;
 }
 
 .sign-mini-card:hover {
-  background: var(--color-bone-dim);
+  background: var(--surface-raised);
 }
 
 .sign-mini-card__img {
@@ -830,11 +830,11 @@ onMounted(async () => {
 }
 
 .sign-mini-card__name {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .sign-mini-card__theme {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0;
   line-height: 1.4;
 }
@@ -853,7 +853,7 @@ onMounted(async () => {
 }
 
 .archetype-selector__prompt {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 28px;
 }
 
@@ -861,8 +861,8 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: var(--color-ink-ghost);
-  border: 1px solid var(--color-ink-ghost);
+  background: var(--border-subtle);
+  border: 1px solid var(--border-subtle);
   max-width: 680px;
 }
 
@@ -876,14 +876,14 @@ onMounted(async () => {
   align-items: center;
   gap: 10px;
   padding: 24px 12px;
-  background: var(--color-bone);
+  background: var(--surface-base);
   border: none;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .archetype-tile:hover {
-  background: var(--color-bone-dim);
+  background: var(--surface-raised);
 }
 
 .archetype-tile__img {
@@ -899,7 +899,7 @@ onMounted(async () => {
 }
 
 .archetype-tile__name {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ─────────────────────────────────────────────
@@ -915,14 +915,14 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
   padding: 20px 12px;
-  background: var(--color-bone);
+  background: var(--surface-base);
   text-decoration: none;
   transition: background 0.15s;
   text-align: center;
 }
 
 .archetype-mini-card:hover {
-  background: var(--color-bone-dim);
+  background: var(--surface-raised);
 }
 
 .archetype-mini-card__img {
@@ -938,11 +938,11 @@ onMounted(async () => {
 }
 
 .archetype-mini-card__name {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .archetype-mini-card__theme {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0;
   line-height: 1.4;
 }
@@ -961,7 +961,7 @@ onMounted(async () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   padding: 0;
   margin-bottom: 28px;
   display: inline-block;
@@ -969,7 +969,7 @@ onMounted(async () => {
 }
 
 .back-link:hover {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ── Reading sign header ── */
@@ -1004,11 +1004,11 @@ onMounted(async () => {
 }
 
 .reading-sign-name {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 28px;
   font-weight: 400;
   margin: 0 0 4px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ── Reading content ── */
@@ -1021,7 +1021,7 @@ onMounted(async () => {
 }
 
 .reading-content__theme-label {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   display: block;
   margin-bottom: 12px;
 }
@@ -1029,11 +1029,11 @@ onMounted(async () => {
 .reading-content__theme-text {
   margin: 0;
   max-width: 44ch;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .reading-moon-line {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 20px;
   display: block;
 }
@@ -1045,7 +1045,7 @@ onMounted(async () => {
 .reading-content__para {
   font-size: var(--text-body, 17px);
   line-height: 1.8;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 20px;
 }
 
@@ -1062,7 +1062,7 @@ onMounted(async () => {
   align-items: baseline;
   gap: 10px;
   padding: 12px 0;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .sign-section-row:first-child {
@@ -1072,23 +1072,23 @@ onMounted(async () => {
 
 .section-icon {
   font-size: 11px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   line-height: 1;
 }
 
 .section-label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 .section-text {
   font-size: var(--text-caption, 13px);
   line-height: 1.65;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 /* ── Planetary weather ── */
 .reading-weather__text {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-style: italic;
   font-size: var(--text-caption, 13px);
 }
@@ -1096,21 +1096,21 @@ onMounted(async () => {
 /* ── Reflection block ── */
 .reading-reflection {
   padding: 20px 0;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .reading-reflection__label {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   margin-bottom: 8px;
   display: block;
 }
 
 .reading-reflection__text {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 18px;
   font-weight: 300;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   line-height: 1.65;
   margin: 0;
 }
@@ -1126,7 +1126,7 @@ onMounted(async () => {
 .reading-cta__pull {
   max-width: 36ch;
   margin: 0;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 /* ─────────────────────────────────────────────
@@ -1139,7 +1139,7 @@ onMounted(async () => {
 }
 
 .others-section__label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 20px;
 }
 
@@ -1163,7 +1163,7 @@ onMounted(async () => {
 .daily-cta-strip__pull {
   margin: 0;
   max-width: 44ch;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 /* ─────────────────────────────────────────────
@@ -1194,34 +1194,34 @@ onMounted(async () => {
 }
 
 .daily-sub-badge {
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 .daily-sub-price {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 400;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   line-height: 1;
 }
 
 .daily-sub-price-period {
   font-size: 13px;
-  color: var(--color-gold-dim);
+  color: var(--accent-dim);
 }
 
 .daily-sub-headline {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 20px;
   font-weight: 300;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.35;
 }
 
 .daily-sub-copy {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0;
 }
 
@@ -1231,7 +1231,7 @@ onMounted(async () => {
   padding: 12px 20px;
   background: rgba(201, 169, 97, 0.1);
   border: 1px solid var(--rule-gold, rgba(201, 169, 97, 0.4));
-  color: var(--color-gold);
+  color: var(--accent-gold);
   text-decoration: none;
   text-align: center;
   cursor: pointer;
@@ -1240,11 +1240,11 @@ onMounted(async () => {
 
 .daily-sub-btn:hover {
   background: rgba(201, 169, 97, 0.18);
-  border-color: var(--color-gold);
+  border-color: var(--accent-gold);
 }
 
 .daily-sub-note {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0;
   text-align: left;
 }

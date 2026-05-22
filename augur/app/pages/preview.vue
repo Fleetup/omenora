@@ -26,7 +26,7 @@
     <!-- ── STATE C: ERROR ── -->
     <div v-else-if="hasError" class="preview-error">
       <div class="preview-error__inner">
-        <p class="label-caps" style="color: var(--color-ink-faint)">Something went wrong</p>
+        <p class="label-caps" style="color: var(--text-tertiary)">Something went wrong</p>
         <h2 class="font-display-italic preview-error__msg">We couldn't generate your reading.</h2>
         <div class="preview-error__actions">
           <CTAButton :arrow="true" @click="retryApiCall">Try again</CTAButton>
@@ -712,14 +712,14 @@ async function handlePayment() {
 /* ── Page shell ── */
 .preview-page {
   min-height: 100vh;
-  background: var(--color-bone);
+  background: var(--surface-base);
   display: flex;
   flex-direction: column;
 }
 
 /* ── Header meta ── */
 .preview-header__meta {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 10px;
 }
 
@@ -760,12 +760,12 @@ async function handlePayment() {
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
 }
 
 
 .loading-status {
-  color: var(--color-ink);
+  color: var(--text-primary);
   font-size: 11px;
   min-height: 1.4em;
 }
@@ -773,12 +773,12 @@ async function handlePayment() {
 .loading-progress {
   width: 200px;
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
 }
 
 .loading-progress__fill {
   height: 100%;
-  background: var(--color-ink);
+  background: var(--text-primary);
   width: 0%;
   animation: loading-fill 8s ease forwards;
 }
@@ -792,7 +792,7 @@ async function handlePayment() {
 }
 
 .loading-subtext {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 /* ── ERROR STATE ── */
@@ -812,13 +812,13 @@ async function handlePayment() {
 }
 
 .preview-error__msg {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(28px, 6vw, 44px);
   line-height: 1.1;
   margin: 0;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .preview-error__actions {
@@ -835,19 +835,19 @@ async function handlePayment() {
 }
 
 .report-header__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
 .report-header__title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(48px, 10vw, 96px);
   line-height: 1.0;
   letter-spacing: -0.03em;
   margin: 0 0 40px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .report-header__symbol {
@@ -874,7 +874,7 @@ async function handlePayment() {
 .report-header__sep { opacity: 0.3; }
 
 .report-header__element {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 4px 0 16px;
 }
 
@@ -887,9 +887,9 @@ async function handlePayment() {
 
 .report-trait {
   padding: 5px 12px;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   font-size: 9px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   letter-spacing: 0.2em;
 }
 
@@ -903,7 +903,7 @@ async function handlePayment() {
 .report-preview__text {
   font-size: var(--text-body, 16px);
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 28px;
 }
 
@@ -918,13 +918,13 @@ async function handlePayment() {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 0%, var(--color-bone) 70%);
+  background: linear-gradient(to bottom, transparent 0%, var(--surface-base) 70%);
 }
 
 .report-preview__blurred p {
   font-size: var(--text-body, 16px);
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 0;
   filter: blur(3px);
   user-select: none;
@@ -934,7 +934,7 @@ async function handlePayment() {
 .unlock-meter { margin-bottom: 24px; }
 
 .unlock-meter__label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 10px;
 }
 
@@ -942,21 +942,21 @@ async function handlePayment() {
   width: 100%;
   max-width: 320px;
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
 }
 
 .unlock-meter__fill {
   height: 100%;
   width: 14%;
-  background: var(--color-ink);
+  background: var(--text-primary);
 }
 
 .report-receipt {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
 }
 
-.report-urgency { color: var(--color-ink-faint); }
+.report-urgency { color: var(--text-tertiary); }
 
 /* ── Locked sections ── */
 .locked-sections {
@@ -967,11 +967,11 @@ async function handlePayment() {
 
 .locked-sections__header {
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
   margin-bottom: 16px;
 }
 
-.locked-sections__label { color: var(--color-ink-faint); }
+.locked-sections__label { color: var(--text-tertiary); }
 
 .locked-sections__list {
   list-style: none;
@@ -983,7 +983,7 @@ async function handlePayment() {
 }
 
 .locked-sections__item {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   opacity: 0.5;
 }
 
@@ -995,22 +995,22 @@ async function handlePayment() {
 }
 
 .testimonial__stars {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 12px;
   letter-spacing: 0.1em;
 }
 
 .testimonial__quote {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: clamp(18px, 4vw, 24px);
   font-weight: 400;
   line-height: 1.5;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 12px;
   font-style: italic;
 }
 
-.testimonial__attr { color: var(--color-ink-faint); }
+.testimonial__attr { color: var(--text-tertiary); }
 
 /* ── Trustpilot block ── */
 .preview-tp-block {
@@ -1020,7 +1020,7 @@ async function handlePayment() {
 }
 
 .preview-tp-label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 8px;
   letter-spacing: 0.15em;
 }
@@ -1035,15 +1035,15 @@ async function handlePayment() {
 .paywall__header { margin-bottom: 32px; }
 
 .paywall__personal {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: clamp(20px, 4vw, 28px);
   font-weight: 400;
   line-height: 1.35;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 12px;
 }
 
-.paywall__sub { color: var(--color-ink-mid); }
+.paywall__sub { color: var(--text-secondary); }
 
 /* ── Promo code ── */
 .paywall__promo {
@@ -1055,14 +1055,14 @@ async function handlePayment() {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
   font-family: inherit;
 }
 
-.paywall__promo-toggle:hover { color: var(--color-ink); }
+.paywall__promo-toggle:hover { color: var(--text-primary); }
 
 .paywall__promo-row {
   display: flex;
@@ -1080,10 +1080,10 @@ async function handlePayment() {
 
 .paywall__promo-apply {
   background: none;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
-  color: var(--color-ink);
-  font-family: 'Hanken Grotesk', sans-serif;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 9px;
   letter-spacing: 0.2em;
@@ -1093,8 +1093,8 @@ async function handlePayment() {
 }
 
 .paywall__promo-apply:hover:not(:disabled) {
-  border-color: var(--color-ink);
-  background: var(--color-ink-alpha-04);
+  border-color: var(--text-primary);
+  background: var(--border-faint);
 }
 
 .paywall__promo-apply:disabled {
@@ -1114,7 +1114,7 @@ async function handlePayment() {
 
 .paywall__email-label {
   display: block;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
 }
 
@@ -1122,23 +1122,23 @@ async function handlePayment() {
 .editorial-input {
   width: 100%;
   padding: 14px 0;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 300;
-  color: var(--color-ink);
+  color: var(--text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-ink-alpha-30);
+  border-bottom: 1px solid var(--border-default);
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;
   display: block;
 }
 
-.editorial-input:focus { border-bottom-color: var(--color-ink); }
+.editorial-input:focus { border-bottom-color: var(--text-primary); }
 
 .editorial-input::placeholder {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-style: italic;
 }
 
@@ -1150,11 +1150,11 @@ async function handlePayment() {
   width: 100%;
   max-width: 480px;
   padding: 18px 24px;
-  background: var(--color-ink);
-  color: var(--color-bone);
+  background: var(--text-primary);
+  color: var(--surface-base);
   border: none;
   cursor: pointer;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -1180,19 +1180,19 @@ async function handlePayment() {
 
 .paywall__cta--secondary {
   background: transparent;
-  border: 1px solid var(--color-ink-ghost);
-  color: var(--color-ink-mid);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   font-size: 13px;
   margin-top: 0;
 }
 
 .paywall__cta--secondary:hover:not(:disabled) {
-  background: var(--color-ink-alpha-04);
+  background: var(--border-faint);
   transform: none;
 }
 
 .paywall__founding-sub {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-top: -12px;
   margin-bottom: 20px;
   max-width: 480px;
@@ -1203,13 +1203,13 @@ async function handlePayment() {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 12px;
   max-width: 480px;
 }
 
 .paywall__guarantee-check {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   flex-shrink: 0;
   font-size: 10px;
   margin-top: 1px;
@@ -1217,14 +1217,14 @@ async function handlePayment() {
 
 .paywall__trust-onetime,
 .paywall__trust-secure {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 6px;
 }
 
 /* ── Footer ── */
 .preview-footer {
   padding: clamp(24px, 4vw, 40px) clamp(20px, 5vw, 80px);
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1238,16 +1238,16 @@ async function handlePayment() {
 }
 
 .preview-footer__link {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-decoration: none;
   transition: color 0.15s;
 }
 
-.preview-footer__link:hover { color: var(--color-ink); }
+.preview-footer__link:hover { color: var(--text-primary); }
 
-.preview-footer__sep { color: var(--color-ink-ghost); }
+.preview-footer__sep { color: var(--border-subtle); }
 
-.preview-footer__crisis { color: var(--color-ink-faint); }
+.preview-footer__crisis { color: var(--text-tertiary); }
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
