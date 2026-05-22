@@ -48,7 +48,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  update: [payload: { city: string; lat: number; lng: number }]
+  update: [payload: { city: string; lat: number | null; lng: number | null }]
   skip: []
   continue: []
 }>()
@@ -62,9 +62,7 @@ watch(() => props.lat,   (val) => { localLat.value = val })
 watch(() => props.lng,   (val) => { localLng.value = val })
 
 const isValid = computed(() =>
-  localCity.value.trim().length >= 2 &&
-  localLat.value != null &&
-  localLng.value != null
+  localCity.value.trim().length >= 2
 )
 
 function onCityInput(val: string) {
@@ -82,7 +80,7 @@ function onPlaceSelected(place: { name: string; lat: number; lng: number; placeI
 
 function onContinue() {
   if (!isValid.value) return
-  emit('update', { city: localCity.value, lat: localLat.value!, lng: localLng.value! })
+  emit('update', { city: localCity.value, lat: localLat.value, lng: localLng.value })
   emit('continue')
 }
 

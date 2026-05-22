@@ -215,15 +215,15 @@ function onTimeUpdate(s: TimeInputStep, val: string | null) {
   }
 }
 
-function onCityUpdate(s: CityInputStep, payload: { city: string; lat: number; lng: number }) {
+function onCityUpdate(s: CityInputStep, payload: { city: string; lat: number | null; lng: number | null }) {
   if (s.storeTarget === 'userCity') {
     store.setPersonalInfo(store.firstName, store.dateOfBirth, payload.city)
-    store.cityLat = payload.lat
-    store.cityLng = payload.lng
+    if (payload.lat != null) store.cityLat = payload.lat
+    if (payload.lng != null) store.cityLng = payload.lng
   } else if (s.storeTarget === 'partnerCity') {
     store.setPartnerData({ name: store.partnerName, dob: store.partnerDob, city: payload.city })
-    store.partnerCityLat = payload.lat
-    store.partnerCityLng = payload.lng
+    if (payload.lat != null) store.partnerCityLat = payload.lat
+    if (payload.lng != null) store.partnerCityLng = payload.lng
   }
 }
 
