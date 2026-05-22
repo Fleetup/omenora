@@ -1,1042 +1,394 @@
 <template>
-  <!-- ── Step 0: UTM landing / pre-sell ── -->
-  <div v-if="currentStep === 0" class="compat-landing">
-    <AppHeader>
-      <template #action>
-        <span class="label-caps compat-landing__badge">Free Preview</span>
-      </template>
-    </AppHeader>
+  <div class="cq">
+    <QuizProgressBar :current="currentStepIndex + 1" :total="QUIZ_SCHEMA.length" />
 
-    <div class="compat-landing__inner">
-      <AppEyebrow class="compat-landing__eyebrow">Compatibility Reading</AppEyebrow>
-      <AppHeadline variant="italic" as="h1" class="compat-landing__headline" v-html="heroVariant.headline" />
-      <div class="compat-landing__rule" />
-      <p class="compat-landing__body">{{ heroVariant.body }}</p>
+    <Transition name="step-fade" mode="out-in">
+      <div :key="currentStepIndex" class="cq__step">
 
-      <div class="compat-landing__trust">
-        <AppCaption variant="default" class="compat-landing__trust-item">Free preview</AppCaption>
-        <span class="compat-landing__trust-sep" aria-hidden="true">·</span>
-        <AppCaption variant="default" class="compat-landing__trust-item">No account needed</AppCaption>
-        <span class="compat-landing__trust-sep" aria-hidden="true">·</span>
-        <AppCaption variant="default" class="compat-landing__trust-item">Results in 60 seconds</AppCaption>
+        <!-- single_select -->
+        <QuizSingleSelect
+          v-if="step.type === 'single_select'"
+          :headline="step.headline"
+          :subtext="step.subtext"
+          :options="step.options"
+          :selected="getSingleSelectValue(step)"
+          @select="onSingleSelect(step, $event)"
+        />
+
+        <!-- date_input -->
+        <QuizDateInput
+          v-else-if="step.type === 'date_input'"
+          :headline="step.headline"
+          :subtext="step.subtext"
+          :value="getDateValue(step)"
+          :required="step.required"
+          @update="onDateUpdate(step, $event)"
+          @continue="advance"
+        />
+
+        <!-- time_input -->
+        <QuizTimeInput
+          v-else-if="step.type === 'time_input'"
+          :headline="step.headline"
+          :subtext="step.subtext"
+          :value="getTimeValue(step)"
+          :skip-label="step.skipLabel"
+          @update="onTimeUpdate(step, $event)"
+          @continue="advance"
+        />
+
+        <!-- city_input -->
+        <QuizCityInput
+          v-else-if="step.type === 'city_input'"
+          :headline="step.headline"
+          :subtext="step.subtext"
+          :value="getCityValue(step)"
+          :lat="getCityLat(step)"
+          :lng="getCityLng(step)"
+          :skip-label="step.skipLabel"
+          :required="step.required"
+          @update="onCityUpdate(step, $event)"
+          @skip="advance"
+          @continue="advance"
+        />
+
+        <!-- text_input -->
+        <QuizTextInput
+          v-else-if="step.type === 'text_input'"
+          :headline="step.headline"
+          :subtext="step.subtext"
+          :value="getTextValue(step)"
+          :placeholder="step.placeholder"
+          :max-length="step.maxLength"
+          :input-type="step.inputType"
+          :required="step.required"
+          :disclaimer-text="step.disclaimerText"
+          @update="onTextUpdate(step, $event)"
+          @continue="onTextContinue(step)"
+        />
+
+        <!-- reward -->
+        <QuizRewardScreen
+          v-else-if="step.type === 'reward'"
+          :emoji="step.emoji"
+          :headline="step.headline"
+          :body="step.body"
+          @continue="advance"
+        />
+
       </div>
+    </Transition>
 
-      <div class="compat-landing__tp-block">
-        <AppCaption variant="default" as="p" class="compat-landing__tp-label">Rated Excellent by our readers</AppCaption>
-        <TrustpilotWidget />
-      </div>
-
-      <AppButton variant="primary" :arrow="true" class="compat-landing__cta" @click="startQuiz">
-        {{ heroVariant.ctaLabel }}
-      </AppButton>
-
-      <AppCaption variant="default" as="p" class="compat-landing__privacy">Your birth data is used only to generate your reading. Never sold.</AppCaption>
+    <!-- Back button — hidden on reward screens and step 1 -->
+    <div class="cq__nav">
+      <button
+        v-if="step.type !== 'reward' && currentStepIndex > 0"
+        type="button"
+        class="cq__back"
+        @click="goBack"
+      >
+        ← Back
+      </button>
     </div>
-  </div>
 
-  <!-- ── Loading state (step 4) ── -->
-  <div v-else-if="currentStep === 4" class="compat-loading" aria-live="polite">
-    <div class="compat-loading__inner">
-      <PhoenixLoader :size="72" />
-      <AppEyebrow as="p" class="compat-loading__brand">Omenora</AppEyebrow>
-      <AppHeadline variant="italic" as="p" :key="loadingMsgIdx" class="compat-loading__msg">
-        {{ loadingMessages[loadingMsgIdx] }}
-      </AppHeadline>
-      <div class="progress-track">
-        <div class="compat-loading__fill" />
+    <!-- Loading overlay -->
+    <Transition name="step-fade">
+      <div v-if="isLoading" class="cq__loading">
+        <AppHeadline variant="italic" as="p" class="cq__loading-msg">
+          {{ loadingMessages[loadingMsgIdx % loadingMessages.length] }}
+        </AppHeadline>
       </div>
-      <AppCaption v-if="apiError" variant="default" as="p" class="compat-loading__error">
-        {{ t('quizErrorMsg') }}
-        <button class="compat-loading__retry" @click="runApiCall">{{ t('quizRetry') }}</button>
+    </Transition>
+
+    <!-- Error -->
+    <div v-if="apiError" class="cq__error">
+      <AppCaption variant="default" as="p" class="cq__error-msg">
+        Something went wrong. Please try again.
       </AppCaption>
+      <AppButton variant="primary" @click="runApiCall">
+        Retry
+      </AppButton>
     </div>
-  </div>
-
-  <!-- ── Quiz steps (1–3) ── -->
-  <div v-else class="analysis-page">
-
-    <AppHeader>
-      <template #action>
-        <span class="label-caps analysis-header__step">
-          {{ currentStep }} / 3
-        </span>
-      </template>
-    </AppHeader>
-
-    <!-- Progress bar -->
-    <div class="progress-track">
-      <div class="progress-fill" :style="{ width: (currentStep / 3 * 100) + '%' }" />
-    </div>
-
-    <!-- Step container -->
-    <div class="analysis-steps">
-      <Transition :name="transitionDir" mode="out-in">
-        <div :key="currentStep" class="analysis-step">
-
-          <AppEyebrow class="analysis-step__label">Step {{ currentStep }}</AppEyebrow>
-
-          <AppHeadline variant="italic" as="h1" class="analysis-step__headline">
-            {{ stepConfig[currentStep - 1]?.headline }}
-          </AppHeadline>
-
-          <div class="analysis-step__rule" />
-
-          <div class="analysis-step__content">
-
-            <!-- ── Step 1: Your birth details ── -->
-            <template v-if="currentStep === 1">
-              <label class="field-label label-caps" for="compat-my-dob">{{ t('quizMyBirthDate') }}</label>
-              <input
-                id="compat-my-dob"
-                v-model="myDob"
-                type="date"
-                class="editorial-input"
-                min="1924-01-01"
-                :max="todayMax"
-                required
-              />
-
-              <div style="margin-top: 32px;">
-                <PlacesAutocomplete
-                  v-model="myCity"
-                  :label="t('quizMyBirthCity')"
-                  :placeholder="t('quizCityPlaceholder')"
-                  input-id="myCity"
-                  @place-selected="onMyCitySelected"
-                />
-              </div>
-
-              <div class="compat-time-row">
-                <label class="field-label label-caps" for="compat-my-time">{{ t('quizBirthTime') }}</label>
-                <button type="button" class="compat-skip-time label-caps" @click="myTime = ''">{{ t('quizSkip') }}</button>
-              </div>
-              <input
-                id="compat-my-time"
-                v-model="myTime"
-                type="time"
-                class="editorial-input"
-              />
-              <AppCaption variant="default" as="p" class="field-hint">{{ t('quizBirthTimeHint') }}</AppCaption>
-            </template>
-
-            <!-- ── Step 2: Their birth details ── -->
-            <template v-else-if="currentStep === 2">
-
-              <!-- Your sign reveal card -->
-              <div class="compat-reveal" :class="{ 'compat-reveal--visible': revealVisible }">
-                <AppEyebrow class="compat-reveal__label">{{ t('quizYouLabel') }}</AppEyebrow>
-                <AppSubhead variant="default" as="p" class="compat-reveal__sign">
-                  <ZodiacSymbol v-if="mySunSign" :sign="mySunSign.name" :size="22" />
-                  {{ mySunSign?.name }}
-                </AppSubhead>
-                <AppCaption variant="default" as="p" class="compat-reveal__path">{{ t('quizLifePath') }} {{ myLifePath }}</AppCaption>
-              </div>
-
-              <label class="field-label label-caps" for="compat-their-dob">{{ t('quizTheirBirthDate') }}</label>
-              <input
-                id="compat-their-dob"
-                v-model="theirDob"
-                type="date"
-                class="editorial-input"
-                min="1924-01-01"
-                :max="todayMax"
-                required
-              />
-
-              <div style="margin-top: 32px;">
-                <PlacesAutocomplete
-                  v-model="theirCity"
-                  :label="t('quizTheirBirthCity')"
-                  :placeholder="t('quizCityPlaceholder')"
-                  input-id="theirCity"
-                  @place-selected="onTheirCitySelected"
-                />
-              </div>
-
-              <div class="compat-time-row">
-                <label class="field-label label-caps" for="compat-their-time">{{ t('quizBirthTime') }}</label>
-                <button type="button" class="compat-skip-time label-caps" @click="theirTime = ''">{{ t('quizSkip') }}</button>
-              </div>
-              <input
-                id="compat-their-time"
-                v-model="theirTime"
-                type="time"
-                class="editorial-input"
-              />
-              <AppCaption variant="default" as="p" class="field-hint">{{ t('quizBirthTimeHint') }}</AppCaption>
-            </template>
-
-            <!-- ── Step 3: Confirm & calculate ── -->
-            <template v-else-if="currentStep === 3">
-              <div class="compat-dual-reveal" :class="{ 'compat-dual-reveal--visible': revealVisible }">
-                <div class="compat-dual-reveal__card">
-                  <AppEyebrow class="compat-reveal__label">{{ t('quizYouLabel') }}</AppEyebrow>
-                  <AppSubhead variant="default" as="p" class="compat-reveal__sign">
-                    <ZodiacSymbol v-if="mySunSign" :sign="mySunSign.name" :size="20" />
-                    {{ mySunSign?.name }}
-                  </AppSubhead>
-                  <AppCaption variant="default" as="p" class="compat-reveal__path">{{ t('quizLifePath') }} {{ myLifePath }}</AppCaption>
-                </div>
-                <div class="compat-dual-reveal__sep font-display">×</div>
-                <div class="compat-dual-reveal__card">
-                  <AppEyebrow class="compat-reveal__label">{{ t('quizThemLabel') }}</AppEyebrow>
-                  <AppSubhead variant="default" as="p" class="compat-reveal__sign">
-                    <ZodiacSymbol v-if="theirSunSign" :sign="theirSunSign.name" :size="20" />
-                    {{ theirSunSign?.name }}
-                  </AppSubhead>
-                  <AppCaption variant="default" as="p" class="compat-reveal__path">{{ t('quizLifePath') }} {{ theirLifePath }}</AppCaption>
-                </div>
-              </div>
-
-              <AppCaption variant="default" as="p" class="field-hint" style="margin-top: 0;">{{ t('quizSynastryHint') }}</AppCaption>
-            </template>
-
-          </div>
-
-          <!-- Navigation -->
-          <div class="analysis-step__nav">
-            <button
-              v-if="currentStep > 1"
-              class="back-link label-caps"
-              @click="goBack"
-            >
-              {{ t('quizBack') }}
-            </button>
-
-            <AppButton
-              variant="primary"
-              v-if="currentStep === 3"
-              :arrow="true"
-              class="advance-btn"
-              @click="advanceStep3"
-            >
-              {{ t('quizCalculate') }}
-            </AppButton>
-
-            <AppButton
-              variant="primary"
-              v-else-if="currentStep === 1"
-              :arrow="true"
-              :disabled="!step1Valid"
-              class="advance-btn"
-              @click="advanceStep1"
-            >
-              {{ t('quizContinue') }}
-            </AppButton>
-
-            <AppButton
-              variant="primary"
-              v-else-if="currentStep === 2"
-              :arrow="true"
-              :disabled="!step2Valid"
-              class="advance-btn"
-              @click="advanceStep2"
-            >
-              {{ t('quizContinue') }}
-            </AppButton>
-          </div>
-
-        </div>
-      </Transition>
-    </div>
-
-    <AppCaption variant="default" as="p" class="trust-footer">{{ t('quizTrustFooter') }}</AppCaption>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
-import { getSunSign, getLifePathNumber, type SunSign } from '~/utils/quick-signs-client'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { QUIZ_SCHEMA, type QuizStep, type SingleSelectStep, type DateInputStep, type TimeInputStep, type CityInputStep, type TextInputStep } from '~/components/quiz/quiz-schema'
 import { useAnalysisStore } from '~/stores/analysisStore'
-import { useLanguage } from '~/composables/useLanguage'
-import { useClarity } from '~/composables/useClarity'
-
-useSeoMeta({ title: 'Free Compatibility Reading — OMENORA', robots: 'noindex, nofollow' })
+import type { CompatibilityQuizAnswers } from '~/stores/analysisStore'
 
 const store = useAnalysisStore()
-const { t } = useLanguage()
-const route = useRoute()
-const { $trackCustomEvent, $trackCompatibilityQuizStart } = useNuxtApp() as any
-const { trackEvent: clarityTrack } = useClarity()
+const router = useRouter()
 
-function trackEvent(name: string, props?: Record<string, unknown>) {
-  try { $trackCustomEvent?.(name, props ?? {}) } catch { /* never throw into the funnel */ }
-  clarityTrack(name)
-}
+// ── Local state ───────────────────────────────────────────────────────────────
 
-// ── Date/time form state ───────────────────────────────────────────────────
-const myDob    = ref('')
-const myTime   = ref('')
-const theirDob = ref('')
-const theirTime = ref('')
+const currentStepIndex = ref(0)
+const partnerTime = ref<string | null>(null)
+const userTime    = ref<string | null>(null)
+const isLoading   = ref(false)
+const apiError    = ref(false)
+const loadingMsgIdx = ref(0)
 
-const todayMax = computed(() => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-})
-
-// ── Other form state ──────────────────────────────────────────────────────
-const myCity    = ref('')
-const theirCity = ref('')
-const myCityLat    = ref<number | null>(null)
-const myCityLng    = ref<number | null>(null)
-const theirCityLat = ref<number | null>(null)
-const theirCityLng = ref<number | null>(null)
-const focusedField = ref<string | null>(null)
-
-function onMyCitySelected(place: { name: string; lat: number; lng: number; placeId: string }) {
-  myCity.value    = place.name
-  myCityLat.value = place.lat
-  myCityLng.value = place.lng
-}
-
-function onTheirCitySelected(place: { name: string; lat: number; lng: number; placeId: string }) {
-  theirCity.value    = place.name
-  theirCityLat.value = place.lat
-  theirCityLng.value = place.lng
-}
-
-// ── Step config ─────────────────────────────────────────────────────
-const stepConfig = computed(() => [
-  { headline: t('quizStep1Headline') },
-  { headline: t('quizStep2Headline') },
-  { headline: t('quizStep3Headline') },
-])
-
-// ── Hero copy variants (UTM-driven) ──────────────────────────────────
-interface HeroVariant {
-  headline:  string
-  body:      string
-  ctaLabel:  string
-}
-
-const DEFAULT_HERO: HeroVariant = {
-  headline:  'Are you and this person<br>actually compatible?',
-  body:      'Your birth charts reveal patterns most people never see. Enter both dates and we\'ll calculate your synastry score, core bond, and the one thing driving the dynamic between you.',
-  ctaLabel:  'Check Our Compatibility',
-}
-
-const heroVariant = ref<HeroVariant>({ ...DEFAULT_HERO })
-
-function resolveHeroVariant(utmCreative: string): HeroVariant {
-  const c = utmCreative.toLowerCase()
-
-  // v3_ignoring — being left on read / ignored
-  if (c.includes('ignoring') || c.includes('left_on_read') || c.includes('read') || c.includes('seen')) {
-    return {
-      headline:  'Why do they go cold<br>after showing so much interest?',
-      body:      'Your synastry chart shows whether the pull between you is real — or a pattern your chart keeps recreating. Enter both birth dates and we\'ll show you what\'s actually happening.',
-      ctaLabel:  'See What\'s Really Happening',
-    }
-  }
-
-  // v4_weather — going through a rough patch / can this survive
-  if (c.includes('weather') || c.includes('storm') || c.includes('rough') || c.includes('survive') || c.includes('work_out')) {
-    return {
-      headline:  'Can this relationship<br>actually survive this?',
-      body:      'Your birth charts reveal whether two people have the structural bond to get through hard periods — or whether the tension is written into the connection itself.',
-      ctaLabel:  'Check Our Bond',
-    }
-  }
-
-  // v5_antiscam — is this person genuine / red flags / real feelings
-  if (c.includes('antiscam') || c.includes('scam') || c.includes('real') || c.includes('genuine') || c.includes('redflag') || c.includes('red_flag')) {
-    return {
-      headline:  'Is what they feel for you<br>actually real?',
-      body:      'Your synastry chart shows whether someone\'s feelings have a genuine astrological foundation — or whether the attraction is one-sided by design. Enter both dates to find out.',
-      ctaLabel:  'Find Out If It\'s Real',
-    }
-  }
-
-  // v1_disappear / alone
-  if (c.includes('disappear') || c.includes('alone') || c.includes('end_up')) {
-    return {
-      headline:  'Why do people who matter<br>always disappear?',
-      body:      'Your Venus placement and life-path number reveal the pattern. It\'s written in your birth chart — not your sun sign. Enter your details and we\'ll show you what\'s actually driving it.',
-      ctaLabel:  'See My Pattern',
-    }
-  }
-
-  // wrong person / attraction pattern
-  if (c.includes('wrong') || c.includes('attract') || c.includes('trust')) {
-    return {
-      headline:  'You don\'t attract the<br>wrong people by accident.',
-      body:      'Your chart carries a specific relational pattern that shows up in every dynamic. Enter both birth dates and we\'ll map exactly where it comes from — and whether you two can work.',
-      ctaLabel:  'Reveal the Pattern',
-    }
-  }
-
-  // empty / off feeling
-  if (c.includes('feeling') || c.includes('empty') || c.includes('connection')) {
-    return {
-      headline:  'Something feels off<br>even when things are good.',
-      body:      'Your synastry chart shows whether the connection between two people has a genuine structural match — or a pattern that creates distance no matter how hard you try.',
-      ctaLabel:  'Check the Connection',
-    }
-  }
-
-  // score / match
-  if (c.includes('score') || c.includes('percent') || c.includes('match')) {
-    return {
-      headline:  'What\'s the real compatibility<br>score between you two?',
-      body:      'Not a sun-sign quiz. Your synastry score is calculated from exact planetary positions at birth — both charts, cross-referenced across six astrological factors.',
-      ctaLabel:  'Calculate Our Score',
-    }
-  }
-
-  return { ...DEFAULT_HERO }
-}
-
-// ── Transition direction ─────────────────────────────────────────────
-const transitionDir = ref('slide-left')
-
-// ── Step state ──────────────────────────────────────────────────────
-const currentStep    = ref(1)
-const hadLandingStep = ref(false)
-const revealVisible  = ref(false)
-
-const mySunSign:     Ref<SunSign | null> = ref(null)
-const myLifePath:    Ref<number>         = ref(0)
-const theirSunSign:  Ref<SunSign | null> = ref(null)
-const theirLifePath: Ref<number>         = ref(0)
-
-// ── Validation ──────────────────────────────────────────────────────
-const step1Valid = computed(() => myDob.value.length === 10 && myCity.value.trim().length >= 2)
-const step2Valid = computed(() => theirDob.value.length === 10 && theirCity.value.trim().length >= 2)
-
-// ── Loading ─────────────────────────────────────────────────────────
-const apiError       = ref(false)
-const loadingMsgIdx  = ref(0)
-const loadingMessages = computed(() => [
-  t('quizLoadingMsg1'),
-  t('quizLoadingMsg2'),
-  t('quizLoadingMsg3'),
-])
 let loadingInterval: ReturnType<typeof setInterval> | null = null
 
-// ── Navigation ────────────────────────────────────────────────────────────────
-function triggerReveal() {
-  revealVisible.value = false
-  setTimeout(() => { revealVisible.value = true }, 60)
+const loadingMessages = [
+  'Reading the charts…',
+  'Mapping the connection…',
+  'Finding what matters…',
+  'Almost there…',
+]
+
+// ── Current step ──────────────────────────────────────────────────────────────
+
+const step = computed<QuizStep>(() => QUIZ_SCHEMA[currentStepIndex.value]!)
+
+// ── Value accessors (bridge schema → store / local state) ─────────────────────
+
+function getSingleSelectValue(s: SingleSelectStep): string | undefined {
+  if (!s.storeKey) return undefined
+  return store.compatibilityQuizAnswers[s.storeKey] as string | undefined
 }
 
-function startQuiz() {
-  transitionDir.value = 'slide-left'
-  currentStep.value = 1
-  triggerReveal()
-  trackEvent('compatibility_quiz_started')
-  trackEvent('compatibility_landing_cta_clicked', { utm_creative: (route.query.utm_creative as string) || '' })
-  try { $trackCompatibilityQuizStart?.() } catch { /* never block UI */ }
+function getDateValue(s: DateInputStep): string | undefined {
+  if (s.storeTarget === 'userDob')    return store.dateOfBirth || undefined
+  if (s.storeTarget === 'partnerDob') return store.partnerDob  || undefined
+  return undefined
+}
+
+function getTimeValue(s: TimeInputStep): string | undefined {
+  if (s.storeTarget === 'userTime')    return userTime.value    ?? undefined
+  if (s.storeTarget === 'partnerTime') return partnerTime.value ?? undefined
+  return undefined
+}
+
+function getCityValue(s: CityInputStep): string | undefined {
+  if (s.storeTarget === 'userCity')    return store.city        || undefined
+  if (s.storeTarget === 'partnerCity') return store.partnerCity || undefined
+  return undefined
+}
+
+function getCityLat(s: CityInputStep): number | null {
+  if (s.storeTarget === 'userCity')    return store.cityLat
+  if (s.storeTarget === 'partnerCity') return store.partnerCityLat
+  return null
+}
+
+function getCityLng(s: CityInputStep): number | null {
+  if (s.storeTarget === 'userCity')    return store.cityLng
+  if (s.storeTarget === 'partnerCity') return store.partnerCityLng
+  return null
+}
+
+function getTextValue(s: TextInputStep): string | undefined {
+  if (s.storeTarget === 'partnerName') return store.partnerName || undefined
+  if (s.storeTarget === 'firstName')   return store.firstName   || undefined
+  if (s.storeTarget === 'email')       return store.email       || undefined
+  return undefined
+}
+
+// ── Write handlers ────────────────────────────────────────────────────────────
+
+function onSingleSelect(s: SingleSelectStep, id: string) {
+  if (s.storeKey) {
+    store.setCompatibilityQuizAnswer(
+      s.storeKey,
+      id as CompatibilityQuizAnswers[typeof s.storeKey],
+    )
+  }
+  advance()
+}
+
+function onDateUpdate(s: DateInputStep, val: string) {
+  if (s.storeTarget === 'userDob') {
+    store.setPersonalInfo(store.firstName, val, store.city)
+  } else if (s.storeTarget === 'partnerDob') {
+    store.setPartnerData({ name: store.partnerName, dob: val, city: store.partnerCity })
+  }
+}
+
+function onTimeUpdate(s: TimeInputStep, val: string | null) {
+  if (s.storeTarget === 'userTime')    userTime.value    = val
+  if (s.storeTarget === 'partnerTime') partnerTime.value = val
+  if (s.storeTarget === 'userTime' && val !== null) {
+    store.timeOfBirth = val
+  }
+}
+
+function onCityUpdate(s: CityInputStep, payload: { city: string; lat: number; lng: number }) {
+  if (s.storeTarget === 'userCity') {
+    store.setPersonalInfo(store.firstName, store.dateOfBirth, payload.city)
+    store.cityLat = payload.lat
+    store.cityLng = payload.lng
+  } else if (s.storeTarget === 'partnerCity') {
+    store.setPartnerData({ name: store.partnerName, dob: store.partnerDob, city: payload.city })
+    store.partnerCityLat = payload.lat
+    store.partnerCityLng = payload.lng
+  }
+}
+
+function onTextUpdate(s: TextInputStep, val: string) {
+  if (s.storeTarget === 'partnerName') {
+    store.setPartnerData({ name: val, dob: store.partnerDob, city: store.partnerCity })
+  } else if (s.storeTarget === 'firstName') {
+    store.setPersonalInfo(val, store.dateOfBirth, store.city)
+  } else if (s.storeTarget === 'email') {
+    store.setEmail(val)
+  }
+}
+
+async function onTextContinue(s: TextInputStep) {
+  if (s.storeTarget === 'email') {
+    await runApiCall()
+  } else {
+    advance()
+  }
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+
+function advance() {
+  if (currentStepIndex.value < QUIZ_SCHEMA.length - 1) {
+    currentStepIndex.value++
+  }
 }
 
 function goBack() {
-  if (currentStep.value > 1) {
-    transitionDir.value = 'slide-right'
-    currentStep.value--
-    triggerReveal()
-  } else if (currentStep.value === 1 && hadLandingStep.value) {
-    transitionDir.value = 'slide-right'
-    currentStep.value = 0
-  } else {
-    navigateTo('/')
+  let idx = currentStepIndex.value - 1
+  while (idx > 0 && QUIZ_SCHEMA[idx]!.type === 'reward') {
+    idx--
   }
+  currentStepIndex.value = Math.max(0, idx)
 }
 
-function advanceStep1() {
-  if (!step1Valid.value) return
-  try {
-    mySunSign.value  = getSunSign(myDob.value)
-    myLifePath.value = getLifePathNumber(myDob.value).number
-  } catch { return }
-  transitionDir.value = 'slide-left'
-  currentStep.value = 2
-  triggerReveal()
-  trackEvent('compatibility_quiz_step_1_complete', { sun_sign: mySunSign.value?.name, life_path: myLifePath.value })
-}
-
-function advanceStep2() {
-  if (!step2Valid.value) return
-  try {
-    theirSunSign.value  = getSunSign(theirDob.value)
-    theirLifePath.value = getLifePathNumber(theirDob.value).number
-  } catch { return }
-  transitionDir.value = 'slide-left'
-  currentStep.value = 3
-  triggerReveal()
-  trackEvent('compatibility_quiz_step_2_complete', { their_sun_sign: theirSunSign.value?.name, their_life_path: theirLifePath.value })
-}
-
-function advanceStep3() {
-  currentStep.value = 4
-  trackEvent('compatibility_quiz_step_3_complete')
-  trackEvent('compatibility_preview_requested')
-  startLoadingCycle()
-  runApiCall()
-}
-
-function startLoadingCycle() {
-  loadingMsgIdx.value = 0
-  loadingInterval = setInterval(() => {
-    loadingMsgIdx.value = (loadingMsgIdx.value + 1) % loadingMessages.value.length
-  }, 1200)
-}
-
-function stopLoadingCycle() {
-  if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null }
-}
+// ── Preview API call ──────────────────────────────────────────────────────────
 
 async function runApiCall() {
-  apiError.value = false
+  isLoading.value  = true
+  apiError.value   = false
+  loadingMsgIdx.value = 0
+  loadingInterval = setInterval(() => {
+    loadingMsgIdx.value++
+  }, 1200)
+
   try {
-    const result = await $fetch<{ success: boolean; compatibility: any }>('/api/generate-compatibility', {
-      method: 'POST',
-      body: {
-        firstName:   '',
-        dateOfBirth: myDob.value,
-        partnerName: '',
-        partnerDob:  theirDob.value,
-        partnerCity: theirCity.value,
-        language:    'en',
-        previewMode: true,
+    const result = await $fetch<{ success: boolean; compatibility: Record<string, unknown> }>(
+      '/api/generate-compatibility',
+      {
+        method: 'POST',
+        body: {
+          firstName:   store.firstName,
+          dateOfBirth: store.dateOfBirth,
+          partnerName: store.partnerName,
+          partnerDob:  store.partnerDob,
+          partnerCity: store.partnerCity,
+          language:    'en',
+          previewMode: true,
+        },
       },
-    })
-    stopLoadingCycle()
-    store.setPersonalInfo('', myDob.value, myCity.value)
-    store.cityLat = myCityLat.value
-    store.cityLng = myCityLng.value
-    store.setPartnerData({ name: '', dob: theirDob.value, city: theirCity.value })
-    store.partnerCityLat = theirCityLat.value
-    store.partnerCityLng = theirCityLng.value
+    )
+
+    if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null }
+    isLoading.value = false
+
     store.setCompatibilityData(result.compatibility)
-    trackEvent('compatibility_preview_loaded', { score: result.compatibility?.compatibilityScore, sun_sign: mySunSign.value?.name })
-    navigateTo('/compatibility?preview=1')
+    router.push('/compatibility?preview=1')
   } catch {
-    stopLoadingCycle()
-    apiError.value = true
-    trackEvent('compatibility_preview_failed')
+    if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null }
+    isLoading.value = false
+    apiError.value  = true
   }
 }
 
-onMounted(() => {
-  // ── v2 handoff: resume at Step 2 with store-populated data ──
-  if (route.query.step === '2' && route.query.from === 'v2') {
-    const dob  = store.dateOfBirth
-    const city = store.city
-    if (dob && city) {
-      try {
-        mySunSign.value  = getSunSign(dob)
-        myLifePath.value = getLifePathNumber(dob).number
-      } catch {
-        console.warn('[compatibility-quiz] v2 handoff: sign/path computation failed — falling through to Step 1')
-        trackEvent('compatibility_quiz_started')
-        triggerReveal()
-        return
-      }
-      myDob.value     = dob
-      myCity.value    = city
-      myCityLat.value = store.cityLat
-      myCityLng.value = store.cityLng
-      hadLandingStep.value = false
-      currentStep.value    = 2
-      triggerReveal()
-      trackEvent('compatibility_quiz_step_1_complete', { sun_sign: mySunSign.value?.name, life_path: myLifePath.value })
-      return
-    }
-    console.warn('[compatibility-quiz] v2 handoff: store.dateOfBirth or store.city missing — falling through to Step 1')
-  }
-
-  // ── Default entry: UTM landing or direct ──
-  const utmParams = {
-    utm_source:   (route.query.utm_source   as string) || '',
-    utm_campaign: (route.query.utm_campaign as string) || '',
-    utm_creative: (route.query.utm_creative as string) || '',
-    utm_medium:   (route.query.utm_medium   as string) || '',
-    utm_content:  (route.query.utm_content  as string) || '',
-  }
-  if (utmParams.utm_source) {
-    sessionStorage.setItem('omenora_utms', JSON.stringify(utmParams))
-    heroVariant.value = resolveHeroVariant(utmParams.utm_creative)
-    hadLandingStep.value = true
-    currentStep.value = 0
-    trackEvent('compatibility_landing_viewed', {
-      utm_source:   utmParams.utm_source,
-      utm_campaign: utmParams.utm_campaign,
-      utm_creative: utmParams.utm_creative,
-    })
-  } else {
-    trackEvent('compatibility_quiz_started')
-    triggerReveal()
-  }
-})
-
-onUnmounted(() => {
-  stopLoadingCycle()
+onBeforeUnmount(() => {
+  if (loadingInterval) clearInterval(loadingInterval)
 })
 </script>
 
 <style scoped>
-/* ── Page shell ── */
-.analysis-page {
-  min-height: 100vh;
+.cq {
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--surface-base);
 }
 
-/* ── Progress bar ── */
-.progress-track {
-  height: 2px;
-  background: var(--border-subtle);
-  flex-shrink: 0;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--text-primary);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ── Step container ── */
-.analysis-steps {
+.cq__step {
   flex: 1;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 32rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6);
+}
+
+.cq__nav {
+  max-width: 32rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-6) var(--space-8);
+}
+
+.cq__back {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.cq__back:hover {
+  color: var(--text-secondary);
+}
+
+.cq__loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-base);
+  z-index: 50;
+}
+
+.cq__loading-msg {
+  text-align: center;
+  padding: var(--space-6);
+}
+
+.cq__error {
+  max-width: 32rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  padding: clamp(48px, 10vw, 96px) clamp(20px, 5vw, 80px) 80px;
-  max-width: 1400px;
-  width: 100%;
-  margin: 0 auto;
+  gap: var(--space-4);
 }
 
-.analysis-step {
-  width: 100%;
-}
-
-/* ── Step label ── */
-.analysis-step__label {
-  color: var(--text-tertiary);
-  margin-bottom: 20px;
-}
-
-/* ── Step headline ── */
-.analysis-step__headline {
-  font-family: var(--font-sans);
-  font-weight: 300;
-  font-style: italic;
-  font-size: clamp(36px, 8vw, 64px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  margin: 0 0 32px;
-  color: var(--text-primary);
-}
-
-/* ── Decorative rule ── */
-.analysis-step__rule {
-  width: 48px;
-  height: 1px;
-  background: var(--text-secondary);
-  margin-bottom: 36px;
-}
-
-.analysis-step__content {
-  margin-bottom: 40px;
-}
-
-/* ── Field label ── */
-.field-label {
-  display: block;
-  color: var(--text-tertiary);
-  margin-bottom: 12px;
-}
-
-/* ── Editorial inputs ── */
-.editorial-input {
-  width: 100%;
-  max-width: 480px;
-  padding: 14px 0;
-  font-family: var(--font-sans);
-  font-size: 24px;
-  font-weight: 300;
-  color: var(--text-primary);
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border-default);
-  outline: none;
-  border-radius: 0;
-  transition: border-color 0.2s;
-  display: block;
-  margin-bottom: 28px;
-}
-
-.editorial-input:focus {
-  border-bottom-color: var(--text-primary);
-}
-
-.editorial-input::placeholder {
-  color: var(--text-tertiary);
-  font-style: italic;
-}
-
-input[type="date"],
-input[type="time"] {
-  -webkit-appearance: none;
-  appearance: none;
-  color-scheme: light;
-}
-
-/* ── Field hint ── */
-.field-hint {
-  margin-top: 10px;
-  color: var(--text-tertiary);
-}
-
-/* ── Time row (label + skip) ── */
-.compat-time-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 480px;
-  margin-bottom: 12px;
-}
-
-.compat-time-row .field-label {
-  margin-bottom: 0;
-}
-
-.compat-skip-time {
-  background: none;
-  border: none;
-  color: var(--text-tertiary);
-  font-size: 9px;
-  cursor: pointer;
-  padding: 0;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  transition: color 0.15s;
-}
-
-.compat-skip-time:hover { color: var(--text-primary); }
-
-/* ── Reveal card (step 2 — your sign) ── */
-.compat-reveal {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 16px 0 20px;
-  border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: 36px;
-}
-
-.compat-reveal--visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.compat-reveal__label {
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-}
-
-.compat-reveal__sign {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 400;
-  color: var(--text-primary);
-  margin: 0;
-  flex: 1;
-}
-
-.compat-reveal__path {
-  color: var(--text-tertiary);
-  margin: 0;
-  flex-shrink: 0;
-}
-
-/* ── Dual reveal (step 3) ── */
-.compat-dual-reveal {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 36px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.compat-dual-reveal--visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.compat-dual-reveal__card {
-  padding: 20px;
-  border: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.compat-dual-reveal__sep {
-  font-family: var(--font-sans);
-  font-size: 24px;
-  font-weight: 300;
-  color: var(--text-tertiary);
-  text-align: center;
-  flex-shrink: 0;
-}
-
-/* ── Navigation ── */
-.analysis-step__nav {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.back-link {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-tertiary);
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  padding: 0;
-  transition: color 0.2s;
-}
-
-.back-link:hover { color: var(--text-primary); }
-
-/* ── Header step counter ── */
-.analysis-header__step {
-  color: var(--text-tertiary);
-  font-size: 10px;
-}
-
-/* ── Trust footer ── */
-.trust-footer {
-  text-align: center;
-  color: var(--text-tertiary);
-  padding: 20px clamp(20px, 5vw, 80px) clamp(32px, 6vw, 48px);
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* ── CTAButton disabled ── */
-.advance-btn:disabled,
-.advance-btn[disabled] {
-  opacity: 0.35;
-  pointer-events: none;
-}
-
-/* ── Loading state ── */
-.compat-loading {
-  min-height: 100vh;
-  background: var(--surface-base);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.compat-loading__inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  text-align: center;
-  padding: 0 24px;
-}
-
-.compat-loading__brand {
-  color: var(--text-tertiary);
-}
-
-@keyframes fadeInMsg {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.compat-loading__msg {
-  font-family: var(--font-sans);
-  font-style: italic;
-  font-weight: 300;
-  font-size: clamp(18px, 4vw, 26px);
+.cq__error-msg {
   color: var(--text-secondary);
-  min-height: 36px;
-  max-width: 320px;
-  line-height: 1.4;
-  margin: 0;
-  animation: fadeInMsg 0.45s ease;
 }
 
-.compat-loading .progress-track {
-  width: 160px;
-  height: 1px;
-  background: var(--border-subtle);
+/* Step transition */
+.step-fade-enter-active,
+.step-fade-leave-active {
+  transition: opacity var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out);
 }
 
-@keyframes fillProgress {
-  from { width: 0%; }
-  to   { width: 95%; }
+.step-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
 }
 
-.compat-loading__fill {
-  height: 100%;
-  background: var(--text-primary);
-  animation: fillProgress 8s ease-out forwards;
-}
-
-.compat-loading__error {
-  color: var(--text-tertiary);
-  max-width: 280px;
-  text-align: center;
-}
-
-.compat-loading__retry {
-  background: none;
-  border: none;
-  color: var(--accent-gold);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0;
-  text-decoration: underline;
-}
-
-/* ── Step 0: Landing / pre-sell ── */
-.compat-landing {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--surface-base);
-}
-
-.compat-landing__badge {
-  color: var(--text-tertiary);
-  font-size: 10px;
-}
-
-.compat-landing__inner {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: clamp(48px, 10vw, 96px) clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
-  max-width: 760px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.compat-landing__eyebrow {
-  color: var(--text-tertiary);
-  margin-bottom: 28px;
-}
-
-.compat-landing__headline {
-  font-family: var(--font-sans);
-  font-weight: 300;
-  font-style: italic;
-  font-size: clamp(40px, 9vw, 76px);
-  line-height: 1.04;
-  letter-spacing: -0.03em;
-  margin: 0 0 36px;
-  color: var(--text-primary);
-}
-
-.compat-landing__rule {
-  width: 56px;
-  height: 1px;
-  background: var(--text-secondary);
-  margin-bottom: 32px;
-}
-
-.compat-landing__body {
-  font-size: clamp(15px, 2.2vw, 18px);
-  line-height: 1.75;
-  color: var(--text-secondary);
-  max-width: 52ch;
-  margin-bottom: 40px;
-}
-
-.compat-landing__trust {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 36px;
-}
-
-.compat-landing__trust-item {
-  color: var(--text-tertiary);
-}
-
-.compat-landing__trust-sep {
-  color: var(--border-subtle);
-  font-size: 12px;
-}
-
-.compat-landing__tp-block {
-  margin-bottom: 28px;
-  width: 100%;
-}
-
-.compat-landing__tp-label {
-  color: var(--text-tertiary);
-  margin-bottom: 8px;
-  letter-spacing: 0.15em;
-}
-
-.compat-landing__tp-widget {
-  width: 100%;
-  max-width: 320px;
-}
-
-.compat-landing__cta {
-  align-self: flex-start;
-  margin-bottom: 28px;
-}
-
-.compat-landing__privacy {
-  color: var(--text-tertiary);
-  max-width: 44ch;
-}
-
-/* ── Step transitions ── */
-.slide-left-enter-active,
-.slide-left-leave-active,
-.slide-right-enter-active,
-.slide-right-leave-active {
-  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slide-left-enter-from  { opacity: 0; transform: translateX(32px); }
-.slide-left-leave-to    { opacity: 0; transform: translateX(-32px); }
-.slide-right-enter-from { opacity: 0; transform: translateX(-32px); }
-.slide-right-leave-to   { opacity: 0; transform: translateX(32px); }
-
-/* ── Responsive ── */
-@media (max-width: 480px) {
-  .analysis-step__headline { font-size: clamp(30px, 9vw, 42px); }
-  .compat-dual-reveal { grid-template-columns: 1fr; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slide-left-enter-active,
-  .slide-left-leave-active,
-  .slide-right-enter-active,
-  .slide-right-leave-active { transition: opacity 0.15s; }
-  .slide-left-enter-from,
-  .slide-right-enter-from { transform: none; }
-  .slide-left-leave-to,
-  .slide-right-leave-to   { transform: none; }
+.step-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 </style>
