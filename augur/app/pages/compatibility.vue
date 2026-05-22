@@ -3,8 +3,8 @@
   <div v-if="isLoading" class="compat-state-page" aria-live="polite">
     <div class="compat-state-inner">
       <PhoenixLoader :size="72" />
-      <p class="label-caps compat-state-brand">Omenora</p>
-      <p class="annotation compat-state-msg">{{ t('analyzingCompat') }}</p>
+      <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
+      <AppCaption as="p" class="compat-state-msg">{{ t('analyzingCompat') }}</AppCaption>
     </div>
   </div>
 
@@ -12,16 +12,16 @@
   <div v-else-if="hasError && !isPreviewMode" class="compat-state-page">
     <div class="compat-state-inner">
       <PhoenixLoader :size="72" />
-      <p class="label-caps compat-state-brand">Omenora</p>
-      <p class="annotation compat-state-msg">{{ t('somethingWrong') }}</p>
+      <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
+      <AppCaption as="p" class="compat-state-msg">{{ t('somethingWrong') }}</AppCaption>
     </div>
   </div>
 
   <!-- ── Session expired (preview path, no store data) ── -->
   <div v-else-if="isPreviewMode && !previewData" class="compat-state-page">
     <div class="compat-state-inner">
-      <p class="label-caps compat-state-brand">Omenora</p>
-      <p class="annotation compat-state-msg" style="max-width: 280px;">{{ t('compatSessionExpired') }}</p>
+      <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
+      <AppCaption as="p" class="compat-state-msg" style="max-width: 280px;">{{ t('compatSessionExpired') }}</AppCaption>
       <AppButton variant="primary" :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</AppButton>
     </div>
   </div>
@@ -31,21 +31,21 @@
 
     <AppHeader>
       <template #action>
-        <span class="label-caps compat-full-page__badge">{{ t('compatReading') }}</span>
+        <AppEyebrow as="span" class="compat-full-page__badge">{{ t('compatReading') }}</AppEyebrow>
       </template>
     </AppHeader>
 
     <!-- Report masthead -->
     <div class="compat-masthead">
-      <p class="label-caps compat-masthead__kicker">{{ t('destinyCompat') }}</p>
-      <h1 class="compat-masthead__names font-display-italic">
+      <AppEyebrow class="compat-masthead__kicker">{{ t('destinyCompat') }}</AppEyebrow>
+      <AppHeadline as="h1" class="compat-masthead__names">
         {{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}
-      </h1>
-      <p class="compat-masthead__score font-serif" :style="{ color: scoreColor }">
+      </AppHeadline>
+      <AppSubhead as="p" variant="strong" class="compat-masthead__score" :style="{ color: scoreColor }">
         {{ compatibility.compatibilityScore }}%
-      </p>
+      </AppSubhead>
       <div class="editorial-rule" />
-      <p class="compat-masthead__title font-display-italic">{{ compatibility.compatibilityTitle }}</p>
+      <AppHeadline as="p" class="compat-masthead__title">{{ compatibility.compatibilityTitle }}</AppHeadline>
     </div>
 
     <!-- All 7 sections (full read) -->
@@ -57,12 +57,12 @@
         :class="{ 'report-section--last': idx === SECTION_ORDER.length - 1 }"
       >
         <div class="report-section__header">
-          <span class="report-section__num label-caps">{{ String(idx + 1).padStart(2, '0') }}</span>
+          <AppEyebrow as="span" class="report-section__num">{{ String(idx + 1).padStart(2, '0') }}</AppEyebrow>
           <div class="report-section__rule" />
         </div>
-        <h2 class="report-section__heading font-display-italic">
+        <AppHeadline as="h2" class="report-section__heading">
           {{ compatibility.sections[key]?.title }}
-        </h2>
+        </AppHeadline>
         <div v-if="key === 'advice'" class="advice-block">
           <p class="report-section__body">{{ compatibility.sections[key]?.content }}</p>
         </div>
@@ -75,131 +75,131 @@
 
       <div v-if="userBirthChart" class="compat-bc-section">
         <div class="report-section__header">
-          <span class="report-section__num label-caps">❖</span>
+          <AppEyebrow as="span" class="report-section__num">❖</AppEyebrow>
           <div class="report-section__rule" />
         </div>
-        <p class="label-caps compat-bc-section__person">{{ store.firstName || 'You' }}'s Birth Chart</p>
-        <h2 class="report-section__heading font-display-italic">{{ userBirthChart.chartTitle }}</h2>
+        <AppEyebrow class="compat-bc-section__person">{{ store.firstName || 'You' }}'s Birth Chart</AppEyebrow>
+        <AppHeadline as="h2" class="report-section__heading">{{ userBirthChart.chartTitle }}</AppHeadline>
         <div class="birth-chart-signs-grid">
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Rising</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.risingSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Rising</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.risingSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Sun</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.sunSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Sun</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.sunSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Moon</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.moonSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Moon</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.moonSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Dominant</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.dominantPlanet }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Dominant</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.dominantPlanet }}</AppSubhead>
           </div>
           <div v-if="userBirthChart.powerHouse" class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Power House</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.powerHouse }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Power House</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.powerHouse }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__body">{{ userBirthChart.reading }}</p>
         <div v-if="userBirthChart.forecast2026" class="bc-forecast-box">
-          <p class="label-caps bc-forecast-box__label">2026 Planetary Forecast</p>
+          <AppEyebrow class="bc-forecast-box__label">2026 Planetary Forecast</AppEyebrow>
           <p class="bc-forecast-box__text">{{ userBirthChart.forecast2026 }}</p>
         </div>
-        <p v-if="userNoonFallback" class="annotation compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</p>
+        <AppCaption as="p" v-if="userNoonFallback" class="compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</AppCaption>
       </div>
 
       <div v-if="partnerBirthChart" class="compat-bc-section">
         <div class="report-section__header">
-          <span class="report-section__num label-caps">❖</span>
+          <AppEyebrow as="span" class="report-section__num">❖</AppEyebrow>
           <div class="report-section__rule" />
         </div>
-        <p class="label-caps compat-bc-section__person">{{ store.partnerName || 'Them' }}'s Birth Chart</p>
-        <h2 class="report-section__heading font-display-italic">{{ partnerBirthChart.chartTitle }}</h2>
+        <AppEyebrow class="compat-bc-section__person">{{ store.partnerName || 'Them' }}'s Birth Chart</AppEyebrow>
+        <AppHeadline as="h2" class="report-section__heading">{{ partnerBirthChart.chartTitle }}</AppHeadline>
         <div class="birth-chart-signs-grid">
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Rising</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.risingSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Rising</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.risingSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Sun</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.sunSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Sun</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.sunSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Moon</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.moonSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Moon</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.moonSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Dominant</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.dominantPlanet }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Dominant</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.dominantPlanet }}</AppSubhead>
           </div>
           <div v-if="partnerBirthChart.powerHouse" class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Power House</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.powerHouse }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Power House</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.powerHouse }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__body">{{ partnerBirthChart.reading }}</p>
         <div v-if="partnerBirthChart.forecast2026" class="bc-forecast-box">
-          <p class="label-caps bc-forecast-box__label">2026 Planetary Forecast</p>
+          <AppEyebrow class="bc-forecast-box__label">2026 Planetary Forecast</AppEyebrow>
           <p class="bc-forecast-box__text">{{ partnerBirthChart.forecast2026 }}</p>
         </div>
-        <p v-if="partnerNoonFallback" class="annotation compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</p>
+        <AppCaption as="p" v-if="partnerNoonFallback" class="compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</AppCaption>
       </div>
 
     </div>
 
     <!-- Calculation receipt -->
     <div v-if="compatibility.calculationReceipt" class="calc-receipt calc-receipt--full">
-      <p class="label-caps calc-receipt__header">{{ t('compatHowCalculated') }}</p>
+      <AppEyebrow class="calc-receipt__header">{{ t('compatHowCalculated') }}</AppEyebrow>
       <div class="calc-receipt__rows">
         <div class="calc-receipt__row">
-          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person1?.name || t('quizYouLabel') }}</span>
-          <span class="annotation calc-receipt__detail">
+          <AppCaption class="calc-receipt__person">{{ compatibility.calculationReceipt.person1?.name || t('quizYouLabel') }}</AppCaption>
+          <AppCaption class="calc-receipt__detail">
             {{ compatibility.calculationReceipt.person1?.sunSign }}
             · {{ compatibility.calculationReceipt.person1?.element }}
             · {{ t('compatLifePathLabel') }} {{ compatibility.calculationReceipt.person1?.lifePathNumber }}
             <template v-if="compatibility.calculationReceipt.person1?.archetype">
               · {{ compatibility.calculationReceipt.person1.archetype }}
             </template>
-          </span>
+          </AppCaption>
         </div>
         <div class="calc-receipt__row">
-          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person2?.name || t('quizThemLabel') }}</span>
-          <span class="annotation calc-receipt__detail">
+          <AppCaption class="calc-receipt__person">{{ compatibility.calculationReceipt.person2?.name || t('quizThemLabel') }}</AppCaption>
+          <AppCaption class="calc-receipt__detail">
             {{ compatibility.calculationReceipt.person2?.sunSign }}
             · {{ compatibility.calculationReceipt.person2?.element }}
             · {{ t('compatLifePathLabel') }} {{ compatibility.calculationReceipt.person2?.lifePathNumber }}
-          </span>
+          </AppCaption>
         </div>
         <div v-for="(note, i) in compatibility.calculationReceipt.synastryNotes" :key="i" class="calc-receipt__row calc-receipt__row--note">
-          <span class="annotation calc-receipt__detail">{{ note }}</span>
+          <AppCaption class="calc-receipt__detail">{{ note }}</AppCaption>
         </div>
       </div>
-      <p class="annotation calc-receipt__meta">{{ compatibility.calculationReceipt.tradition }} · {{ compatibility.calculationReceipt.calculationSource }}</p>
+      <AppCaption as="p" class="calc-receipt__meta">{{ compatibility.calculationReceipt.tradition }} · {{ compatibility.calculationReceipt.calculationSource }}</AppCaption>
     </div>
 
     <!-- Trustpilot widget -->
     <div class="compat-tp-block">
-      <p class="annotation compat-tp-label">Rated Excellent by our readers</p>
+      <AppCaption as="p" class="compat-tp-label">Rated Excellent by our readers</AppCaption>
       <TrustpilotWidget />
     </div>
 
     <!-- Share / download -->
     <div class="compat-share">
-      <h2 class="compat-share__heading font-display-italic">{{ t('shareYourReading') }}</h2>
-      <p class="compat-share__sub annotation">
+      <AppHeadline as="h2" class="compat-share__heading">{{ t('shareYourReading') }}</AppHeadline>
+      <AppCaption as="p" class="compat-share__sub">
         {{ t('shareCompatSubtitle').replace('{name}', store.partnerName || 'them') }}
-      </p>
+      </AppCaption>
 
       <div class="compat-share-card">
-        <p class="label-caps compat-share-card__kicker">{{ t('compatShareCardKicker') }}</p>
-        <p class="compat-share-card__names font-serif">{{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}</p>
-        <p class="compat-share-card__score font-serif" :style="{ color: scoreColor }">
+        <AppEyebrow class="compat-share-card__kicker">{{ t('compatShareCardKicker') }}</AppEyebrow>
+        <AppSubhead as="p" variant="strong" class="compat-share-card__names">{{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}</AppSubhead>
+        <AppSubhead as="p" variant="strong" class="compat-share-card__score" :style="{ color: scoreColor }">
           {{ compatibility.compatibilityScore }}%
-        </p>
+        </AppSubhead>
         <p class="compat-share-card__title">{{ compatibility.compatibilityTitle }}</p>
-        <p class="label-caps compat-share-card__domain">omenora.com</p>
+        <AppEyebrow class="compat-share-card__domain">omenora.com</AppEyebrow>
       </div>
 
       <AppButton
@@ -211,7 +211,7 @@
       >
         {{ isDownloadingCard ? t('compatDownloadGenerating') : t('compatDownloadCta') }}
       </AppButton>
-      <p v-if="cardDownloadError" class="annotation compat-download-error">{{ cardDownloadError }}</p>
+      <AppCaption as="p" v-if="cardDownloadError" class="compat-download-error">{{ cardDownloadError }}</AppCaption>
     </div>
 
     <footer class="compat-footer">
@@ -228,39 +228,39 @@
 
     <AppHeader>
       <template #action>
-        <span class="label-caps compat-preview__badge">{{ t('compatFreeBadge') }}</span>
+        <AppEyebrow as="span" class="compat-preview__badge">{{ t('compatFreeBadge') }}</AppEyebrow>
       </template>
     </AppHeader>
 
     <!-- Canceled banner (CASE C) -->
     <div v-if="isCanceled" class="compat-canceled" role="status">
-      <p class="annotation">{{ t('compatCanceled') }}</p>
+      <AppCaption as="p">{{ t('compatCanceled') }}</AppCaption>
     </div>
 
     <!-- Preview masthead -->
     <div class="compat-masthead compat-masthead--preview">
-      <p class="label-caps compat-masthead__kicker">{{ t('compatDestinyLabel') }}</p>
-      <h1 class="compat-masthead__names font-display-italic">
+      <AppEyebrow class="compat-masthead__kicker">{{ t('compatDestinyLabel') }}</AppEyebrow>
+      <AppHeadline as="h1" class="compat-masthead__names">
         {{ displayMyName }} &amp; {{ displayTheirName }}
-      </h1>
-      <p class="compat-masthead__score font-serif" :style="{ color: previewScoreColor }">
+      </AppHeadline>
+      <AppSubhead as="p" variant="strong" class="compat-masthead__score" :style="{ color: previewScoreColor }">
         {{ previewData.compatibilityScore }}%
-      </p>
+      </AppSubhead>
       <div class="editorial-rule" />
-      <p class="compat-masthead__title font-display-italic">{{ previewData.compatibilityTitle }}</p>
+      <AppHeadline as="p" class="compat-masthead__title">{{ previewData.compatibilityTitle }}</AppHeadline>
     </div>
 
     <!-- Challenge section (free hook) -->
     <div class="report-body">
       <div class="report-section report-section--challenge">
-        <p class="label-caps report-section__kicker">{{ t('compatChallengeKicker') }}</p>
+        <AppEyebrow class="report-section__kicker">{{ t('compatChallengeKicker') }}</AppEyebrow>
         <div class="report-section__header">
-          <span class="report-section__num label-caps">01</span>
+          <AppEyebrow as="span" class="report-section__num">01</AppEyebrow>
           <div class="report-section__rule" />
         </div>
-        <h2 class="report-section__heading font-display-italic">
+        <AppHeadline as="h2" class="report-section__heading">
           {{ previewData.sections?.challenge?.title }}
-        </h2>
+        </AppHeadline>
         <p class="report-section__body">{{ previewData.sections?.challenge?.content }}</p>
       </div>
     </div>
@@ -268,36 +268,36 @@
     <!-- Locked sections strip -->
     <div class="locked-strip">
       <div class="locked-strip__header">
-        <span class="label-caps locked-strip__label">{{ t('compatLockedLabel') }}</span>
+        <AppEyebrow as="span" class="locked-strip__label">{{ t('compatLockedLabel') }}</AppEyebrow>
       </div>
       <div class="locked-strip__cards">
         <div v-for="key in LOCKED_SECTIONS" :key="key" class="locked-card">
           <div class="locked-card__header">
             <span class="locked-card__icon">—</span>
-            <span class="locked-card__title annotation">
+            <AppCaption class="locked-card__title">
               {{ previewData.sections?.[key]?.title || LOCKED_FALLBACK_TITLES[key] }}
-            </span>
+            </AppCaption>
           </div>
-          <p class="locked-card__blur annotation">{{ LOCKED_PLACEHOLDER_TEXT[key] }}</p>
+          <AppCaption as="p" class="locked-card__blur">{{ LOCKED_PLACEHOLDER_TEXT[key] }}</AppCaption>
         </div>
       </div>
     </div>
 
     <!-- Calculation receipt -->
     <div class="calc-receipt">
-      <p class="label-caps calc-receipt__header">{{ t('compatHowCalculated') }}</p>
-      <p class="annotation calc-receipt__body">
+      <AppEyebrow class="calc-receipt__header">{{ t('compatHowCalculated') }}</AppEyebrow>
+      <AppCaption as="p" class="calc-receipt__body">
         {{ t('compatBornPrefix') }} {{ formatDob(store.dateOfBirth) }}{{ store.city ? t('compatBornIn') + store.city : '' }}
         · {{ t('compatBornPrefix') }} {{ formatDob(store.partnerDob) }}{{ store.partnerCity ? t('compatBornIn') + store.partnerCity : '' }}
-      </p>
-      <p class="annotation calc-receipt__meta">{{ t('compatCalcSource') }}</p>
+      </AppCaption>
+      <AppCaption as="p" class="calc-receipt__meta">{{ t('compatCalcSource') }}</AppCaption>
     </div>
 
     <!-- Trust line -->
-    <p class="compat-trust annotation">{{ t('compatTrustLine') }}</p>
+    <AppCaption as="p" class="compat-trust">{{ t('compatTrustLine') }}</AppCaption>
 
     <div class="compat-tp-block">
-      <p class="annotation compat-tp-label">Rated Excellent by our readers</p>
+      <AppCaption as="p" class="compat-tp-label">Rated Excellent by our readers</AppCaption>
       <TrustpilotWidget />
     </div>
 
@@ -332,13 +332,13 @@
             {{ isValidatingCompatPromo ? '…' : 'Apply' }}
           </button>
         </div>
-        <p v-if="compatPromoValidationResult && !compatPromoValidationResult.valid" class="compat-promo__msg compat-promo__msg--error annotation">
+        <AppCaption as="p" v-if="compatPromoValidationResult && !compatPromoValidationResult.valid" class="compat-promo__msg compat-promo__msg--error">
           {{ compatPromoValidationResult.message }}
-        </p>
+        </AppCaption>
       </template>
-      <p v-if="compatAppliedPromo" class="compat-promo__msg compat-promo__msg--success annotation">
+      <AppCaption as="p" v-if="compatAppliedPromo" class="compat-promo__msg compat-promo__msg--success">
         ✦ Full access unlocked
-      </p>
+      </AppCaption>
     </div>
 
     <!-- Free-access block (replaces paywall when full_access code applied) -->
@@ -355,9 +355,9 @@
           class="editorial-input"
         />
       </div>
-      <p v-if="compatPromoErrorMessage" class="compat-promo__msg compat-promo__msg--error annotation" role="alert">
+      <AppCaption as="p" v-if="compatPromoErrorMessage" class="compat-promo__msg compat-promo__msg--error" role="alert">
         {{ compatPromoErrorMessage }}
-      </p>
+      </AppCaption>
       <AppButton
         variant="primary"
         :arrow="false"
@@ -372,22 +372,22 @@
 
     <!-- Paywall block (single $4.99 IAP) -->
     <div v-if="!compatAppliedPromo" class="paywall">
-      <h2 class="paywall__heading font-display-italic">{{ t('compatUnlockHeading') }}</h2>
+      <AppHeadline as="h2" class="paywall__heading">{{ t('compatUnlockHeading') }}</AppHeadline>
 
-      <div v-if="checkoutError" class="compat-checkout-error annotation" role="alert">
+      <AppCaption as="div" v-if="checkoutError" class="compat-checkout-error" role="alert">
         {{ checkoutError }}
-      </div>
+      </AppCaption>
 
       <!-- Single IAP card -->
       <div class="pay-card pay-card--single">
-        <p class="pay-card__price font-serif">
-          {{ t('compatIAPPrice') }}<span class="pay-card__freq annotation"> {{ t('compatIAPLabel') }}</span>
-        </p>
-        <ul class="pay-card__bullets annotation">
+        <AppSubhead as="p" variant="strong" class="pay-card__price">
+          {{ t('compatIAPPrice') }}<AppCaption class="pay-card__freq"> {{ t('compatIAPLabel') }}</AppCaption>
+        </AppSubhead>
+        <AppCaption as="ul" class="pay-card__bullets">
           <li>{{ t('compatIAPBullet1') }}</li>
           <li>{{ t('compatIAPBullet2') }}</li>
           <li>{{ t('compatIAPBullet3') }}</li>
-        </ul>
+        </AppCaption>
         <AppButton
           variant="primary"
           :arrow="false"
@@ -445,11 +445,11 @@
 
       <!-- Guarantee -->
       <div class="guarantee">
-        <p class="annotation guarantee__text">
+        <AppCaption as="p" class="guarantee__text">
           {{ t('compatGuarantee') }}
-        </p>
+        </AppCaption>
       </div>
-      <p class="label-caps compat-trust-secure">{{ t('compatSecurePayment') }}</p>
+      <AppEyebrow class="compat-trust-secure">{{ t('compatSecurePayment') }}</AppEyebrow>
     </div>
 
     <footer class="compat-footer">
