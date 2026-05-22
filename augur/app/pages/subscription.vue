@@ -2,12 +2,12 @@
   <!-- Loading state -->
   <div v-if="isLoading" class="sub-center-page">
     <PhoenixLoader :size="72" />
-    <p class="annotation sub-center-page__text">Activating your daily insights…</p>
+    <AppCaption variant="default" as="p" class="sub-center-page__text">Activating your daily insights…</AppCaption>
   </div>
 
   <!-- Error state -->
   <div v-else-if="hasError" class="sub-center-page">
-    <p class="label-caps sub-center-page__text" style="color: #8B2500;">Something went wrong.</p>
+    <AppEyebrow class="sub-center-page__text" style="color: #8B2500;">Something went wrong.</AppEyebrow>
     <p class="sub-center-page__sub">Please contact support@omenora.com</p>
     <button class="sub-return-btn label-caps" @click="navigateTo('/report')">
       Return to Report
@@ -19,13 +19,13 @@
     <AppHeader />
 
     <div class="sub-success-body">
-      <p class="label-caps sub-success__eyebrow">Subscription confirmed</p>
-      <h1 class="sub-success__headline font-display-italic">You're subscribed.</h1>
+      <AppEyebrow class="sub-success__eyebrow">Subscription confirmed</AppEyebrow>
+      <AppHeadline variant="italic" as="h1" class="sub-success__headline">You're subscribed.</AppHeadline>
       <div class="editorial-rule" />
       <p class="sub-success__sub">Your first personal daily horoscope arrives tomorrow morning.</p>
 
       <div class="sub-expect-box">
-        <p class="label-caps sub-expect-box__label">What happens next</p>
+        <AppEyebrow class="sub-expect-box__label">What happens next</AppEyebrow>
         <div class="sub-expect-item">
           <span class="sub-expect-item__icon">✦</span>
           <span class="sub-expect-item__text">Delivered to {{ store.email }} every morning at 7am</span>

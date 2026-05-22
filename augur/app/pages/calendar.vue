@@ -29,8 +29,8 @@
 
     <!-- Hero / Masthead -->
     <div class="cal-hero">
-      <p class="label-caps cal-hero__eyebrow">{{ t('calDestinyCalendar') }}</p>
-      <h1 class="cal-hero__title font-display-italic">{{ store.firstName }}'s<br>{{ t('yearOfBecoming') }}</h1>
+      <AppEyebrow class="cal-hero__eyebrow">{{ t('calDestinyCalendar') }}</AppEyebrow>
+      <AppHeadline variant="italic" as="h1" class="cal-hero__title">{{ store.firstName }}'s<br>{{ t('yearOfBecoming') }}</AppHeadline>
       <div class="editorial-rule" />
       <p class="cal-hero__theme">{{ calendarData.overallTheme }}</p>
     </div>

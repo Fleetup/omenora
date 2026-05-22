@@ -3,15 +3,15 @@
     <AppHeader />
 
     <div class="legal-masthead">
-      <p class="label-caps legal-masthead__eyebrow">Omenora</p>
-      <h1 class="legal-masthead__headline font-display-italic">Refund Policy</h1>
-      <p class="annotation legal-masthead__date">Last Updated: May 19, 2026</p>
+      <AppEyebrow class="legal-masthead__eyebrow">Omenora</AppEyebrow>
+      <AppHeadline variant="italic" as="h1" class="legal-masthead__headline">Refund Policy</AppHeadline>
+      <AppCaption variant="fine" as="p" class="legal-masthead__date">Last Updated: May 19, 2026</AppCaption>
       <div class="editorial-rule" />
     </div>
 
     <div class="legal-body">
       <div class="toc">
-        <p class="label-caps toc-label">Contents</p>
+        <AppEyebrow class="toc-label">Contents</AppEyebrow>
         <ol class="toc-list">
           <li><a href="#r1" class="toc-link">Founding Member Purchases ($20 one-time)</a></li>
           <li><a href="#r2" class="toc-link">Destiny Reading Reports ($2.99 one-time)</a></li>

@@ -3,9 +3,9 @@
     <AppHeader />
 
     <div class="legal-masthead">
-      <p class="label-caps legal-masthead__eyebrow">Omenora</p>
-      <h1 class="legal-masthead__headline font-display-italic">Terms of Service</h1>
-      <p class="annotation legal-masthead__date">Last Updated: April 20, 2026 · Effective Date: April 20, 2026</p>
+      <AppEyebrow class="legal-masthead__eyebrow">Omenora</AppEyebrow>
+      <AppHeadline variant="italic" as="h1" class="legal-masthead__headline">Terms of Service</AppHeadline>
+      <AppCaption variant="fine" as="p" class="legal-masthead__date">Last Updated: April 20, 2026 · Effective Date: April 20, 2026</AppCaption>
       <div class="editorial-rule" />
     </div>
 
@@ -15,7 +15,7 @@
       </div>
 
       <div class="toc">
-        <p class="label-caps toc-label">Contents</p>
+        <AppEyebrow class="toc-label">Contents</AppEyebrow>
         <ol class="toc-list">
           <li><a href="#t1" class="toc-link">Acceptance of Terms</a></li>
           <li><a href="#t2" class="toc-link">Description of Service</a></li>

@@ -3,15 +3,15 @@
     <AppHeader />
 
     <div class="legal-masthead">
-      <p class="label-caps legal-masthead__eyebrow">Omenora</p>
-      <h1 class="legal-masthead__headline font-display-italic">Privacy Policy</h1>
-      <p class="annotation legal-masthead__date">Last Updated: April 20, 2026 · Effective Date: April 20, 2026</p>
+      <AppEyebrow class="legal-masthead__eyebrow">Omenora</AppEyebrow>
+      <AppHeadline variant="italic" as="h1" class="legal-masthead__headline">Privacy Policy</AppHeadline>
+      <AppCaption variant="fine" as="p" class="legal-masthead__date">Last Updated: April 20, 2026 · Effective Date: April 20, 2026</AppCaption>
       <div class="editorial-rule" />
     </div>
 
     <div class="legal-body">
       <div class="toc">
-        <p class="label-caps toc-label">Contents</p>
+        <AppEyebrow class="toc-label">Contents</AppEyebrow>
         <ol class="toc-list">
           <li><a href="#s1" class="toc-link">Who We Are</a></li>
           <li><a href="#s2" class="toc-link">Data We Collect</a></li>

@@ -5,15 +5,15 @@
 
     <!-- Masthead -->
     <div class="subscribe-masthead">
-      <p class="label-caps subscribe-masthead__eyebrow">Premium</p>
-      <h1 class="subscribe-masthead__headline font-display-italic">{{ t('subscribePremiumTitle') }}</h1>
+      <AppEyebrow class="subscribe-masthead__eyebrow">Premium</AppEyebrow>
+      <AppHeadline variant="italic" as="h1" class="subscribe-masthead__headline">{{ t('subscribePremiumTitle') }}</AppHeadline>
       <p class="subscribe-masthead__sub">{{ t('subscribePremiumSubtitle') }}</p>
       <div class="editorial-rule" />
     </div>
 
     <!-- Trial badge -->
     <div class="trial-badge">
-      <span class="trial-badge__text label-caps">{{ t('subscribeTrialBadge') }}</span>
+      <AppEyebrow as="span" class="trial-badge__text">{{ t('subscribeTrialBadge') }}</AppEyebrow>
     </div>
 
     <!-- Plan toggle -->
@@ -24,7 +24,7 @@
         :class="{ active: selectedPlan === 'monthly' }"
         @click="selectedPlan = 'monthly'"
       >
-        <span class="plan-price font-serif">{{ t('subscribeMonthlyPrice') }}</span>
+        <AppSubhead variant="default" as="span" class="plan-price">{{ t('subscribeMonthlyPrice') }}</AppSubhead>
         <span class="plan-label">{{ t('subscribeMonthlyLabel') }}</span>
       </button>
       <button
@@ -33,15 +33,15 @@
         :class="{ active: selectedPlan === 'yearly' }"
         @click="selectedPlan = 'yearly'"
       >
-        <span class="plan-price font-serif">{{ t('subscribeYearlyPrice') }}</span>
+        <AppSubhead variant="default" as="span" class="plan-price">{{ t('subscribeYearlyPrice') }}</AppSubhead>
         <span class="plan-label">{{ t('subscribeYearlyLabel') }}</span>
-        <span class="plan-savings label-caps">{{ t('subscribeYearlySavings') }}</span>
+        <AppEyebrow as="span" class="plan-savings">{{ t('subscribeYearlySavings') }}</AppEyebrow>
       </button>
     </div>
 
     <!-- What's included -->
     <div class="includes-block">
-      <p class="includes-heading label-caps">{{ t('subscribeIncludesHeading') }}</p>
+      <AppEyebrow class="includes-heading">{{ t('subscribeIncludesHeading') }}</AppEyebrow>
       <div class="includes-list">
         <div class="include-row">
           <span class="include-icon">✦</span>

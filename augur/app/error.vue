@@ -3,13 +3,13 @@
     <AppHeader />
 
     <div class="error-inner">
-      <p class="label-caps error-code">
+      <AppEyebrow class="error-code">
         Error {{ error?.statusCode || '500' }}
-      </p>
+      </AppEyebrow>
 
-      <h1 class="font-display-italic error-headline">
+      <AppHeadline variant="italic" as="h1" class="error-headline">
         {{ error?.statusCode === 404 ? 'Page not found.' : 'Something went wrong.' }}
-      </h1>
+      </AppHeadline>
 
       <div class="error-rule" />
 
