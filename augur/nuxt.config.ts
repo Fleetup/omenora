@@ -6,10 +6,28 @@ export default defineNuxtConfig({
   css: ['~/assets/css/editorial.css'],
 
   modules: [
+    '@nuxt/fonts',
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
     ...(process.env.SENTRY_DSN ? ['@nuxtjs/sentry'] : []),
   ],
+
+  fonts: {
+    families: [
+      {
+        name: 'Geist',
+        provider: 'google',
+        weights: [400, 500, 600, 700],
+        styles: ['normal', 'italic'],
+      },
+    ],
+    defaults: {
+      weights: [400, 500, 600, 700],
+      styles: ['normal', 'italic'],
+      formats: ['woff2'],
+      preload: true,
+    },
+  },
 
   runtimeConfig: {
     // Empty string defaults — Nitro reads the actual process.env at container
@@ -167,10 +185,6 @@ export default defineNuxtConfig({
         // WebP <source> without a wasted double-download. Per-breakpoint via media.
         { rel: 'preload', as: 'image', href: '/images/hero/hero-bg-mobile.avif', type: 'image/avif', media: '(max-width: 768px)', fetchpriority: 'high' },
         { rel: 'preload', as: 'image', href: '/images/hero/hero-bg-desktop.avif', type: 'image/avif', media: '(min-width: 769px)', fetchpriority: 'high' },
-        // Fraunces + Cormorant Garamond + Hanken Grotesk + JetBrains Mono — Editorial design system
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..900;1,9..144,200..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Hanken+Grotesk:wght@300..800&family=JetBrains+Mono:wght@300..700&display=swap' },
         // Performance: Preconnect to critical third-party domains
         { rel: 'preconnect', href: 'https://js.stripe.com' },
         { rel: 'preconnect', href: 'https://api.stripe.com' },
