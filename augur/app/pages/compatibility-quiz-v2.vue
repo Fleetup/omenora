@@ -52,14 +52,15 @@
         </div>
       </div>
 
-      <CTAButton
+      <AppButton
+        variant="primary"
         :arrow="true"
         :full="true"
         :disabled="!step1Valid"
         @click="handleContinue"
       >
         Continue
-      </CTAButton>
+      </AppButton>
     </div>
 
     <!-- ── Trust strip ── -->

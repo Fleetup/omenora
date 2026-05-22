@@ -22,7 +22,7 @@
     <div class="compat-state-inner">
       <p class="label-caps compat-state-brand">Omenora</p>
       <p class="annotation compat-state-msg" style="max-width: 280px;">{{ t('compatSessionExpired') }}</p>
-      <CTAButton :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</CTAButton>
+      <AppButton variant="primary" :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</AppButton>
     </div>
   </div>
 
@@ -202,14 +202,15 @@
         <p class="label-caps compat-share-card__domain">omenora.com</p>
       </div>
 
-      <CTAButton
+      <AppButton
+        variant="primary"
         :arrow="false"
         :disabled="isDownloadingCard"
         class="compat-download-btn"
         @click="downloadCompatCard"
       >
         {{ isDownloadingCard ? t('compatDownloadGenerating') : t('compatDownloadCta') }}
-      </CTAButton>
+      </AppButton>
       <p v-if="cardDownloadError" class="annotation compat-download-error">{{ cardDownloadError }}</p>
     </div>
 
@@ -357,7 +358,8 @@
       <p v-if="compatPromoErrorMessage" class="compat-promo__msg compat-promo__msg--error annotation" role="alert">
         {{ compatPromoErrorMessage }}
       </p>
-      <CTAButton
+      <AppButton
+        variant="primary"
         :arrow="false"
         :disabled="isApplyingCompatAccess || !emailInput"
         :class="{ 'pay-card__btn--processing': isApplyingCompatAccess }"
@@ -365,7 +367,7 @@
       >
         <span v-if="isApplyingCompatAccess">{{ t('compatProcessing') }}</span>
         <span v-else>Get Free Access →</span>
-      </CTAButton>
+      </AppButton>
     </div>
 
     <!-- Paywall block (single $4.99 IAP) -->
@@ -386,7 +388,8 @@
           <li>{{ t('compatIAPBullet2') }}</li>
           <li>{{ t('compatIAPBullet3') }}</li>
         </ul>
-        <CTAButton
+        <AppButton
+          variant="primary"
           :arrow="false"
           :disabled="isProcessing"
           class="pay-card__btn"
@@ -395,7 +398,7 @@
         >
           <span v-if="isProcessing">{{ t('compatProcessing') }}</span>
           <span v-else>{{ t('compatIAPCta') }}</span>
-        </CTAButton>
+        </AppButton>
       </div>
 
       <!-- Subtle upsell link to /subscribe -->

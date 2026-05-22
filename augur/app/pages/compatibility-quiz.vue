@@ -26,9 +26,9 @@
         <TrustpilotWidget />
       </div>
 
-      <CTAButton :arrow="true" class="compat-landing__cta" @click="startQuiz">
+      <AppButton variant="primary" :arrow="true" class="compat-landing__cta" @click="startQuiz">
         {{ heroVariant.ctaLabel }}
-      </CTAButton>
+      </AppButton>
 
       <p class="annotation compat-landing__privacy">Your birth data is used only to generate your reading. Never sold.</p>
     </div>
@@ -203,16 +203,18 @@
               {{ t('quizBack') }}
             </button>
 
-            <CTAButton
+            <AppButton
+              variant="primary"
               v-if="currentStep === 3"
               :arrow="true"
               class="advance-btn"
               @click="advanceStep3"
             >
               {{ t('quizCalculate') }}
-            </CTAButton>
+            </AppButton>
 
-            <CTAButton
+            <AppButton
+              variant="primary"
               v-else-if="currentStep === 1"
               :arrow="true"
               :disabled="!step1Valid"
@@ -220,9 +222,10 @@
               @click="advanceStep1"
             >
               {{ t('quizContinue') }}
-            </CTAButton>
+            </AppButton>
 
-            <CTAButton
+            <AppButton
+              variant="primary"
               v-else-if="currentStep === 2"
               :arrow="true"
               :disabled="!step2Valid"
@@ -230,7 +233,7 @@
               @click="advanceStep2"
             >
               {{ t('quizContinue') }}
-            </CTAButton>
+            </AppButton>
           </div>
 
         </div>

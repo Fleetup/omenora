@@ -40,10 +40,10 @@
         </div>
       </div>
 
-      <CTAButton v-if="store.reportSessionId" @click="returnToReport" :arrow="true">
+      <AppButton variant="primary" v-if="store.reportSessionId" @click="returnToReport" :arrow="true">
         Return to your report
-      </CTAButton>
-      <CTAButton v-else to="/" :arrow="true">Back to home</CTAButton>
+      </AppButton>
+      <AppButton variant="primary" v-else to="/" :arrow="true">Back to home</AppButton>
 
       <p class="sub-account-note">
         Manage your subscription any time in

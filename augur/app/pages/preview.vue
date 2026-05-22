@@ -29,8 +29,8 @@
         <p class="label-caps" style="color: var(--text-tertiary)">Something went wrong</p>
         <h2 class="font-display-italic preview-error__msg">We couldn't generate your reading.</h2>
         <div class="preview-error__actions">
-          <CTAButton :arrow="true" @click="retryApiCall">Try again</CTAButton>
-          <CTAButton variant="outline" to="/analysis" :arrow="true">Start over</CTAButton>
+          <AppButton variant="primary" :arrow="true" @click="retryApiCall">Try again</AppButton>
+          <AppButton variant="secondary" to="/analysis" :arrow="true">Start over</AppButton>
         </div>
       </div>
     </div>

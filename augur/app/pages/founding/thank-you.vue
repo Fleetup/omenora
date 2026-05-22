@@ -55,9 +55,9 @@
             contact
             <a href="mailto:support@omenora.com" class="ty-link">support@omenora.com</a>.
           </p>
-          <CTAButton to="/founding" variant="outline" class="ty-error__back">
+          <AppButton variant="secondary" to="/founding" class="ty-error__back">
             Back to founding membership
-          </CTAButton>
+          </AppButton>
         </div>
       </div>
     </section>
@@ -176,9 +176,9 @@
             <p class="ty-final__prompt font-serif">
               Your reading is ready.
             </p>
-            <CTAButton to="/daily" :arrow="true">
+            <AppButton variant="primary" to="/daily" :arrow="true">
               Open today's reading
-            </CTAButton>
+            </AppButton>
           </div>
         </div>
       </section>

@@ -189,7 +189,8 @@
 
             <!-- Step 7: submit button instead of CTAButton -->
             <template v-if="currentStep === 7">
-              <CTAButton
+              <AppButton
+                variant="primary"
                 v-if="(store.answers as Record<string,string>)['p3']"
                 :arrow="true"
                 :disabled="isCalculating"
@@ -197,19 +198,20 @@
                 @click="handleSubmit"
               >
                 {{ isCalculating ? 'Calculating…' : t('revealDestiny') }}
-              </CTAButton>
+              </AppButton>
             </template>
 
             <!-- Step 0: no nav button — selection auto-advances -->
             <template v-else-if="currentStep !== 0 && !(currentStep === 5 || currentStep === 6)">
-              <CTAButton
+              <AppButton
+                variant="primary"
                 :arrow="true"
                 :disabled="!canAdvance"
                 class="advance-btn"
                 @click="advance"
               >
                 Continue
-              </CTAButton>
+              </AppButton>
             </template>
           </div>
 

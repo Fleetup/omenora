@@ -135,7 +135,7 @@
               <p class="pull-quote reading-cta__pull">
                 This is your sun sign forecast. Your natal chart gives the full picture.
               </p>
-              <CTAButton to="/analysis" :arrow="true">Get your natal reading</CTAButton>
+              <AppButton variant="primary" to="/analysis" :arrow="true">Get your natal reading</AppButton>
             </div>
           </div>
         </div>
@@ -272,7 +272,7 @@
             <div class="reading-cta">
               <EditorialRule ornament="◇" />
               <p class="pull-quote reading-cta__pull">Don't know your archetype yet?</p>
-              <CTAButton to="/analysis" :arrow="true">Discover yours</CTAButton>
+              <AppButton variant="primary" to="/analysis" :arrow="true">Discover yours</AppButton>
             </div>
           </div>
         </div>
@@ -332,7 +332,7 @@
           <template v-else-if="featuredArchetype">Get your full {{ archetypeDisplayName(featuredArchetype) }} reading</template>
           <template v-else>Your horoscope is the general reading. Get the full picture.</template>
         </p>
-        <CTAButton to="/analysis" :arrow="true">Get my natal reading</CTAButton>
+        <AppButton variant="primary" to="/analysis" :arrow="true">Get my natal reading</AppButton>
       </div>
     </div>
 

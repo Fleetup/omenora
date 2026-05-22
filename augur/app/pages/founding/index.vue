@@ -45,14 +45,15 @@
               <span class="label-caps founding-price__type">One-time · Not a subscription</span>
             </div>
 
-            <CTAButton
+            <AppButton
+              variant="primary"
               :disabled="loading"
               :full="true"
               :arrow="!loading"
               @click="handleCheckout"
             >
               {{ loading ? 'Opening checkout…' : 'Claim founding membership' }}
-            </CTAButton>
+            </AppButton>
 
             <!-- Error states -->
             <p v-if="errorMessage" class="founding-error" role="alert">
@@ -146,12 +147,12 @@
             No account required.
           </p>
           <div class="founding-live__actions">
-            <CTAButton to="/daily" variant="outline" :arrow="true">
+            <AppButton variant="secondary" to="/daily" :arrow="true">
               Read today's horoscope
-            </CTAButton>
-            <CTAButton to="/analysis" variant="outline" :arrow="true">
+            </AppButton>
+            <AppButton variant="secondary" to="/analysis" :arrow="true">
               Begin a natal reading
-            </CTAButton>
+            </AppButton>
           </div>
         </div>
       </div>
@@ -217,14 +218,15 @@
             <span class="label-caps founding-price__type">One-time · Not a subscription</span>
           </div>
 
-          <CTAButton
+          <AppButton
+            variant="primary"
             :disabled="loading"
             :full="true"
             :arrow="!loading"
             @click="handleCheckout"
           >
             {{ loading ? 'Opening checkout…' : 'Claim founding membership' }}
-          </CTAButton>
+          </AppButton>
 
           <p v-if="errorMessage" class="founding-error" role="alert">
             {{ errorMessage }}

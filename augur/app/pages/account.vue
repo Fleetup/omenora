@@ -138,7 +138,7 @@
           </div>
 
           <div class="account-section__actions">
-            <CTAButton to="/analysis" variant="outline" :arrow="true">Recalculate chart</CTAButton>
+            <AppButton variant="secondary" to="/analysis" :arrow="true">Recalculate chart</AppButton>
           </div>
         </section>
 
@@ -212,7 +212,7 @@
                   </div>
 
                   <div class="cancel-confirm__actions">
-                    <CTAButton variant="outline" @click="cancelState = 'idle'">Keep my plan</CTAButton>
+                    <AppButton variant="secondary" @click="cancelState = 'idle'">Keep my plan</AppButton>
                     <button
                       class="cancel-confirm__confirm-btn label-caps"
                       :disabled="isCancelling"
@@ -244,7 +244,7 @@
             </div>
             <div class="account-section__actions">
               <p class="account-section__desc">Get personalized daily readings tailored to your natal chart and archetype.</p>
-              <CTAButton to="/subscribe" :arrow="true">View plans</CTAButton>
+              <AppButton variant="primary" to="/subscribe" :arrow="true">View plans</AppButton>
             </div>
           </template>
         </section>
@@ -364,7 +364,7 @@
           <!-- Empty state -->
           <div v-if="reports.length === 0 && compatibilityReadings.length === 0 && dailyInsights.length === 0">
             <p class="account-section__empty annotation">No readings yet.</p>
-            <CTAButton to="/analysis" :arrow="true">Begin your reading</CTAButton>
+            <AppButton variant="primary" to="/analysis" :arrow="true">Begin your reading</AppButton>
           </div>
 
         </section>

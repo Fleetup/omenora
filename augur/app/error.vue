@@ -18,12 +18,12 @@
       </p>
 
       <div class="error-actions">
-        <CTAButton @click="handleAction" :arrow="true">
+        <AppButton variant="primary" @click="handleAction" :arrow="true">
           {{ error?.statusCode === 404 ? 'Back to Omenora' : 'Try again' }}
-        </CTAButton>
-        <CTAButton v-if="error?.statusCode !== 404" to="/" variant="outline">
+        </AppButton>
+        <AppButton variant="secondary" v-if="error?.statusCode !== 404" to="/">
           Back to Omenora
-        </CTAButton>
+        </AppButton>
       </div>
 
       <p v-if="error?.statusCode !== 404" class="error-support">
