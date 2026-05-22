@@ -7,21 +7,21 @@
         <div class="founding-hero__inner">
 
           <!-- Status line -->
-          <p class="label-caps founding-hero__status">
+          <AppEyebrow class="founding-hero__status">
             Founding membership&thinsp;·&thinsp;open now
-          </p>
+          </AppEyebrow>
 
           <!-- h1 -->
-          <h1 class="founding-hero__headline font-display-italic">
+          <AppHeadline variant="italic" as="h1" class="founding-hero__headline">
             Become a founding member of OMENORA.
-          </h1>
+          </AppHeadline>
 
           <!-- Sub-headline -->
-          <p class="founding-hero__sub font-serif">
+          <AppSubhead variant="default" class="founding-hero__sub">
             Paid features — Compatibility and Counsel — are still being built.
             Founding members pay $20 once to support that work, and receive
             lifetime half-price access and first entry when they launch.
-          </p>
+          </AppSubhead>
 
           <!-- Benefits -->
           <ul class="founding-benefits" aria-label="Founding member benefits">
@@ -41,8 +41,8 @@
           <!-- Price + CTA -->
           <div class="founding-cta-block">
             <div class="founding-price">
-              <span class="founding-price__amount font-serif">$20</span>
-              <span class="label-caps founding-price__type">One-time · Not a subscription</span>
+              <AppSubhead variant="default" as="span" class="founding-price__amount">$20</AppSubhead>
+              <AppEyebrow as="span" class="founding-price__type">One-time · Not a subscription</AppEyebrow>
             </div>
 
             <AppButton
@@ -62,12 +62,12 @@
           </div>
 
           <!-- Trust line -->
-          <p class="founding-trust annotation">
+          <AppCaption variant="default" as="p" class="founding-trust">
             14-day refund, no questions asked —
             <NuxtLink to="/refund-policy" class="founding-trust__link">refund policy</NuxtLink>.
             The reading engine is live —
             <NuxtLink to="/daily" class="founding-trust__link">see today's horoscope</NuxtLink>.
-          </p>
+          </AppCaption>
 
         </div>
       </div>
@@ -82,10 +82,10 @@
     <section class="founding-section">
       <div class="page-wrapper">
         <div class="founding-section__inner">
-          <p class="label-caps founding-section__eyebrow">What this is</p>
-          <h2 class="founding-section__headline font-display-italic">
+          <AppEyebrow class="founding-section__eyebrow">What this is</AppEyebrow>
+          <AppHeadline variant="italic" as="h2" class="founding-section__headline">
             A real reading platform, built carefully.
-          </h2>
+          </AppHeadline>
           <div class="founding-section__rule" />
           <p class="founding-section__body">
             OMENORA calculates your exact planetary positions at the minute
@@ -109,10 +109,10 @@
     <section class="founding-section founding-section--tinted">
       <div class="page-wrapper">
         <div class="founding-section__inner">
-          <p class="label-caps founding-section__eyebrow">Why founding members exist</p>
-          <h2 class="founding-section__headline font-display-italic">
+          <AppEyebrow class="founding-section__eyebrow">Why founding members exist</AppEyebrow>
+          <AppHeadline variant="italic" as="h2" class="founding-section__headline">
             We are building in the open.
-          </h2>
+          </AppHeadline>
           <div class="founding-section__rule" />
           <p class="founding-section__body">
             Compatibility and Counsel are in development. Building them
@@ -134,10 +134,10 @@
     <section class="founding-section">
       <div class="page-wrapper">
         <div class="founding-live">
-          <p class="label-caps founding-live__eyebrow">Already live</p>
-          <h2 class="founding-live__headline font-display-italic">
+          <AppEyebrow class="founding-live__eyebrow">Already live</AppEyebrow>
+          <AppHeadline variant="italic" as="h2" class="founding-live__headline">
             Verify the product before you pay.
-          </h2>
+          </AppHeadline>
           <div class="founding-section__rule" />
           <p class="founding-live__body">
             The OMENORA reading engine is running now. Today's horoscopes are
@@ -167,10 +167,10 @@
     <section class="founding-section">
       <div class="page-wrapper">
         <div class="founding-faq">
-          <p class="label-caps founding-section__eyebrow">Questions</p>
-          <h2 class="founding-faq__headline font-display-italic">
+          <AppEyebrow class="founding-section__eyebrow">Questions</AppEyebrow>
+          <AppHeadline variant="italic" as="h2" class="founding-faq__headline">
             Frequently asked.
-          </h2>
+          </AppHeadline>
 
           <ul class="founding-faq__list" role="list">
             <li
@@ -212,10 +212,10 @@
     <section class="founding-section founding-final-cta">
       <div class="page-wrapper">
         <div class="founding-final-cta__inner">
-          <p class="label-caps founding-final-cta__eyebrow">Founding membership</p>
+          <AppEyebrow class="founding-final-cta__eyebrow">Founding membership</AppEyebrow>
           <div class="founding-price founding-price--center">
-            <span class="founding-price__amount font-serif">$20</span>
-            <span class="label-caps founding-price__type">One-time · Not a subscription</span>
+            <AppSubhead variant="default" as="span" class="founding-price__amount">$20</AppSubhead>
+            <AppEyebrow as="span" class="founding-price__type">One-time · Not a subscription</AppEyebrow>
           </div>
 
           <AppButton
@@ -232,10 +232,10 @@
             {{ errorMessage }}
           </p>
 
-          <p class="founding-trust annotation">
+          <AppCaption variant="default" as="p" class="founding-trust">
             14-day refund, no questions asked —
             <NuxtLink to="/refund-policy" class="founding-trust__link">refund policy</NuxtLink>.
-          </p>
+          </AppCaption>
         </div>
       </div>
     </section>

@@ -8,7 +8,7 @@
           <div class="ty-loading__bar">
             <div class="ty-loading__fill" />
           </div>
-          <p class="annotation ty-loading__label">Confirming your purchase…</p>
+          <AppCaption variant="default" as="p" class="ty-loading__label">Confirming your purchase…</AppCaption>
         </div>
       </div>
     </section>
@@ -20,8 +20,8 @@
           <div class="ty-loading__bar">
             <div class="ty-loading__fill" />
           </div>
-          <p class="ty-pending__label font-serif">Confirming your payment with Stripe…</p>
-          <p class="annotation ty-pending__sub">This usually takes a few seconds.</p>
+          <AppSubhead variant="default" class="ty-pending__label">Confirming your payment with Stripe…</AppSubhead>
+          <AppCaption variant="default" as="p" class="ty-pending__sub">This usually takes a few seconds.</AppCaption>
         </div>
       </div>
     </section>
@@ -30,8 +30,8 @@
     <section v-else-if="pageState === 'pending-timeout'" class="ty-section">
       <div class="page-wrapper">
         <div class="ty-pending-timeout">
-          <p class="label-caps ty-status">Payment processing</p>
-          <h1 class="ty-headline font-display-italic">Your payment is being processed.</h1>
+          <AppEyebrow class="ty-status">Payment processing</AppEyebrow>
+          <AppHeadline variant="italic" as="h1" class="ty-headline">Your payment is being processed.</AppHeadline>
           <p class="ty-body">
             Your payment is being confirmed with Stripe. You'll receive a
             confirmation email at the address you used at checkout within
@@ -47,8 +47,8 @@
     <section v-else-if="pageState === 'error'" class="ty-section">
       <div class="page-wrapper">
         <div class="ty-error">
-          <p class="label-caps ty-status">Something went wrong</p>
-          <h1 class="ty-headline font-display-italic">We couldn't verify this purchase.</h1>
+          <AppEyebrow class="ty-status">Something went wrong</AppEyebrow>
+          <AppHeadline variant="italic" as="h1" class="ty-headline">We couldn't verify this purchase.</AppHeadline>
           <p class="ty-body">
             If you completed a payment, you'll receive a confirmation
             email at the address you used at checkout. Otherwise, please
@@ -70,20 +70,20 @@
         <div class="page-wrapper">
           <div class="ty-hero__inner">
 
-            <p class="label-caps ty-status">You're in.</p>
+            <AppEyebrow class="ty-status">You're in.</AppEyebrow>
 
-            <h1 class="ty-headline ty-headline--hero font-display-italic">
+            <AppHeadline variant="italic" as="h1" class="ty-headline ty-headline--hero">
               Welcome, founding member.
-            </h1>
+            </AppHeadline>
 
             <!-- Confirmation block -->
             <div class="ty-confirm">
               <div class="ty-confirm__row">
-                <span class="annotation ty-confirm__label">Confirmation sent to</span>
+                <AppCaption variant="default" class="ty-confirm__label">Confirmation sent to</AppCaption>
                 <span class="ty-confirm__value">{{ verifiedData.email }}</span>
               </div>
               <div class="ty-confirm__row">
-                <span class="annotation ty-confirm__label">Purchased</span>
+                <AppCaption variant="default" class="ty-confirm__label">Purchased</AppCaption>
                 <span class="ty-confirm__value">{{ formattedDate }}</span>
               </div>
             </div>
@@ -109,13 +109,13 @@
       <section class="ty-section">
         <div class="page-wrapper">
           <div class="ty-next">
-            <p class="label-caps founding-section__eyebrow">What's next</p>
-            <h2 class="ty-subheadline font-display-italic">Three things to know.</h2>
+            <AppEyebrow class="founding-section__eyebrow">What's next</AppEyebrow>
+            <AppHeadline variant="italic" as="h2" class="ty-subheadline">Three things to know.</AppHeadline>
 
             <div class="ty-next__grid">
 
               <div class="ty-next__item">
-                <span class="ty-next__num annotation">[01]</span>
+                <AppCaption variant="default" class="ty-next__num">[01]</AppCaption>
                 <h3 class="ty-next__title">Confirmation email</h3>
                 <p class="ty-next__desc">
                   Your confirmation should arrive within a few minutes.
@@ -126,7 +126,7 @@
               </div>
 
               <div class="ty-next__item">
-                <span class="ty-next__num annotation">[02]</span>
+                <AppCaption variant="default" class="ty-next__num">[02]</AppCaption>
                 <h3 class="ty-next__title">The reading engine is live now</h3>
                 <p class="ty-next__desc">
                   OMENORA's natal and daily reading engines are running
@@ -139,7 +139,7 @@
               </div>
 
               <div class="ty-next__item">
-                <span class="ty-next__num annotation">[03]</span>
+                <AppCaption variant="default" class="ty-next__num">[03]</AppCaption>
                 <h3 class="ty-next__title">Updates by email</h3>
                 <p class="ty-next__desc">
                   You'll receive periodic updates as Compatibility and
@@ -156,11 +156,11 @@
       <!-- B. Refund reminder -->
       <div class="page-wrapper">
         <div class="ty-refund-note">
-          <p class="annotation">
+          <AppCaption variant="fine" as="p">
             14 days, no questions asked —
             <NuxtLink to="/refund-policy" class="ty-refund-note__link">refund policy</NuxtLink>.
             Email support@omenora.com with the subject "Founding Member Refund."
-          </p>
+          </AppCaption>
         </div>
       </div>
 
@@ -173,9 +173,9 @@
       <section class="ty-section ty-final">
         <div class="page-wrapper">
           <div class="ty-final__inner">
-            <p class="ty-final__prompt font-serif">
+            <AppSubhead variant="default" class="ty-final__prompt">
               Your reading is ready.
-            </p>
+            </AppSubhead>
             <AppButton variant="primary" to="/daily" :arrow="true">
               Open today's reading
             </AppButton>
