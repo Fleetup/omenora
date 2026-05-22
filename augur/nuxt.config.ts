@@ -13,6 +13,10 @@ export default defineNuxtConfig({
     ...(process.env.SENTRY_DSN ? ['@nuxtjs/sentry'] : []),
   ],
 
+  components: [
+    { path: '~/components', pathPrefix: false },
+  ],
+
   fonts: {
     families: [
       {
