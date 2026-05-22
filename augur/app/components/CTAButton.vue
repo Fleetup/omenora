@@ -69,24 +69,24 @@ withDefaults(defineProps<{
 
 /* Saturated conversion variant (14.5i hero) — gold-glow entrance pulse, pink hover glow */
 .cta-btn--cta {
-  background: var(--color-cta);
-  color: var(--color-ink);
+  background: var(--cta-primary);
+  color: var(--text-primary);
   padding: 16px 30px;
   transition: opacity 0.2s, transform 0.15s, box-shadow 0.25s;
   animation: ctaPulse 1200ms cubic-bezier(0.16, 1, 0.3, 1) var(--cta-pulse-delay, 800ms) 1;
 }
 
 .cta-btn--cta:hover {
-  background: var(--color-cta-hover);
+  background: var(--cta-hover);
   opacity: 1;
-  box-shadow: 0 0 32px var(--color-cta-glow);
+  box-shadow: 0 0 32px var(--cta-glow);
   transform: translateY(-2px);
 }
 
 @keyframes ctaPulse {
-  0%   { box-shadow: 0 0 0 0 var(--color-gold-glow); }
-  55%  { box-shadow: 0 0 32px 2px var(--color-gold-glow); }
-  100% { box-shadow: 0 0 0 0 var(--color-gold-glow); }
+  0%   { box-shadow: 0 0 0 0 var(--accent-gold-glow); }
+  55%  { box-shadow: 0 0 32px 2px var(--accent-gold-glow); }
+  100% { box-shadow: 0 0 0 0 var(--accent-gold-glow); }
 }
 
 @media (prefers-reduced-motion: reduce) {
