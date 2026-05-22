@@ -27,6 +27,17 @@ export default defineEventHandler(async (event) => {
   const utmCampaign  = sanitizeString(body.utmCampaign  || '', 100)
   const utmMedium    = sanitizeString(body.utmMedium    || '', 100)
 
+  // ── New quiz answer fields (Build 5) ──────────────────────────────────────
+  const quizAnswers = (body.quizAnswers && typeof body.quizAnswers === 'object')
+    ? body.quizAnswers as Record<string, string>
+    : {}
+
+  // ── Coordinates needed for ascendant computation ──────────────────────────
+  const cityLat        = typeof body.cityLat        === 'number' ? body.cityLat        : undefined
+  const cityLng        = typeof body.cityLng        === 'number' ? body.cityLng        : undefined
+  const partnerCityLat = typeof body.partnerCityLat === 'number' ? body.partnerCityLat : undefined
+  const partnerCityLng = typeof body.partnerCityLng === 'number' ? body.partnerCityLng : undefined
+
   // ── Input validation ──────────────────────────────────────────────────────
 
   assertInput(!!firstName, 'firstName is required')
@@ -57,6 +68,32 @@ export default defineEventHandler(async (event) => {
     ...(utmSource    ? { utm_source:   utmSource }   : {}),
     ...(utmCampaign  ? { utm_campaign: utmCampaign } : {}),
     ...(utmMedium    ? { utm_medium:   utmMedium }   : {}),
+
+    // ── New quiz answer fields (Build 5) ──────────────────────
+    ...(quizAnswers.q1_intent         ? { q1_intent:         String(quizAnswers.q1_intent) }         : {}),
+    ...(quizAnswers.q2_feeling        ? { q2_feeling:        String(quizAnswers.q2_feeling) }        : {}),
+    ...(quizAnswers.q3_duration       ? { q3_duration:       String(quizAnswers.q3_duration) }       : {}),
+    ...(quizAnswers.q4_approach       ? { q4_approach:       String(quizAnswers.q4_approach) }       : {}),
+    ...(quizAnswers.q5_communication  ? { q5_communication:  String(quizAnswers.q5_communication) }  : {}),
+    ...(quizAnswers.q6_closeness      ? { q6_closeness:      String(quizAnswers.q6_closeness) }      : {}),
+    ...(quizAnswers.q7_conflict       ? { q7_conflict:       String(quizAnswers.q7_conflict) }       : {}),
+    ...(quizAnswers.q8_intimacy       ? { q8_intimacy:       String(quizAnswers.q8_intimacy) }       : {}),
+    ...(quizAnswers.q9_value          ? { q9_value:          String(quizAnswers.q9_value) }          : {}),
+    ...(quizAnswers.q14_descriptor    ? { q14_descriptor:    String(quizAnswers.q14_descriptor) }    : {}),
+    ...(quizAnswers.q15_chapter       ? { q15_chapter:       String(quizAnswers.q15_chapter) }       : {}),
+    ...(quizAnswers.q16_season        ? { q16_season:        String(quizAnswers.q16_season) }        : {}),
+    ...(quizAnswers.q17_pattern       ? { q17_pattern:       String(quizAnswers.q17_pattern) }       : {}),
+    ...(quizAnswers.q18_trust_texture ? { q18_trust_texture: String(quizAnswers.q18_trust_texture) } : {}),
+    ...(quizAnswers.q19_curiosity     ? { q19_curiosity:     String(quizAnswers.q19_curiosity) }     : {}),
+    ...(quizAnswers.q23_time_of_day   ? { q23_time_of_day:   String(quizAnswers.q23_time_of_day) }   : {}),
+    ...(quizAnswers.q24_helpfulness   ? { q24_helpfulness:   String(quizAnswers.q24_helpfulness) }   : {}),
+    ...(quizAnswers.q25_agency        ? { q25_agency:        String(quizAnswers.q25_agency) }        : {}),
+
+    // ── Coordinates (for ascendant computation post-payment) ──
+    ...(cityLat        != null ? { cityLat:        String(cityLat) }        : {}),
+    ...(cityLng        != null ? { cityLng:        String(cityLng) }        : {}),
+    ...(partnerCityLat != null ? { partnerCityLat: String(partnerCityLat) } : {}),
+    ...(partnerCityLng != null ? { partnerCityLng: String(partnerCityLng) } : {}),
   }
 
   // ── Stripe session construction ───────────────────────────────────────────

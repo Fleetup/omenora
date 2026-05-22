@@ -465,6 +465,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
+import type { CompatibilityQuizAnswers } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
 import { useAuth } from '~/composables/useAuth'
 import { useClarity } from '~/composables/useClarity'
@@ -758,16 +759,22 @@ async function handleCheckout() {
           dateOfBirth: store.dateOfBirth,
           partnerDob:  store.partnerDob,
           partnerCity:  store.partnerCity,
-          city:         store.city,
-          timeOfBirth:  store.timeOfBirth,
+          city:              store.city,
+          timeOfBirth:       store.timeOfBirth        || undefined,
+          partnerTimeOfBirth: undefined,
           email,
-          tempId:      store.tempId || `compat_${Date.now()}`,
-          language:    store.language || 'en',
-          origin:      window.location.origin,
-          utmCreative: utmParams.utm_creative || '',
-          utmSource:   utmParams.utm_source   || '',
-          utmCampaign: utmParams.utm_campaign  || '',
-          utmMedium:   utmParams.utm_medium    || '',
+          tempId:            store.tempId || `compat_${Date.now()}`,
+          language:          store.language || 'en',
+          origin:            window.location.origin,
+          quizAnswers:       store.compatibilityQuizAnswers,
+          cityLat:           store.cityLat        ?? undefined,
+          cityLng:           store.cityLng        ?? undefined,
+          partnerCityLat:    store.partnerCityLat ?? undefined,
+          partnerCityLng:    store.partnerCityLng ?? undefined,
+          utmCreative:       utmParams.utm_creative || '',
+          utmSource:         utmParams.utm_source   || '',
+          utmCampaign:       utmParams.utm_campaign  || '',
+          utmMedium:         utmParams.utm_medium    || '',
         },
       },
     )
@@ -905,6 +912,36 @@ onMounted(async () => {
       if (!store.tempId)       store.setTempId(meta.tempId || '')
       if (!store.languageManualOverride && meta.language) store.setLanguage(meta.language)
 
+      // ── New quiz answer hydration ─────────────────────────────────────
+      const newQuizKeys: (keyof CompatibilityQuizAnswers)[] = [
+        'q1_intent', 'q2_feeling', 'q3_duration', 'q4_approach',
+        'q5_communication', 'q6_closeness', 'q7_conflict',
+        'q8_intimacy', 'q9_value', 'q14_descriptor', 'q15_chapter',
+        'q16_season', 'q17_pattern', 'q18_trust_texture',
+        'q19_curiosity', 'q23_time_of_day', 'q24_helpfulness',
+        'q25_agency',
+      ]
+      for (const key of newQuizKeys) {
+        if (!store.compatibilityQuizAnswers[key] && meta[key]) {
+          store.setCompatibilityQuizAnswer(key, meta[key] as any)
+        }
+      }
+
+      // ── Partner lat/lng hydration ────────────────────────────────
+      if (store.partnerCityLat == null && meta.partnerCityLat) {
+        store.partnerCityLat = parseFloat(meta.partnerCityLat)
+      }
+      if (store.partnerCityLng == null && meta.partnerCityLng) {
+        store.partnerCityLng = parseFloat(meta.partnerCityLng)
+      }
+
+      // ── timeOfBirth hydration ────────────────────────────────────
+      if (!store.timeOfBirth && meta.timeOfBirth) {
+        store.timeOfBirth = meta.timeOfBirth
+      }
+      // partnerTimeOfBirth is NOT in the store — passed directly to generation call below
+      const metaPartnerTimeOfBirth = meta.partnerTimeOfBirth || undefined
+
       const { compatibility: data } = await $fetch<{
         success: boolean
         compatibility: any
@@ -918,10 +955,17 @@ onMounted(async () => {
           lifePathNumber: store.lifePathNumber          || undefined,
           powerTraits:    store.report?.powerTraits     || undefined,
           partnerName:    store.partnerName,
-          partnerDob:     store.partnerDob,
-          partnerCity:    store.partnerCity,
-          language:       store.language,
-          previewMode:    false,
+          partnerDob:          store.partnerDob,
+          partnerCity:         store.partnerCity,
+          language:            store.language,
+          previewMode:         false,
+          quizAnswers:         store.compatibilityQuizAnswers,
+          timeOfBirth:         store.timeOfBirth || meta.timeOfBirth || undefined,
+          partnerTimeOfBirth:  metaPartnerTimeOfBirth,
+          cityLat:             store.cityLat              ?? (meta.cityLat        ? parseFloat(meta.cityLat)        : undefined),
+          cityLng:             store.cityLng              ?? (meta.cityLng        ? parseFloat(meta.cityLng)        : undefined),
+          partnerCityLat:      store.partnerCityLat       ?? (meta.partnerCityLat ? parseFloat(meta.partnerCityLat) : undefined),
+          partnerCityLng:      store.partnerCityLng       ?? (meta.partnerCityLng ? parseFloat(meta.partnerCityLng) : undefined),
         },
       })
 
