@@ -27,20 +27,20 @@
 
       <!-- Section header -->
       <div class="daily-header">
-        <p class="label-caps daily-header__eyebrow">{{ todayFormatted }}</p>
-        <h1 class="daily-header__headline font-display-italic">Daily Horoscope</h1>
+        <AppEyebrow variant="muted" class="daily-header__eyebrow">{{ todayFormatted }}</AppEyebrow>
+        <AppHeadline as="h1" class="daily-header__headline">Daily Horoscope</AppHeadline>
         <div class="daily-header__rule" />
       </div>
 
       <!-- Loading -->
       <div v-if="loading" class="daily-loading">
         <div class="daily-loading__bar"><div class="daily-loading__fill" /></div>
-        <p class="annotation">Loading today's readings…</p>
+        <AppCaption as="p">Loading today's readings…</AppCaption>
       </div>
 
       <!-- No data -->
       <div v-else-if="!zodiacData" class="daily-empty">
-        <p class="annotation">Today's horoscopes are being prepared. Check back shortly.</p>
+        <AppCaption as="p">Today's horoscopes are being prepared. Check back shortly.</AppCaption>
       </div>
 
       <!-- Featured sign: no reading yet (cache empty or error) -->
@@ -56,8 +56,8 @@
                 class="reading-sign-img"
               />
               <div>
-                <h2 class="font-serif reading-sign-name">{{ currentSignName }}</h2>
-                <span class="annotation">{{ currentSignDates }}</span>
+                <AppSubhead as="h2" variant="strong" color="primary" class="reading-sign-name">{{ currentSignName }}</AppSubhead>
+                <AppCaption>{{ currentSignDates }}</AppCaption>
               </div>
             </div>
           </div>
@@ -65,9 +65,9 @@
           <AppDivider variant="rule" spacing="lg" />
 
           <div class="reading-empty">
-            <p class="label-caps reading-empty__label">{{ todayFormatted }}</p>
+            <AppEyebrow variant="muted" class="reading-empty__label">{{ todayFormatted }}</AppEyebrow>
             <p class="pull-quote reading-empty__msg">Today's reading is being prepared.</p>
-            <p class="annotation reading-empty__sub">Daily horoscopes are generated each morning. Check back shortly.</p>
+            <AppCaption as="p" class="reading-empty__sub">Daily horoscopes are generated each morning. Check back shortly.</AppCaption>
             <button class="back-link label-caps" @click="navigateTo('/daily')" style="margin-top: 24px">← Choose another sign</button>
           </div>
         </div>
@@ -87,8 +87,8 @@
                 class="reading-sign-img"
               />
               <div>
-                <h2 class="font-serif reading-sign-name">{{ currentSignName }}</h2>
-                <span class="annotation">{{ currentSignDates }}</span>
+                <AppSubhead as="h2" variant="strong" color="primary" class="reading-sign-name">{{ currentSignName }}</AppSubhead>
+                <AppCaption>{{ currentSignDates }}</AppCaption>
               </div>
             </div>
           </div>
@@ -97,37 +97,37 @@
 
           <div class="reading-content">
             <div class="reading-content__theme">
-              <span class="label-caps reading-content__theme-label">Today's theme</span>
+              <AppEyebrow as="span" variant="accent" class="reading-content__theme-label">Today's theme</AppEyebrow>
               <p class="pull-quote reading-content__theme-text">{{ featuredSignReading.theme }}</p>
             </div>
 
             <AppDivider variant="rule" spacing="lg" />
 
-            <p class="annotation reading-moon-line">
+            <AppCaption as="p" class="reading-moon-line">
               ☽ Moon in {{ featuredSignReading.moon_sign }} · {{ featuredSignReading.moon_phase }}
-            </p>
+            </AppCaption>
 
             <div class="sign-sections">
               <div class="sign-section-row">
                 <HoroscopeSymbol type="love" :size="18" class="section-icon" />
-                <span class="section-label label-caps">Love</span>
+                <AppEyebrow as="span" variant="muted" class="section-label">Love</AppEyebrow>
                 <span class="section-text">{{ featuredSignReading.love }}</span>
               </div>
               <div class="sign-section-row">
                 <HoroscopeSymbol type="work" :size="18" class="section-icon" />
-                <span class="section-label label-caps">Work</span>
+                <AppEyebrow as="span" variant="muted" class="section-label">Work</AppEyebrow>
                 <span class="section-text">{{ featuredSignReading.job }}</span>
               </div>
               <div class="sign-section-row">
                 <HoroscopeSymbol type="health" :size="18" class="section-icon" />
-                <span class="section-label label-caps">Health</span>
+                <AppEyebrow as="span" variant="muted" class="section-label">Health</AppEyebrow>
                 <span class="section-text">{{ featuredSignReading.health }}</span>
               </div>
             </div>
 
             <div v-if="featuredSignReading.planetary_weather" class="reading-weather">
               <AppDivider variant="rule" spacing="lg" />
-              <p class="annotation reading-weather__text">{{ featuredSignReading.planetary_weather }}</p>
+              <AppCaption as="p" class="reading-weather__text">{{ featuredSignReading.planetary_weather }}</AppCaption>
             </div>
 
             <div class="reading-cta">
@@ -142,7 +142,7 @@
 
         <!-- Other signs grid -->
         <div class="others-section">
-          <p class="label-caps others-section__label">All Signs</p>
+          <AppEyebrow variant="muted" class="others-section__label">All Signs</AppEyebrow>
           <div class="sign-grid sign-grid--mini">
             <template v-for="sign in otherSigns" :key="sign">
               <NuxtLink
@@ -151,9 +151,9 @@
                 class="sign-mini-card"
               >
                 <img :src="`/symbols/${zodiacSignFile(sign)}`" :alt="signDisplayName(sign)" class="sign-mini-card__img" />
-                <span class="label-caps sign-mini-card__name">{{ signDisplayName(sign) }}</span>
-                <p class="annotation sign-mini-card__theme">{{ zodiacData[sign]?.theme }}</p>
-                <p class="annotation sign-mini-card__preview">{{ firstSentence(zodiacData[sign]?.love ?? '') }}</p>
+                <AppEyebrow as="span" class="sign-mini-card__name">{{ signDisplayName(sign) }}</AppEyebrow>
+                <AppCaption as="p" class="sign-mini-card__theme">{{ zodiacData[sign]?.theme }}</AppCaption>
+                <AppCaption as="p" class="sign-mini-card__preview">{{ firstSentence(zodiacData[sign]?.love ?? '') }}</AppCaption>
               </NuxtLink>
             </template>
           </div>
@@ -163,7 +163,7 @@
       <!-- All 12 signs selector grid -->
       <template v-else>
         <div class="sign-selector">
-          <p class="annotation sign-selector__prompt">Select your sun sign</p>
+          <AppCaption as="p" class="sign-selector__prompt">Select your sun sign</AppCaption>
           <div class="sign-grid">
             <button
               v-for="sign in zodiacSigns"
@@ -172,8 +172,8 @@
               @click="selectSign(sign.key)"
             >
               <img :src="`/symbols/${sign.file}`" :alt="sign.name" class="sign-tile__img" />
-              <span class="label-caps sign-tile__name">{{ sign.name }}</span>
-              <span class="annotation sign-tile__dates">{{ sign.dates }}</span>
+              <AppEyebrow as="span" class="sign-tile__name">{{ sign.name }}</AppEyebrow>
+              <AppCaption class="sign-tile__dates">{{ sign.dates }}</AppCaption>
             </button>
           </div>
         </div>
@@ -185,20 +185,20 @@
     <div v-if="activeTab === 'archetype'" class="daily-archetype">
 
       <div class="daily-header">
-        <p class="label-caps daily-header__eyebrow">{{ todayFormatted }}</p>
-        <h1 class="daily-header__headline font-display-italic">Archetype Reading</h1>
+        <AppEyebrow variant="muted" class="daily-header__eyebrow">{{ todayFormatted }}</AppEyebrow>
+        <AppHeadline as="h1" class="daily-header__headline">Archetype Reading</AppHeadline>
         <div class="daily-header__rule" />
       </div>
 
       <!-- Loading -->
       <div v-if="loading" class="daily-loading">
         <div class="daily-loading__bar"><div class="daily-loading__fill" /></div>
-        <p class="annotation">Loading today's readings…</p>
+        <AppCaption as="p">Loading today's readings…</AppCaption>
       </div>
 
       <!-- No data -->
       <div v-else-if="!archetypeData" class="daily-empty">
-        <p class="annotation">Today's archetype readings are being prepared. Check back shortly.</p>
+        <AppCaption as="p">Today's archetype readings are being prepared. Check back shortly.</AppCaption>
       </div>
 
       <!-- Featured archetype: no reading yet (cache empty or error) -->
@@ -214,8 +214,8 @@
                 class="reading-archetype-symbol symbol-editorial"
               />
               <div>
-                <h2 class="font-serif reading-sign-name">{{ featuredDisplayName }}</h2>
-                <span class="annotation">Archetype Reading</span>
+                <AppSubhead as="h2" variant="strong" color="primary" class="reading-sign-name">{{ featuredDisplayName }}</AppSubhead>
+                <AppCaption>Archetype Reading</AppCaption>
               </div>
             </div>
           </div>
@@ -223,9 +223,9 @@
           <AppDivider variant="rule" spacing="lg" />
 
           <div class="reading-empty">
-            <p class="label-caps reading-empty__label">{{ todayFormatted }}</p>
+            <AppEyebrow variant="muted" class="reading-empty__label">{{ todayFormatted }}</AppEyebrow>
             <p class="pull-quote reading-empty__msg">Today's reading is being prepared.</p>
-            <p class="annotation reading-empty__sub">Archetype readings are generated each morning. Check back shortly.</p>
+            <AppCaption as="p" class="reading-empty__sub">Archetype readings are generated each morning. Check back shortly.</AppCaption>
             <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')" style="margin-top: 24px">← Choose another archetype</button>
           </div>
         </div>
@@ -244,8 +244,8 @@
                 class="reading-archetype-symbol symbol-editorial"
               />
               <div>
-                <h2 class="font-serif reading-sign-name">{{ featuredDisplayName }}</h2>
-                <span class="annotation">Archetype Reading</span>
+                <AppSubhead as="h2" variant="strong" color="primary" class="reading-sign-name">{{ featuredDisplayName }}</AppSubhead>
+                <AppCaption>Archetype Reading</AppCaption>
               </div>
             </div>
           </div>
@@ -254,7 +254,7 @@
 
           <div class="reading-content">
             <div class="reading-content__theme">
-              <span class="label-caps reading-content__theme-label">Today's focus</span>
+              <AppEyebrow as="span" variant="accent" class="reading-content__theme-label">Today's focus</AppEyebrow>
               <p class="pull-quote reading-content__theme-text">{{ featuredReading.theme }}</p>
             </div>
 
@@ -265,8 +265,8 @@
             </div>
 
             <div v-if="featuredReading.reflection" class="reading-reflection">
-              <p class="label-caps reading-reflection__label">Reflection</p>
-              <p class="reading-reflection__text font-serif-italic">{{ featuredReading.reflection }}</p>
+              <AppEyebrow as="p" variant="accent" class="reading-reflection__label">Reflection</AppEyebrow>
+              <AppSubhead as="p" class="reading-reflection__text">{{ featuredReading.reflection }}</AppSubhead>
             </div>
 
             <div class="reading-cta">
@@ -279,7 +279,7 @@
 
         <!-- Other archetypes grid -->
         <div class="others-section">
-          <p class="label-caps others-section__label">All Archetypes</p>
+          <AppEyebrow variant="muted" class="others-section__label">All Archetypes</AppEyebrow>
           <div class="archetype-grid archetype-grid--mini">
             <NuxtLink
               v-for="slug in otherArchetypes"
@@ -292,8 +292,8 @@
                 :alt="archetypeDisplayName(slug)"
                 class="archetype-mini-card__img symbol-editorial"
               />
-              <span class="label-caps archetype-mini-card__name">{{ archetypeDisplayName(slug) }}</span>
-              <p v-if="archetypeData[slug]" class="annotation archetype-mini-card__theme">{{ archetypeData[slug]?.theme }}</p>
+              <AppEyebrow as="span" class="archetype-mini-card__name">{{ archetypeDisplayName(slug) }}</AppEyebrow>
+              <AppCaption as="p" v-if="archetypeData[slug]" class="archetype-mini-card__theme">{{ archetypeData[slug]?.theme }}</AppCaption>
             </NuxtLink>
           </div>
         </div>
@@ -302,7 +302,7 @@
       <!-- All archetypes selector grid -->
       <template v-else>
         <div class="archetype-selector">
-          <p class="annotation archetype-selector__prompt">Select your archetype</p>
+          <AppCaption as="p" class="archetype-selector__prompt">Select your archetype</AppCaption>
           <div class="archetype-grid">
             <button
               v-for="a in archetypeList"
@@ -315,7 +315,7 @@
                 :alt="a.name"
                 class="archetype-tile__img symbol-editorial"
               />
-              <span class="label-caps archetype-tile__name">{{ a.name }}</span>
+              <AppEyebrow as="span" class="archetype-tile__name">{{ a.name }}</AppEyebrow>
             </button>
           </div>
         </div>
@@ -340,13 +340,13 @@
     <div class="daily-sub-wrap">
       <div class="daily-sub-card">
         <div class="daily-sub-top">
-          <span class="label-caps daily-sub-badge">Personal</span>
-          <span class="daily-sub-price font-serif">$6.99<span class="daily-sub-price-period">/mo</span></span>
+          <AppEyebrow as="span" variant="accent" class="daily-sub-badge">Personal</AppEyebrow>
+          <AppSubhead as="span" variant="strong" class="daily-sub-price">$6.99<span class="daily-sub-price-period">/mo</span></AppSubhead>
         </div>
-        <h2 class="font-serif-italic daily-sub-headline">Get YOUR personal horoscope every morning</h2>
-        <p class="annotation daily-sub-copy">Based on your exact birth chart — not just your sun sign. Love, Work &amp; Health, personalized to you.</p>
+        <AppSubhead as="h2" class="daily-sub-headline">Get YOUR personal horoscope every morning</AppSubhead>
+        <AppCaption as="p" class="daily-sub-copy">Based on your exact birth chart — not just your sun sign. Love, Work &amp; Health, personalized to you.</AppCaption>
         <NuxtLink to="/subscribe" class="daily-sub-btn label-caps">Start Personal Horoscope →</NuxtLink>
-        <p class="annotation daily-sub-note">Cancel anytime · No commitment</p>
+        <AppCaption as="p" class="daily-sub-note">Cancel anytime · No commitment</AppCaption>
       </div>
     </div>
 
