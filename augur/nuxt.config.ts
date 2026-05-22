@@ -7,6 +7,7 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/fonts',
+    '@nuxt/image',
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
     ...(process.env.SENTRY_DSN ? ['@nuxtjs/sentry'] : []),
