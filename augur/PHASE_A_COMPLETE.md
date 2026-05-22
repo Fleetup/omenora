@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-22
 **Branch:** feature/b1-pricing-alignment
-**Final commit:** [fill in after commit — P2.3d]
+**Final commit:** 0ee8c2f
 
 ## Summary
 
