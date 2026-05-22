@@ -1158,11 +1158,6 @@ onMounted(async () => {
   text-align: center;
 }
 
-.compat-canceled .annotation {
-  color: var(--text-tertiary);
-  font-style: italic;
-}
-
 /* ── Masthead ── */
 .compat-masthead {
   padding: clamp(48px, 8vw, 80px) clamp(20px, 5vw, 80px) clamp(40px, 6vw, 64px);

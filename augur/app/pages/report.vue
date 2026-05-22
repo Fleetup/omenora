@@ -1459,40 +1459,6 @@ async function downloadReportPDF() {
    ───────────────────────────────────────────── */
 
 
-/* ── Type helpers ── */
-.label-caps {
-  font-family: var(--font-sans);
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-
-.annotation {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.font-serif {
-  font-family: var(--font-sans);
-  font-weight: 400;
-}
-
-.font-serif-italic {
-  font-family: var(--font-sans);
-  font-style: italic;
-  font-weight: 300;
-}
-
-.font-display-italic {
-  font-family: var(--font-sans);
-  font-style: italic;
-  font-weight: 400;
-}
-
 /* ── Editorial rule ── */
 .editorial-rule {
   width: 100%;
