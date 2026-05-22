@@ -264,7 +264,7 @@ onMounted(() => {
 /* ── Page shell ── */
 .v2-page {
   min-height: 100vh;
-  background: var(--color-bone);
+  background: var(--surface-base);
   padding: clamp(40px, 8vw, 72px) clamp(20px, 5vw, 40px) 64px;
   max-width: 560px;
   margin: 0 auto;
@@ -276,8 +276,8 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-ink-alpha-04);
-  border: 1px solid var(--color-ink-ghost);
+  background: var(--border-faint);
+  border: 1px solid var(--border-subtle);
   border-radius: 40px;
   padding: 6px 14px 6px 10px;
   margin-bottom: 32px;
@@ -295,7 +295,7 @@ onMounted(() => {
 .v2-activity__text {
   font-size: 10px;
   letter-spacing: 0.22em;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 @keyframes v2-dot-pulse {
@@ -305,23 +305,23 @@ onMounted(() => {
 
 /* ── Hero headline ── */
 .v2-headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(36px, 9vw, 60px);
   line-height: 1.05;
   letter-spacing: -0.03em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 20px;
 }
 
 /* ── Sub-tagline ── */
 .v2-tagline {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: clamp(14px, 3.5vw, 16px);
   font-weight: 400;
   line-height: 1.6;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 0 0 24px;
   max-width: 42ch;
 }
@@ -335,7 +335,7 @@ onMounted(() => {
 }
 
 .v2-stars__glyphs {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 13px;
   letter-spacing: 2px;
   line-height: 1;
@@ -344,13 +344,13 @@ onMounted(() => {
 .v2-stars__label {
   font-size: 11px;
   letter-spacing: 0.18em;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 /* ── Quiz card ── */
 .v2-card {
-  background: var(--color-bone-dim);
-  border: 1px solid var(--color-ink-ghost);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
   padding: clamp(24px, 5vw, 36px) clamp(20px, 5vw, 32px);
   margin-bottom: 28px;
 }
@@ -365,25 +365,25 @@ onMounted(() => {
 .v2-card__step {
   font-size: 10px;
   letter-spacing: 0.28em;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .v2-card__pct {
   font-size: 10px;
   letter-spacing: 0.2em;
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 .v2-card__progress-track {
   height: 2px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   margin-bottom: 32px;
 }
 
 .v2-card__progress-fill {
   width: 25%;
   height: 100%;
-  background: var(--color-ink);
+  background: var(--text-primary);
 }
 
 .v2-card__fields {
@@ -395,20 +395,20 @@ onMounted(() => {
   display: block;
   font-size: 11px;
   letter-spacing: 0.3em;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
 }
 
 .v2-input {
   width: 100%;
   padding: 14px 0;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 24px;
   font-weight: 300;
-  color: var(--color-ink);
+  color: var(--text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-ink-alpha-30);
+  border-bottom: 1px solid var(--border-strong);
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;
@@ -420,7 +420,7 @@ onMounted(() => {
 }
 
 .v2-input:focus {
-  border-bottom-color: var(--color-ink);
+  border-bottom-color: var(--text-primary);
 }
 
 /* ── City autocomplete spacing ── */
@@ -459,7 +459,7 @@ onMounted(() => {
 .v2-strip__sep {
   width: 1px;
   min-height: 32px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   flex-shrink: 0;
   align-self: center;
 }
@@ -467,14 +467,14 @@ onMounted(() => {
 .v2-strip__title {
   font-size: 10px;
   letter-spacing: 0.25em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   display: block;
 }
 
 .v2-strip__sub {
   font-size: 10px;
   letter-spacing: 0.15em;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   display: block;
 }
 

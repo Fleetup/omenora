@@ -30,9 +30,9 @@ onMounted(async () => {
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--color-bone);
-  color: var(--color-ink);
-  font-family: 'Hanken Grotesk', sans-serif;
+  background: var(--surface-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -52,14 +52,14 @@ body::before {
 
 /* Keep existing utility classes, update to Editorial */
 .omenora-heading {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
 .omenora-display {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   letter-spacing: -0.03em;

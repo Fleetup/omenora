@@ -395,7 +395,7 @@ const openFaq = ref<number | null>(null)
 }
 
 .founding-hero__status {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 10px;
   letter-spacing: 0.3em;
   margin-bottom: 20px;
@@ -404,7 +404,7 @@ const openFaq = ref<number | null>(null)
 .founding-hero__headline {
   font-size: clamp(32px, 7vw, 60px);
   line-height: 1.1;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin-bottom: 20px;
   text-wrap: balance;
 }
@@ -412,7 +412,7 @@ const openFaq = ref<number | null>(null)
 .founding-hero__sub {
   font-size: clamp(17px, 2.5vw, 22px);
   line-height: 1.6;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 32px;
   max-width: 600px;
 }
@@ -434,7 +434,7 @@ const openFaq = ref<number | null>(null)
 }
 
 .founding-benefit__icon {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 10px;
   letter-spacing: 0;
   flex-shrink: 0;
@@ -442,18 +442,18 @@ const openFaq = ref<number | null>(null)
 }
 
 .founding-benefit__label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--text-primary);
   display: block;
   margin-bottom: 2px;
 }
 
 .founding-benefit__desc {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   display: block;
   line-height: 1.5;
 }
@@ -480,17 +480,17 @@ const openFaq = ref<number | null>(null)
   font-size: clamp(36px, 6vw, 52px);
   font-weight: 300;
   line-height: 1;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .founding-price__type {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 10px;
 }
 
 /* ── Error ─────────────────────────────────────────────────────────────────── */
 .founding-error {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   color: #8b1e1e;
   margin-top: 12px;
@@ -500,20 +500,20 @@ const openFaq = ref<number | null>(null)
 /* ── Trust line ────────────────────────────────────────────────────────────── */
 .founding-trust {
   font-size: 11px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   line-height: 1.7;
   margin-top: 14px;
 }
 
 .founding-trust__link {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-decoration: underline;
   text-underline-offset: 3px;
   transition: color 0.2s;
 }
 
 .founding-trust__link:hover {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ── Body sections ─────────────────────────────────────────────────────────── */
@@ -522,7 +522,7 @@ const openFaq = ref<number | null>(null)
 }
 
 .founding-section--tinted {
-  background: var(--color-bone-dim);
+  background: var(--surface-raised);
 }
 
 .founding-section__inner {
@@ -530,7 +530,7 @@ const openFaq = ref<number | null>(null)
 }
 
 .founding-section__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 10px;
   letter-spacing: 0.3em;
   margin-bottom: 16px;
@@ -539,22 +539,22 @@ const openFaq = ref<number | null>(null)
 .founding-section__headline {
   font-size: clamp(28px, 5vw, 44px);
   line-height: 1.15;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
 .founding-section__rule {
   width: 40px;
   height: 1px;
-  background: var(--color-gold);
+  background: var(--accent-gold);
   margin-bottom: 24px;
 }
 
 .founding-section__body {
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   max-width: 640px;
   margin-bottom: 20px;
 }
@@ -571,15 +571,15 @@ const openFaq = ref<number | null>(null)
 .founding-live__headline {
   font-size: clamp(28px, 5vw, 44px);
   line-height: 1.15;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
 .founding-live__body {
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   max-width: 640px;
   margin-bottom: 28px;
 }
@@ -598,18 +598,18 @@ const openFaq = ref<number | null>(null)
 .founding-faq__headline {
   font-size: clamp(28px, 5vw, 44px);
   line-height: 1.15;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin-bottom: 32px;
 }
 
 .founding-faq__list {
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
   margin: 0;
   padding: 0;
 }
 
 .founding-faq__item {
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .founding-faq__question {
@@ -625,26 +625,26 @@ const openFaq = ref<number | null>(null)
   text-align: left;
   font-size: 11px;
   letter-spacing: 0.22em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   transition: color 0.2s;
 }
 
 .founding-faq__question:hover {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 .founding-faq__question:focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--accent-gold);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
 .founding-faq__chevron {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   line-height: 1;
   flex-shrink: 0;
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 .founding-faq__answer {
@@ -658,10 +658,10 @@ const openFaq = ref<number | null>(null)
 }
 
 .founding-faq__answer-text {
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   padding-bottom: 24px;
   margin: 0;
 }
@@ -679,7 +679,7 @@ const openFaq = ref<number | null>(null)
 }
 
 .founding-final-cta__eyebrow {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 10px;
   letter-spacing: 0.3em;
   margin-bottom: 20px;

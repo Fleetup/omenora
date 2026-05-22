@@ -667,8 +667,8 @@ async function handleSubmit() {
 ───────────────────────────────────────────── */
 .page {
   min-height: 100vh;
-  background: var(--color-bone);
-  color: var(--color-ink);
+  background: var(--surface-base);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: column;
@@ -687,18 +687,18 @@ async function handleSubmit() {
 }
 
 .subscribe-masthead__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 20px;
 }
 
 .subscribe-masthead__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(36px, 9vw, 64px);
   line-height: 1.0;
   letter-spacing: -0.03em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 28px;
 }
 
@@ -713,9 +713,9 @@ async function handleSubmit() {
    MASTHEAD SUB
 ───────────────────────────────────────────── */
 .subscribe-masthead__sub {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   letter-spacing: 0.02em;
   margin: 0 0 28px;
   line-height: 1.5;
@@ -733,10 +733,10 @@ async function handleSubmit() {
 }
 
 .trial-badge__text {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 10px;
   letter-spacing: 0.2em;
-  border: 1px solid var(--color-gold);
+  border: 1px solid var(--accent-gold);
   padding: 6px 16px;
 }
 
@@ -757,36 +757,36 @@ async function handleSubmit() {
   align-items: center;
   gap: 4px;
   padding: 16px 12px;
-  background: var(--color-ink-alpha-03);
-  border: 1px solid var(--color-ink-ghost);
+  background: var(--border-faint);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   transition: border-color 0.22s ease, background 0.22s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .plan-option.active {
-  border-color: var(--color-gold);
+  border-color: var(--accent-gold);
   background: rgba(201, 169, 97, 0.06);
 }
 
 .plan-price {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 400;
-  color: var(--color-ink);
+  color: var(--text-primary);
   letter-spacing: 0.02em;
 }
 
 .plan-label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   letter-spacing: 0.08em;
 }
 
 .plan-savings {
   font-size: 9px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   letter-spacing: 0.15em;
   margin-top: 2px;
 }
@@ -801,7 +801,7 @@ async function handleSubmit() {
 
 .includes-heading {
   font-size: 9px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   letter-spacing: 0.2em;
   margin-bottom: 14px;
 }
@@ -820,15 +820,15 @@ async function handleSubmit() {
 
 .include-icon {
   font-size: 10px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   flex-shrink: 0;
   margin-top: 3px;
 }
 
 .include-text {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   letter-spacing: 0.02em;
   line-height: 1.5;
 }
@@ -847,22 +847,22 @@ async function handleSubmit() {
    FIELD WRAPPERS
 ───────────────────────────────────────────── */
 .field-wrapper {
-  background: var(--color-ink-alpha-03);
-  border: 1px solid var(--color-ink-ghost);
+  background: var(--border-faint);
+  border: 1px solid var(--border-subtle);
   padding: 14px 16px;
   margin-bottom: 12px;
   transition: border-color 0.22s ease, background 0.22s ease;
 }
 
 .field-wrapper.focused {
-  border-color: var(--color-gold);
+  border-color: var(--accent-gold);
   background: rgba(201, 169, 97, 0.04);
 }
 
 .field-label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 9px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.2em;
   margin-bottom: 5px;
@@ -877,23 +877,23 @@ async function handleSubmit() {
 
 .field-optional-badge {
   font-size: 10px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   letter-spacing: 0.02em;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .field-input {
   background: transparent;
   border: none;
   outline: none;
-  color: var(--color-ink);
+  color: var(--text-primary);
   font-size: 16px;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   width: 100%;
 }
 
 .field-input::placeholder {
-  color: var(--color-ink-ghost);
+  color: var(--border-subtle);
 }
 
 .field-input:-webkit-autofill,
@@ -913,8 +913,8 @@ async function handleSubmit() {
 ───────────────────────────────────────────── */
 .date-group,
 .time-group {
-  background: var(--color-ink-alpha-03);
-  border: 1px solid var(--color-ink-ghost);
+  background: var(--border-faint);
+  border: 1px solid var(--border-subtle);
   padding: 16px 16px 14px;
   margin-bottom: 12px;
 }
@@ -951,9 +951,9 @@ async function handleSubmit() {
 }
 
 .wheel-label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 9px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   letter-spacing: 0.10em;
   text-transform: uppercase;
 }
@@ -962,8 +962,8 @@ async function handleSubmit() {
   width: 100%;
   height: 132px;
   overflow: hidden;
-  background: var(--color-ink-alpha-03);
-  border: 1px solid var(--color-ink-ghost);
+  background: var(--border-faint);
+  border: 1px solid var(--border-subtle);
   position: relative;
   touch-action: none;
   user-select: none;
@@ -999,8 +999,8 @@ async function handleSubmit() {
   right: 10%;
   top: calc(50% - 22px);
   height: 44px;
-  border-top: 1px solid var(--color-gold-dim);
-  border-bottom: 1px solid var(--color-gold-dim);
+  border-top: 1px solid var(--accent-dim);
+  border-bottom: 1px solid var(--accent-dim);
   pointer-events: none;
 }
 
@@ -1021,10 +1021,10 @@ async function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 300;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   cursor: pointer;
   user-select: none;
   transition: color 0.18s ease, background 0.18s ease;
@@ -1033,7 +1033,7 @@ async function handleSubmit() {
 }
 
 .wheel-item.selected {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   background: rgba(201, 169, 97, 0.08);
 }
 
@@ -1047,19 +1047,19 @@ async function handleSubmit() {
   gap: 8px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .birth-unlock-icon {
   font-size: 10px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   flex-shrink: 0;
 }
 
 .birth-unlock-text {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 12px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   letter-spacing: 0.02em;
 }
 
@@ -1087,10 +1087,10 @@ async function handleSubmit() {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: var(--color-ink);
+  background: var(--text-primary);
   border: none;
-  color: var(--color-bone);
-  font-family: 'Hanken Grotesk', sans-serif;
+  color: var(--surface-base);
+  font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.25em;
@@ -1144,9 +1144,9 @@ async function handleSubmit() {
    SUB NOTE
 ───────────────────────────────────────────── */
 .sub-note {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-align: center;
   margin: 16px 0 0;
   letter-spacing: 0.05em;

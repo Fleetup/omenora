@@ -20,18 +20,18 @@ defineProps<{
   align-items: center;
   gap: 16px;
   width: 100%;
-  margin: var(--space-block) 0;
+  margin: var(--space-12) 0;
 }
 
 .e-rule__line {
   flex: 1;
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
 }
 
 .e-rule__ornament {
   flex-shrink: 0;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 12px;
 }
 </style>

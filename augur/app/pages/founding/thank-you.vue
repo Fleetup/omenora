@@ -344,7 +344,7 @@ onMounted(async () => {
 
 /* ── Status line ───────────────────────────────────────────────────────────── */
 .ty-status {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 10px;
   letter-spacing: 0.3em;
   margin-bottom: 20px;
@@ -354,7 +354,7 @@ onMounted(async () => {
 .ty-headline {
   font-size: clamp(28px, 6vw, 52px);
   line-height: 1.1;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin-bottom: 28px;
   text-wrap: balance;
 }
@@ -367,7 +367,7 @@ onMounted(async () => {
 .ty-subheadline {
   font-size: clamp(24px, 4vw, 40px);
   line-height: 1.15;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin-bottom: 36px;
   text-wrap: balance;
 }
@@ -378,8 +378,8 @@ onMounted(async () => {
   flex-direction: column;
   gap: 10px;
   padding: 20px 0;
-  border-top: 1px solid var(--color-ink-ghost);
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
   margin-bottom: 28px;
 }
 
@@ -396,17 +396,17 @@ onMounted(async () => {
 }
 
 .ty-confirm__value {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ── Body text ─────────────────────────────────────────────────────────────── */
 .ty-body {
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   max-width: 600px;
 }
 
@@ -416,14 +416,14 @@ onMounted(async () => {
 
 /* ── Links ─────────────────────────────────────────────────────────────────── */
 .ty-link {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   text-decoration: underline;
   text-underline-offset: 3px;
   transition: color 0.2s;
 }
 
 .ty-link:hover {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ── Loading bar ───────────────────────────────────────────────────────────── */
@@ -438,14 +438,14 @@ onMounted(async () => {
 .ty-loading__bar {
   width: 160px;
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   overflow: hidden;
 }
 
 .ty-loading__fill {
   height: 100%;
   width: 40%;
-  background: var(--color-gold);
+  background: var(--accent-gold);
   animation: ty-scan 1.6s ease-in-out infinite;
 }
 
@@ -456,7 +456,7 @@ onMounted(async () => {
 
 .ty-loading__label {
   font-size: 11px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 /* ── Pending ───────────────────────────────────────────────────────────────── */
@@ -470,12 +470,12 @@ onMounted(async () => {
 
 .ty-pending__label {
   font-size: clamp(18px, 3vw, 24px);
-  color: var(--color-ink);
+  color: var(--text-primary);
   font-style: italic;
 }
 
 .ty-pending__sub {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 /* ── Error / Pending-timeout ────────────────────────────────────────────────── */
@@ -494,7 +494,7 @@ onMounted(async () => {
 }
 
 .founding-section__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 10px;
   letter-spacing: 0.3em;
   margin-bottom: 16px;
@@ -514,36 +514,36 @@ onMounted(async () => {
 
 .ty-next__num {
   font-size: 10px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 .ty-next__title {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
 .ty-next__desc {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.7;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 0;
 }
 
 .ty-next__link {
   font-size: 10px;
   letter-spacing: 0.25em;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-decoration: none;
   margin-top: 4px;
   transition: color 0.2s;
 }
 
 .ty-next__link:hover {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ── Refund note ───────────────────────────────────────────────────────────── */
@@ -552,7 +552,7 @@ onMounted(async () => {
 }
 
 .ty-refund-note__link {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -572,7 +572,7 @@ onMounted(async () => {
 .ty-final__prompt {
   font-size: clamp(20px, 3.5vw, 28px);
   font-style: italic;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0;
 }
 

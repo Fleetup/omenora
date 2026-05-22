@@ -488,19 +488,19 @@ async function handleSubmit() {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--color-bone);
+  background: var(--surface-base);
 }
 
 /* ── Progress bar ── */
 .progress-track {
   height: 2px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   flex-shrink: 0;
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--color-ink);
+  background: var(--text-primary);
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -521,27 +521,27 @@ async function handleSubmit() {
 
 /* ── Step label ── */
 .analysis-step__label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 20px;
 }
 
 /* ── Step headline ── */
 .analysis-step__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(36px, 8vw, 64px);
   line-height: 1.05;
   letter-spacing: -0.03em;
   margin: 0 0 32px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ── Decorative rule ── */
 .analysis-step__rule {
   width: 48px;
   height: 1px;
-  background: var(--color-ink-mid);
+  background: var(--text-secondary);
   margin-bottom: 36px;
 }
 
@@ -552,7 +552,7 @@ async function handleSubmit() {
 /* ── Field label ── */
 .field-label {
   display: block;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
 }
 
@@ -561,13 +561,13 @@ async function handleSubmit() {
   width: 100%;
   max-width: 480px;
   padding: 14px 0;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 24px;
   font-weight: 300;
-  color: var(--color-ink);
+  color: var(--text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-ink-alpha-30);
+  border-bottom: 1px solid var(--border-strong);
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;
@@ -576,11 +576,11 @@ async function handleSubmit() {
 }
 
 .editorial-input:focus {
-  border-bottom-color: var(--color-ink);
+  border-bottom-color: var(--text-primary);
 }
 
 .editorial-input::placeholder {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-style: italic;
 }
 
@@ -594,7 +594,7 @@ input[type="time"] {
 /* ── Field hint ── */
 .field-hint {
   margin-top: 10px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 /* ── Quiz options ── */
@@ -615,7 +615,7 @@ input[type="time"] {
   gap: 16px;
   padding: 16px 20px;
   background: transparent;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s, background 0.15s;
@@ -623,27 +623,27 @@ input[type="time"] {
 }
 
 .quiz-option:hover {
-  border-color: var(--color-ink-alpha-35);
-  background: var(--color-ink-alpha-03);
+  border-color: var(--border-strong);
+  background: var(--border-faint);
 }
 
 .quiz-option--selected {
-  border-color: var(--color-ink);
-  background: var(--color-ink-alpha-06);
+  border-color: var(--text-primary);
+  background: var(--border-subtle);
 }
 
 .quiz-option__letter {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 10px;
   flex-shrink: 0;
   width: 16px;
 }
 
 .quiz-option__text {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 400;
-  color: var(--color-ink);
+  color: var(--text-primary);
   line-height: 1.3;
 }
 
@@ -657,17 +657,17 @@ input[type="time"] {
 }
 
 .quiz-question__num {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   flex-shrink: 0;
   padding-top: 4px;
 }
 
 .quiz-question__text {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 400;
   line-height: 1.4;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -687,17 +687,17 @@ input[type="time"] {
 .skip-time-btn {
   background: none;
   border: none;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 9px;
   cursor: pointer;
   padding: 0;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   letter-spacing: 0.12em;
   transition: color 0.15s;
 }
 
-.skip-time-btn:hover { color: var(--color-ink); }
+.skip-time-btn:hover { color: var(--text-primary); }
 
 /* ── Navigation ── */
 .analysis-step__nav {
@@ -711,17 +711,17 @@ input[type="time"] {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 10px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   padding: 0;
   transition: color 0.2s;
 }
 
-.back-link:hover { color: var(--color-ink); }
+.back-link:hover { color: var(--text-primary); }
 
 /* ── Error ── */
 .step-error {
@@ -732,7 +732,7 @@ input[type="time"] {
 /* ── Trust footer ── */
 .trust-footer {
   text-align: center;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   padding: 20px clamp(20px, 5vw, 80px) clamp(32px, 6vw, 48px);
   max-width: 1400px;
   margin: 0 auto;
@@ -740,7 +740,7 @@ input[type="time"] {
 
 /* ── Header step counter ── */
 .analysis-header__step {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 10px;
 }
 

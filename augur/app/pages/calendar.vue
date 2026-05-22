@@ -375,7 +375,7 @@ async function downloadCalendarPDF() {
 <style scoped>
 /* ── Centered states (loading / error) ── */
 .center-page {
-  background: var(--color-bone);
+  background: var(--surface-base);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -397,11 +397,11 @@ async function downloadCalendarPDF() {
 }
 
 .loading-msg {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 16px;
   font-weight: 300;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 0;
   animation: fadeInMsg 0.45s ease;
   max-width: 260px;
@@ -410,9 +410,9 @@ async function downloadCalendarPDF() {
 
 /* ── Calendar page ── */
 .cal-page {
-  background: var(--color-bone);
+  background: var(--surface-base);
   min-height: 100vh;
-  color: var(--color-ink);
+  color: var(--text-primary);
   max-width: 100%;
   box-sizing: border-box;
 }
@@ -420,7 +420,7 @@ async function downloadCalendarPDF() {
 /* ── Page label in header slot ── */
 .cal-page-label {
   font-size: 9px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   letter-spacing: 0.2em;
 }
 
@@ -434,26 +434,26 @@ async function downloadCalendarPDF() {
 }
 
 .cal-hero__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0 0 20px;
 }
 
 .cal-hero__title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-size: clamp(44px, 12vw, 96px);
   font-weight: 300;
   font-style: italic;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 24px;
   line-height: 1.0;
   letter-spacing: -0.03em;
 }
 
 .cal-hero__theme {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-style: italic;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   line-height: 1.65;
   margin: 16px 0 0;
   max-width: 520px;
@@ -477,7 +477,7 @@ async function downloadCalendarPDF() {
 
 /* ── Peak / Caution summary ── */
 .cal-summary {
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   padding: 16px 20px;
   margin-bottom: 32px;
 }
@@ -491,29 +491,29 @@ async function downloadCalendarPDF() {
 
 .cal-summary-divider {
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   margin: 4px 0;
 }
 
 .summary-label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 9px;
   letter-spacing: 0.15em;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-transform: uppercase;
   flex-shrink: 0;
   width: 110px;
 }
 
 .peak-months {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 14px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   letter-spacing: 0.04em;
 }
 
 .caution-months {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   color: #8B2500;
   letter-spacing: 0.04em;
@@ -523,7 +523,7 @@ async function downloadCalendarPDF() {
 .month-card {
   position: relative;
   margin-bottom: 8px;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   padding: 18px 20px 16px 24px;
   overflow: hidden;
   box-sizing: border-box;
@@ -531,7 +531,7 @@ async function downloadCalendarPDF() {
 }
 
 .month-card:hover {
-  border-color: var(--color-ink-mid);
+  border-color: var(--text-secondary);
 }
 
 .month-accent {
@@ -559,19 +559,19 @@ async function downloadCalendarPDF() {
 }
 
 .month-name-display {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 26px;
   font-weight: 300;
-  color: var(--color-ink);
+  color: var(--text-primary);
   letter-spacing: 0.01em;
 }
 
 .month-theme-text {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 4px 0 0;
 }
 
@@ -581,7 +581,7 @@ async function downloadCalendarPDF() {
 }
 
 .month-energy {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 28px;
   font-weight: 300;
   margin: 0;
@@ -589,9 +589,9 @@ async function downloadCalendarPDF() {
 }
 
 .energy-label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 8px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 3px 0 0;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -600,7 +600,7 @@ async function downloadCalendarPDF() {
 /* ── Energy bar ── */
 .energy-track {
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   margin: 12px 0;
   overflow: hidden;
 }
@@ -638,7 +638,7 @@ async function downloadCalendarPDF() {
 
 .insight-text {
   font-size: 13px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   line-height: 1.5;
   font-weight: 300;
 }
@@ -648,7 +648,7 @@ async function downloadCalendarPDF() {
   border: 1px solid rgba(139, 37, 0, 0.15);
   background: rgba(139, 37, 0, 0.03);
   padding: 8px 12px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   color: #8B2500;
   margin-bottom: 12px;
@@ -661,24 +661,24 @@ async function downloadCalendarPDF() {
   flex-wrap: wrap;
   gap: 5px;
   padding-top: 10px;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .lucky-label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-right: 4px;
 }
 
 .lucky-chip {
-  border: 1px solid var(--color-gold-dim);
+  border: 1px solid var(--accent-dim);
   padding: 2px 8px;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 13px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   letter-spacing: 0.02em;
 }
 
@@ -691,33 +691,33 @@ async function downloadCalendarPDF() {
 
 .save-divider {
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   margin-bottom: 32px;
 }
 
 .save-label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 9px;
   letter-spacing: 0.2em;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   margin: 0 0 10px;
   text-transform: uppercase;
 }
 
 .save-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-size: clamp(24px, 5vw, 36px);
   font-weight: 300;
   font-style: italic;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 6px;
   letter-spacing: -0.02em;
 }
 
 .save-subtitle {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 12px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0 0 24px;
   letter-spacing: 0.05em;
 }
@@ -735,10 +735,10 @@ async function downloadCalendarPDF() {
 
 .download-btn {
   background: transparent;
-  border: 1px solid var(--color-ink-ghost);
-  color: var(--color-ink-faint);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
   padding: 13px 20px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -747,14 +747,14 @@ async function downloadCalendarPDF() {
 }
 
 .download-btn:hover:not(:disabled) {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .download-btn--primary {
-  background: var(--color-ink);
-  border-color: var(--color-ink);
-  color: var(--color-bone);
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--surface-base);
 }
 
 .download-btn--primary:not(:disabled):hover {

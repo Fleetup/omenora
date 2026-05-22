@@ -195,7 +195,7 @@ onUnmounted(() => {
   position: sticky;
   top: 0;
   z-index: 200;
-  background: var(--color-bone);
+  background: var(--surface-base);
   padding: 0 clamp(16px, 4vw, 48px);
 }
 
@@ -209,7 +209,7 @@ onUnmounted(() => {
 }
 
 .app-header__meta {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 10px;
 }
 
@@ -224,11 +224,11 @@ onUnmounted(() => {
 .app-header__logo:hover { opacity: 0.65; }
 
 .app-header__wordmark {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 400;
   letter-spacing: 0.12em;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .app-header__right {
@@ -244,9 +244,9 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  color: var(--color-ink);
+  color: var(--text-primary);
   text-decoration: none;
   font-size: 10px;
   letter-spacing: 0.25em;
@@ -255,18 +255,18 @@ onUnmounted(() => {
 }
 
 .app-header__pill:hover {
-  border-color: var(--color-ink-mid);
-  background: var(--color-ink-alpha-04);
+  border-color: var(--text-secondary);
+  background: var(--border-faint);
 }
 
 .app-header__pill--ghost {
-  border-color: var(--color-ink-ghost);
-  color: var(--color-ink-faint);
+  border-color: var(--border-subtle);
+  color: var(--text-tertiary);
 }
 
 .app-header__pill--ghost:hover {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 /* ── Burger — always visible ── */
@@ -288,7 +288,7 @@ onUnmounted(() => {
 .app-header__burger-bar {
   display: block;
   height: 1px;
-  background: var(--color-ink);
+  background: var(--text-primary);
   transition: width 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
 }
 
@@ -314,7 +314,7 @@ onUnmounted(() => {
   position: fixed;
   inset: 0;
   z-index: 299;
-  background: var(--color-ink-alpha-35);
+  background: var(--border-strong);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
 }
@@ -327,12 +327,12 @@ onUnmounted(() => {
   bottom: 0;
   z-index: 300;
   width: min(420px, 100vw);
-  background: var(--color-bone);
+  background: var(--surface-base);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   padding: 0 clamp(24px, 6vw, 48px) calc(48px + env(safe-area-inset-bottom, 0px));
-  box-shadow: -1px 0 0 var(--color-ink-alpha-08), -24px 0 80px var(--color-ink-alpha-12);
+  box-shadow: -1px 0 0 var(--border-subtle), -24px 0 80px var(--border-default);
 }
 
 /* ── Drawer head ── */
@@ -347,29 +347,29 @@ onUnmounted(() => {
 .nav-drawer__wordmark {
   font-size: 10px;
   letter-spacing: 0.25em;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 .nav-drawer__close {
   background: none;
   border: none;
   cursor: pointer;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 10px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   padding: 0;
   transition: color 0.2s;
 }
 
 .nav-drawer__close:hover {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .nav-drawer__rule {
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
   flex-shrink: 0;
 }
 
@@ -382,20 +382,20 @@ onUnmounted(() => {
 }
 
 .drawer-link {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: clamp(28px, 6vw, 44px);
   font-weight: 300;
   font-style: italic;
-  color: var(--color-ink);
+  color: var(--text-primary);
   text-decoration: none;
   line-height: 1.25;
   padding: 14px 0;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
   transition: opacity 0.2s;
 }
 
 .drawer-link:first-child {
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .drawer-link:hover {
@@ -406,13 +406,13 @@ onUnmounted(() => {
 .nav-drawer__lang {
   margin-top: 36px;
   padding-top: 28px;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .nav-drawer__lang-label {
   font-size: 10px;
   letter-spacing: 0.25em;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
@@ -427,26 +427,26 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   background: none;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   border-radius: 999px;
   cursor: pointer;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 10px;
   letter-spacing: 0.2em;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   padding: 7px 14px;
   transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
 .lang-pill:hover {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .lang-pill--active {
-  border-color: var(--color-ink);
-  color: var(--color-ink);
-  background: var(--color-ink-alpha-04);
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--border-faint);
 }
 
 .lang-pill__flag {
@@ -463,7 +463,7 @@ onUnmounted(() => {
 }
 
 .nav-drawer__account {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-decoration: none;
   font-size: 11px;
   letter-spacing: 0.3em;
@@ -471,7 +471,7 @@ onUnmounted(() => {
 }
 
 .nav-drawer__account:hover {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ── Mobile adjustments ── */

@@ -53,18 +53,18 @@ withDefaults(defineProps<{
 }
 
 .cta-btn--solid {
-  background: var(--color-ink);
-  color: var(--color-bone);
+  background: var(--text-primary);
+  color: var(--surface-base);
 }
 
 .cta-btn--outline {
   background: transparent;
-  color: var(--color-ink);
-  border: 1px solid var(--color-ink-alpha-40);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
 }
 
 .cta-btn--outline:hover {
-  border-color: var(--color-ink);
+  border-color: var(--text-primary);
 }
 
 /* Saturated conversion variant (14.5i hero) — gold-glow entrance pulse, pink hover glow */
@@ -103,7 +103,7 @@ withDefaults(defineProps<{
 }
 
 .cta-btn__arrow {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1;
   margin-top: -1px;

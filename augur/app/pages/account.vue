@@ -723,7 +723,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 /* ── Loading / auth states ── */
 .account-state-page {
   min-height: 100vh;
-  background: var(--color-bone);
+  background: var(--surface-base);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -737,7 +737,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   max-width: 480px;
   margin: 0 auto;
   padding: clamp(32px, 5vw, 56px) clamp(24px, 4vw, 40px);
-  background: var(--color-bone);
+  background: var(--surface-base);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -745,35 +745,35 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .auth-card__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
 .auth-card__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(36px, 7vw, 56px);
   line-height: 1.0;
   letter-spacing: -0.03em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 20px;
 }
 
 .auth-card__body {
   font-size: 15px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   line-height: 1.65;
   margin: 0 0 24px;
 }
 
 .field-label {
   display: block;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 8px;
 }
 
@@ -781,11 +781,11 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
   padding: 8px 0;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 18px;
-  color: var(--color-ink);
+  color: var(--text-primary);
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s;
@@ -793,22 +793,22 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .editorial-input:focus {
-  border-bottom-color: var(--color-ink-mid);
+  border-bottom-color: var(--text-secondary);
 }
 
 .editorial-input::placeholder {
-  color: var(--color-ink-ghost);
+  color: var(--border-subtle);
 }
 
 .auth-submit {
-  background: var(--color-ink);
-  color: var(--color-bone);
+  background: var(--text-primary);
+  color: var(--surface-base);
   border: none;
   padding: 14px 28px;
   font-size: 11px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -844,7 +844,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   font-size: 13px;
   font-family: inherit;
   padding: 0;
@@ -861,14 +861,14 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 /* ── Authenticated page shell ── */
 .account-page {
   min-height: 100vh;
-  background: var(--color-bone);
+  background: var(--surface-base);
 }
 
 .account-layout {
   display: grid;
   grid-template-columns: 240px 1fr;
   min-height: calc(100vh - 57px);
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -882,7 +882,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 /* ── Sidebar ── */
 .account-sidebar {
   padding: 40px 32px;
-  border-right: 1px solid var(--color-ink-ghost);
+  border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -892,7 +892,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   .account-sidebar {
     padding: 24px 20px;
     border-right: none;
-    border-bottom: 1px solid var(--color-ink-ghost);
+    border-bottom: 1px solid var(--border-subtle);
   }
 }
 
@@ -901,15 +901,15 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .account-sidebar__name {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 400;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 4px;
 }
 
 .account-sidebar__email {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   word-break: break-all;
 }
 
@@ -953,21 +953,21 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   font-size: 10px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   transition: color 0.15s, background 0.15s;
   border-radius: 2px;
 }
 
 .account-nav__item:hover {
-  color: var(--color-ink);
-  background: var(--color-ink-alpha-04);
+  color: var(--text-primary);
+  background: var(--border-faint);
 }
 
 .account-nav__item--active {
-  color: var(--color-ink);
-  background: var(--color-ink-alpha-06);
+  color: var(--text-primary);
+  background: var(--border-subtle);
 }
 
 .account-signout {
@@ -979,9 +979,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   font-size: 10px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   transition: color 0.15s;
   margin-top: 8px;
 }
@@ -997,19 +997,19 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .account-section__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(32px, 6vw, 52px);
   line-height: 1.0;
   letter-spacing: -0.03em;
   margin: 0 0 12px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .account-section__desc {
   font-size: 15px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0 0 8px;
 }
@@ -1023,7 +1023,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .account-section__empty {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 24px;
   display: block;
 }
@@ -1034,10 +1034,10 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   padding: 16px 0;
 }
 
@@ -1051,7 +1051,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--color-ink-mid);
+  background: var(--text-secondary);
   animation: account-pulse 1.4s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -1062,29 +1062,29 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: center;
   justify-content: space-between;
   padding: 16px 0;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
   gap: 16px;
   flex-wrap: wrap;
 }
 
 .data-row:first-of-type {
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .data-row__label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   flex-shrink: 0;
 }
 
 .data-row__value {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 400;
-  color: var(--color-ink);
+  color: var(--text-primary);
   text-align: right;
 }
 
@@ -1101,31 +1101,31 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border: 1px solid var(--color-ink-ghost);
-  font-family: 'Hanken Grotesk', sans-serif;
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-sans);
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
 .status-badge--active {
-  border-color: var(--color-gold);
-  color: var(--color-gold);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
 }
 
 .status-badge--inactive {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 /* ── Plan includes ── */
 .plan-includes-block {
   margin: 28px 0;
   padding: 24px;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
 }
 
 .plan-includes-block__label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 16px;
   display: block;
 }
@@ -1141,7 +1141,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 
 .plan-includes-list li {
   font-size: 14px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1149,7 +1149,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 
 .plan-includes-list li::before {
   content: '✦';
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 10px;
   flex-shrink: 0;
 }
@@ -1163,11 +1163,11 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1183,22 +1183,22 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .cancel-confirm__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
 }
 
 .cancel-confirm__headline {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 24px;
   font-weight: 400;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 16px;
 }
 
 .cancel-confirm__body {
   font-size: 15px;
   line-height: 1.65;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 24px;
 }
 
@@ -1207,7 +1207,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .cancel-reason__label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   display: block;
   margin-bottom: 12px;
 }
@@ -1220,27 +1220,27 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 
 .cancel-reason__option {
   background: none;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   padding: 8px 14px;
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   transition: all 0.15s;
 }
 
 .cancel-reason__option:hover {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .cancel-reason__option--selected {
-  border-color: var(--color-ink);
-  color: var(--color-ink);
-  background: var(--color-ink-alpha-05);
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--border-subtle);
 }
 
 .cancel-confirm__actions {
@@ -1258,7 +1258,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   font-size: 10px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   padding: 0;
   text-decoration: underline;
@@ -1278,10 +1278,10 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .cancel-done__body {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 400;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 12px 0 0;
 }
 
@@ -1297,12 +1297,12 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: center;
   justify-content: space-between;
   padding: 14px 0;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
   gap: 16px;
 }
 
 .reading-card:first-child {
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .reading-card__info {
@@ -1311,9 +1311,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .reading-card__title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 17px;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -1321,38 +1321,38 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .reading-card__date {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0;
 }
 
 .reading-card__view {
   background: none;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   padding: 6px 14px;
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   white-space: nowrap;
   flex-shrink: 0;
   transition: all 0.15s;
 }
 
 .reading-card__view:hover {
-  color: var(--color-ink);
-  border-color: var(--color-ink-mid);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
 }
 
 /* ── Insight expandable rows ── */
 .insight-row {
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .insight-row:first-of-type {
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .insight-row__header {
@@ -1380,7 +1380,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .insight-row__toggle {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 16px;
   flex-shrink: 0;
   width: 20px;
@@ -1408,7 +1408,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: baseline;
   gap: 10px;
   padding: 12px 0;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .insight-sign-section-row:first-child {
@@ -1417,32 +1417,32 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .insight-section-label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 .insight-section-text {
   font-size: 13px;
   line-height: 1.65;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 .insight-row__text {
   font-size: 15px;
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 0;
 }
 
 .insight-row__reflection {
   padding: 16px 20px;
-  border-left: 2px solid var(--color-gold);
+  border-left: 2px solid var(--accent-gold);
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .insight-row__reflection-label {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 10px;
 }
 
@@ -1450,7 +1450,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   font-size: 15px;
   font-style: italic;
   line-height: 1.65;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -1472,9 +1472,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
-  background: var(--color-ink);
-  color: var(--color-bone);
-  font-family: 'Hanken Grotesk', sans-serif;
+  background: var(--text-primary);
+  color: var(--surface-base);
+  font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;

@@ -217,36 +217,36 @@ watch(() => props.modelValue, (val) => {
 
 .field-label {
   display: block;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
   font-size: 11px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
 }
 
 .editorial-input {
   width: 100%;
   padding: 14px 0;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 24px;
   font-weight: 300;
-  color: var(--color-ink);
+  color: var(--text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-ink-alpha-30);
+  border-bottom: 1px solid var(--border-strong);
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;
 }
 
 .editorial-input:focus {
-  border-bottom-color: var(--color-ink);
+  border-bottom-color: var(--text-primary);
 }
 
 .editorial-input::placeholder {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-style: italic;
 }
 
@@ -255,8 +255,8 @@ watch(() => props.modelValue, (val) => {
   top: calc(100% - 1px);
   left: 0;
   right: 0;
-  background: var(--color-bone);
-  border: 1px solid var(--color-ink-alpha-15);
+  background: var(--surface-base);
+  border: 1px solid var(--border-default);
   border-top: none;
   z-index: 100;
   max-height: 280px;
@@ -271,7 +271,7 @@ watch(() => props.modelValue, (val) => {
   padding: 12px 16px;
   background: none;
   border: none;
-  border-bottom: 1px solid var(--color-ink-alpha-06);
+  border-bottom: 1px solid var(--border-subtle);
   cursor: pointer;
   text-align: left;
   transition: background 0.12s;
@@ -283,29 +283,29 @@ watch(() => props.modelValue, (val) => {
 
 .places-suggestion-item:hover,
 .places-suggestion-item--highlighted {
-  background: var(--color-ink-alpha-04);
+  background: var(--border-faint);
 }
 
 .places-suggestion-item__main {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 400;
-  color: var(--color-ink);
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
 .places-suggestion-item__secondary {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 0.1em;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 .field-hint {
   margin-top: 10px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 11px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }

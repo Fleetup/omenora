@@ -127,7 +127,7 @@ onMounted(async () => {
 /* ── Loading / error centered states ── */
 .sub-center-page {
   min-height: 100vh;
-  background: var(--color-bone);
+  background: var(--surface-base);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -137,20 +137,20 @@ onMounted(async () => {
 }
 
 .sub-center-page__text {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0;
 }
 
 .sub-center-page__sub {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0;
 }
 
 .sub-return-btn {
-  background: var(--color-ink);
-  color: var(--color-bone);
+  background: var(--text-primary);
+  color: var(--surface-base);
   border: none;
   padding: 12px 24px;
   cursor: pointer;
@@ -165,7 +165,7 @@ onMounted(async () => {
 /* ── Success page ── */
 .sub-success-page {
   min-height: 100vh;
-  background: var(--color-bone);
+  background: var(--surface-base);
 }
 
 .sub-success-body {
@@ -175,37 +175,37 @@ onMounted(async () => {
 }
 
 .sub-success__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 20px;
 }
 
 .sub-success__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(40px, 10vw, 72px);
   line-height: 1.0;
   letter-spacing: -0.03em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 24px;
 }
 
 .sub-success__sub {
   font-size: 16px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   line-height: 1.65;
   margin: 20px 0 32px;
 }
 
 /* ── Expect box ── */
 .sub-expect-box {
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   padding: 24px;
   margin-bottom: 32px;
 }
 
 .sub-expect-box__label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   display: block;
   margin-bottom: 16px;
 }
@@ -215,7 +215,7 @@ onMounted(async () => {
   gap: 12px;
   align-items: flex-start;
   padding: 8px 0;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .sub-expect-item:first-of-type {
@@ -225,29 +225,29 @@ onMounted(async () => {
 
 .sub-expect-item__icon {
   font-size: 10px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   flex-shrink: 0;
   margin-top: 3px;
 }
 
 .sub-expect-item__text {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   line-height: 1.55;
 }
 
 /* ── Account note ── */
 .sub-account-note {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 12px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-top: 20px;
   letter-spacing: 0.04em;
 }
 
 .sub-account-note a {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   text-decoration: underline;
   text-underline-offset: 3px;
 }

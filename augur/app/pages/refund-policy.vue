@@ -103,7 +103,7 @@ useHead({
 
 <style scoped>
 .legal-page {
-  background: var(--color-bone);
+  background: var(--surface-base);
   min-height: 100vh;
 }
 
@@ -114,23 +114,23 @@ useHead({
 }
 
 .legal-masthead__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
 .legal-masthead__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(40px, 9vw, 72px);
   line-height: 1.0;
   letter-spacing: -0.03em;
   margin: 0 0 16px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .legal-masthead__date {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 32px;
 }
 
@@ -143,19 +143,19 @@ useHead({
 .legal-intro {
   font-size: 14px;
   line-height: 1.7;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 40px;
 }
 
 /* ── TOC ── */
 .toc {
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   padding: 24px 28px;
   margin-bottom: 48px;
 }
 
 .toc-label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0 0 12px;
 }
 
@@ -167,13 +167,13 @@ useHead({
 .toc-list li { margin-bottom: 6px; }
 
 .toc-link {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   text-decoration: none;
   font-size: 13px;
   transition: color 0.15s;
 }
 
-.toc-link:hover { color: var(--color-ink); }
+.toc-link:hover { color: var(--text-primary); }
 
 /* ── Sections ── */
 .legal-section {
@@ -182,20 +182,20 @@ useHead({
 }
 
 .legal-section__heading {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: clamp(20px, 4vw, 28px);
   font-weight: 400;
   letter-spacing: -0.01em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .legal-section__content p {
   font-size: 14px;
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 14px;
 }
 
@@ -209,28 +209,28 @@ useHead({
 .legal-section__content ul li {
   font-size: 14px;
   line-height: 1.7;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 6px;
 }
 
 /* ── Notice box ── */
 .notice-box {
-  border-left: 3px solid var(--color-ink-mid);
+  border-left: 3px solid var(--text-secondary);
   padding: 14px 18px;
   margin-top: 16px;
-  background: var(--color-ink-alpha-03);
+  background: var(--border-faint);
 }
 
 .notice-box p {
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 /* ── Contact block ── */
 .contact-block {
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   padding: 20px 24px;
 }
 
@@ -243,7 +243,7 @@ useHead({
 
 .contact-link,
 .inline-link {
-  color: var(--color-ink);
+  color: var(--text-primary);
   text-underline-offset: 3px;
 }
 
@@ -251,19 +251,19 @@ useHead({
 .legal-footer {
   margin-top: 64px;
   padding-top: 24px;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
 .footer-legal-link {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-decoration: none;
   transition: color 0.15s;
 }
 
-.footer-legal-link:hover { color: var(--color-ink); }
+.footer-legal-link:hover { color: var(--text-primary); }
 
-.footer-sep { color: var(--color-ink-ghost); }
+.footer-sep { color: var(--border-subtle); }
 </style>
