@@ -2,15 +2,15 @@
   <!-- ── STATE: Loading ── -->
   <div v-if="isLoading" class="account-state-page">
     <PhoenixLoader :size="72" />
-    <p class="annotation" style="margin-top: 16px; color: var(--text-tertiary);">Loading your account…</p>
+    <AppCaption as="p" color="tertiary" style="margin-top: 16px;">Loading your account…</AppCaption>
   </div>
 
   <!-- ── STATE: Magic link pending (click-to-confirm) ── -->
   <div v-else-if="pendingTokenHash" class="account-state-page">
     <AppHeader />
     <div class="auth-card">
-      <p class="label-caps auth-card__eyebrow">Sign in</p>
-      <h1 class="auth-card__headline font-display-italic">Complete your sign-in.</h1>
+      <AppEyebrow variant="muted" class="auth-card__eyebrow">Sign in</AppEyebrow>
+      <AppHeadline as="h1" class="auth-card__headline">Complete your sign-in.</AppHeadline>
       <div class="editorial-rule" />
       <p class="auth-card__body">Click the button below to finish signing in to your account.</p>
       <button class="auth-submit label-caps" :disabled="isConfirming" @click="handleConfirmMagicLink">
@@ -31,8 +31,8 @@
   <div v-else-if="!isAuthenticated" class="account-state-page">
     <AppHeader />
     <div class="auth-card">
-      <p class="label-caps auth-card__eyebrow">Account</p>
-      <h1 class="auth-card__headline font-display-italic">Sign in to your account.</h1>
+      <AppEyebrow variant="muted" class="auth-card__eyebrow">Account</AppEyebrow>
+      <AppHeadline as="h1" class="auth-card__headline">Sign in to your account.</AppHeadline>
       <div class="editorial-rule" />
       <p class="auth-card__body">We'll send a magic link to your email. No password needed.</p>
 
@@ -59,7 +59,7 @@
       </template>
 
       <div v-else class="auth-sent">
-        <p class="label-caps" style="color: var(--accent-gold); margin-bottom: 12px;">✦ Check your email</p>
+        <AppEyebrow variant="accent" style="margin-bottom: 12px;">✦ Check your email</AppEyebrow>
         <p class="auth-card__body">We sent a sign-in link to <strong>{{ emailInput }}</strong>. It expires in 1 hour.</p>
       </div>
     </div>
@@ -74,10 +74,10 @@
       <!-- Sidebar -->
       <aside class="account-sidebar">
         <div class="account-sidebar__user">
-          <p class="account-sidebar__name font-serif">
+          <AppSubhead as="p" variant="strong" color="primary" class="account-sidebar__name">
             {{ store.firstName || 'Your Account' }}
-          </p>
-          <p class="annotation account-sidebar__email">{{ userEmail }}</p>
+          </AppSubhead>
+          <AppCaption as="p" class="account-sidebar__email">{{ userEmail }}</AppCaption>
         </div>
 
         <div class="editorial-rule" />
@@ -104,7 +104,7 @@
 
         <!-- ── PROFILE ── -->
         <section v-if="activeSection === 'profile'">
-          <h2 class="account-section__headline font-display-italic">Profile</h2>
+          <AppHeadline as="h2" class="account-section__headline">Profile</AppHeadline>
           <p class="account-section__desc">Your birth data used for natal calculations.</p>
           <div class="editorial-rule" />
 
@@ -130,7 +130,7 @@
           </div>
           <div class="data-row">
             <span class="data-row__label">Archetype</span>
-            <span class="data-row__value font-serif">{{ store.archetype || '—' }}</span>
+            <AppSubhead as="span" class="data-row__value">{{ store.archetype || '—' }}</AppSubhead>
           </div>
           <div class="data-row">
             <span class="data-row__label">Life Path</span>
@@ -144,7 +144,7 @@
 
         <!-- ── PLAN ── -->
         <section v-else-if="activeSection === 'plan'">
-          <h2 class="account-section__headline font-display-italic">Your Plan</h2>
+          <AppHeadline as="h2" class="account-section__headline">Your Plan</AppHeadline>
           <p class="account-section__desc">Manage your subscription and billing.</p>
           <div class="editorial-rule" />
 
@@ -168,7 +168,7 @@
             </div>
 
             <div class="plan-includes-block">
-              <p class="label-caps plan-includes-block__label">What's included</p>
+              <AppEyebrow variant="muted" class="plan-includes-block__label">What's included</AppEyebrow>
               <ul class="plan-includes-list">
                 <li v-if="subscriptionPlanType === 'compatibility_plus'">Unlimited compatibility readings</li>
                 <li v-if="subscriptionPlanType === 'compatibility_plus'">Weekly relationship weather (coming soon)</li>
@@ -189,15 +189,15 @@
               <template v-else-if="cancelState === 'confirm'">
                 <div class="cancel-confirm">
                   <div class="editorial-rule" />
-                  <p class="label-caps cancel-confirm__eyebrow">Before you go</p>
-                  <h3 class="cancel-confirm__headline font-serif">Are you sure you want to cancel?</h3>
+                  <AppEyebrow variant="muted" class="cancel-confirm__eyebrow">Before you go</AppEyebrow>
+                  <AppSubhead as="h3" variant="strong" color="primary" class="cancel-confirm__headline">Are you sure you want to cancel?</AppSubhead>
                   <p class="cancel-confirm__body">
                     Your subscription will remain active until the end of the billing period.
                     After that, you will lose access to personalized daily readings.
                   </p>
 
                   <div class="cancel-reason">
-                    <p class="label-caps cancel-reason__label">Reason (optional)</p>
+                    <AppEyebrow variant="muted" class="cancel-reason__label">Reason (optional)</AppEyebrow>
                     <div class="cancel-reason__options">
                       <button
                         v-for="r in cancelReasons"
@@ -228,10 +228,10 @@
               <template v-else-if="cancelState === 'cancelled'">
                 <div class="cancel-done">
                   <div class="editorial-rule" />
-                  <p class="label-caps" style="color: var(--text-tertiary)">Cancellation initiated</p>
-                  <p class="cancel-done__body font-serif">
+                  <AppEyebrow variant="muted">Cancellation initiated</AppEyebrow>
+                  <AppSubhead as="p" class="cancel-done__body">
                     Your access continues until the end of the billing period. We hope to see you again.
-                  </p>
+                  </AppSubhead>
                 </div>
               </template>
             </div>
@@ -251,20 +251,20 @@
 
         <!-- ── HISTORY ── -->
         <section v-else-if="activeSection === 'history'">
-          <h2 class="account-section__headline font-display-italic">History</h2>
+          <AppHeadline as="h2" class="account-section__headline">History</AppHeadline>
           <p class="account-section__desc">Your natal readings and compatibility reports.</p>
           <div class="editorial-rule" />
 
           <!-- Natal / Archetype readings -->
           <template v-if="reports.length > 0">
-            <p class="label-caps" style="color: var(--text-tertiary); margin-bottom: 16px;">Natal Readings</p>
+            <AppEyebrow variant="muted" style="margin-bottom: 16px;">Natal Readings</AppEyebrow>
             <div
               v-for="report in reports.filter((r: any) => r.type !== 'compatibility')"
               :key="report.id"
               class="data-row"
             >
               <div>
-                <span class="data-row__value font-serif">{{ report.archetype || report.first_name || 'Reading' }}</span>
+                <AppSubhead as="span" class="data-row__value">{{ report.archetype || report.first_name || 'Reading' }}</AppSubhead>
                 <span class="data-row__label" style="display: block; margin-top: 2px;">{{ formatDate(report.created_at) }}</span>
               </div>
               <button class="reading-card__view label-caps" @click="viewReport(report)">View</button>
@@ -273,7 +273,7 @@
 
           <!-- Daily insights (subscribers only) -->
           <template v-if="subscriptionActive && dailyInsights.length > 0">
-            <p class="label-caps" style="color: var(--text-tertiary); margin-top: 32px; margin-bottom: 16px;">Recent Daily Readings</p>
+            <AppEyebrow variant="muted" style="margin-top: 32px; margin-bottom: 16px;">Recent Daily Readings</AppEyebrow>
             <div
               v-for="insight in dailyInsights"
               :key="insight.sent_date"
@@ -286,9 +286,9 @@
                 @click="toggleInsight(insight.sent_date)"
               >
                 <div class="insight-row__left">
-                  <span class="data-row__value font-serif">
+                  <AppSubhead as="span" class="data-row__value">
                     {{ insight.theme_used || 'Daily Reading' }}
-                  </span>
+                  </AppSubhead>
                   <span class="data-row__label" style="display: block; margin-top: 2px;">
                     {{ formatDate(insight.sent_date) }}
                   </span>
@@ -309,23 +309,23 @@
                     <div class="insight-sign-sections">
                       <div class="insight-sign-section-row">
                         <HoroscopeSymbol type="love" :size="16" />
-                        <span class="label-caps insight-section-label">Love</span>
+                        <AppEyebrow as="span" variant="muted" class="insight-section-label">Love</AppEyebrow>
                         <span class="insight-section-text">{{ insight.structured.love }}</span>
                       </div>
                       <div class="insight-sign-section-row">
                         <HoroscopeSymbol type="work" :size="16" />
-                        <span class="label-caps insight-section-label">Work</span>
+                        <AppEyebrow as="span" variant="muted" class="insight-section-label">Work</AppEyebrow>
                         <span class="insight-section-text">{{ insight.structured.work }}</span>
                       </div>
                       <div class="insight-sign-section-row">
                         <HoroscopeSymbol type="health" :size="16" />
-                        <span class="label-caps insight-section-label">Health</span>
+                        <AppEyebrow as="span" variant="muted" class="insight-section-label">Health</AppEyebrow>
                         <span class="insight-section-text">{{ insight.structured.health }}</span>
                       </div>
                     </div>
                     <div v-if="insight.structured.reflection_question" class="insight-row__reflection">
-                      <span class="label-caps insight-row__reflection-label">Today's reflection</span>
-                      <p class="insight-row__reflection-text font-serif">{{ insight.structured.reflection_question }}</p>
+                      <AppEyebrow as="span" variant="accent" class="insight-row__reflection-label">Today's reflection</AppEyebrow>
+                      <AppSubhead as="p" class="insight-row__reflection-text">{{ insight.structured.reflection_question }}</AppSubhead>
                     </div>
                   </template>
 
@@ -333,8 +333,8 @@
                   <template v-else>
                     <p class="insight-row__text">{{ insight.insight_preview }}</p>
                     <div v-if="insight.reflection_question" class="insight-row__reflection">
-                      <span class="label-caps insight-row__reflection-label">Today's reflection</span>
-                      <p class="insight-row__reflection-text font-serif">{{ insight.reflection_question }}</p>
+                      <AppEyebrow as="span" variant="accent" class="insight-row__reflection-label">Today's reflection</AppEyebrow>
+                      <AppSubhead as="p" class="insight-row__reflection-text">{{ insight.reflection_question }}</AppSubhead>
                     </div>
                   </template>
                 </div>
@@ -344,18 +344,18 @@
 
           <!-- Compatibility readings -->
           <template v-if="compatibilityReadings.length > 0">
-            <p class="label-caps" style="color: var(--text-tertiary); margin-top: 32px; margin-bottom: 16px;">Compatibility Readings</p>
+            <AppEyebrow variant="muted" style="margin-top: 32px; margin-bottom: 16px;">Compatibility Readings</AppEyebrow>
             <div
               v-for="reading in compatibilityReadings"
               :key="reading.id"
               class="data-row"
             >
               <div>
-                <span class="data-row__value font-serif">{{ reading.partnerName ? `With ${reading.partnerName}` : 'Compatibility Reading' }}</span>
+                <AppSubhead as="span" class="data-row__value">{{ reading.partnerName ? `With ${reading.partnerName}` : 'Compatibility Reading' }}</AppSubhead>
                 <span class="data-row__label" style="display: block; margin-top: 2px;">{{ formatDate(reading.createdAt) }}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 16px;">
-                <span v-if="reading.score" class="data-row__value font-serif">{{ reading.score }}/100</span>
+                <AppSubhead v-if="reading.score" as="span" class="data-row__value">{{ reading.score }}/100</AppSubhead>
                 <button class="reading-card__view label-caps" @click="navigateTo('/compatibility?session_id=' + reading.sessionId)">View</button>
               </div>
             </div>
@@ -363,7 +363,7 @@
 
           <!-- Empty state -->
           <div v-if="reports.length === 0 && compatibilityReadings.length === 0 && dailyInsights.length === 0">
-            <p class="account-section__empty annotation">No readings yet.</p>
+            <AppCaption as="p" color="tertiary" class="account-section__empty">No readings yet.</AppCaption>
             <AppButton variant="primary" to="/analysis" :arrow="true">Begin your reading</AppButton>
           </div>
 

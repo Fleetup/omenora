@@ -8,26 +8,26 @@
           <PhoenixLoader :size="96" />
         </div>
 
-        <p class="loading-status label-caps">
+        <AppEyebrow as="p" class="loading-status">
           <template v-if="loadingStage === 0">Mapping your natal chart, {{ store.firstName }}…</template>
           <template v-else-if="loadingStage === 1">Computing across four traditions…</template>
           <template v-else-if="loadingStage === 2">Your {{ loadingArchetypeLabel }} archetype is being mapped…</template>
           <template v-else>Your reading is ready.</template>
-        </p>
+        </AppEyebrow>
 
         <div class="loading-progress">
           <div class="loading-progress__fill" />
         </div>
 
-        <p class="loading-subtext annotation">Computing across four traditions</p>
+        <AppCaption as="p" class="loading-subtext">Computing across four traditions</AppCaption>
       </div>
     </div>
 
     <!-- ── STATE C: ERROR ── -->
     <div v-else-if="hasError" class="preview-error">
       <div class="preview-error__inner">
-        <p class="label-caps" style="color: var(--text-tertiary)">Something went wrong</p>
-        <h2 class="font-display-italic preview-error__msg">We couldn't generate your reading.</h2>
+        <AppEyebrow variant="muted">Something went wrong</AppEyebrow>
+        <AppHeadline as="h2" class="preview-error__msg">We couldn't generate your reading.</AppHeadline>
         <div class="preview-error__actions">
           <AppButton variant="primary" :arrow="true" @click="retryApiCall">Try again</AppButton>
           <AppButton variant="secondary" to="/analysis" :arrow="true">Start over</AppButton>
@@ -46,8 +46,8 @@
 
       <!-- Report header -->
       <section class="report-header">
-        <p class="label-caps report-header__eyebrow">Natal Reading · {{ store.firstName }}</p>
-        <h1 class="report-header__title font-display-italic">{{ report.archetypeName }}</h1>
+        <AppEyebrow variant="muted" class="report-header__eyebrow">Natal Reading · {{ store.firstName }}</AppEyebrow>
+        <AppHeadline as="h1" class="report-header__title">{{ report.archetypeName }}</AppHeadline>
         <div v-if="archetypeFile" class="report-header__symbol">
           <img
             :src="`/symbols/${archetypeFile}`"
@@ -57,19 +57,19 @@
         </div>
         <div class="editorial-rule" />
         <div class="report-header__meta">
-          <span class="annotation">☉ Sun in {{ sunSign }}</span>
-          <span class="annotation report-header__sep">·</span>
-          <span class="annotation">☽ Moon in {{ moonSign }}</span>
+          <AppCaption>☉ Sun in {{ sunSign }}</AppCaption>
+          <AppCaption :muted="true" class="report-header__sep">·</AppCaption>
+          <AppCaption>☽ Moon in {{ moonSign }}</AppCaption>
           <template v-if="risingSign">
-            <span class="annotation report-header__sep">·</span>
-            <span class="annotation">↑ Rising {{ risingSign }}</span>
+            <AppCaption :muted="true" class="report-header__sep">·</AppCaption>
+            <AppCaption>↑ Rising {{ risingSign }}</AppCaption>
           </template>
         </div>
-        <p class="annotation report-header__element">
+        <AppCaption as="p" class="report-header__element">
           {{ report.element }} · Life Path {{ store.lifePathNumber }}
-        </p>
+        </AppCaption>
         <div class="report-header__traits">
-          <span v-for="trait in report.powerTraits" :key="trait" class="report-trait label-caps">{{ trait }}</span>
+          <AppEyebrow v-for="trait in report.powerTraits" :key="trait" as="span" class="report-trait">{{ trait }}</AppEyebrow>
         </div>
       </section>
 
@@ -84,41 +84,41 @@
 
         <!-- Unlock progress meter -->
         <div class="unlock-meter">
-          <p class="label-caps unlock-meter__label">Your reading is 14% revealed</p>
+          <AppEyebrow as="p" variant="muted" class="unlock-meter__label">Your reading is 14% revealed</AppEyebrow>
           <div class="unlock-meter__track">
             <div class="unlock-meter__fill" />
           </div>
         </div>
 
         <!-- Reading receipt -->
-        <p class="annotation report-receipt">
+        <AppCaption as="p" class="report-receipt">
           Built from: your birth date · your natal chart ·
           your {{ archetypeShortName }} archetype (Life Path {{ store.lifePathNumber }}) ·
           {{ traditionLabel }} tradition
-        </p>
+        </AppCaption>
 
         <!-- Urgency -->
-        <p class="annotation report-urgency">Your chart is calculated against today's planetary transits — this interpretation is specific to this window.</p>
+        <AppCaption as="p" class="report-urgency">Your chart is calculated against today's planetary transits — this interpretation is specific to this window.</AppCaption>
       </section>
 
       <!-- Locked sections strip -->
       <section class="locked-sections">
         <div class="locked-sections__header">
-          <span class="label-caps locked-sections__label">Still locked in your {{ archetypeShortName }} reading</span>
+          <AppEyebrow as="span" variant="muted" class="locked-sections__label">Still locked in your {{ archetypeShortName }} reading</AppEyebrow>
         </div>
         <ul class="locked-sections__list">
-          <li class="annotation locked-sections__item">◆ Your 2026 Destiny Forecast</li>
-          <li class="annotation locked-sections__item">◆ Love &amp; Relationship Patterns</li>
-          <li class="annotation locked-sections__item">◆ Your Hidden Gift</li>
-          <li class="annotation locked-sections__item">◆ Career &amp; Purpose</li>
-          <li class="annotation locked-sections__item">◆ Your Power Statement</li>
-          <li class="annotation locked-sections__item">◆ {{ traditionSectionLabel }}</li>
+          <AppCaption as="li" class="locked-sections__item">◆ Your 2026 Destiny Forecast</AppCaption>
+          <AppCaption as="li" class="locked-sections__item">◆ Love &amp; Relationship Patterns</AppCaption>
+          <AppCaption as="li" class="locked-sections__item">◆ Your Hidden Gift</AppCaption>
+          <AppCaption as="li" class="locked-sections__item">◆ Career &amp; Purpose</AppCaption>
+          <AppCaption as="li" class="locked-sections__item">◆ Your Power Statement</AppCaption>
+          <AppCaption as="li" class="locked-sections__item">◆ {{ traditionSectionLabel }}</AppCaption>
         </ul>
       </section>
 
       <!-- Trustpilot widget -->
       <div class="preview-tp-block">
-        <p class="annotation preview-tp-label">Rated Excellent by our readers</p>
+        <AppCaption as="p" class="preview-tp-label">Rated Excellent by our readers</AppCaption>
         <TrustpilotWidget />
       </div>
 
@@ -127,8 +127,8 @@
         <div class="editorial-rule" />
 
         <div class="paywall__header">
-          <p class="paywall__personal font-serif">{{ store.firstName }}, {{ t('paywallHeading') }}</p>
-          <p class="annotation paywall__sub">{{ t('paywallSubtitle') }}</p>
+          <AppSubhead as="p" variant="strong" color="primary" class="paywall__personal">{{ store.firstName }}, {{ t('paywallHeading') }}</AppSubhead>
+          <AppCaption as="p" class="paywall__sub">{{ t('paywallSubtitle') }}</AppCaption>
         </div>
 
         <!-- Promo code -->
@@ -163,12 +163,12 @@
                 {{ isValidatingPromo ? '…' : 'Apply' }}
               </button>
             </div>
-            <p v-if="promoValidationResult && !promoValidationResult.valid" class="paywall__promo-msg paywall__promo-msg--error annotation">
+            <AppCaption as="p" v-if="promoValidationResult && !promoValidationResult.valid" class="paywall__promo-msg paywall__promo-msg--error">
               {{ promoValidationResult.message }}
-            </p>
-            <p v-if="appliedPromo?.codeType === 'discount_percent'" class="paywall__promo-msg paywall__promo-msg--success annotation">
+            </AppCaption>
+            <AppCaption as="p" v-if="appliedPromo?.codeType === 'discount_percent'" class="paywall__promo-msg paywall__promo-msg--success">
               ✦ {{ appliedPromo.message }}
-            </p>
+            </AppCaption>
           </template>
         </div>
 
@@ -195,7 +195,7 @@
         >
           <span>{{ t('foundingCtaPreview') }}</span>
         </button>
-        <p class="annotation paywall__founding-sub">{{ t('foundingCtaSubtitle') }}</p>
+        <AppCaption as="p" class="paywall__founding-sub">{{ t('foundingCtaSubtitle') }}</AppCaption>
 
         <!-- Premium CTA (secondary) -->
         <button
@@ -210,12 +210,12 @@
         </button>
 
         <!-- Trust line: refund + subscription -->
-        <div class="paywall__guarantee annotation">
+        <AppCaption as="div" class="paywall__guarantee">
           <span class="paywall__guarantee-check">✦</span>
           <span>{{ t('subscribeRefundClause') }}</span>
-        </div>
-        <p class="annotation paywall__trust-onetime">{{ t('paywallTrustSubscription') }}</p>
-        <p class="annotation paywall__trust-secure">{{ t('securedStripe') }}</p>
+        </AppCaption>
+        <AppCaption as="p" class="paywall__trust-onetime">{{ t('paywallTrustSubscription') }}</AppCaption>
+        <AppCaption as="p" class="paywall__trust-secure">{{ t('securedStripe') }}</AppCaption>
       </section>
 
       <!-- Full-access promo section (replaces pricing when full_access code applied) -->
@@ -243,17 +243,17 @@
           <span v-if="isApplyingFreeAccess">Processing…</span>
           <span v-else>Get My Complete Reading →</span>
         </button>
-        <p v-if="promoErrorMessage" class="paywall__promo-msg paywall__promo-msg--error annotation">{{ promoErrorMessage }}</p>
+        <AppCaption as="p" v-if="promoErrorMessage" class="paywall__promo-msg paywall__promo-msg--error">{{ promoErrorMessage }}</AppCaption>
       </section>
 
       <!-- Footer -->
       <footer class="preview-footer" role="contentinfo">
         <nav aria-label="Legal">
           <NuxtLink to="/privacy" class="preview-footer__link annotation">Privacy Policy</NuxtLink>
-          <span class="annotation preview-footer__sep" aria-hidden="true">·</span>
+          <AppCaption :muted="true" class="preview-footer__sep" aria-hidden="true">·</AppCaption>
           <NuxtLink to="/terms" class="preview-footer__link annotation">Terms of Service</NuxtLink>
         </nav>
-        <p class="preview-footer__crisis annotation">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
+        <AppCaption as="p" class="preview-footer__crisis">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</AppCaption>
       </footer>
 
     </template>
