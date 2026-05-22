@@ -19,13 +19,13 @@
       <Transition :name="transitionDir" mode="out-in">
         <div :key="currentStep" class="analysis-step">
 
-          <p class="label-caps analysis-step__label">
+          <AppEyebrow class="analysis-step__label">
             Step {{ currentStep + 1 }}
-          </p>
+          </AppEyebrow>
 
-          <h1 class="analysis-step__headline font-display-italic">
+          <AppHeadline variant="italic" as="h1" class="analysis-step__headline">
             {{ stepConfig[currentStep]?.headline }}
-          </h1>
+          </AppHeadline>
 
           <div class="analysis-step__rule" />
 
@@ -77,7 +77,7 @@
                 autocomplete="bday"
                 required
               />
-              <p class="field-hint annotation">Used only to calculate your planetary positions.</p>
+              <AppCaption variant="default" as="p" class="field-hint">Used only to calculate your planetary positions.</AppCaption>
             </template>
 
             <!-- Step 3: City -->
@@ -94,7 +94,7 @@
 
             <!-- Step 4: Birth time -->
             <template v-else-if="currentStep === 4">
-              <p class="field-hint annotation" style="margin-bottom: 24px;">Birth time improves your Rising sign accuracy.</p>
+              <AppCaption variant="default" as="p" class="field-hint" style="margin-bottom: 24px;">Birth time improves your Rising sign accuracy.</AppCaption>
               <div class="birth-time-row">
                 <label class="field-label label-caps" for="birth-time">Birth time</label>
                 <button type="button" class="skip-time-btn label-caps" @click="skipBirthTime">Skip</button>
@@ -105,14 +105,14 @@
                 type="time"
                 class="editorial-input"
               />
-              <p class="field-hint annotation">Leave blank if unknown — Rising sign won't be available without it.</p>
+              <AppCaption variant="default" as="p" class="field-hint">Leave blank if unknown — Rising sign won't be available without it.</AppCaption>
             </template>
 
             <!-- Step 5: Quiz p1 -->
             <template v-else-if="currentStep === 5">
               <div class="quiz-question">
-                <span class="quiz-question__num annotation">01</span>
-                <p class="quiz-question__text font-serif">{{ questions[0]!.text }}</p>
+                <AppCaption variant="default" class="quiz-question__num">01</AppCaption>
+                <AppSubhead variant="default" as="p" class="quiz-question__text">{{ questions[0]!.text }}</AppSubhead>
               </div>
               <div class="quiz-options">
                 <button
@@ -133,8 +133,8 @@
             <!-- Step 6: Quiz p2 -->
             <template v-else-if="currentStep === 6">
               <div class="quiz-question">
-                <span class="quiz-question__num annotation">02</span>
-                <p class="quiz-question__text font-serif">{{ questions[1]!.text }}</p>
+                <AppCaption variant="default" class="quiz-question__num">02</AppCaption>
+                <AppSubhead variant="default" as="p" class="quiz-question__text">{{ questions[1]!.text }}</AppSubhead>
               </div>
               <div class="quiz-options">
                 <button
@@ -155,8 +155,8 @@
             <!-- Step 7: Quiz p3 — manual submit -->
             <template v-else-if="currentStep === 7">
               <div class="quiz-question">
-                <span class="quiz-question__num annotation">03</span>
-                <p class="quiz-question__text font-serif">{{ questions[2]!.text }}</p>
+                <AppCaption variant="default" class="quiz-question__num">03</AppCaption>
+                <AppSubhead variant="default" as="p" class="quiz-question__text">{{ questions[2]!.text }}</AppSubhead>
               </div>
               <div class="quiz-options">
                 <button
@@ -172,7 +172,7 @@
                   <span class="quiz-option__text">{{ option.label }}</span>
                 </button>
               </div>
-              <p v-if="submitError" class="step-error annotation">{{ submitError }}</p>
+              <AppCaption v-if="submitError" variant="default" as="p" class="step-error">{{ submitError }}</AppCaption>
             </template>
 
           </div>
@@ -220,7 +220,7 @@
     </div>
 
     <!-- Trust footer -->
-    <p class="trust-footer annotation">🔒 Your birth data is used only to generate your reading. Never sold.</p>
+    <AppCaption variant="default" as="p" class="trust-footer">🔒 Your birth data is used only to generate your reading. Never sold.</AppCaption>
 
   </div>
 </template>

@@ -8,21 +8,21 @@
     </AppHeader>
 
     <div class="compat-landing__inner">
-      <p class="label-caps compat-landing__eyebrow">Compatibility Reading</p>
-      <h1 class="compat-landing__headline font-display-italic" v-html="heroVariant.headline" />
+      <AppEyebrow class="compat-landing__eyebrow">Compatibility Reading</AppEyebrow>
+      <AppHeadline variant="italic" as="h1" class="compat-landing__headline" v-html="heroVariant.headline" />
       <div class="compat-landing__rule" />
       <p class="compat-landing__body">{{ heroVariant.body }}</p>
 
       <div class="compat-landing__trust">
-        <span class="annotation compat-landing__trust-item">Free preview</span>
+        <AppCaption variant="default" class="compat-landing__trust-item">Free preview</AppCaption>
         <span class="compat-landing__trust-sep" aria-hidden="true">·</span>
-        <span class="annotation compat-landing__trust-item">No account needed</span>
+        <AppCaption variant="default" class="compat-landing__trust-item">No account needed</AppCaption>
         <span class="compat-landing__trust-sep" aria-hidden="true">·</span>
-        <span class="annotation compat-landing__trust-item">Results in 60 seconds</span>
+        <AppCaption variant="default" class="compat-landing__trust-item">Results in 60 seconds</AppCaption>
       </div>
 
       <div class="compat-landing__tp-block">
-        <p class="annotation compat-landing__tp-label">Rated Excellent by our readers</p>
+        <AppCaption variant="default" as="p" class="compat-landing__tp-label">Rated Excellent by our readers</AppCaption>
         <TrustpilotWidget />
       </div>
 
@@ -30,7 +30,7 @@
         {{ heroVariant.ctaLabel }}
       </AppButton>
 
-      <p class="annotation compat-landing__privacy">Your birth data is used only to generate your reading. Never sold.</p>
+      <AppCaption variant="default" as="p" class="compat-landing__privacy">Your birth data is used only to generate your reading. Never sold.</AppCaption>
     </div>
   </div>
 
@@ -38,17 +38,17 @@
   <div v-else-if="currentStep === 4" class="compat-loading" aria-live="polite">
     <div class="compat-loading__inner">
       <PhoenixLoader :size="72" />
-      <p class="label-caps compat-loading__brand">Omenora</p>
-      <p :key="loadingMsgIdx" class="compat-loading__msg font-display-italic">
+      <AppEyebrow as="p" class="compat-loading__brand">Omenora</AppEyebrow>
+      <AppHeadline variant="italic" as="p" :key="loadingMsgIdx" class="compat-loading__msg">
         {{ loadingMessages[loadingMsgIdx] }}
-      </p>
+      </AppHeadline>
       <div class="progress-track">
         <div class="compat-loading__fill" />
       </div>
-      <p v-if="apiError" class="compat-loading__error annotation">
+      <AppCaption v-if="apiError" variant="default" as="p" class="compat-loading__error">
         {{ t('quizErrorMsg') }}
         <button class="compat-loading__retry" @click="runApiCall">{{ t('quizRetry') }}</button>
-      </p>
+      </AppCaption>
     </div>
   </div>
 
@@ -73,11 +73,11 @@
       <Transition :name="transitionDir" mode="out-in">
         <div :key="currentStep" class="analysis-step">
 
-          <p class="label-caps analysis-step__label">Step {{ currentStep }}</p>
+          <AppEyebrow class="analysis-step__label">Step {{ currentStep }}</AppEyebrow>
 
-          <h1 class="analysis-step__headline font-display-italic">
+          <AppHeadline variant="italic" as="h1" class="analysis-step__headline">
             {{ stepConfig[currentStep - 1]?.headline }}
-          </h1>
+          </AppHeadline>
 
           <div class="analysis-step__rule" />
 
@@ -116,7 +116,7 @@
                 type="time"
                 class="editorial-input"
               />
-              <p class="field-hint annotation">{{ t('quizBirthTimeHint') }}</p>
+              <AppCaption variant="default" as="p" class="field-hint">{{ t('quizBirthTimeHint') }}</AppCaption>
             </template>
 
             <!-- ── Step 2: Their birth details ── -->
@@ -124,12 +124,12 @@
 
               <!-- Your sign reveal card -->
               <div class="compat-reveal" :class="{ 'compat-reveal--visible': revealVisible }">
-                <p class="label-caps compat-reveal__label">{{ t('quizYouLabel') }}</p>
-                <p class="compat-reveal__sign font-serif">
+                <AppEyebrow class="compat-reveal__label">{{ t('quizYouLabel') }}</AppEyebrow>
+                <AppSubhead variant="default" as="p" class="compat-reveal__sign">
                   <ZodiacSymbol v-if="mySunSign" :sign="mySunSign.name" :size="22" />
                   {{ mySunSign?.name }}
-                </p>
-                <p class="compat-reveal__path annotation">{{ t('quizLifePath') }} {{ myLifePath }}</p>
+                </AppSubhead>
+                <AppCaption variant="default" as="p" class="compat-reveal__path">{{ t('quizLifePath') }} {{ myLifePath }}</AppCaption>
               </div>
 
               <label class="field-label label-caps" for="compat-their-dob">{{ t('quizTheirBirthDate') }}</label>
@@ -163,32 +163,32 @@
                 type="time"
                 class="editorial-input"
               />
-              <p class="field-hint annotation">{{ t('quizBirthTimeHint') }}</p>
+              <AppCaption variant="default" as="p" class="field-hint">{{ t('quizBirthTimeHint') }}</AppCaption>
             </template>
 
             <!-- ── Step 3: Confirm & calculate ── -->
             <template v-else-if="currentStep === 3">
               <div class="compat-dual-reveal" :class="{ 'compat-dual-reveal--visible': revealVisible }">
                 <div class="compat-dual-reveal__card">
-                  <p class="label-caps compat-reveal__label">{{ t('quizYouLabel') }}</p>
-                  <p class="compat-reveal__sign font-serif">
+                  <AppEyebrow class="compat-reveal__label">{{ t('quizYouLabel') }}</AppEyebrow>
+                  <AppSubhead variant="default" as="p" class="compat-reveal__sign">
                     <ZodiacSymbol v-if="mySunSign" :sign="mySunSign.name" :size="20" />
                     {{ mySunSign?.name }}
-                  </p>
-                  <p class="compat-reveal__path annotation">{{ t('quizLifePath') }} {{ myLifePath }}</p>
+                  </AppSubhead>
+                  <AppCaption variant="default" as="p" class="compat-reveal__path">{{ t('quizLifePath') }} {{ myLifePath }}</AppCaption>
                 </div>
                 <div class="compat-dual-reveal__sep font-display">×</div>
                 <div class="compat-dual-reveal__card">
-                  <p class="label-caps compat-reveal__label">{{ t('quizThemLabel') }}</p>
-                  <p class="compat-reveal__sign font-serif">
+                  <AppEyebrow class="compat-reveal__label">{{ t('quizThemLabel') }}</AppEyebrow>
+                  <AppSubhead variant="default" as="p" class="compat-reveal__sign">
                     <ZodiacSymbol v-if="theirSunSign" :sign="theirSunSign.name" :size="20" />
                     {{ theirSunSign?.name }}
-                  </p>
-                  <p class="compat-reveal__path annotation">{{ t('quizLifePath') }} {{ theirLifePath }}</p>
+                  </AppSubhead>
+                  <AppCaption variant="default" as="p" class="compat-reveal__path">{{ t('quizLifePath') }} {{ theirLifePath }}</AppCaption>
                 </div>
               </div>
 
-              <p class="field-hint annotation" style="margin-top: 0;">{{ t('quizSynastryHint') }}</p>
+              <AppCaption variant="default" as="p" class="field-hint" style="margin-top: 0;">{{ t('quizSynastryHint') }}</AppCaption>
             </template>
 
           </div>
@@ -240,7 +240,7 @@
       </Transition>
     </div>
 
-    <p class="trust-footer annotation">{{ t('quizTrustFooter') }}</p>
+    <AppCaption variant="default" as="p" class="trust-footer">{{ t('quizTrustFooter') }}</AppCaption>
 
   </div>
 </template>

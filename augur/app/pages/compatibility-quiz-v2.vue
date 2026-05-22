@@ -8,7 +8,7 @@
     </div>
 
     <!-- ── Hero headline ── -->
-    <h1 class="v2-headline font-display-italic" v-html="heroVariant.headline" />
+    <AppHeadline variant="italic" as="h1" class="v2-headline" v-html="heroVariant.headline" />
 
     <!-- ── Sub-tagline (first sentence of variant body) ── -->
     <p class="v2-tagline">{{ heroSubtagline }}</p>
@@ -16,14 +16,14 @@
     <!-- ── Trust line ── -->
     <div class="v2-stars">
       <span class="v2-stars__glyphs" aria-label="5 out of 5 stars">★★★★★</span>
-      <span class="v2-stars__label annotation">30,847 readings · 4.9 rating</span>
+      <AppCaption variant="default" class="v2-stars__label">30,847 readings · 4.9 rating</AppCaption>
     </div>
 
     <!-- ── Quiz card ── -->
     <div class="v2-card">
       <div class="v2-card__header">
-        <span class="label-caps v2-card__step">Step 1 of 4</span>
-        <span class="annotation v2-card__pct">25% complete</span>
+        <AppEyebrow as="span" class="v2-card__step">Step 1 of 4</AppEyebrow>
+        <AppCaption variant="default" class="v2-card__pct">25% complete</AppCaption>
       </div>
 
       <div class="v2-card__progress-track">
@@ -66,18 +66,18 @@
     <!-- ── Trust strip ── -->
     <div class="v2-strip">
       <div class="v2-strip__item">
-        <span class="v2-strip__title label-caps">Free preview</span>
-        <span class="v2-strip__sub annotation">No payment yet</span>
+        <AppEyebrow as="span" class="v2-strip__title">Free preview</AppEyebrow>
+        <AppCaption variant="default" class="v2-strip__sub">No payment yet</AppCaption>
       </div>
       <div class="v2-strip__sep" aria-hidden="true" />
       <div class="v2-strip__item">
-        <span class="v2-strip__title label-caps">Swiss Ephemeris</span>
-        <span class="v2-strip__sub annotation">NASA-grade data</span>
+        <AppEyebrow as="span" class="v2-strip__title">Swiss Ephemeris</AppEyebrow>
+        <AppCaption variant="default" class="v2-strip__sub">NASA-grade data</AppCaption>
       </div>
       <div class="v2-strip__sep" aria-hidden="true" />
       <div class="v2-strip__item">
-        <span class="v2-strip__title label-caps">60 seconds</span>
-        <span class="v2-strip__sub annotation">From start to result</span>
+        <AppEyebrow as="span" class="v2-strip__title">60 seconds</AppEyebrow>
+        <AppCaption variant="default" class="v2-strip__sub">From start to result</AppCaption>
       </div>
     </div>
 
