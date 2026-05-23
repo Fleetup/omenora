@@ -25,6 +25,18 @@ export default defineNuxtConfig({
         weights: [400, 500, 600, 700],
         styles: ['normal', 'italic'],
       },
+      {
+        name: 'Onest',
+        provider: 'google',
+        weights: [200, 300, 400, 500, 600],
+        styles: ['normal'],
+      },
+      {
+        name: 'Geist Mono',
+        provider: 'google',
+        weights: [300, 400, 500],
+        styles: ['normal'],
+      },
     ],
     defaults: {
       weights: [400, 500, 600, 700],
