@@ -1,6 +1,99 @@
 :root {
 
-  /* ── SPACING (8pt scale) ── */
+  /* ═══════════════════════════════════════════════════════════════
+     PHASE B — OMENORA DESIGN SYSTEM TOKENS
+     Source of truth: OMENORA_DESIGN_SYSTEM.md
+     Locked: May 23, 2026 (B1.2)
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── NEW: --omn-* canonical tokens (SD1) ── */
+
+  /* Surfaces */
+  --omn-bg-page:        #121214;
+  --omn-bg-primary:     #252528;
+  --omn-bg-elevated:    #2F2F33;
+  --omn-bg-interactive: #3A3A3F;
+
+  /* Borders */
+  --omn-border-subtle:   #2F2F33;
+  --omn-border-primary:  #3A3A3F;
+  --omn-border-emphasis: #4A4A50;
+
+  /* Text */
+  --omn-text-primary:   #F2EDE5;
+  --omn-text-secondary: #A8A19A;
+  --omn-text-tertiary:  #6B655E;
+
+  /* Accent */
+  --omn-accent:       #A87D4E;
+  --omn-accent-quiet: #6E5536;
+
+  /* CTA */
+  --omn-cta:      #E8763A;
+  --omn-cta-hover: #FF8856;
+  --omn-cta-text: #121214;
+
+  /* Functional */
+  --omn-success: #7B9472;
+  --omn-error:   #D14B3D;
+
+  /* Fonts */
+  --omn-font-display: 'Onest', system-ui, -apple-system, sans-serif;
+  --omn-font-body:    'Onest', system-ui, -apple-system, sans-serif;
+  --omn-font-mono:    'Geist Mono', 'JetBrains Mono', 'SF Mono', monospace;
+
+  /* ── TYPE SCALE (Major Third 1.25, SD2) ── */
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 15px;
+  --text-md:   17px;
+  --text-lg:   19px;
+  --text-xl:   24px;
+  --text-2xl:  30px;
+  --text-3xl:  38px;
+  --text-4xl:  48px;
+  --text-5xl:  60px;
+  --text-6xl:  76px;
+  --text-7xl:  96px;
+
+  /* ── PER-STEP LINE HEIGHT (SD2) ── */
+  --leading-xs:   1.4;
+  --leading-sm:   1.5;
+  --leading-base: 1.6;
+  --leading-md:   1.6;
+  --leading-lg:   1.55;
+  --leading-xl:   1.4;
+  --leading-2xl:  1.25;
+  --leading-3xl:  1.15;
+  --leading-4xl:  1.08;
+  --leading-5xl:  1.05;
+  --leading-6xl:  1.0;
+  --leading-7xl:  0.96;
+
+  /* ── LEGACY LEADING (SD5 — kept; atoms still consume) ── */
+  --leading-tight:   1.1;
+  --leading-snug:    1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+
+  /* ── LETTER SPACING (SD3) ── */
+  --tracking-tight:    -0.035em;
+  --tracking-snug:     -0.025em;
+  --tracking-normal:   -0.012em;
+  --tracking-body:     -0.005em;
+  --tracking-wide:      0.02em;
+  --tracking-mono:      0.02em;
+  --tracking-caps:      0.18em;
+  --tracking-wordmark:  0.34em;
+  --tracking-widest:   var(--tracking-caps);
+
+  /* ── FONT WEIGHT ── */
+  --weight-light:    300;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+
+  /* ── SPACING (4px base unit, SD4) ── */
   --space-0:  0;
   --space-1:  4px;
   --space-2:  8px;
@@ -12,137 +105,57 @@
   --space-10: 40px;
   --space-12: 48px;
   --space-16: 64px;
-  --space-20: 80px;
   --space-24: 96px;
   --space-32: 128px;
+  --space-40: 160px;
 
-  /* ── BREAKPOINTS ── */
-  /* Media queries must use literal values (mobile-first cascade).
-     These CSS vars are for JS observers / container queries only.
-     Reference:
-       sm  640px  — large phones landscape
-       md  768px  — tablets
-       lg  1024px — small laptops
-       xl  1280px — desktops
-       2xl 1536px — wide screens                            */
-  --bp-sm:  640px;
-  --bp-md:  768px;
-  --bp-lg:  1024px;
-  --bp-xl:  1280px;
-  --bp-2xl: 1536px;
+  /* ── ALIASES — legacy tokens → --omn-* (SD6) ── */
+  --surface-base:     var(--omn-bg-page);
+  --surface-raised:   var(--omn-bg-primary);
+  --surface-elevated: var(--omn-bg-elevated);
+  --text-primary:     var(--omn-text-primary);
+  --text-secondary:   var(--omn-text-secondary);
+  --text-tertiary:    var(--omn-text-tertiary);
+  --accent-gold:      var(--omn-accent);
+  --font-sans:        var(--omn-font-body);
+  --text-display:     var(--text-7xl);
 
-  /* ── TYPOGRAPHY (mobile-first) ── */
-  /* Size scale */
-  --text-2xs:     11px;
-  --text-xs:      12px;
-  --text-sm:      14px;
-  --text-base:    16px;
-  --text-md:      18px;
-  --text-lg:      20px;
-  --text-xl:      24px;
-  --text-2xl:     28px;
-  --text-3xl:     36px;
-  --text-4xl:     44px;
-  --text-5xl:     56px;
-  --text-6xl:     72px;
-  --text-display: 96px;
+  /* ── ACCENT DERIVATIVES (SD7 — recomputed for new bronze #A87D4E) ── */
+  --accent-gold-dim:  rgba(168, 125, 78, 0.55);
+  --accent-gold-glow: rgba(168, 125, 78, 0.18);
 
-  /* Line height */
-  --leading-none:    1;
-  --leading-tight:   1.1;
-  --leading-snug:    1.25;
-  --leading-normal:  1.5;
-  --leading-relaxed: 1.625;
+  /* ── BUG FIX: --accent-dim alias (SD8) ──
+     daily.vue, calendar.vue, subscribe.vue reference this token with no
+     definition — currently rendering nothing. Aliases to --omn-accent-quiet.
+     Short-lived: removed in B1.4 / B1.6 rename waves. ── */
+  --accent-dim: var(--omn-accent-quiet);
 
-  /* Letter spacing */
-  --tracking-tighter: -0.04em;
-  --tracking-tight:   -0.02em;
-  --tracking-normal:  -0.01em;
-  --tracking-wide:    0.02em;
-  --tracking-widest:  0.16em;
+  /* ── CTA (SD9 — legacy values preserved; shift deferred to B1.3) ── */
+  --cta-primary: #D94668;
+  --cta-hover:   #E55879;
+  --cta-glow:    rgba(217, 70, 104, 0.32);
+  --shadow-glow-cta: 0 0 32px var(--cta-glow);
 
-  /* Font weight */
-  --weight-light:    300;
-  --weight-regular:  400;
-  --weight-medium:   500;
-  --weight-semibold: 600;
-  --weight-bold:     700;
-
-  /* Font family */
-  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
-  /* ── COLOR — SURFACES ── */
-  --surface-base:     #0A0A0F;
-  --surface-raised:   #13131A;
-  --surface-elevated: #1C1C26;
-  --surface-overlay:  rgba(10, 10, 15, 0.85);
-
-  /* ── COLOR — TEXT ── */
-  --text-primary:   #FAFAFA;
-  --text-secondary: #A8A8B3;
-  --text-tertiary:  #6B6B7A;
-  --text-disabled:  #3D3D47;
-  --text-inverse:   #0A0A0F;
-
-  /* ── COLOR — ACCENT ── */
-  --accent-gold:      #C9A84C;
-  --accent-gold-dim:  rgba(201, 168, 76, 0.55);
-  --accent-gold-glow: rgba(201, 168, 76, 0.18);
-
-  /* ── COLOR — CTA ── */
-  --cta-primary:  #D94668;
-  --cta-hover:    #E55879;
-  --cta-active:   #C73D5E;
-  --cta-glow:     rgba(217, 70, 104, 0.32);
-  --cta-disabled: rgba(217, 70, 104, 0.3);
-
-  /* ── COLOR — STATE ── */
-  --state-success: #5BA876;
-  --state-error:   #D94A4A;
-  --state-warning: #D9A24A;
-  --state-info:    #6B8AD9;
-
-  /* ── COLOR — BORDER ── */
+  /* ── BORDER (SD10 — legacy rgba-on-dark; per-page decisions in B1.4–B1.6) ── */
   --border-faint:   rgba(250, 250, 250, 0.06);
   --border-subtle:  rgba(250, 250, 250, 0.10);
   --border-default: rgba(250, 250, 250, 0.15);
   --border-strong:  rgba(250, 250, 250, 0.25);
 
-  /* ── MOTION ── */
+  /* ── MOTION (SD11 — kept at current values; reconciled in B1.3 / B3) ── */
   --duration-fast: 150ms;
   --duration-base: 300ms;
-  --duration-slow: 600ms;
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
 
-  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-
-  /* ── RADIUS ── */
-  --radius-none: 0;
+  /* ── RADIUS (SD11 — kept at current values) ── */
   --radius-sm:   4px;
   --radius-md:   8px;
   --radius-lg:   12px;
-  --radius-xl:   16px;
   --radius-full: 9999px;
 
-  /* ── Z-INDEX ── */
-  --z-base:     1;
-  --z-dropdown: 10;
-  --z-sticky:   20;
-  --z-modal:    100;
-  --z-toast:    200;
-  --z-tooltip:  300;
-
-  /* ── SHADOWS ── */
-  --shadow-sm:        0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md:        0 4px 12px rgba(0, 0, 0, 0.25);
-  --shadow-lg:        0 12px 32px rgba(0, 0, 0, 0.35);
-  --shadow-glow-cta:  0 0 32px var(--cta-glow);
-  --shadow-glow-gold: 0 0 24px var(--accent-gold-glow);
-
-  /* ── TEMPORARY: vestigial tokens from 96f7f91 hero work.
-     Used by index.vue hero section and CTAButton.vue keyframe.
-     Will be removed in P5 when hero is rebuilt. Do not add new
-     references to these. ── */
+  /* ── VESTIGIAL (SD12 — D.2 cutover removal) ──
+     Used by index.vue hero and CTAButton.vue keyframe.
+     Do not add new references. Remove when index.vue hero is rebuilt. ── */
   --text-hero-headline: clamp(34px, 9vw, 52px);
   --text-subhead:       clamp(19px, 4.5vw, 24px);
   --text-pricing-meta:  12px;
@@ -254,12 +267,6 @@
 .section-inner {
   max-width: 1400px;
   margin: 0 auto;
-}
-
-@media (min-width: 1280px) {
-  :root {
-    --section-h-pad: 80px;
-  }
 }
 
 /* ── Autofill override (all inputs) ── */

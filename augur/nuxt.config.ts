@@ -21,12 +21,6 @@ export default defineNuxtConfig({
   fonts: {
     families: [
       {
-        name: 'Geist',
-        provider: 'google',
-        weights: [400, 500, 600, 700],
-        styles: ['normal', 'italic'],
-      },
-      {
         name: 'Onest',
         provider: 'google',
         weights: [200, 300, 400, 500, 600],
