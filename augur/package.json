@@ -30,6 +30,7 @@
     "html2canvas": "^1.4.1",
     "inngest": "^4.2.5",
     "jspdf": "^4.2.1",
+    "motion-v": "^2.2.1",
     "nuxt": "^4.4.2",
     "nuxt-gtag": "^4.1.0",
     "pdfkit": "^0.18.0",

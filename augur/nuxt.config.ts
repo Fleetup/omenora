@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
+    'motion-v/nuxt',
     ...(process.env.SENTRY_DSN ? ['@nuxtjs/sentry'] : []),
   ],
 
