@@ -209,11 +209,13 @@ All padding, margin, and gap values use multiples of 4px:
 
 **Composition:**
 - Two-column split: 1.3fr | 1fr (asymmetric, weighting left)
-- Left: vol/issue notation (mono caps), eyebrow (mono caps, bronze + rule prefix), display headline (76px Onest 300 with one phrase at 500 weight), subhead (19px Onest 400), CTA row, trust line at bottom
+- Left: three-level pre-headline stack — (1) vol/issue notation line (mono caps, optional), (2) eyebrow with bronze rule prefix (mono caps), (3) display headline (76px Onest 300 with one phrase at 500 weight) — followed by subhead (19px Onest 400), CTA row, trust line at bottom
 - Right: anchor frame containing celestial imagery (Plate I notation, 4:5 aspect)
 - Sticky-top nav: wordmark left, links right, single outlined sign-in button
 
 **Why this works for cold TikTok traffic:** Vol/issue notation establishes "this is a publication, not a startup" in the first 50ms. Massive light-weight headline with one phrase boldened creates the "considered declaration" register. Trust line shows three different reasons to trust (12,400 readings / 4 traditions / 7-day refund) before the user scrolls. Plate I anchor treats AI-generated imagery like a museum object, not a decorative background.
+
+**Optional secondary CTA:** P-01 supports a ghost CTA alongside the primary in the hero CTA row, but only when it links to a meaningfully different product entry point (e.g., "Explore compatibility" leading to the compatibility flow). Never use a ghost CTA that leads to the same destination as the primary, and never use "Learn more" as ghost copy. The two-button row is a primary purchase action paired with an alternative path — not competing paths to the same outcome.
 
 **When to use:** Homepage hero only.
 
@@ -224,6 +226,7 @@ All padding, margin, and gap values use multiples of 4px:
 - Mono caps eyebrow with bronze rule prefix
 - Section headline 48-60px Onest 300 with one phrase boldened
 - Lede paragraph 19px Onest 400, max 620px wide
+- Optional drop cap on the first letter of the lede paragraph: rendered in --omn-accent at significantly larger size than the lede body. Used sparingly — at most once per page, on the section that introduces the product's core value proposition. See AppDropCap atom (§4a).
 - 80-120px space below before next content block
 
 **When to use:** Introducing every major content section.
@@ -235,6 +238,7 @@ All padding, margin, and gap values use multiples of 4px:
 - 16-24px gap between cards (NOT touching — gap creates premium register)
 - Each card: bronze mono caps numeral (01/02/03) + small label, 24-28px Onest 400 title, 14-15px body, footer with mono caps category + sage trust tag
 - Cards lift 2px on hover with subtle border emphasis
+- **Background numeral variant:** a large faded numeral (01/02/03) may be rendered in the background of each card at significantly larger size than the card title, in --omn-accent at low opacity. This variant replaces the requirement for card-level imagery and is the default for Phase B homepage — the three-card grid carries visual weight without external assets. The imagery variant remains available for other surfaces.
 
 **Why this works:** Cold-traffic users skim before committing. Three-card grids are the universally-understood "here are three things" pattern. Numerals establish discrete-and-countable, reducing cognitive load.
 
@@ -301,8 +305,8 @@ We anchor with specific counters (12,400 readings written, 96% would recommend) 
 - Single column, content within 880px max-width
 - Bronze mono caps eyebrow + section head (P-02 style)
 - 6-8 questions in expandable list format (closed by default)
-- Each item: 17-19px Onest 500 question with chevron right indicator, expanded answer 15-17px Onest 400, hairline divider between items
-- Click expands; multiple can be open simultaneously (never accordion-replace)
+- Uses native `<details>`/`<summary>` elements — no JavaScript accordion. Multiple items can be open simultaneously; do not auto-collapse siblings.
+- Each item: 17-19px Onest 500 question with a plus (+) indicator that rotates to × when the item is open, expanded answer 15-17px Onest 400, hairline divider between items
 
 **Why this works:** FAQ absorbs objections so users don't bounce on unspoken questions. Closed-by-default keeps section visually quiet. Multiple-open behavior respects user agency.
 
@@ -330,6 +334,40 @@ We anchor with specific counters (12,400 readings written, 96% would recommend) 
 - Internal padding 80-120px top, 32-48px bottom
 
 **Why this works:** Footers are conversion infrastructure — users check them to verify legitimacy ("does this have real legal name and ToS?"). Premium footers signal "real publication, not landing page scam."
+
+### P-11: Edge Markers (Left-margin section numerals)
+
+**Composition:**
+- Ambient infrastructure on section wrappers — not a standalone section
+- A rotated mono-caps text element in the left page margin showing the section number and short label (e.g., "01 / ASTROLOGY, COMPUTED")
+- Renders at small size (--text-xs) in --omn-text-tertiary, rotated 90deg counter-clockwise, positioned absolute-left outside the content column
+- Hidden below 768px (mobile)
+
+**Why this works:** Provides a navigational reference layer for desktop users who scan vertically before committing to read. Reinforces publication register without adding visual noise to the content columns.
+
+**When to use:** Every major homepage section consistently. Applied via the BaseSection wrapper, not hand-coded per section.
+
+---
+
+## 4a. Shared Atoms
+
+Atoms that are built in B1.3 and consumed across section patterns. Each atom is a single-purpose Vue component accepting props for content and minor variants. No atom encodes layout — that is the molecule's job.
+
+### AppPlateFrame
+
+Plate-framed image with corner brackets, Plate notation ("Plate I"), and caption. Aspect ratio is configurable with 4:5 as default. Corner brackets render in --omn-accent-quiet. Plate notation renders in --omn-font-mono at --text-xs / --tracking-caps / --omn-text-tertiary. Used in P-01, P-05, and any section that needs anchored imagery.
+
+### AppKVTable
+
+Receipt-style key/value rows with hairline dividers. Keys in --omn-font-mono, mono caps, --omn-text-tertiary. Values right-aligned in --omn-text-primary. Used in P-06 paywall card for the Reading / Length / Delivery rows.
+
+### AppDropCap
+
+First-letter drop cap rendered in --omn-accent at significantly larger size than the surrounding body. Used in P-02 ledes — at most once per page, on the section that introduces the product's core value proposition.
+
+### AppTrustTag
+
+Small mono-caps text with a sage (--omn-success) circular dot prefix. Used inside card footers and trust microcopy rows. Examples: "● COMPUTED", "● SECURE CHECKOUT", "● 7-DAY REFUND". Replaces badge-style trust icons. See also P-06 and P-03 for usage context.
 
 ---
 
@@ -394,12 +432,14 @@ Alternating background rhythm produces visual chapters without explicit dividers
 
 ### Imagery placement
 
-Exactly three imagery moments on the homepage:
+Plate-framed imagery is optional, not required. The homepage MAY render with zero plates if the section composition carries sufficient visual weight through typography, atmospheric background, and card numerals. The plate frame (see AppPlateFrame atom, §4a) remains a defined pattern for sections that benefit from anchored imagery.
+
+When plates are used, the typical sequence is:
 1. Hero anchor (Plate I)
 2. Western tradition deep-dive (Plate II)
 3. Vedic/BaZi composite deep-dive (Plate III)
 
-No background bleeds. No decorative scattered elements. Three plates, three controlled moments. More imagery = more decoration = less premium.
+No background bleeds on content sections. No decorative scattered elements. More imagery = more decoration = less premium.
 
 ---
 
@@ -521,9 +561,10 @@ Motion intensity decreases as user scrolls. Hero is loudest (must grab attention
 
 ### Visual
 
-- No glassmorphism (dated, reads 2020-2022)
+- No glassmorphism (dated, reads 2020-2022) — **exception:** the sticky nav bar MAY use a glass/blur backdrop as a functional legibility tool when the hero has a full-bleed background. Glassmorphism is forbidden on cards, paywall, modals, and all content surfaces without exception.
 - No 3D floating objects in hero (AI-built site tell in 2026)
 - No nebula backgrounds, gradient washes, starfield atmospheres
+- No background bleeds on content sections — **hero only exception:** the hero section MAY use a full-bleed atmospheric background image when paired with a horizontal scrim and vertical vignette stack for text legibility. The image must register in warm bronze/charcoal tones only. Explicitly forbidden: purple, violet, indigo, or blue washes (AI category cliché).
 - No "Sparkles, Stars, Wand" icons (astrology cliche)
 - No AI purple gradients (violet/indigo/blue washes — dated AI category color)
 - No emoji in body copy
@@ -546,6 +587,7 @@ Motion intensity decreases as user scrolls. Hero is loudest (must grab attention
 - No scroll-jacking (forcing scroll speed, fixed sections that won't release)
 - No bounce/spring easing on text reveals (reads consumer app)
 - No autoplay video heroes (-7% conversion average, kills LCP)
+- No plate-framed video on the homepage for Phase B. Any video treatment is deferred to Phase B+1 or later.
 - No parallax on text content (only images and atmospheric layers)
 - No background video loops on hero (same as autoplay)
 - No cursor-following effects unless they directly serve interaction
@@ -637,7 +679,7 @@ Handled separately, later:
 - Paywall page section sequence (8 sections)
 - Three-CTA architecture with identical copy
 - Section background rhythm
-- Imagery placement (3 plates on homepage)
+- Imagery placement (plates optional on homepage; AppPlateFrame pattern defined in §4a)
 
 **Motion + technical:**
 - Lenis + GSAP stack
@@ -647,8 +689,17 @@ Handled separately, later:
 - Performance budget (Core Web Vitals targets)
 
 **Discipline:**
-- Anti-pattern list (24 explicit "do not do" items)
+- Anti-pattern list (24 explicit "do not do" items), with narrow exceptions for sticky nav glassmorphism and hero background image (see §8)
 - Implementation order (8 sequential steps)
+
+**New locked patterns (B1.2.7):**
+- P-11: Edge markers (left-margin section numerals, desktop only)
+- AppTrustTag: sage dot + mono caps trust label atom (§4a)
+- AppPlateFrame, AppKVTable, AppDropCap: named atoms defined in §4a
+- Background numeral variant for P-03 three-card grid (default for Phase B)
+- Drop cap on P-02 ledes via AppDropCap (at most once per page)
+- Ghost secondary CTA in P-01 hero (with constraints; see §4 P-01)
+- Hero background image permitted under scrim/vignette constraints (see §8)
 
 ### Open for refinement during implementation
 
