@@ -42,6 +42,12 @@
   --omn-font-body:    'Onest', system-ui, -apple-system, sans-serif;
   --omn-font-mono:    'Geist Mono', 'JetBrains Mono', 'SF Mono', monospace;
 
+  /* Motion (design system §7) */
+  --omn-ease:           cubic-bezier(0.2, 0, 0, 1);
+  --omn-duration-fast:  150ms;
+  --omn-duration-base:  300ms;
+  --omn-duration-slow:  600ms;
+
   /* ── TYPE SCALE (Major Third 1.25, SD2) ── */
   --text-xs:   11px;
   --text-sm:   13px;
