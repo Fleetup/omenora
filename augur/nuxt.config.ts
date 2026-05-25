@@ -102,6 +102,8 @@ export default defineNuxtConfig({
         'X-XSS-Protection': '1; mode=block',
       },
     },
+    '/compatibility-quiz-legacy': { redirect: { to: '/compatibility-quiz', statusCode: 301 } },
+    '/compatibility-quiz-v2': { redirect: { to: '/compatibility-quiz', statusCode: 301 } },
   },
 
   // @ts-ignore - @nuxtjs/sentry module extends NuxtConfig type
