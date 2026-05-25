@@ -231,7 +231,8 @@
   --radius-sm:   4px;
   --radius-md:   8px;
   --radius-lg:   12px;
-  --radius-full: 9999px;
+  --radius-full:   9999px;  /* pill / capsule buttons */
+  --radius-circle:   50%;   /* perfect circle on equal-dimension dot/avatar elements */
 
   /* ── VESTIGIAL (SD12 — D.2 cutover removal) ──
      Used by index.vue hero and CTAButton.vue keyframe.
