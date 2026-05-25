@@ -205,15 +205,16 @@ All padding, margin, and gap values use multiples of 4px:
 
 10 reusable composition patterns. Every section on the homepage uses one of these.
 
-### P-01: Hero (Asymmetric)
+### P-01: Hero (Single-Column)
 
 **Composition:**
-- Two-column split: 1.3fr | 1fr (asymmetric, weighting left)
-- Left: three-level pre-headline stack — (1) vol/issue notation line (mono caps, optional), (2) eyebrow with bronze rule prefix (mono caps), (3) display headline (76px Onest 300 with one phrase at 500 weight) — followed by subhead (19px Onest 400), CTA row, trust line at bottom
-- Right: anchor frame containing celestial imagery (Plate I notation, 4:5 aspect)
+- Single-column left-weighted text layout with band--diag full-bleed atmospheric background
+- Three-level pre-headline stack — (1) vol/issue notation line (mono caps, optional), (2) eyebrow with bronze rule prefix (mono caps), (3) display headline (76px Onest 300 with one phrase at 500 weight) — followed by subhead (19px Onest 400), CTA row, trust line at bottom
+- Content capped at 640px max-width, left-aligned within the column
+- Atmospheric imagery is a full-bleed background rendered via band--diag section class with CSS mask gradient overlay — not a separate column or plate frame
 - Sticky-top nav: wordmark left, links right, single outlined sign-in button
 
-**Why this works for cold TikTok traffic:** Vol/issue notation establishes "this is a publication, not a startup" in the first 50ms. Massive light-weight headline with one phrase boldened creates the "considered declaration" register. Trust line shows three different reasons to trust (12,400 readings / 4 traditions / 7-day refund) before the user scrolls. Plate I anchor treats AI-generated imagery like a museum object, not a decorative background.
+**Why this works for cold TikTok traffic:** Vol/issue notation establishes "this is a publication, not a startup" in the first 50ms. Massive light-weight headline with one phrase boldened creates the "considered declaration" register. Trust line shows three different reasons to trust (12,400 readings / 4 traditions / 7-day refund) before the user scrolls.
 
 **Optional secondary CTA:** P-01 supports a ghost CTA alongside the primary in the hero CTA row, but only when it links to a meaningfully different product entry point (e.g., "Explore compatibility" leading to the compatibility flow). Never use a ghost CTA that leads to the same destination as the primary, and never use "Learn more" as ghost copy. The two-button row is a primary purchase action paired with an alternative path — not competing paths to the same outcome.
 
@@ -226,7 +227,7 @@ All padding, margin, and gap values use multiples of 4px:
 - Mono caps eyebrow with bronze rule prefix
 - Section headline 48-60px Onest 300 with one phrase boldened
 - Lede paragraph 19px Onest 400, max 620px wide
-- Optional drop cap on the first letter of the lede paragraph: rendered in --omn-accent at significantly larger size than the lede body. Used sparingly — at most once per page, on the section that introduces the product's core value proposition. See AppDropCap atom (§4a).
+- Optional drop cap on the first letter of the lede paragraph: rendered via CSS `::first-letter` pseudo-element in --omn-accent at significantly larger size than the lede body. Used sparingly — at most once per page, on the section that introduces the product's core value proposition. No Vue component — applied as a CSS class on the lede paragraph element.
 - 80-120px space below before next content block
 
 **When to use:** Introducing every major content section.
@@ -255,15 +256,16 @@ All padding, margin, and gap values use multiples of 4px:
 
 **When to use:** Paywall headline, closing CTA section, founders pledge.
 
-### P-05: Side-by-Side (Image | Text)
+### P-05: Side-by-Side (Text | Text)
 
 **Composition:**
 - Two-column split: 1fr | 1fr at desktop, stack at tablet/mobile
-- Image side: plate frame with imagery (Plate notation, aspect varies)
-- Text side: bronze mono caps eyebrow, 38-48px Onest 300 head with one phrase boldened, 15-17px body, optional inline link
+- Left column: bronze mono caps eyebrow, 38-48px Onest 300 head with one phrase boldened, 15-17px body, optional KV list
+- Right column: same structure — eyebrow, head, body, optional KV list
+- Columns are parallel text blocks presenting two related subjects (e.g., Western/Vedic vs BaZi/Tarot/Numerology, or two aspects of a method)
 - 80-100px gutter between columns
 
-**When to use:** Deep-dive explanations (the Swiss Ephemeris engine, the four-tradition method, the natal reading sample).
+**When to use:** Traditions section (comparative editorial moments where two disciplines are presented side by side). No imagery column — visual weight comes from typography and atmospheric section background.
 
 ### P-06: Pricing/Paywall Card
 
@@ -353,17 +355,9 @@ We anchor with specific counters (12,400 readings written, 96% would recommend) 
 
 Atoms that are built in B1.3 and consumed across section patterns. Each atom is a single-purpose Vue component accepting props for content and minor variants. No atom encodes layout — that is the molecule's job.
 
-### AppPlateFrame
-
-Plate-framed image with corner brackets, Plate notation ("Plate I"), and caption. Aspect ratio is configurable with 4:5 as default. Corner brackets render in --omn-accent-quiet. Plate notation renders in --omn-font-mono at --text-xs / --tracking-caps / --omn-text-tertiary. Used in P-01, P-05, and any section that needs anchored imagery.
-
 ### AppKVTable
 
 Receipt-style key/value rows with hairline dividers. Keys in --omn-font-mono, mono caps, --omn-text-tertiary. Values right-aligned in --omn-text-primary. Used in P-06 paywall card for the Reading / Length / Delivery rows.
-
-### AppDropCap
-
-First-letter drop cap rendered in --omn-accent at significantly larger size than the surrounding body. Used in P-02 ledes — at most once per page, on the section that introduces the product's core value proposition.
 
 ### AppTrustTag
 
@@ -432,12 +426,7 @@ Alternating background rhythm produces visual chapters without explicit dividers
 
 ### Imagery placement
 
-Plate-framed imagery is optional, not required. The homepage MAY render with zero plates if the section composition carries sufficient visual weight through typography, atmospheric background, and card numerals. The plate frame (see AppPlateFrame atom, §4a) remains a defined pattern for sections that benefit from anchored imagery.
-
-When plates are used, the typical sequence is:
-1. Hero anchor (Plate I)
-2. Western tradition deep-dive (Plate II)
-3. Vedic/BaZi composite deep-dive (Plate III)
+Imagery on the homepage is rendered exclusively as full-bleed atmospheric backgrounds via the band--diag section class with CSS mask gradient overlays. No plate frames, no column-side image panels. The atmospheric image recedes behind text and is never the focal point — it adds depth and warmth without competing with the headline.
 
 No background bleeds on content sections. No decorative scattered elements. More imagery = more decoration = less premium.
 
@@ -506,7 +495,7 @@ If a motion moment doesn't do one of these four things, it's decoration. Cut it.
 
 Three depth layers:
 - Background (0.6x scroll speed): subtle atmospheric layer, low opacity
-- Anchor frame (0.85x): plate frame containing imagery
+- Atmospheric background layer (0.85x): full-bleed band--diag background image
 - Type and CTA (1.0x): normal scroll speed
 
 Total parallax depth: bottom of hero sees ~40px offset from foreground. Subtle, not dramatic. Reference: Apple product pages.
@@ -580,14 +569,14 @@ Motion intensity decreases as user scrolls. Hero is loudest (must grab attention
 - No newsletter signup as primary CTA path (we sell readings; daily horoscope is separate)
 - No "Learn More" buttons that lead to nothing actionable
 - No icon + bullet feature lists (use P-05 or P-03 instead)
-- No iPhone-frame product screenshots (use plate-framed premium imagery)
+- No iPhone-frame product screenshots (use atmospheric band--diag backgrounds or card-based imagery)
 
 ### Motion
 
 - No scroll-jacking (forcing scroll speed, fixed sections that won't release)
 - No bounce/spring easing on text reveals (reads consumer app)
 - No autoplay video heroes (-7% conversion average, kills LCP)
-- No plate-framed video on the homepage for Phase B. Any video treatment is deferred to Phase B+1 or later.
+- No video on the homepage for Phase B. Any video treatment is deferred to Phase B+1 or later.
 - No parallax on text content (only images and atmospheric layers)
 - No background video loops on hero (same as autoplay)
 - No cursor-following effects unless they directly serve interaction
@@ -616,10 +605,10 @@ Total page weight (homepage)         < 1.5MB on first load
 
 ### How layout decisions affect performance
 
-- Plate-frame imagery uses fixed `aspect-ratio` properties — prevents CLS
+- Band--diag background images use fixed `aspect-ratio` on the containing section — prevents CLS
 - Variable font animation uses `font-variation-settings` on single font file — cheaper than multiple weight files
 - Onest and Geist Mono subset to Latin extended only, WOFF2 format, preloaded for hero
-- All imagery AVIF with WebP fallback; plate frames load eager (above-fold), tradition plates lazy (below-fold)
+- All imagery AVIF with WebP fallback; hero band--diag image loads eager (above-fold), section backgrounds lazy (below-fold)
 - Lenis and GSAP loaded async after Critical CSS paints — scroll works native before motion enhances
 
 ---
@@ -629,7 +618,7 @@ Total page weight (homepage)         < 1.5MB on first load
 Production sequence when moving from this document to code:
 
 1. **Token migration.** Codify visual system into `editorial.css`. Install Onest + Geist Mono via Nuxt font loading. Verify nothing breaks.
-2. **Atom expansion.** Augment existing 7 atoms (AppHeadline, AppSubhead, AppBody, AppCaption, AppEyebrow, AppButton, AppDivider) to support new type scale + tracking variables. Build missing atoms identified during build (likely: AppPlateFrame, AppCard).
+2. **Atom expansion.** Augment existing 7 atoms (AppHeadline, AppSubhead, AppBody, AppCaption, AppEyebrow, AppButton, AppDivider) to support new type scale + tracking variables. Build missing atoms identified during build (likely: AppCard).
 3. **Section pattern molecules.** Build each P-01 through P-10 as reusable Vue component. Test in isolation. No content yet.
 4. **Homepage assembly.** Compose homepage from molecules. Add real copy (placeholder if final copy isn't written). No motion yet.
 5. **Motion layer.** Add Lenis + GSAP. Implement choreography from §7. Test with `prefers-reduced-motion`.
@@ -650,7 +639,7 @@ Handled separately, later:
 - **Natal reading display page** — long-form 4,800-word content; uses `--width-prose` (640px) as core measure; needs typography-heavy design distinct from homepage marketing
 - **Mobile app layout** — separate codebase, React Native, native iOS conventions
 - **Email templates** — different design conventions, separate document
-- **Imagery commissioning** — what specific images go in Plate I/II/III; handled in Phase B4
+- **Imagery commissioning** — what specific atmospheric images go in hero and section backgrounds; handled in Phase B4
 - **Final hero copy** — current text is placeholder; real copy workshopped separately
 
 ---
@@ -679,7 +668,7 @@ Handled separately, later:
 - Paywall page section sequence (8 sections)
 - Three-CTA architecture with identical copy
 - Section background rhythm
-- Imagery placement (plates optional on homepage; AppPlateFrame pattern defined in §4a)
+- Imagery placement (atmospheric band--diag backgrounds; no plate frames on homepage)
 
 **Motion + technical:**
 - Lenis + GSAP stack
@@ -695,9 +684,9 @@ Handled separately, later:
 **New locked patterns (B1.2.7):**
 - P-11: Edge markers (left-margin section numerals, desktop only)
 - AppTrustTag: sage dot + mono caps trust label atom (§4a)
-- AppPlateFrame, AppKVTable, AppDropCap: named atoms defined in §4a
+- AppKVTable: named atom defined in §4a
 - Background numeral variant for P-03 three-card grid (default for Phase B)
-- Drop cap on P-02 ledes via AppDropCap (at most once per page)
+- Drop cap on P-02 ledes via CSS ::first-letter on lede paragraph (at most once per page)
 - Ghost secondary CTA in P-01 hero (with constraints; see §4 P-01)
 - Hero background image permitted under scrim/vignette constraints (see §8)
 
