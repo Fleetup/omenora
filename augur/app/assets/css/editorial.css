@@ -130,15 +130,39 @@
   --accent-gold-dim:  rgba(168, 125, 78, 0.55);
   --accent-gold-glow: rgba(168, 125, 78, 0.18);
 
+  /* ──────────────────────────────────────────────────────────
+     Accent alpha variants — sourced from sandbox overlay system
+     (see COLOR_TOKEN_AUDIT.md §6.7)
+     ────────────────────────────────────────────────────────── */
+  --omn-accent-a05: rgba(168, 125, 78, 0.05);
+  --omn-accent-a06: rgba(168, 125, 78, 0.06);
+  --omn-accent-a08: rgba(168, 125, 78, 0.08);
+  --omn-accent-a10: rgba(168, 125, 78, 0.10);
+  --omn-accent-a18: rgba(168, 125, 78, 0.18);
+
+  /* ──────────────────────────────────────────────────────────
+     Legacy aliases — point old token names at canonical --omn-*
+     tokens. To be removed in P7 cleanup after consumer files
+     are migrated to canonical names.
+     ────────────────────────────────────────────────────────── */
+  --color-ink:       var(--omn-text-primary);
+  --color-ink-mid:   var(--omn-text-secondary);
+  --color-ink-faint: var(--omn-text-tertiary);
+  --color-ink-ghost: var(--omn-border-subtle);
+  --color-gold:      var(--omn-accent);
+  --color-gold-dim:  var(--omn-accent-quiet);
+  --color-gold-glow: var(--omn-accent-a18);
+
   /* ── BUG FIX: --accent-dim alias (SD8) ──
      daily.vue, calendar.vue, subscribe.vue reference this token with no
      definition — currently rendering nothing. Aliases to --omn-accent-quiet.
      Short-lived: removed in B1.4 / B1.6 rename waves. ── */
   --accent-dim: var(--omn-accent-quiet);
 
-  /* ── CTA (SD9 — legacy values preserved; shift deferred to B1.3) ── */
-  --cta-primary: #D94668;
-  --cta-hover:   #E55879;
+  /* ── CTA (SD9 — aliased to --omn-cta system per B1.2.11; names
+     retained until P7 consumer-migration cleanup) ── */
+  --cta-primary: var(--omn-cta);
+  --cta-hover:   var(--omn-cta-hover);
   --cta-glow:    rgba(217, 70, 104, 0.32);
   --shadow-glow-cta: 0 0 32px var(--cta-glow);
 
@@ -165,7 +189,7 @@
   --text-hero-headline: clamp(34px, 9vw, 52px);
   --text-subhead:       clamp(19px, 4.5vw, 24px);
   --text-pricing-meta:  12px;
-  --ease-out-expo:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-expo:      var(--omn-ease);
 
 }
 
