@@ -116,6 +116,18 @@
   --weight-medium:   500;
   --weight-semibold: 600;
 
+  /* ──────────────────────────────────────────────────────────
+     Fluid typography scale — clamp-based sizes for editorial
+     headlines and display moments. Atoms use the fixed
+     --text-N scale above for predictable internal sizing.
+     (Sourced from sandbox typography system)
+     ────────────────────────────────────────────────────────── */
+  /* Extended letter-spacing — values used 3+ times in sandbox
+     that fall between existing named tracking tokens */
+  --tracking-prose: 0.04em;   /* subhead, KV labels, wide-mono eyebrows */
+  --tracking-label: 0.14em;   /* paywall keys, counter labels, section labels */
+  --tracking-mid:   0.12em;   /* quote ctx, KV list spans, FAQ eyebrows */
+
   /* ── SPACING (4px base unit, SD4) ── */
   --space-0:  0;
   --space-1:  4px;
