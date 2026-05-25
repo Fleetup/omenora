@@ -28,6 +28,11 @@
     `href` set → <a>     (external link, `to` takes precedence)
     neither    → <button>
 
+  Variant → sandbox class mapping:
+    primary   → .btn .btn--cta   (filled orange, --omn-cta background)
+    secondary → .btn .btn--ghost (transparent, --omn-border-primary outline)
+    ghost     → .btn .btn--ghost (same as secondary — both are outline style)
+
   Animation:
     Primary variant: ctaPulse entrance animation on mount.
     Callers may set `--cta-pulse-delay` via inline style for staggered
@@ -139,47 +144,52 @@ const elementAttrs = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* 10px gap between label and arrow — optical constant from CTAButton.
-     No --space-* token maps to exactly 10px (scale goes 8px→12px). */
-  gap: 10px;
+  /* gap: --space-2 (8px) between label and arrow; optical match to sandbox */
+  gap: var(--space-2);
   text-decoration: none;
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--omn-font-display);
   font-weight: var(--weight-medium);
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
+  letter-spacing: var(--tracking-body);
   line-height: var(--leading-tight);
   white-space: nowrap;
-  border: none;
-  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  border-radius: 0;
   user-select: none;
   transition:
-    background-color var(--duration-fast) var(--ease-out),
-    color           var(--duration-fast) var(--ease-out),
-    border-color    var(--duration-fast) var(--ease-out),
-    transform       var(--duration-base) var(--ease-out),
-    box-shadow      var(--duration-base) var(--ease-out);
+    background    var(--omn-duration-micro) var(--omn-ease),
+    color         var(--omn-duration-micro) var(--omn-ease),
+    border-color  var(--omn-duration-micro) var(--omn-ease),
+    transform     var(--omn-duration-fast)  var(--omn-ease);
 }
+
+.app-button:hover { transform: translateY(-1px); }
+.app-button:active { transform: translateY(0); }
 
 /* ── Sizes ── */
+/* sm: one step smaller than sandbox md (sandbox: 18px 30px, font 16px) */
 .app-button--sm {
   padding: var(--space-3) var(--space-6);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
 }
 
+/* md: matches sandbox .btn--cta exactly (18px 30px, 16px font) */
 .app-button--md {
   padding: var(--space-4) var(--space-8);
-  font-size: var(--text-xs);
+  font-size: var(--text-base);
 }
 
+/* lg: one step larger than sandbox md */
 .app-button--lg {
   padding: var(--space-5) var(--space-10);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 /* ── Full width ── */
 .app-button--full {
   width: 100%;
+  padding-top: var(--space-5);
+  padding-bottom: var(--space-5);
 }
 
 /* ── Label ── */
@@ -190,8 +200,8 @@ const elementAttrs = computed(() => {
 
 /* ── Arrow ── */
 .app-button__arrow {
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
+  font-family: var(--omn-font-display);
+  font-size: inherit;
   line-height: 1;
   margin-top: -1px; /* optical vertical alignment with label text */
 }
@@ -200,77 +210,77 @@ const elementAttrs = computed(() => {
 .app-button__loading {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .app-button__dot {
   display: inline-block;
   width: 4px;
   height: 4px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-circle);
   background-color: currentColor;
-  animation: appButtonDotPulse 1200ms var(--ease-out) infinite;
+  animation: appButtonDotPulse 1200ms var(--omn-ease) infinite;
 }
 
 .app-button__dot:nth-child(1) { animation-delay: 0ms; }
-.app-button__dot:nth-child(2) { animation-delay: 200ms; }
-.app-button__dot:nth-child(3) { animation-delay: 400ms; }
+.app-button__dot:nth-child(2) { animation-delay: var(--omn-stagger-2); }
+.app-button__dot:nth-child(3) { animation-delay: var(--omn-stagger-4); }
 
 @keyframes appButtonDotPulse {
   0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
   40%           { opacity: 1;    transform: scale(1); }
 }
 
-/* ── PRIMARY variant ── */
+/* ── PRIMARY variant (→ sandbox .btn--cta) ── */
 .app-button--primary {
-  background-color: var(--cta-primary);
-  color: var(--text-primary);
+  background: var(--omn-cta);
+  color: var(--omn-cta-text);
   /* Entrance pulse animation. --cta-pulse-delay can be set by callers via
      inline style for staggered entrances (e.g. style="--cta-pulse-delay:400ms"). */
-  animation: ctaPulse var(--duration-base) cubic-bezier(0.16, 1, 0.3, 1) var(--cta-pulse-delay, 800ms) 1;
+  animation: ctaPulse var(--omn-duration-base) var(--omn-ease) var(--cta-pulse-delay, 800ms) 1;
   animation-fill-mode: backwards;
 }
 
 .app-button--primary:hover:not(:disabled):not([aria-disabled="true"]):not(.app-button--disabled) {
-  background-color: var(--cta-hover);
-  box-shadow: var(--shadow-glow-cta);
-  transform: translateY(-2px);
+  background: var(--omn-cta-hover);
 }
 
 .app-button--primary:active:not(:disabled):not([aria-disabled="true"]):not(.app-button--disabled) {
   transform: translateY(0);
 }
 
-/* ── SECONDARY variant ── */
+/* ── SECONDARY variant (→ sandbox .btn--ghost) ── */
 .app-button--secondary {
-  background-color: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--omn-text-primary);
+  border-color: var(--omn-border-primary);
 }
 
 .app-button--secondary:hover:not(:disabled):not([aria-disabled="true"]):not(.app-button--disabled) {
-  border-color: var(--text-primary);
+  border-color: var(--omn-border-emphasis);
+  background: var(--omn-bg-elevated);
 }
 
 .app-button--secondary:active:not(:disabled):not([aria-disabled="true"]):not(.app-button--disabled) {
   transform: translateY(0);
 }
 
-/* ── GHOST variant ── */
+/* ── GHOST variant (→ sandbox .btn--ghost, same as secondary) ── */
 .app-button--ghost {
-  background-color: transparent;
-  color: var(--text-secondary);
-  border: none;
+  background: transparent;
+  color: var(--omn-text-primary);
+  border-color: var(--omn-border-primary);
 }
 
 .app-button--ghost:hover:not(:disabled):not([aria-disabled="true"]):not(.app-button--disabled) {
-  color: var(--text-primary);
+  border-color: var(--omn-border-emphasis);
+  background: var(--omn-bg-elevated);
 }
 
 /* ── FOCUS-VISIBLE (all variants) ── */
 .app-button:focus-visible {
-  outline: 2px solid var(--accent-gold);
-  outline-offset: 2px;
+  outline: 2px solid var(--omn-cta);
+  outline-offset: 3px;
 }
 
 /* ── DISABLED state ── */
@@ -289,9 +299,9 @@ const elementAttrs = computed(() => {
 
 /* ── ENTRANCE PULSE animation (primary only) ── */
 @keyframes ctaPulse {
-  0%   { box-shadow: 0 0 0 0 var(--accent-gold-glow); }
-  55%  { box-shadow: 0 0 32px 2px var(--accent-gold-glow); }
-  100% { box-shadow: 0 0 0 0 var(--accent-gold-glow); }
+  0%   { box-shadow: 0 0 0 0 var(--omn-accent-a18); }
+  55%  { box-shadow: 0 0 32px 2px var(--omn-accent-a18); }
+  100% { box-shadow: 0 0 0 0 var(--omn-accent-a18); }
 }
 
 /* ── REDUCED MOTION ── */
@@ -302,12 +312,7 @@ const elementAttrs = computed(() => {
   }
 
   /* Replace transform-based hover with opacity-only */
-  .app-button--primary:hover:not(:disabled):not([aria-disabled="true"]):not(.app-button--disabled) {
-    transform: none;
-    opacity: 0.9;
-  }
-
-  .app-button--secondary:hover:not(:disabled):not([aria-disabled="true"]):not(.app-button--disabled) {
+  .app-button:hover:not(:disabled):not([aria-disabled="true"]):not(.app-button--disabled) {
     transform: none;
     opacity: 0.9;
   }
@@ -315,16 +320,15 @@ const elementAttrs = computed(() => {
   /* Zero out transform durations */
   .app-button {
     transition:
-      background-color var(--duration-fast) var(--ease-out),
-      color           var(--duration-fast) var(--ease-out),
-      border-color    var(--duration-fast) var(--ease-out),
-      transform       0ms var(--ease-out),
-      box-shadow      0ms var(--ease-out);
+      background    var(--omn-duration-micro) var(--omn-ease),
+      color         var(--omn-duration-micro) var(--omn-ease),
+      border-color  var(--omn-duration-micro) var(--omn-ease),
+      transform     0ms                       var(--omn-ease);
   }
 
   /* Slow loading dots to a near-static fade, no scale */
   .app-button__dot {
-    animation: appButtonDotPulseReduced 2400ms var(--ease-out) infinite;
+    animation: appButtonDotPulseReduced 2400ms var(--omn-ease) infinite;
   }
 
   .app-button__dot:nth-child(1) { animation-delay: 0ms; }
