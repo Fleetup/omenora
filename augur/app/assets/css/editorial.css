@@ -115,6 +115,27 @@
   --space-32: 128px;
   --space-40: 160px;
 
+  /* ──────────────────────────────────────────────────────────
+     Fluid spacing scale — section-level rhythm, used by
+     molecules and pages. Atoms continue to use the fixed
+     --space-N scale above for internal spacing.
+     (Sourced from sandbox spacing system)
+     ────────────────────────────────────────────────────────── */
+  --space-section: clamp(96px, 12vw, 192px);  /* between major bands */
+  --space-block:   clamp(56px, 7vw, 96px);    /* between content blocks within a section */
+  --space-content: clamp(32px, 4vw, 56px);    /* between paragraphs / atoms */
+  --space-gap:     clamp(20px, 2.4vw, 32px);  /* grid gutters / card gaps */
+  --space-edge:    clamp(20px, 5vw, 64px);    /* container outer padding */
+
+  /* ──────────────────────────────────────────────────────────
+     Container widths — max-width scale for content columns.
+     ────────────────────────────────────────────────────────── */
+  --width-prose:    640px;   /* long-form reading (natal reading body) */
+  --width-content:  880px;   /* headlines, hero copy, paywall */
+  --width-section: 1192px;   /* standard content sections (12 col) */
+  --width-bleed:   1320px;   /* hero, full-width imagery */
+  --width-edge:     100vw;   /* page-bleed atmospheric sections (rare) */
+
   /* ── ALIASES — legacy tokens → --omn-* (SD6) ── */
   --surface-base:     var(--omn-bg-page);
   --surface-raised:   var(--omn-bg-primary);
