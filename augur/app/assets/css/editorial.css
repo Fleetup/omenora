@@ -48,6 +48,23 @@
   --omn-duration-base:  300ms;
   --omn-duration-slow:  600ms;
 
+  /* ──────────────────────────────────────────────────────────
+     Extended motion scale — durations, easings, and stagger
+     values that repeat 3+ times in the sandbox. Single-use
+     motion values stay inline at the consumer.
+     (Sourced from sandbox motion system)
+     ────────────────────────────────────────────────────────── */
+  --omn-duration-micro:  200ms;  /* micro-interactions: nav links, button bg/border */
+  --omn-duration-card:   250ms;  /* component hover: cards, panels */
+  --omn-duration-reveal: 400ms;  /* cursor follower, mobile CTA, ticker fade */
+  --omn-duration-draw:   700ms;  /* section hairline draw, underline reveal */
+  /* stagger ladder — used via --reveal-delay inline style on v-reveal children */
+  --omn-stagger-1:  40ms;
+  --omn-stagger-2:  80ms;
+  --omn-stagger-3: 120ms;
+  --omn-stagger-4: 160ms;
+  --omn-stagger-5: 240ms;
+
   /* ── TYPE SCALE (Major Third 1.25, SD2) ── */
   --text-xs:   11px;
   --text-sm:   13px;
