@@ -114,7 +114,7 @@ function setRevealEl(el: Element | ComponentPublicInstance | null) {
 const sectionClass = computed(() => [
   'section-centered',
   `section-centered--${props.bandTone}`,
-  { 'section-centered--marked': !!props.marker },
+  { 'is-marked': !!props.marker },
   { 'is-revealed': isRevealed.value },
 ])
 </script>
@@ -181,30 +181,6 @@ const sectionClass = computed(() => [
 .section-centered--page    { background: var(--omn-bg-page); }
 .section-centered--primary { background: var(--omn-bg-primary); }
 
-/* ── Bronze hairline (::before) ──
-   Draws left-to-right on reveal. Mirrors SectionLede + SectionThreeCardGrid.
-   1px height — structural. gradient: accent-quiet → accent → accent-quiet
-   → transparent. scaleX(0→1): 1100ms + 100ms delay. */
-.section-centered--marked::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 1px;
-  width: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--omn-accent-quiet) 0%,
-    var(--omn-accent)       30%,
-    var(--omn-accent-quiet) 70%,
-    transparent             100%
-  );
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 1100ms var(--omn-ease) 100ms;
-  z-index: 3;
-}
-.section-centered--marked.is-revealed::before { transform: scaleX(1); }
 
 /* ── Section marker (§ NN + name) ──
    Absolutely positioned top-left. Two AppCaption mono spans stacked.
@@ -348,7 +324,6 @@ const sectionClass = computed(() => [
 /* ── Reduced motion ──
    Disable all transitions. Render final states immediately. */
 @media (prefers-reduced-motion: reduce) {
-  .section-centered--marked::before,
   .section-centered__marker,
   .section-centered__eyebrow,
   .section-centered__heading,
@@ -356,7 +331,6 @@ const sectionClass = computed(() => [
   .section-centered__actions {
     transition: none;
   }
-  .section-centered--marked.is-revealed::before { transform: scaleX(1); }
   .section-centered__marker { opacity: 1; transform: none; }
   .section-centered__eyebrow,
   .section-centered__heading,

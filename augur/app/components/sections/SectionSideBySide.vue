@@ -142,7 +142,7 @@ function setRevealEl(el: Element | ComponentPublicInstance | null) {
 const sectionClass = computed(() => [
   'section-sbs',
   `section-sbs--${props.bandTone}`,
-  { 'section-sbs--marked': !!props.marker },
+  { 'is-marked': !!props.marker },
   { 'is-revealed': isRevealed.value },
 ])
 
@@ -261,29 +261,6 @@ function columnRevealDelay(index: number): string {
 .section-sbs--page    { background: var(--omn-bg-page); }
 .section-sbs--primary { background: var(--omn-bg-primary); }
 
-/* ── Bronze hairline (::before) ──
-   Draws left-to-right on reveal. Mirrors SectionLede/ThreeCardGrid/Centered.
-   1px height — structural. scaleX(0→1): 1100ms + 100ms delay. */
-.section-sbs--marked::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 1px;
-  width: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--omn-accent-quiet) 0%,
-    var(--omn-accent)       30%,
-    var(--omn-accent-quiet) 70%,
-    transparent             100%
-  );
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 1100ms var(--omn-ease) 100ms;
-  z-index: 3;
-}
-.section-sbs--marked.is-revealed::before { transform: scaleX(1); }
 
 /* ── Section marker (§ NN + name) ──
    Absolutely positioned top-left. Mirrors SectionLede exact pattern.
@@ -476,7 +453,6 @@ function columnRevealDelay(index: number): string {
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .section-sbs--marked::before,
   .section-sbs__marker,
   .section-sbs__eyebrow,
   .section-sbs__heading,
@@ -484,7 +460,6 @@ function columnRevealDelay(index: number): string {
   .section-sbs__col {
     transition: none;
   }
-  .section-sbs--marked.is-revealed::before { transform: scaleX(1); }
   .section-sbs__marker { opacity: 1; transform: none; }
   .section-sbs__eyebrow,
   .section-sbs__heading,

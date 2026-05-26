@@ -109,7 +109,7 @@ function setRevealEl(el: Element | ComponentPublicInstance | null) {
 const sectionClass = computed(() => [
   'section-lede',
   `section-lede--${props.bandTone}`,
-  { 'section-lede--marked': !!props.marker },
+  { 'is-marked': !!props.marker },
   { 'is-revealed': isRevealed.value },
 ])
 </script>
@@ -185,30 +185,6 @@ const sectionClass = computed(() => [
 .section-lede--page    { background: var(--omn-bg-page); }
 .section-lede--primary { background: var(--omn-bg-primary); }
 
-/* ── Bronze hairline (::before) ──
-   Draws left-to-right on reveal. Gradient: accent-quiet → accent →
-   accent-quiet → transparent (sandbox exact pattern).
-   1px height structural — no token. */
-.section-lede--marked::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 1px;
-  width: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--omn-accent-quiet) 0%,
-    var(--omn-accent)       30%,
-    var(--omn-accent-quiet) 70%,
-    transparent             100%
-  );
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 1100ms var(--omn-ease) 100ms;
-  z-index: 3;
-}
-.section-lede--marked.is-revealed::before { transform: scaleX(1); }
 
 /* ── Section marker (§ NN + name) ──
    Absolutely positioned top-left. Two AppCaption mono spans stacked.
@@ -331,14 +307,12 @@ const sectionClass = computed(() => [
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .section-lede--marked::before,
   .section-lede__marker,
   .section-lede__eyebrow,
   .section-lede__heading,
   .section-lede__body {
     transition: none;
   }
-  .section-lede--marked.is-revealed::before { transform: scaleX(1); }
   .section-lede__marker { opacity: 1; transform: none; }
   .section-lede__eyebrow,
   .section-lede__heading,

@@ -349,6 +349,53 @@
   margin: 0 auto;
 }
 
+/* ── Section marker hairline utility ──
+   Shared bronze hairline ::before pattern. Applied to any section
+   root that carries a section marker (§ NN). The hairline draws
+   left-to-right when the parent receives the `is-revealed` class
+   (added by useReveal on intersection).
+
+   Usage: add `is-marked` to the section root class binding when
+   a marker prop is provided. The `is-revealed` class is added by
+   useReveal — no additional logic needed in the consumer.
+
+   Extracted from SectionLede, SectionThreeCardGrid,
+   SectionCenteredStatement, SectionSideBySide (was verbatim-
+   duplicated in all 4). */
+.is-marked {
+  position: relative;
+}
+.is-marked::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--omn-accent-quiet) 0%,
+    var(--omn-accent)       30%,
+    var(--omn-accent-quiet) 70%,
+    transparent             100%
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1100ms var(--omn-ease) 100ms;
+  z-index: 3;
+}
+.is-marked.is-revealed::before {
+  transform: scaleX(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-marked::before {
+    transition: none;
+  }
+  .is-marked.is-revealed::before {
+    transform: scaleX(1);
+  }
+}
+
 /* ── Autofill override (all inputs) ── */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,

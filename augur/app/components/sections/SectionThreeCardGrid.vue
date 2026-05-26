@@ -136,7 +136,7 @@ function setRevealEl(el: Element | ComponentPublicInstance | null) {
 const sectionClass = computed(() => [
   'section-tcg',
   `section-tcg--${props.bandTone}`,
-  { 'section-tcg--marked': !!props.marker },
+  { 'is-marked': !!props.marker },
   { 'is-revealed': isRevealed.value },
 ])
 </script>
@@ -224,30 +224,6 @@ const sectionClass = computed(() => [
 .section-tcg--page    { background: var(--omn-bg-page); }
 .section-tcg--primary { background: var(--omn-bg-primary); }
 
-/* ── Bronze hairline (::before) ──
-   Draws left-to-right on reveal. Mirrors SectionLede exact pattern.
-   1px height — structural. Gradient: accent-quiet → accent → accent-quiet
-   → transparent. scaleX(0→1) transition: 1100ms + 100ms delay. */
-.section-tcg--marked::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 1px;
-  width: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--omn-accent-quiet) 0%,
-    var(--omn-accent)       30%,
-    var(--omn-accent-quiet) 70%,
-    transparent             100%
-  );
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 1100ms var(--omn-ease) 100ms;
-  z-index: 3;
-}
-.section-tcg--marked.is-revealed::before { transform: scaleX(1); }
 
 /* ── Section marker (§ NN + name) ──
    Absolutely positioned top-left. Two AppCaption mono spans stacked.
@@ -404,7 +380,6 @@ const sectionClass = computed(() => [
    The is-revealed class still applies (set by useReveal) so
    opacity/transform values remain correct without animation. */
 @media (prefers-reduced-motion: reduce) {
-  .section-tcg--marked::before,
   .section-tcg__marker,
   .section-tcg__eyebrow,
   .section-tcg__heading,
@@ -412,7 +387,6 @@ const sectionClass = computed(() => [
   .section-tcg__card {
     transition: none;
   }
-  .section-tcg--marked.is-revealed::before { transform: scaleX(1); }
   .section-tcg__marker { opacity: 1; transform: none; }
   .section-tcg__eyebrow,
   .section-tcg__heading,
