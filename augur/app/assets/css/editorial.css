@@ -214,7 +214,6 @@
   --cta-primary: var(--omn-cta);
   --cta-hover:   var(--omn-cta-hover);
   --cta-glow:    rgba(217, 70, 104, 0.32);
-  --shadow-glow-cta: 0 0 32px var(--cta-glow);
 
   /* ── BORDER (SD10 — legacy rgba-on-dark; per-page decisions in B1.4–B1.6) ── */
   --border-faint:   rgba(250, 250, 250, 0.06);
