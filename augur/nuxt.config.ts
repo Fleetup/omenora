@@ -194,11 +194,11 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
         { rel: 'manifest', href: '/site.webmanifest' },
         { rel: 'sitemap', type: 'application/xml', href: 'https://omenora.com/sitemap.xml' },
-        // Hero LCP imagery — preload AVIF (the format the <picture> actually serves to modern
-        // browsers). `type` gates the hint so non-AVIF browsers ignore it and fall back to the
-        // WebP <source> without a wasted double-download. Per-breakpoint via media.
-        { rel: 'preload', as: 'image', href: '/images/hero/hero-bg-mobile.avif', type: 'image/avif', media: '(max-width: 768px)', fetchpriority: 'high' },
-        { rel: 'preload', as: 'image', href: '/images/hero/hero-bg-desktop.avif', type: 'image/avif', media: '(min-width: 769px)', fetchpriority: 'high' },
+        // Hero LCP imagery — preload the WebP background used by SectionHero
+        // (CSS background-image via --section-img custom property). A single
+        // preload without `media` is correct here because SectionHero always
+        // renders the same image at all breakpoints; position shifts via CSS.
+        { rel: 'preload', as: 'image', href: '/images/hero/Cosmic-gold-ascension.webp', type: 'image/webp', fetchpriority: 'high' },
         // Performance: Preconnect to critical third-party domains
         { rel: 'preconnect', href: 'https://js.stripe.com' },
         { rel: 'preconnect', href: 'https://api.stripe.com' },

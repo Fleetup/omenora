@@ -48,7 +48,7 @@
  *                                            Ignored if formatter is provided.
  */
 
-import { ref, watch, onUnmounted, isRef, readonly, type Ref } from 'vue'
+import { ref, watch, onMounted, onUnmounted, isRef, readonly, type Ref } from 'vue'
 
 export interface UseCounterAnimationOptions {
   duration?: number
@@ -90,31 +90,31 @@ export function useCounterAnimation(
   const target = isRef(targetValue) ? targetValue : ref(targetValue)
   const formatter = options.formatter ?? makeDefaultFormatter(precision)
 
-  // Start with the final formatted value on SSR; on client starts at 0.
-  const display = ref<string>(
-    typeof window === 'undefined'
-      ? formatter(target.value)
-      : formatter(0),
-  )
+  // Render the final formatted value on both server and client so that
+  // the SSR-rendered HTML matches the client's initial hydration state.
+  // The animation resets to 0 and runs only inside onMounted (client-only).
+  const display = ref<string>(formatter(target.value))
 
   let rafId: number | null = null
 
   function cancelAnimation(): void {
     if (rafId !== null) {
-      if (typeof window !== 'undefined') cancelAnimationFrame(rafId)
+      cancelAnimationFrame(rafId)
       rafId = null
     }
   }
 
   function runAnimation(): void {
-    if (typeof window === 'undefined') return
     cancelAnimation()
 
-    // Reduced-motion: instant final state.
+    // Reduced-motion: keep the already-displayed final value, no rAF.
     if (prefersReducedMotion()) {
       display.value = formatter(target.value)
       return
     }
+
+    // Reset to 0 immediately before the animation begins.
+    display.value = formatter(0)
 
     const startTime = performance.now()
     const endValue = target.value
@@ -144,26 +144,26 @@ export function useCounterAnimation(
     rafId = requestAnimationFrame(step)
   }
 
-  // If trigger is provided, watch for it to become true once.
-  // If no trigger, start immediately on mount (typeof window guard).
-  if (trigger) {
-    const stop = watch(
-      trigger,
-      (val) => {
-        if (val) {
-          runAnimation()
-          stop() // fire once — no re-run on subsequent changes
-        }
-      },
-      { immediate: true },
-    )
-  } else {
-    // No trigger: run immediately (client only).
-    if (typeof window !== 'undefined') {
-      // Defer one tick so the component is mounted.
+  // All animation logic runs inside onMounted (client-only).
+  // The display ref already holds the correct final value for SSR and
+  // initial hydration paint; the watcher/animation starts after mount.
+  onMounted(() => {
+    if (trigger) {
+      const stop = watch(
+        trigger,
+        (val) => {
+          if (val) {
+            runAnimation()
+            stop() // fire once — no re-run on subsequent changes
+          }
+        },
+        { immediate: true },
+      )
+    } else {
+      // No trigger: run immediately after mount.
       Promise.resolve().then(runAnimation)
     }
-  }
+  })
 
   onUnmounted(cancelAnimation)
 
