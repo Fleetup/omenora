@@ -293,7 +293,7 @@ withDefaults(defineProps<{
 .app-card__num {
   font-family: var(--omn-font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.18em;
+  letter-spacing: var(--tracking-caps);
   color: var(--omn-accent);
   margin: 0;
   position: relative;
@@ -306,7 +306,7 @@ withDefaults(defineProps<{
 .app-card__label {
   font-family: var(--omn-font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.18em;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--omn-text-tertiary);
   margin: 0;
@@ -362,7 +362,7 @@ withDefaults(defineProps<{
   border-top: 1px solid var(--omn-border-subtle);
   font-family: var(--omn-font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-label);
   color: var(--omn-text-tertiary);
   text-transform: uppercase;
   position: relative;
