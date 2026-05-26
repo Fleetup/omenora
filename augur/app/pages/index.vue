@@ -12,7 +12,7 @@
       <template #eyebrow>The complete natal reading</template>
       <template #em>personal</template>
       <template #actions>
-        <AppButton variant="cta" :href="heroVariant.primaryCtaTo">{{ heroVariant.primaryCtaText }}</AppButton>
+        <AppButton variant="primary" :href="heroVariant.primaryCtaTo">{{ heroVariant.primaryCtaText }}</AppButton>
         <AppButton v-if="heroVariant.secondaryCtaText" variant="ghost" :href="heroVariant.secondaryCtaTo!">{{ heroVariant.secondaryCtaText }}</AppButton>
       </template>
       <template #trust>
@@ -202,7 +202,7 @@ const heroVariant = computed<HeroVariant>(() => {
   return resolveHeroVariant(creative)
 })
 
-const heroDisplayLines = ['Astrology that', 'feels', 'not generic.'] as const
+const heroDisplayLines = ['Astrology that', 'feels', 'not generic.']
 const heroSubhead = 'Birth-chart insights, compatibility guidance and daily cosmic patterns — computed from your exact planetary positions, read in a calm, premium register.'
 
 // ── Reading count ────────────────────────────
@@ -246,7 +246,7 @@ const paywallItems: PaywallItem[] = [
   { key: 'Delivery',   value: 'Instant on completion' },
   { key: 'Locked in',  value: 'Founding-member pricing for life' },
 ]
-const paywallTrust = ['Secure checkout', 'Stripe protected', 'Refundable within 7 days'] as const
+const paywallTrust = ['Secure checkout', 'Stripe protected', 'Refundable within 7 days']
 
 // ── Social proof ─────────────────────────────
 const socialCounters: CounterItem[] = [
@@ -272,7 +272,7 @@ const faqItems: FaqItem[] = [
 ]
 
 // ── Final CTA trust ──────────────────────────
-const finalCtaTrust = ['Secure checkout', '7-day refund', 'Stripe protected'] as const
+const finalCtaTrust = ['Secure checkout', '7-day refund', 'Stripe protected']
 
 // ── Footer ───────────────────────────────────
 const footerColumns = [
