@@ -39,6 +39,18 @@ html, body {
   min-height: 100vh;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+/* Sticky header is 64px desktop / 56px mobile + breathing room. */
+[id] { scroll-margin-top: 80px; }
+@media (max-width: 899px) {
+  [id] { scroll-margin-top: 72px; }
+}
+
 /* Keep noise texture — subtle on bone background */
 body::before {
   content: '';

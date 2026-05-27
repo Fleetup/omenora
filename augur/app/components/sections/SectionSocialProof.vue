@@ -120,11 +120,17 @@ const props = withDefaults(defineProps<{
   testimonials: TestimonialItem[]
   bandTone?: 'page' | 'primary'
   marker?: string
+  bgImage?: string
+  bgImagePos?: string
+  bgImagePosMobile?: string
 }>(), {
   headingVariant: 'lg',
   introBody: undefined,
   bandTone: 'primary',
   marker: undefined,
+  bgImage: undefined,
+  bgImagePos: 'center 62%',
+  bgImagePosMobile: 'center 70%',
 })
 
 const { el: revealEl, isRevealed } = useReveal({ threshold: 0.1 })
@@ -133,12 +139,25 @@ function setRevealEl(el: Element | ComponentPublicInstance | null) {
   revealEl.value = el instanceof HTMLElement ? el : null
 }
 
+const hasBg = computed(() => !!props.bgImage)
+
 const sectionClass = computed(() => [
   'section-ssp',
   `section-ssp--${props.bandTone}`,
   { 'is-marked': !!props.marker },
   { 'is-revealed': isRevealed.value },
+  { 'diag-band': hasBg.value },
+  { 'diag-band--primary': hasBg.value && props.bandTone === 'primary' },
 ])
+
+const sectionStyle = computed(() => {
+  if (!props.bgImage) return undefined
+  return {
+    '--section-img': `url('${props.bgImage}')`,
+    '--section-img-pos': props.bgImagePos,
+    '--section-img-pos-mobile': props.bgImagePosMobile,
+  }
+})
 
 // ── Counter animation setup ──
 // Each numeric CounterItem gets a useCounterAnimation ref.
@@ -180,6 +199,17 @@ counterAnimations.forEach((anim, i) => {
   }
 })
 
+// Keep string-valued counters reactive to prop changes (e.g. live values
+// fetched from an API after mount). Numeric counters are still owned by
+// their useCounterAnimation refs and skipped here.
+watch(() => props.counters, (newCounters) => {
+  newCounters.forEach((item, i) => {
+    if (counterAnimations[i] === null) {
+      counterDisplays.value[i] = String(item.value)
+    }
+  })
+}, { deep: true })
+
 // Stagger per counter item: 240ms base + 80ms per index.
 function counterRevealDelay(index: number): string {
   return `${240 + index * 80}ms`
@@ -195,7 +225,12 @@ function testimonialRevealDelay(index: number): number {
   <section
     :ref="setRevealEl"
     :class="sectionClass"
+    :style="sectionStyle"
   >
+    <!-- Diagonal background layers (only when bgImage is set) -->
+    <div v-if="hasBg" class="diag-band__image" aria-hidden="true" />
+    <div v-if="hasBg" class="diag-band__overlay" aria-hidden="true" />
+
     <!-- Bronze hairline ::before handled by .is-marked utility class -->
 
     <!-- ── Optional section marker ── -->
@@ -204,7 +239,7 @@ function testimonialRevealDelay(index: number): number {
       <span class="section-ssp__marker-name">{{ marker.split(/\s+/).slice(1).join(' ') }}</span>
     </p>
 
-    <div class="section-ssp__container">
+    <div class="section-ssp__container diag-band__content">
 
       <!-- ── Section header ── -->
       <header class="section-ssp__header">
@@ -220,8 +255,12 @@ function testimonialRevealDelay(index: number): number {
         <p v-if="introBody" class="section-ssp__intro">{{ introBody }}</p>
       </header>
 
-      <!-- ── Testimonials grid ── -->
-      <div class="section-ssp__proof-grid">
+      <!-- ── Testimonials grid ──
+           Renders only when testimonials are supplied. Passing an empty
+           array gracefully collapses the grid so the section reads as
+           heading + counters alone — used while real testimonials are
+           pending (per PAGES_AND_SECTIONS.md §2.7). -->
+      <div v-if="testimonials.length" class="section-ssp__proof-grid">
         <!-- Index 0 → hero; index 1+ → secondary -->
         <AppTestimonialCard
           v-if="testimonials[0]"
@@ -247,8 +286,13 @@ function testimonialRevealDelay(index: number): number {
         </div>
       </div>
 
-      <!-- ── Counters grid ── -->
-      <div class="section-ssp__counters">
+      <!-- ── Counters grid ──
+           When no testimonials are supplied, drop the top hairline so the
+           counters don't look severed from an invisible block above. -->
+      <div
+        class="section-ssp__counters"
+        :class="{ 'section-ssp__counters--flush': !testimonials.length }"
+      >
         <AppStat
           v-for="(item, i) in counters"
           :key="item.label"
@@ -407,6 +451,11 @@ function testimonialRevealDelay(index: number): number {
   margin-top: 64px;
   padding-top: 48px;
   border-top: 1px solid var(--omn-border-subtle);
+}
+.section-ssp__counters--flush {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 @media (min-width: 768px) {
   .section-ssp__counters {

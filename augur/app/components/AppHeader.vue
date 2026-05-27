@@ -29,7 +29,6 @@
       <nav class="app-header__links" aria-label="Primary">
         <NuxtLink to="/#method"     class="app-header__link">Method</NuxtLink>
         <NuxtLink to="/#traditions" class="app-header__link">Traditions</NuxtLink>
-        <NuxtLink to="/#proof"      class="app-header__link">Readers</NuxtLink>
         <NuxtLink to="/#paywall"    class="app-header__link">Pricing</NuxtLink>
         <NuxtLink to="/daily"       class="app-header__link">Daily</NuxtLink>
       </nav>

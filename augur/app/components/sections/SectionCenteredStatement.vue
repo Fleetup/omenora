@@ -98,11 +98,17 @@ const props = withDefaults(defineProps<{
   body?: string
   bandTone?: 'page' | 'primary'
   marker?: string
+  bgImage?: string
+  bgImagePos?: string
+  bgImagePosMobile?: string
 }>(), {
   headingVariant: 'lg',
   bandTone: 'page',
   body: undefined,
   marker: undefined,
+  bgImage: undefined,
+  bgImagePos: 'center 62%',
+  bgImagePosMobile: 'center 70%',
 })
 
 const { el: revealEl, isRevealed } = useReveal({ threshold: 0.05 })
@@ -111,19 +117,37 @@ function setRevealEl(el: Element | ComponentPublicInstance | null) {
   revealEl.value = el instanceof HTMLElement ? el : null
 }
 
+const hasBg = computed(() => !!props.bgImage)
+
 const sectionClass = computed(() => [
   'section-centered',
   `section-centered--${props.bandTone}`,
   { 'is-marked': !!props.marker },
   { 'is-revealed': isRevealed.value },
+  { 'diag-band': hasBg.value },
+  { 'diag-band--primary': hasBg.value && props.bandTone === 'primary' },
 ])
+
+const sectionStyle = computed(() => {
+  if (!props.bgImage) return undefined
+  return {
+    '--section-img': `url('${props.bgImage}')`,
+    '--section-img-pos': props.bgImagePos,
+    '--section-img-pos-mobile': props.bgImagePosMobile,
+  }
+})
 </script>
 
 <template>
   <section
     :ref="setRevealEl"
     :class="sectionClass"
+    :style="sectionStyle"
   >
+    <!-- Diagonal background layers (only when bgImage is set) -->
+    <div v-if="hasBg" class="diag-band__image" aria-hidden="true" />
+    <div v-if="hasBg" class="diag-band__overlay" aria-hidden="true" />
+
     <!-- Bronze hairline ::before is CSS-only, gated on .is-revealed via --marked -->
 
     <!-- Section marker — § NN + section name, top-left -->
@@ -136,7 +160,7 @@ const sectionClass = computed(() => [
       </AppCaption>
     </p>
 
-    <div class="section-centered__container">
+    <div class="section-centered__container diag-band__content">
       <div class="section-centered__inner">
 
         <AppEyebrow

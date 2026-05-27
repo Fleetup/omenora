@@ -396,6 +396,219 @@
   }
 }
 
+/* ── Diagonal-background band utility ──
+   Sandbox-equivalent of .band--diag. Any section root can opt in by
+   adding the `diag-band` class and rendering two pointer-event-free
+   children: `.diag-band__image` (the photo) and `.diag-band__overlay`
+   (gradient vignette + bronze seam). The image layer reads its url +
+   position from CSS custom properties --section-img / --section-img-pos
+   / --section-img-pos-mobile set inline on the section root.
+
+   Scale-in reveal is gated on the parent `.is-revealed` class added by
+   useReveal — same trigger used by every section molecule. The bronze
+   diagonal seam (::after) is layered above the image so it survives
+   image saturation drops.
+
+   Mobile: softer diagonal mask (176°) with earlier image fade so the
+   text-band on the top half stays clean while the image saturates fully
+   over the bottom half. Per-section --section-img-pos-mobile lets each
+   section anchor the subject correctly at narrow widths. */
+.diag-band {
+  position: relative;
+  overflow: hidden;
+  /* No min-height — let content drive the section size. The image fills
+     whatever the section ends up being via absolute positioning, and the
+     extra padding-bottom below gives the diagonal seam room to breathe.
+     (Sandbox used 88vh min-height because its Begin band contained BOTH
+     the centered text AND the paywall card; production splits those across
+     two sibling components so the min-height made short sections gappy.) */
+  padding-bottom: calc(var(--space-section) + 64px);
+}
+.diag-band > .diag-band__image,
+.diag-band > .diag-band__overlay {
+  pointer-events: none;
+}
+.diag-band__image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--section-img);
+  background-size: cover;
+  background-position: var(--section-img-pos, center 62%);
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.18) 42%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 64%,
+    #000 78%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.18) 42%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 64%,
+    #000 78%,
+    #000 100%
+  );
+  filter: saturate(0.85) contrast(1.05);
+  opacity: 0.85;
+  transform: scale(1.02);
+  transition: transform 1400ms var(--omn-ease);
+  will-change: transform;
+}
+.diag-band.is-revealed .diag-band__image { transform: scale(1); }
+
+.diag-band__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg,
+      var(--omn-bg-page) 0%,
+      rgba(18, 18, 20, 0.78) 28%,
+      rgba(18, 18, 20, 0.0)  46%,
+      rgba(18, 18, 20, 0.40) 78%,
+      rgba(18, 18, 20, 0.85) 100%),
+    linear-gradient(168deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(168, 125, 78, 0.06) 50%,
+      transparent 60%,
+      transparent 100%);
+}
+/* When the diag-band sits over a band--primary tone, swap the dark-stop
+   colors so the gradient blends with the elevated background instead of
+   the page base. */
+.diag-band.diag-band--primary .diag-band__overlay {
+  background:
+    linear-gradient(180deg,
+      var(--omn-bg-primary) 0%,
+      rgba(37, 37, 40, 0.78) 28%,
+      rgba(37, 37, 40, 0.0)  46%,
+      rgba(18, 18, 20, 0.40) 78%,
+      rgba(18, 18, 20, 0.85) 100%),
+    linear-gradient(168deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(168, 125, 78, 0.06) 50%,
+      transparent 60%,
+      transparent 100%);
+}
+
+/* Bronze diagonal seam glow — sits above image + overlay, mix-blend
+   screen so it reads as light, not paint. Revealed with the section. */
+.diag-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(168deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(168, 125, 78, 0.10) 48%,
+    rgba(168, 125, 78, 0.18) 52%,
+    rgba(168, 125, 78, 0.10) 56%,
+    transparent 64%,
+    transparent 100%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 1100ms var(--omn-ease) 300ms;
+}
+.diag-band.is-revealed::after { opacity: 1; }
+
+/* Mobile — softer diagonal + heavier overlay so text stays readable. */
+@media (max-width: 767px) {
+  .diag-band {
+    min-height: 0;
+    padding-bottom: clamp(160px, 36vw, 280px);
+  }
+  .diag-band__image {
+    -webkit-mask-image: linear-gradient(
+      176deg,
+      transparent 0%,
+      transparent 14%,
+      rgba(0, 0, 0, 0.22) 24%,
+      rgba(0, 0, 0, 0.60) 36%,
+      rgba(0, 0, 0, 0.90) 46%,
+      #000 54%,
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      176deg,
+      transparent 0%,
+      transparent 14%,
+      rgba(0, 0, 0, 0.22) 24%,
+      rgba(0, 0, 0, 0.60) 36%,
+      rgba(0, 0, 0, 0.90) 46%,
+      #000 54%,
+      #000 100%
+    );
+    opacity: 0.95;
+    background-position: var(--section-img-pos-mobile, var(--section-img-pos, center 70%));
+  }
+  .diag-band .diag-band__overlay {
+    background:
+      linear-gradient(180deg,
+        var(--omn-bg-page) 0%,
+        rgba(18, 18, 20, 0.92) 24%,
+        rgba(18, 18, 20, 0.55) 42%,
+        rgba(18, 18, 20, 0.18) 64%,
+        transparent 100%),
+      linear-gradient(168deg,
+        transparent 0%,
+        transparent 40%,
+        rgba(168, 125, 78, 0.05) 50%,
+        transparent 60%,
+        transparent 100%);
+  }
+  .diag-band.diag-band--primary .diag-band__overlay {
+    background:
+      linear-gradient(180deg,
+        var(--omn-bg-primary) 0%,
+        rgba(37, 37, 40, 0.92) 24%,
+        rgba(37, 37, 40, 0.55) 42%,
+        rgba(37, 37, 40, 0.18) 64%,
+        transparent 100%),
+      linear-gradient(168deg,
+        transparent 0%,
+        transparent 40%,
+        rgba(168, 125, 78, 0.05) 50%,
+        transparent 60%,
+        transparent 100%);
+  }
+  .diag-band::after {
+    background: linear-gradient(176deg,
+      transparent 0%,
+      transparent 38%,
+      rgba(168, 125, 78, 0.08) 46%,
+      rgba(168, 125, 78, 0.14) 50%,
+      rgba(168, 125, 78, 0.08) 54%,
+      transparent 62%,
+      transparent 100%);
+  }
+}
+
+/* Reduced motion — keep the final state, drop the scale-in. */
+@media (prefers-reduced-motion: reduce) {
+  .diag-band .diag-band__image { transform: none !important; transition: none; }
+  .diag-band::after { opacity: 1 !important; transition: none; }
+}
+
+/* Section container above the diag layers — sections that opt into
+   .diag-band should also stamp this on their inner container so the
+   content sits above z-index 2 (the bronze seam). */
+.diag-band__content {
+  position: relative;
+  z-index: 3;
+}
+
 /* ── Autofill override (all inputs) ── */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,

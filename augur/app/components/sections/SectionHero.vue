@@ -128,59 +128,61 @@ const hasEm = computed(() => !!useSlots().em)
     <div v-if="image" class="hero-band__overlay" aria-hidden="true" />
     <!-- Bronze diagonal seam glow (::after pseudo on section via CSS) -->
 
-    <div class="hero__content">
+    <div class="hero__container">
+      <div class="hero__content">
 
-      <!-- Vol. notation — optional editorial marker -->
-      <AppCaption
-        v-if="$slots.vol"
-        variant="mono"
-        class="hero__vol"
-      ><slot name="vol" /></AppCaption>
+        <!-- Vol. notation — optional editorial marker -->
+        <AppCaption
+          v-if="$slots.vol"
+          variant="mono"
+          class="hero__vol"
+        ><slot name="vol" /></AppCaption>
 
-      <!-- Eyebrow — optional category label -->
-      <AppEyebrow
-        v-if="$slots.eyebrow"
-        :rule="true"
-        class="hero__eyebrow"
-      ><slot name="eyebrow" /></AppEyebrow>
+        <!-- Eyebrow — optional category label -->
+        <AppEyebrow
+          v-if="$slots.eyebrow"
+          :rule="true"
+          class="hero__eyebrow"
+        ><slot name="eyebrow" /></AppEyebrow>
 
-      <!-- Display headline -->
-      <h1 class="hero__display">
-        <template v-for="(line, i) in displayLines" :key="i">
-          <span
-            class="hero__display-line"
-            :class="{ 'hero__display-line--quiet': i === displayLines.length - 1 }"
-          >
-            <!--
-              Second-to-last line: inject the #em slot (animated word)
-              after the line text if provided. The consumer writes the line
-              text up to the em in displayLines[n-2], then the em word comes
-              from the #em slot, then any trailing punctuation should be part
-              of the slot content or the next line.
-              For simplicity: #em renders after line i === displayLines.length - 2.
-            -->
-            {{ line }}<template v-if="hasEm && i === displayLines.length - 2">
-              <span
-                class="hero__display-em"
-                :class="{ 'hero__display-em--lit': isRevealed }"
-              ><slot name="em" /></span>,</template>
-          </span>
-        </template>
-      </h1>
+        <!-- Display headline -->
+        <h1 class="hero__display">
+          <template v-for="(line, i) in displayLines" :key="i">
+            <span
+              class="hero__display-line"
+              :class="{ 'hero__display-line--quiet': i === displayLines.length - 1 }"
+            >
+              <!--
+                Second-to-last line: inject the #em slot (animated word)
+                after the line text if provided. The consumer writes the line
+                text up to the em in displayLines[n-2], then the em word comes
+                from the #em slot, then any trailing punctuation should be part
+                of the slot content or the next line.
+                For simplicity: #em renders after line i === displayLines.length - 2.
+              -->
+              {{ line }}<template v-if="hasEm && i === displayLines.length - 2">
+                <span
+                  class="hero__display-em"
+                  :class="{ 'hero__display-em--lit': isRevealed }"
+                ><slot name="em" /></span></template>
+            </span>
+          </template>
+        </h1>
 
-      <!-- Deck text -->
-      <AppSubhead class="hero__subhead">{{ subhead }}</AppSubhead>
+        <!-- Deck text -->
+        <AppSubhead class="hero__subhead">{{ subhead }}</AppSubhead>
 
-      <!-- CTA row -->
-      <div v-if="$slots.actions" class="hero__cta-row">
-        <slot name="actions" />
+        <!-- CTA row -->
+        <div v-if="$slots.actions" class="hero__cta-row">
+          <slot name="actions" />
+        </div>
+
+        <!-- Trust / social proof -->
+        <p v-if="$slots.trust" class="hero__trust">
+          <slot name="trust" />
+        </p>
+
       </div>
-
-      <!-- Trust / social proof -->
-      <p v-if="$slots.trust" class="hero__trust">
-        <slot name="trust" />
-      </p>
-
     </div>
   </section>
 </template>
@@ -294,14 +296,28 @@ const hasEm = computed(() => !!useSlots().em)
       transparent 100%);
 }
 
+/* ── Container ──
+   Wraps content with standard editorial gutters so hero respects the
+   same horizontal rhythm as every other section. Without this the text
+   bleeds to the viewport edge (the bug the user reported). max-width
+   matches sandbox .container at hero's max bleed (1320px / --width-bleed)
+   so the headline can occupy the full editorial column on ultra-wide.
+   Padding token --space-edge keeps it identical to all sibling sections. */
+.hero__container {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: var(--width-bleed);
+  margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 64px);
+}
+
 /* ── Content column ──
    Sits above image + overlay layers (z-index 2+).
    Flex column, max-width of each child capped at 640px.
    min-height calculation keeps content vertically centered within
    the section accounting for the top + bottom padding sums. */
 .hero__content {
-  position: relative;
-  z-index: 3;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -399,6 +415,21 @@ const hasEm = computed(() => !!useSlots().em)
   margin-bottom: var(--space-7);
 }
 
+/* On mobile the cosmic-gold imagery diffuses up into the CTA row and the
+   ghost button's faint --omn-border-primary outline disappears. Restore
+   legibility with a translucent dark backdrop and a stronger border so
+   the secondary CTA reads cleanly over the image. Applies only inside
+   the hero (other sections sit on solid surfaces). */
+@media (max-width: 767px) {
+  .hero__cta-row :deep(.app-button--ghost),
+  .hero__cta-row :deep(.app-button--secondary) {
+    background: rgba(18, 18, 20, 0.55);
+    border-color: var(--omn-border-emphasis);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+}
+
 /* ── Trust line ──
    Inline mono text with dot separators and sage live indicator dots.
    font/size/tracking match sandbox .trust. */
@@ -442,6 +473,21 @@ const hasEm = computed(() => !!useSlots().em)
   }
   .hero-band__image {
     background-position: var(--section-img-pos-mobile, center 62%);
+  }
+  /* Trust line legibility — at narrow widths the cosmic-gold imagery sits
+     directly behind the trust line. A short dark gradient + blur restores
+     contrast without darkening the whole hero. Matches sandbox §2126. */
+  .hero__trust {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(18, 18, 20, 0.75) 30%,
+      rgba(18, 18, 20, 0.85) 100%
+    );
+    padding: 12px 16px 12px 0;
+    margin-left: -16px;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
   }
 }
 
