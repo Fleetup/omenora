@@ -556,7 +556,8 @@ export function buildFoundingMemberEmail(data: FoundingMemberEmailData): {
   const subject = `You're in. Welcome to OMENORA, Founding Member.`
 
   const benefits = [
-    { label: 'Lifetime 50% off subscriptions', detail: 'When paid tiers launch, you pay half. Forever.' },
+    { label: 'Your complete natal reading at launch', detail: 'Delivered the moment OMENORA opens — computed across Western, Vedic, BaZi, and Tarot.' },
+    { label: 'Lifetime 50% off OMENORA Premium', detail: 'When Premium launches, you pay half. $2.99/week, $7.50/month, or $49.99/year — forever.' },
     { label: 'Early access to Compatibility & Counsel', detail: 'First to use features before public release.' },
     { label: 'Founder badge in the app', detail: 'Visible on your profile at public launch.' },
     { label: 'Name in the credits', detail: 'Listed at public launch as a founding member.' },

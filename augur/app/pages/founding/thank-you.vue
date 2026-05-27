@@ -1,234 +1,275 @@
 <template>
-  <AppShell>
+  <div class="ty-page">
+    <AppHeader />
 
-    <!-- ── LOADING ──────────────────────────────────────────────────────────── -->
-    <section v-if="pageState === 'loading'" class="ty-section">
-      <div class="page-wrapper">
-        <div class="ty-loading">
-          <div class="ty-loading__bar">
-            <div class="ty-loading__fill" />
-          </div>
-          <AppCaption variant="default" as="p" class="ty-loading__label">Confirming your purchase…</AppCaption>
-        </div>
-      </div>
-    </section>
+    <!-- ── Atmospheric layers — only in paid state ───────────────────────── -->
+    <div v-if="pageState === 'paid'" class="page-grain" aria-hidden="true" />
+    <div v-if="pageState === 'paid'" class="page-scroll-progress" aria-hidden="true">
+      <div class="page-scroll-progress__bar" :style="{ transform: `scaleY(${pageProgress})` }" />
+    </div>
 
-    <!-- ── PENDING ──────────────────────────────────────────────────────────── -->
-    <section v-else-if="pageState === 'pending'" class="ty-section">
-      <div class="page-wrapper">
-        <div class="ty-pending">
-          <div class="ty-loading__bar">
-            <div class="ty-loading__fill" />
-          </div>
-          <AppSubhead variant="default" class="ty-pending__label">Confirming your payment with Stripe…</AppSubhead>
-          <AppCaption variant="default" as="p" class="ty-pending__sub">This usually takes a few seconds.</AppCaption>
-        </div>
-      </div>
-    </section>
+    <main>
 
-    <!-- ── PENDING TIMEOUT ──────────────────────────────────────────────────── -->
-    <section v-else-if="pageState === 'pending-timeout'" class="ty-section">
-      <div class="page-wrapper">
-        <div class="ty-pending-timeout">
-          <AppEyebrow class="ty-status">Payment processing</AppEyebrow>
-          <AppHeadline variant="italic" as="h1" class="ty-headline">Your payment is being processed.</AppHeadline>
-          <p class="ty-body">
-            Your payment is being confirmed with Stripe. You'll receive a
-            confirmation email at the address you used at checkout within
-            a few minutes. If it doesn't arrive, check your spam folder
-            or email
-            <a href="mailto:support@omenora.com" class="ty-link">support@omenora.com</a>.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── ERROR ────────────────────────────────────────────────────────────── -->
-    <section v-else-if="pageState === 'error'" class="ty-section">
-      <div class="page-wrapper">
-        <div class="ty-error">
-          <AppEyebrow class="ty-status">Something went wrong</AppEyebrow>
-          <AppHeadline variant="italic" as="h1" class="ty-headline">We couldn't verify this purchase.</AppHeadline>
-          <p class="ty-body">
-            If you completed a payment, you'll receive a confirmation
-            email at the address you used at checkout. Otherwise, please
-            contact
-            <a href="mailto:support@omenora.com" class="ty-link">support@omenora.com</a>.
-          </p>
-          <AppButton variant="secondary" to="/founding" class="ty-error__back">
-            Back to founding membership
-          </AppButton>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── PAID ─────────────────────────────────────────────────────────────── -->
-    <template v-else-if="pageState === 'paid' && verifiedData">
-
-      <!-- Above the fold -->
-      <section class="ty-section ty-hero">
+      <!-- ── LOADING ────────────────────────────────────────────────────────── -->
+      <section v-if="pageState === 'loading'" class="ty-section ty-functional">
         <div class="page-wrapper">
-          <div class="ty-hero__inner">
-
-            <AppEyebrow class="ty-status">You're in.</AppEyebrow>
-
-            <AppHeadline variant="italic" as="h1" class="ty-headline ty-headline--hero">
-              Welcome, founding member.
-            </AppHeadline>
-
-            <!-- Confirmation block -->
-            <div class="ty-confirm">
-              <div class="ty-confirm__row">
-                <AppCaption variant="default" class="ty-confirm__label">Confirmation sent to</AppCaption>
-                <span class="ty-confirm__value">{{ verifiedData.email }}</span>
-              </div>
-              <div class="ty-confirm__row">
-                <AppCaption variant="default" class="ty-confirm__label">Purchased</AppCaption>
-                <span class="ty-confirm__value">{{ formattedDate }}</span>
-              </div>
+          <div class="ty-loading">
+            <div class="ty-loading__bar">
+              <div class="ty-loading__fill" />
             </div>
+            <AppCaption variant="default" as="p" class="ty-loading__label">Confirming your purchase…</AppCaption>
+          </div>
+        </div>
+      </section>
 
-            <p class="ty-body ty-body--hero">
-              Your $20 founding membership is confirmed. You've unlocked
-              lifetime 50% off future paid tiers, early access to
-              Compatibility and Counsel, a founder badge on your profile,
-              and your name in the credits at public launch. You're on the
-              founding-member list and you'll hear from us before anyone else.
+      <!-- ── PENDING ────────────────────────────────────────────────────────── -->
+      <section v-else-if="pageState === 'pending'" class="ty-section ty-functional">
+        <div class="page-wrapper">
+          <div class="ty-pending">
+            <div class="ty-loading__bar">
+              <div class="ty-loading__fill" />
+            </div>
+            <AppSubhead variant="default" class="ty-pending__label">Confirming your payment with Stripe…</AppSubhead>
+            <AppCaption variant="default" as="p" class="ty-pending__sub">This usually takes a few seconds.</AppCaption>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PENDING TIMEOUT ────────────────────────────────────────────────── -->
+      <section v-else-if="pageState === 'pending-timeout'" class="ty-section ty-functional">
+        <div class="page-wrapper">
+          <div class="ty-pending-timeout">
+            <AppEyebrow class="ty-status">Payment processing</AppEyebrow>
+            <AppHeadline variant="italic" as="h1" class="ty-headline">Your payment is being processed.</AppHeadline>
+            <p class="ty-body">
+              Your payment is being confirmed with Stripe. You'll receive a
+              confirmation email at the address you used at checkout within
+              a few minutes. If it doesn't arrive, check your spam folder
+              or email
+              <a href="mailto:support@omenora.com" class="ty-link">support@omenora.com</a>.
             </p>
-
           </div>
         </div>
       </section>
 
-      <!-- Rule -->
-      <div class="page-wrapper">
-        <AppDivider variant="labeled" label="◇" spacing="lg" />
-      </div>
-
-      <!-- A. What's next -->
-      <section class="ty-section">
+      <!-- ── ERROR ──────────────────────────────────────────────────────────── -->
+      <section v-else-if="pageState === 'error'" class="ty-section ty-functional">
         <div class="page-wrapper">
-          <div class="ty-next">
-            <AppEyebrow class="founding-section__eyebrow">What's next</AppEyebrow>
-            <AppHeadline variant="italic" as="h2" class="ty-subheadline">Three things to know.</AppHeadline>
-
-            <div class="ty-next__grid">
-
-              <div class="ty-next__item">
-                <AppCaption variant="default" class="ty-next__num">[01]</AppCaption>
-                <h3 class="ty-next__title">Confirmation email</h3>
-                <p class="ty-next__desc">
-                  Your confirmation should arrive within a few minutes.
-                  If it doesn't appear, check your spam folder. Still
-                  nothing? Email
-                  <a href="mailto:support@omenora.com" class="ty-link">support@omenora.com</a>.
-                </p>
-              </div>
-
-              <div class="ty-next__item">
-                <AppCaption variant="default" class="ty-next__num">[02]</AppCaption>
-                <h3 class="ty-next__title">The reading engine is live now</h3>
-                <p class="ty-next__desc">
-                  OMENORA's natal and daily reading engines are running
-                  today. Your founding membership supports what comes
-                  next — in the meantime, your reading is waiting.
-                </p>
-                <NuxtLink to="/daily" class="label-caps ty-next__link">
-                  Read today's horoscope →
-                </NuxtLink>
-              </div>
-
-              <div class="ty-next__item">
-                <AppCaption variant="default" class="ty-next__num">[03]</AppCaption>
-                <h3 class="ty-next__title">Updates by email</h3>
-                <p class="ty-next__desc">
-                  You'll receive periodic updates as Compatibility and
-                  Counsel approach launch. No noise — only milestone
-                  announcements, and you'll always be first.
-                </p>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- B. Refund reminder -->
-      <div class="page-wrapper">
-        <div class="ty-refund-note">
-          <AppCaption variant="fine" as="p">
-            14 days, no questions asked —
-            <NuxtLink to="/refund-policy" class="ty-refund-note__link">refund policy</NuxtLink>.
-            Email support@omenora.com with the subject "Founding Member Refund."
-          </AppCaption>
-        </div>
-      </div>
-
-      <!-- Rule -->
-      <div class="page-wrapper">
-        <AppDivider variant="labeled" label="◇" spacing="lg" />
-      </div>
-
-      <!-- C. Final CTA -->
-      <section class="ty-section ty-final">
-        <div class="page-wrapper">
-          <div class="ty-final__inner">
-            <AppSubhead variant="default" class="ty-final__prompt">
-              Your reading is ready.
-            </AppSubhead>
-            <AppButton variant="primary" to="/daily" :arrow="true">
-              Open today's reading
+          <div class="ty-error">
+            <AppEyebrow class="ty-status">Something went wrong</AppEyebrow>
+            <AppHeadline variant="italic" as="h1" class="ty-headline">We couldn't verify this purchase.</AppHeadline>
+            <p class="ty-body">
+              If you completed a payment, you'll receive a confirmation
+              email at the address you used at checkout. Otherwise, please
+              contact
+              <a href="mailto:support@omenora.com" class="ty-link">support@omenora.com</a>.
+            </p>
+            <AppButton variant="secondary" to="/founding" class="ty-error__back">
+              Back to founding membership
             </AppButton>
           </div>
         </div>
       </section>
 
-    </template>
+      <!-- ── PAID ───────────────────────────────────────────────────────────── -->
+      <template v-else-if="pageState === 'paid' && verifiedData">
 
-  </AppShell>
+        <!-- § 01 — Confirmation hero -->
+        <SectionHero
+          :display-lines="heroLines"
+          :subhead="heroSubhead"
+          image="/images/hero/Cosmic-gold-ascension.webp"
+          image-pos="right 50%"
+          image-pos-m="center 50%"
+        >
+          <template #eyebrow>You're in · Founding Member</template>
+          <template #trust>
+            <span class="hero-trust__dot hero-trust__dot--sage" />
+            {{ verifiedData.email }}
+            <span class="hero-trust__sep">·</span>
+            <span class="hero-trust__dot hero-trust__dot--sage" />
+            {{ formattedDate }}
+            <span class="hero-trust__sep">·</span>
+            <span class="hero-trust__dot hero-trust__dot--sage" />
+            Order ref <span class="ty-order-ref">{{ orderRef }}</span>
+          </template>
+        </SectionHero>
+
+        <!-- § 02 — What's next -->
+        <SectionLede
+          eyebrow="What's next"
+          heading="Four things"
+          body="Everything you've unlocked and what happens from here."
+          :drop-cap="false"
+          band-tone="page"
+          marker="§ 02"
+          bg-image="/images/hero/Distant-horizon-emergence.webp"
+          bg-image-pos="left 50%"
+          bg-image-pos-mobile="center 50%"
+        >
+          <template #heading-em>to know.</template>
+          <template #body-extra>
+            <ol class="ty-next-list">
+              <li class="ty-next-item">
+                <span class="ty-next-num">01</span>
+                <div>
+                  <strong class="ty-next-title">Confirmation email.</strong>
+                  <p class="ty-next-desc">Your receipt should arrive within a few minutes. If it doesn't appear, check your spam folder. Still nothing? Email <a href="mailto:support@omenora.com" class="ty-link">support@omenora.com</a>.</p>
+                </div>
+              </li>
+              <li class="ty-next-item">
+                <span class="ty-next-num">02</span>
+                <div>
+                  <strong class="ty-next-title">The reading engine is live now.</strong>
+                  <p class="ty-next-desc">OMENORA's natal and daily reading engines are running today. Your reading is waiting.</p>
+                </div>
+              </li>
+              <li class="ty-next-item">
+                <span class="ty-next-num">03</span>
+                <div>
+                  <strong class="ty-next-title">Your complete natal reading at launch.</strong>
+                  <p class="ty-next-desc">Delivered the moment OMENORA opens — computed across Western, Vedic, BaZi, and Tarot. You'll be among the first to receive it.</p>
+                </div>
+              </li>
+              <li class="ty-next-item">
+                <span class="ty-next-num">04</span>
+                <div>
+                  <strong class="ty-next-title">Updates by email.</strong>
+                  <p class="ty-next-desc">Periodic milestone announcements as Compatibility and Counsel approach launch. No noise.</p>
+                </div>
+              </li>
+            </ol>
+          </template>
+        </SectionLede>
+
+        <!-- Refund reminder — inline, between What's next and Final CTA -->
+        <div class="ty-refund-wrap">
+          <div class="page-wrapper">
+            <p class="ty-refund-note">
+              14 days, no questions asked —
+              <NuxtLink to="/refund-policy" class="ty-refund-note__link">refund policy</NuxtLink>.
+              Email support@omenora.com with the subject "Founding Member Refund."
+            </p>
+          </div>
+        </div>
+
+        <!-- § 03 — Final CTA -->
+        <SectionFinalCTA
+          eyebrow="Your reading"
+          heading="Your reading"
+          cta-label="Begin your natal reading"
+          body="Today's horoscope is live. Your natal reading is one quiz away. Begin wherever feels right."
+          band-tone="page"
+          marker="§ 03"
+          bg-image="/images/hero/final-cta-cosmic.webp"
+          bg-image-pos="center 60%"
+          bg-image-pos-mobile="center 55%"
+        >
+          <template #heading-em>Your reading <em>is ready.</em></template>
+          <template #cta>
+            <div class="ty-final-ctas">
+              <AppButton variant="primary" to="/analysis" :arrow="true">
+                Begin your natal reading
+              </AppButton>
+              <AppButton variant="ghost" to="/daily" :arrow="true">
+                Read today's horoscope
+              </AppButton>
+            </div>
+          </template>
+        </SectionFinalCTA>
+
+      </template>
+
+    </main>
+
+    <!-- ── Footer — only in paid state ──────────────────────────────────────── -->
+    <SectionFooter
+      v-if="pageState === 'paid'"
+      :columns="footerColumns"
+      tagline="Computed natal readings, not horoscopes."
+      brand-meta="Est. 2026 · Vol. 001 · MMXXVI"
+      :copyright="`© ${currentYear} OMENORA — United Northwest Carriers Inc.`"
+      meta="Built on Swiss Ephemeris · Stripe payments"
+    />
+
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import SectionHero from '~/components/sections/SectionHero.vue'
+import SectionLede from '~/components/sections/SectionLede.vue'
+import SectionFinalCTA from '~/components/sections/SectionFinalCTA.vue'
+import SectionFooter from '~/components/sections/SectionFooter.vue'
+import AppButton from '~/components/atoms/AppButton.vue'
+import AppHeader from '~/components/AppHeader.vue'
 
 const { $trackPurchase } = useNuxtApp()
 
 // ── SEO ────────────────────────────────────────────────────────────────────────
 useSeoMeta({
-  title: 'Welcome, founding member — OMENORA',
+  title: 'Welcome, Founding Member — OMENORA',
   robots: 'noindex, nofollow',
 })
 
 // ── State ───────────────────────────────────────────────────────────────────────
 type PageState = 'loading' | 'pending' | 'pending-timeout' | 'paid' | 'error'
 
-const pageState   = ref<PageState>('loading')
+const pageState    = ref<PageState>('loading')
 const verifiedData = ref<{ email: string; purchasedAt: string } | null>(null)
 
 const formattedDate = computed(() => {
   if (!verifiedData.value?.purchasedAt) return ''
   return new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    day:   'numeric',
-    year:  'numeric',
-    hour:  'numeric',
+    month:  'long',
+    day:    'numeric',
+    year:   'numeric',
+    hour:   'numeric',
     minute: '2-digit',
   }).format(new Date(verifiedData.value.purchasedAt))
 })
+
+// ── Order reference — last 4 chars of session_id ───────────────────────────────
+const route    = useRoute()
+const orderRef = computed(() => {
+  const sid = (route.query.session_id ?? '') as string
+  return sid ? sid.slice(-4).toUpperCase() : ''
+})
+
+// ── Hero copy ──────────────────────────────────────────────────────────────────
+const heroLines   = ['Welcome,', 'Founding Member.']
+const heroSubhead = 'Your $20 deposit is confirmed. You\'ve unlocked your complete natal reading at launch, lifetime 50% off OMENORA Premium ($2.99/week, $7.50/month, $49.99/year), early access to Compatibility and Counsel, your founder badge, and your name in the credits. Your place on the founding-member list is locked for life.'
+
+// ── Page scroll progress ────────────────────────────────────────────────────────
+const pageProgress = ref(0)
+let pageProgressRaf: number | null = null
+function updatePageProgress() {
+  pageProgressRaf = null
+  const doc = document.documentElement
+  const max = Math.max(1, doc.scrollHeight - window.innerHeight)
+  pageProgress.value = Math.min(1, Math.max(0, window.scrollY / max))
+}
+function onPageScroll() {
+  if (pageProgressRaf == null) pageProgressRaf = requestAnimationFrame(updatePageProgress)
+}
 
 // ── Polling ──────────────────────────────────────────────────────────────────
 const POLL_INTERVAL_MS = 2000
 const POLL_TIMEOUT_MS  = 20_000
 
-let pollTimer:   ReturnType<typeof setInterval>  | null = null
-let timeoutTimer: ReturnType<typeof setTimeout> | null = null
+let pollTimer:    ReturnType<typeof setInterval> | null = null
+let timeoutTimer: ReturnType<typeof setTimeout>  | null = null
 
 function stopPolling() {
-  if (pollTimer)   { clearInterval(pollTimer);  pollTimer   = null }
-  if (timeoutTimer){ clearTimeout(timeoutTimer); timeoutTimer = null }
+  if (pollTimer)    { clearInterval(pollTimer);   pollTimer    = null }
+  if (timeoutTimer) { clearTimeout(timeoutTimer); timeoutTimer = null }
 }
 
-onUnmounted(stopPolling)
+onUnmounted(() => {
+  stopPolling()
+  window.removeEventListener('scroll', onPageScroll)
+  if (pageProgressRaf != null) cancelAnimationFrame(pageProgressRaf)
+})
 
 // ── Core verify function ──────────────────────────────────────────────────────
 async function verifySession(sessionId: string): Promise<void> {
@@ -300,6 +341,9 @@ async function verifySession(sessionId: string): Promise<void> {
 
 // ── Mount: read session_id from URL and start verification ─────────────────────
 onMounted(async () => {
+  window.addEventListener('scroll', onPageScroll, { passive: true })
+  updatePageProgress()
+
   const query     = import.meta.client ? new URLSearchParams(window.location.search) : new URLSearchParams()
   const sessionId = query.get('session_id') ?? ''
 
@@ -325,105 +369,113 @@ onMounted(async () => {
     }, POLL_INTERVAL_MS)
   }
 })
+
+// ── Footer data ────────────────────────────────────────────────────────────────
+const currentYear   = computed(() => new Date().getFullYear())
+const footerColumns = [
+  { heading: 'Product', links: [{ label: 'Try the quiz', href: '/analysis' }, { label: 'Daily reading', href: '/daily' }, { label: 'Founding Member', href: '/founding' }] },
+  { heading: 'Company', links: [{ label: 'Contact', href: 'mailto:hello@omenora.com' }] },
+  { heading: 'Legal',   links: [{ label: 'Terms', href: '/terms' }, { label: 'Privacy', href: '/privacy' }, { label: 'Refund policy', href: '/refund-policy' }] },
+]
 </script>
 
 <style scoped>
-/* ── Shared layout ─────────────────────────────────────────────────────────── */
-.ty-section {
+/* ── Page wrapper ──────────────────────────────────────────────────────────── */
+.ty-page {
+  min-height: 100vh;
+}
+
+/* ── Atmospheric layers (paid state only) ───────────────────────────────────
+   Identical pattern to founding/index.vue and index.vue. */
+
+.page-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.93  0 0 0 0 0.90  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  animation: pageGrainShift 7s steps(8) infinite;
+}
+@keyframes pageGrainShift {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(3%, 4%); }
+  40%  { transform: translate(4%, -2%); }
+  60%  { transform: translate(2%, -4%); }
+  80%  { transform: translate(4%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-grain { animation: none; }
+}
+
+.page-scroll-progress {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: 100vh;
+  z-index: 100;
+  pointer-events: none;
+  background: var(--omn-border-subtle);
+}
+.page-scroll-progress__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  background: linear-gradient(180deg,
+    var(--omn-accent-quiet) 0%,
+    var(--omn-accent)       100%);
+  transform-origin: top;
+  transform: scaleY(0);
+  transition: transform 80ms linear;
+}
+
+/* ── Functional states (loading / pending / error) ──────────────────────────
+   Plain layout — no atmospheric depth, intentionally neutral. */
+
+.ty-functional {
   padding: clamp(48px, 8vw, 96px) 0;
 }
 
-.ty-hero {
-  padding-top: clamp(40px, 7vw, 80px);
-  padding-bottom: clamp(40px, 6vw, 72px);
-}
-
-.ty-hero__inner {
-  max-width: 680px;
-}
-
-/* ── Status line ───────────────────────────────────────────────────────────── */
+/* ── Status eyebrow ────────────────────────────────────────────────────────── */
 .ty-status {
-  color: var(--accent-gold);
+  color: var(--omn-accent);
   font-size: 10px;
   letter-spacing: 0.3em;
   margin-bottom: 20px;
 }
 
-/* ── Headlines ─────────────────────────────────────────────────────────────── */
+/* ── Functional-state headlines ────────────────────────────────────────────── */
 .ty-headline {
   font-size: clamp(28px, 6vw, 52px);
   line-height: 1.1;
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
   margin-bottom: 28px;
   text-wrap: balance;
 }
 
-.ty-headline--hero {
-  font-size: clamp(32px, 7vw, 60px);
-  margin-bottom: 24px;
-}
-
-.ty-subheadline {
-  font-size: clamp(24px, 4vw, 40px);
-  line-height: 1.15;
-  color: var(--text-primary);
-  margin-bottom: 36px;
-  text-wrap: balance;
-}
-
-/* ── Confirmation block ────────────────────────────────────────────────────── */
-.ty-confirm {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px 0;
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: 28px;
-}
-
-.ty-confirm__row {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.ty-confirm__label {
-  flex-shrink: 0;
-  width: 160px;
-}
-
-.ty-confirm__value {
-  font-family: var(--font-sans);
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-/* ── Body text ─────────────────────────────────────────────────────────────── */
+/* ── Functional-state body text ────────────────────────────────────────────── */
 .ty-body {
-  font-family: var(--font-sans);
+  font-family: var(--omn-font-body);
   font-size: var(--text-base);
   line-height: 1.75;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
   max-width: 600px;
-}
-
-.ty-body--hero {
-  margin-bottom: 0;
 }
 
 /* ── Links ─────────────────────────────────────────────────────────────────── */
 .ty-link {
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
   text-decoration: underline;
   text-underline-offset: 3px;
   transition: color 0.2s;
 }
-
 .ty-link:hover {
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
 }
 
 /* ── Loading bar ───────────────────────────────────────────────────────────── */
@@ -438,14 +490,14 @@ onMounted(async () => {
 .ty-loading__bar {
   width: 160px;
   height: 1px;
-  background: var(--border-subtle);
+  background: var(--omn-border-subtle);
   overflow: hidden;
 }
 
 .ty-loading__fill {
   height: 100%;
   width: 40%;
-  background: var(--accent-gold);
+  background: var(--omn-accent);
   animation: ty-scan 1.6s ease-in-out infinite;
 }
 
@@ -456,7 +508,7 @@ onMounted(async () => {
 
 .ty-loading__label {
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
 }
 
 /* ── Pending ───────────────────────────────────────────────────────────────── */
@@ -470,12 +522,12 @@ onMounted(async () => {
 
 .ty-pending__label {
   font-size: clamp(18px, 3vw, 24px);
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
   font-style: italic;
 }
 
 .ty-pending__sub {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
 }
 
 /* ── Error / Pending-timeout ────────────────────────────────────────────────── */
@@ -488,108 +540,95 @@ onMounted(async () => {
   margin-top: 28px;
 }
 
-/* ── What's next ───────────────────────────────────────────────────────────── */
-.ty-next {
-  max-width: 900px;
+/* ── Hero trust strip (inside #trust slot of SectionHero) ──────────────────── */
+.ty-order-ref {
+  font-family: var(--omn-font-body);
+  letter-spacing: 0.1em;
+  color: var(--omn-text-primary);
 }
 
-.founding-section__eyebrow {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  margin-bottom: 16px;
-}
-
-.ty-next__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: clamp(28px, 4vw, 48px);
-}
-
-.ty-next__item {
+/* ── "What's next" numbered list (inside #body-extra slot of § 02) ──────────
+   Rendered inside SectionLede's .section-lede__extra container. */
+.ty-next-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-5);
 }
 
-.ty-next__num {
+.ty-next-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.ty-next-num {
+  font-family: var(--omn-font-body);
   font-size: 10px;
-  color: var(--text-tertiary);
+  letter-spacing: 0.2em;
+  color: var(--omn-accent);
+  flex-shrink: 0;
+  padding-top: 3px;
+  min-width: 20px;
 }
 
-.ty-next__title {
-  font-family: var(--font-sans);
+.ty-next-title {
+  font-family: var(--omn-font-body);
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.4;
+  color: var(--omn-text-primary);
+  display: block;
+  margin-bottom: 4px;
 }
 
-.ty-next__desc {
-  font-family: var(--font-sans);
+.ty-next-desc {
+  font-family: var(--omn-font-body);
   font-size: 14px;
   line-height: 1.7;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
   margin: 0;
 }
 
-.ty-next__link {
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  color: var(--text-tertiary);
-  text-decoration: none;
-  margin-top: 4px;
-  transition: color 0.2s;
+/* ── Refund reminder — between SectionLede and SectionFinalCTA ──────────────── */
+.ty-refund-wrap {
+  background: var(--omn-bg-page);
 }
 
-.ty-next__link:hover {
-  color: var(--text-primary);
-}
-
-/* ── Refund note ───────────────────────────────────────────────────────────── */
 .ty-refund-note {
-  padding: 24px 0;
+  padding: 20px 0;
+  font-family: var(--omn-font-body);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--omn-text-tertiary);
+  border-top: 1px solid var(--omn-border-subtle);
+  margin: 0;
 }
 
 .ty-refund-note__link {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   text-decoration: underline;
   text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.ty-refund-note__link:hover {
+  color: var(--omn-text-secondary);
 }
 
-/* ── Final CTA ─────────────────────────────────────────────────────────────── */
-.ty-final {
-  padding-bottom: clamp(64px, 12vw, 128px);
-}
-
-.ty-final__inner {
+/* ── Final CTA dual-button layout (inside #cta slot of SectionFinalCTA) ──────── */
+.ty-final-ctas {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: center;
 }
 
-.ty-final__prompt {
-  font-size: clamp(20px, 3.5vw, 28px);
-  font-style: italic;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-/* ── Mobile adjustments ─────────────────────────────────────────────────────── */
-@media (max-width: 480px) {
-  .ty-confirm__label {
-    width: auto;
-    display: block;
-  }
-
-  .ty-confirm__row {
+/* ── Mobile ─────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .ty-final-ctas {
     flex-direction: column;
-    gap: 4px;
-  }
-
-  .ty-next__grid {
-    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 }
 </style>
