@@ -360,6 +360,24 @@ export default defineNuxtPlugin(() => {
       },
 
       trackAnalysisStart: () => {
+        try {
+          if (tiktokPixelId && (window as any).ttq) {
+            ;(window as any).ttq.track('ViewContent', {
+              content_type: 'product',
+              content_name: 'Archetype Reading',
+              content_id: 'archetype_reading',
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackAnalysisStart TikTok error:', err) }
+        try {
+          if (metaPixelId && (window as any).fbq) {
+            ;(window as any).fbq('track', 'ViewContent', {
+              content_name: 'Archetype Reading',
+              content_type: 'product',
+              content_ids: ['archetype_reading'],
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackAnalysisStart Meta error:', err) }
         safeTrack('analysis_start', {
           device_type: getDeviceType(),
           ...getUtmParams(),

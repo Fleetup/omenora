@@ -402,7 +402,7 @@ async function triggerApiCall() {
       $trackViewContent({
         content_name: store.report?.archetypeName || 'Destiny Reading Preview',
         content_id: store.report?.archetypeName || 'preview',
-        value: 9.99,
+        value: 20,
         currency: 'USD',
       })
       $trackPreviewLoaded({
@@ -666,7 +666,7 @@ async function handlePremiumCta() {
     // sessionStorage unavailable — proceed without context
   }
 
-  await navigateTo('/subscribe')
+  await navigateTo('/founding')
 }
 
 async function handlePayment() {

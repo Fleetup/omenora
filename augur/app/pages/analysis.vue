@@ -9,10 +9,8 @@
       </template>
     </AppHeader>
 
-    <!-- Progress bar -->
-    <div class="progress-track">
-      <div class="progress-fill" :style="{ width: progressPct + '%' }" />
-    </div>
+    <!-- Progress bar — canonical QuizProgressBar (bronze fill) -->
+    <QuizProgressBar :current="currentStep + 1" :total="totalSteps" />
 
     <!-- Step container -->
     <div class="analysis-steps">
@@ -226,14 +224,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useAnalysisStore, type NatalChart } from '~/stores/analysisStore'
 import { LANGUAGES } from '~/utils/translations'
 import { useLanguage } from '~/composables/useLanguage'
 
-const { $trackStep1Complete, $trackQuestionAnswered, $trackAnalysisSubmit } = useNuxtApp() as any
+const { $trackStep1Complete, $trackQuestionAnswered, $trackAnalysisSubmit, $trackAnalysisStart } = useNuxtApp() as any
 
 useSeoMeta({ title: 'Your Free Personality & Astrology Reading', robots: 'noindex, nofollow' })
+useHead({ link: [{ rel: 'canonical', href: 'https://omenora.com/analysis' }] })
+
+onMounted(() => {
+  $trackAnalysisStart?.()
+})
 
 const store = useAnalysisStore()
 const { t } = useLanguage()
@@ -257,7 +260,6 @@ const stepConfig = [
 ]
 
 const totalSteps = stepConfig.length
-const progressPct = computed(() => ((currentStep.value + 1) / totalSteps) * 100)
 
 // ── Clarity options ───────────────────────────────────────────────────────────
 const clarityOptions = [
@@ -490,20 +492,8 @@ async function handleSubmit() {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--surface-base);
-}
-
-/* ── Progress bar ── */
-.progress-track {
-  height: 2px;
-  background: var(--border-subtle);
-  flex-shrink: 0;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--text-primary);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--omn-bg-page);
+  color: var(--omn-text-primary);
 }
 
 /* ── Step container ── */
@@ -523,27 +513,27 @@ async function handleSubmit() {
 
 /* ── Step label ── */
 .analysis-step__label {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   margin-bottom: 20px;
 }
 
 /* ── Step headline ── */
 .analysis-step__headline {
-  font-family: var(--font-sans);
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
   font-size: clamp(36px, 8vw, 64px);
   line-height: 1.05;
   letter-spacing: -0.03em;
   margin: 0 0 32px;
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
 }
 
 /* ── Decorative rule ── */
 .analysis-step__rule {
   width: 48px;
   height: 1px;
-  background: var(--text-secondary);
+  background: var(--omn-text-secondary);
   margin-bottom: 36px;
 }
 
@@ -554,35 +544,40 @@ async function handleSubmit() {
 /* ── Field label ── */
 .field-label {
   display: block;
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   margin-bottom: 12px;
 }
 
-/* ── Editorial inputs ── */
+/* ── Editorial inputs ──
+   Aligned to QuizTextInput/QuizDateInput pattern: --omn-font-display,
+   weight-light, --omn-border-primary baseline, --omn-accent on focus,
+   italic placeholder. Width cap (480px) and bottom margin preserved
+   because /analysis lays inputs out inline rather than via gap. */
 .editorial-input {
   width: 100%;
   max-width: 480px;
-  padding: 14px 0;
-  font-family: var(--font-sans);
-  font-size: 24px;
-  font-weight: 300;
-  color: var(--text-primary);
+  padding: var(--space-4) 0;
+  font-family: var(--omn-font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  letter-spacing: var(--tracking-snug);
+  color: var(--omn-text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--omn-border-primary);
   outline: none;
   border-radius: 0;
-  transition: border-color 0.2s;
+  transition: border-color var(--omn-duration-fast) var(--omn-ease);
   display: block;
   margin-bottom: 28px;
 }
 
 .editorial-input:focus {
-  border-bottom-color: var(--text-primary);
+  border-bottom-color: var(--omn-accent);
 }
 
 .editorial-input::placeholder {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   font-style: italic;
 }
 
@@ -590,20 +585,24 @@ input[type="date"],
 input[type="time"] {
   -webkit-appearance: none;
   appearance: none;
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 /* ── Field hint ── */
 .field-hint {
   margin-top: 10px;
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
 }
 
-/* ── Quiz options ── */
+/* ── Quiz options ──
+   Aligned to QuizSingleSelect chip pattern: --omn-bg-primary surface,
+   --omn-border-subtle baseline, hover lifts to --omn-bg-elevated +
+   --omn-border-emphasis, selected uses bronze --omn-accent border.
+   Border-radius stays 0 per design system (editorial cards are square). */
 .quiz-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-3);
   max-width: 540px;
 }
 
@@ -614,62 +613,73 @@ input[type="time"] {
 .quiz-option {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: transparent;
-  border: 1px solid var(--border-subtle);
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--omn-bg-primary);
+  border: 1px solid var(--omn-border-subtle);
+  border-radius: 0;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s, background 0.15s;
   font-family: inherit;
+  transition:
+    background var(--omn-duration-fast) var(--omn-ease),
+    border-color var(--omn-duration-fast) var(--omn-ease),
+    transform var(--omn-duration-fast) var(--omn-ease);
 }
 
 .quiz-option:hover {
-  border-color: var(--border-strong);
-  background: var(--border-faint);
+  background: var(--omn-bg-elevated);
+  border-color: var(--omn-border-emphasis);
 }
+.quiz-option:active { transform: translateY(1px); }
 
 .quiz-option--selected {
-  border-color: var(--text-primary);
-  background: var(--border-subtle);
+  background: var(--omn-bg-elevated);
+  border-color: var(--omn-accent);
+}
+
+.quiz-option:focus-visible {
+  outline: 2px solid var(--omn-accent);
+  outline-offset: 3px;
 }
 
 .quiz-option__letter {
-  color: var(--text-tertiary);
-  font-size: 10px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
   flex-shrink: 0;
   width: 16px;
 }
 
 .quiz-option__text {
-  font-family: var(--font-sans);
-  font-size: 18px;
-  font-weight: 400;
-  color: var(--text-primary);
+  font-family: var(--omn-font-body);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-regular);
+  color: var(--omn-text-primary);
   line-height: 1.3;
+  letter-spacing: var(--tracking-body);
 }
 
 /* ── Quiz question header ── */
 .quiz-question {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: var(--space-4);
   margin-bottom: 28px;
   max-width: 540px;
 }
 
 .quiz-question__num {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   flex-shrink: 0;
   padding-top: 4px;
 }
 
 .quiz-question__text {
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 400;
+  font-family: var(--omn-font-body);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-regular);
   line-height: 1.4;
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
   margin: 0;
 }
 
@@ -689,23 +699,24 @@ input[type="time"] {
 .skip-time-btn {
   background: none;
   border: none;
-  color: var(--text-tertiary);
-  font-size: 9px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
   cursor: pointer;
   padding: 0;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  transition: color 0.15s;
+  font-family: var(--omn-font-mono);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-mid);
+  text-transform: uppercase;
+  transition: color var(--omn-duration-fast) var(--omn-ease);
 }
 
-.skip-time-btn:hover { color: var(--text-primary); }
+.skip-time-btn:hover { color: var(--omn-text-primary); }
 
 /* ── Navigation ── */
 .analysis-step__nav {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-5);
   flex-wrap: wrap;
 }
 
@@ -713,28 +724,28 @@ input[type="time"] {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-tertiary);
-  font-size: 10px;
-  letter-spacing: 0.3em;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  font-family: var(--font-sans);
-  font-weight: 600;
+  font-family: var(--omn-font-mono);
+  font-weight: var(--weight-medium);
   padding: 0;
-  transition: color 0.2s;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
 
-.back-link:hover { color: var(--text-primary); }
+.back-link:hover { color: var(--omn-text-primary); }
 
 /* ── Error ── */
 .step-error {
-  margin-top: 16px;
-  color: #8B4513;
+  margin-top: var(--space-4);
+  color: var(--omn-error);
 }
 
 /* ── Trust footer ── */
 .trust-footer {
   text-align: center;
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   padding: 20px clamp(20px, 5vw, 80px) clamp(32px, 6vw, 48px);
   max-width: 1400px;
   margin: 0 auto;
@@ -742,16 +753,18 @@ input[type="time"] {
 
 /* ── Header step counter ── */
 .analysis-header__step {
-  color: var(--text-tertiary);
-  font-size: 10px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
+  font-family: var(--omn-font-mono);
+  letter-spacing: var(--tracking-caps);
 }
 
-/* ── Step transitions ── */
+/* ── Step transitions — canonical motion tokens ── */
 .slide-left-enter-active,
 .slide-left-leave-active,
 .slide-right-enter-active,
 .slide-right-leave-active {
-  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--omn-duration-base) var(--omn-ease);
 }
 
 .slide-left-enter-from  { opacity: 0; transform: translateX(32px); }
@@ -759,7 +772,7 @@ input[type="time"] {
 .slide-right-enter-from { opacity: 0; transform: translateX(-32px); }
 .slide-right-leave-to   { opacity: 0; transform: translateX(32px); }
 
-/* ── CTAButton disabled opacity ── */
+/* ── Advance button disabled state ── */
 .advance-btn:disabled,
 .advance-btn[disabled] {
   opacity: 0.35;
@@ -769,9 +782,9 @@ input[type="time"] {
 /* ── Responsive ── */
 @media (max-width: 480px) {
   .analysis-step__headline { font-size: clamp(30px, 9vw, 42px); }
-  .quiz-option__text { font-size: 16px; }
-  .quiz-question__text { font-size: 19px; }
-  .editorial-input { font-size: 20px; }
+  .quiz-option__text { font-size: var(--text-md); }
+  .quiz-question__text { font-size: var(--text-lg); }
+  .editorial-input { font-size: var(--text-lg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -779,7 +792,7 @@ input[type="time"] {
   .slide-left-leave-active,
   .slide-right-enter-active,
   .slide-right-leave-active {
-    transition: opacity 0.15s;
+    transition: opacity var(--omn-duration-fast) var(--omn-ease);
   }
   .slide-left-enter-from,
   .slide-right-enter-from { transform: none; }
