@@ -336,11 +336,22 @@ export default defineNuxtPlugin(() => {
               content_type: 'product',
               content_name: 'Compatibility Reading',
               content_id: 'compatibility_reading',
-              value: 9.99,
+              value: 4.99,
               currency: 'USD',
             })
           }
         } catch (err) { console.warn('[B-3] trackCompatibilityPaywallView TikTok error:', err) }
+        try {
+          if (metaPixelId && (window as any).fbq) {
+            ;(window as any).fbq('track', 'AddToCart', {
+              value: 4.99,
+              currency: 'USD',
+              content_name: 'Compatibility Reading',
+              content_type: 'product',
+              content_ids: ['compatibility_reading'],
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackCompatibilityPaywallView Meta error:', err) }
         safeTrack('compatibility_paywall_view', {
           score: params.score,
           device_type: getDeviceType(),

@@ -391,7 +391,7 @@
         <AppButton
           variant="primary"
           :arrow="false"
-          :disabled="isProcessing"
+          :disabled="isProcessing || !isEmailValid"
           class="pay-card__btn"
           :class="{ 'pay-card__btn--processing': isProcessing }"
           @click="handleCheckout()"
@@ -401,8 +401,8 @@
         </AppButton>
       </div>
 
-      <!-- Subtle upsell link to /subscribe -->
-      <NuxtLink to="/subscribe" class="paywall__premium-link annotation">
+      <!-- Upsell link to Founding Member -->
+      <NuxtLink to="/founding" class="paywall__premium-link annotation">
         {{ t('compatOrPremium') }}
       </NuxtLink>
 
@@ -471,6 +471,7 @@ import { useAuth } from '~/composables/useAuth'
 import { useClarity } from '~/composables/useClarity'
 
 useSeoMeta({ title: 'Your Love Compatibility Reading', robots: 'noindex, nofollow' })
+useHead({ link: [{ rel: 'canonical', href: 'https://omenora.com/compatibility' }] })
 
 const store = useAnalysisStore()
 const route = useRoute()
@@ -1094,8 +1095,8 @@ onMounted(async () => {
     return
   }
 
-  // CASE D — no recognised param → redirect
-  await navigateTo('/report')
+  // CASE D — no recognised param → redirect to quiz funnel
+  await navigateTo('/compatibility-quiz')
 })
 
 </script>
