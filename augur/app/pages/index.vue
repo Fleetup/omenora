@@ -29,10 +29,10 @@
       </template>
       <template #trust>
         <span class="hero-trust__dot hero-trust__dot--sage" />
-        Real Swiss Ephemeris data
+        Real Swiss Ephemeris
         <span class="hero-trust__sep">·</span>
         <span class="hero-trust__dot hero-trust__dot--sage" />
-        4 interpretive traditions
+        4 traditions
         <span class="hero-trust__sep">·</span>
         <span class="hero-trust__dot hero-trust__dot--sage" />
         14-day refund
@@ -281,7 +281,7 @@ const heroVariant = computed<HeroVariant>(() => {
 // Lines 0/2 render as static text; line 1 is intentionally empty so the
 // hero's animated bronze underline (the #em slot) carries the emphasized
 // word on its own line. Final line gets the quiet (secondary) color.
-const heroDisplayLines = ['Know yourself like the sky', '', 'you.']
+const heroDisplayLines = ['Know yourself', 'like the sky', 'you.']
 const heroSubhead = 'Your complete natal reading — computed from your exact birth moment, read across Western, Vedic, BaZi, and Tarot. Reserve at $20 as a Founding Member and lock in 50% off OMENORA Premium for life.'
 
 const currentYear = computed(() => new Date().getFullYear())

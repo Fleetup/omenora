@@ -161,7 +161,7 @@ const hasEm = computed(() => !!useSlots().em)
                 For simplicity: #em renders after line i === displayLines.length - 2.
               -->
               {{ line }}<template v-if="hasEm && i === displayLines.length - 2">
-                <span
+                {{ ' ' }}<span
                   class="hero__display-em"
                   :class="{ 'hero__display-em--lit': isRevealed }"
                 ><slot name="em" /></span></template>
@@ -473,21 +473,6 @@ const hasEm = computed(() => !!useSlots().em)
   }
   .hero-band__image {
     background-position: var(--section-img-pos-mobile, center 62%);
-  }
-  /* Trust line legibility — at narrow widths the cosmic-gold imagery sits
-     directly behind the trust line. A short dark gradient + blur restores
-     contrast without darkening the whole hero. Matches sandbox §2126. */
-  .hero__trust {
-    background: linear-gradient(
-      180deg,
-      transparent 0%,
-      rgba(18, 18, 20, 0.75) 30%,
-      rgba(18, 18, 20, 0.85) 100%
-    );
-    padding: 12px 16px 12px 0;
-    margin-left: -16px;
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
   }
 }
 
