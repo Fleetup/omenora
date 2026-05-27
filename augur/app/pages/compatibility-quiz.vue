@@ -1,9 +1,14 @@
 <template>
   <div class="cq">
+    <!-- Editorial sticky header (sandbox §01 visual pattern) -->
+    <AppHeader />
+
+    <!-- Quiz progress bar sits directly under the header — uses bronze
+         fill (accent token) so it visually extends the header hairline. -->
     <QuizProgressBar :current="currentStepIndex + 1" :total="QUIZ_SCHEMA.length" />
 
     <Transition name="step-fade" mode="out-in">
-      <div :key="currentStepIndex" class="cq__step">
+      <div :key="currentStepIndex" class="cq__step" :class="{ 'cq__step--sticky-cta': step.type !== 'single_select' }">
 
         <!-- single_select -->
         <QuizSingleSelect
@@ -81,14 +86,14 @@
 
     <!-- Back button — hidden on reward screens and step 1 -->
     <div class="cq__nav">
-      <button
+      <AppButton
         v-if="step.type !== 'reward' && currentStepIndex > 0"
-        type="button"
-        class="cq__back"
+        variant="ghost"
+        size="sm"
         @click="goBack"
       >
         ← Back
-      </button>
+      </AppButton>
     </div>
 
     <!-- Loading overlay -->
@@ -120,6 +125,26 @@ import type { CompatibilityQuizAnswers } from '~/stores/analysisStore'
 
 const store = useAnalysisStore()
 const router = useRouter()
+
+useSeoMeta({
+  title: 'Compatibility Reading — OMENORA',
+  description: 'Discover how two charts align across Western, Vedic, BaZi, and Tarot — and what their connection actually means.',
+  robots: 'noindex, nofollow',
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: 'https://omenora.com/compatibility-quiz' }],
+})
+
+const {
+  $trackCompatibilityQuizStart,
+  $trackQuestionAnswered,
+  $trackInitiateCheckout,
+} = useNuxtApp()
+
+onMounted(() => {
+  $trackCompatibilityQuizStart?.()
+})
 
 // ── Local state ───────────────────────────────────────────────────────────────
 
@@ -248,6 +273,15 @@ async function onTextContinue(s: TextInputStep) {
 // ── Navigation ────────────────────────────────────────────────────────────────
 
 function advance() {
+  const currentStep = QUIZ_SCHEMA[currentStepIndex.value]
+  if (currentStep && $trackQuestionAnswered) {
+    const stepId = (currentStep as any).id ?? (currentStep as any).storeKey ?? (currentStep as any).storeTarget ?? String(currentStepIndex.value)
+    const answer = (currentStep as any).storeKey
+      ? String((store.compatibilityQuizAnswers as any)[(currentStep as any).storeKey] ?? 'continue')
+      : 'continue'
+    ;($trackQuestionAnswered as Function)({ questionId: stepId, answer })
+  }
+
   if (currentStepIndex.value < QUIZ_SCHEMA.length - 1) {
     currentStepIndex.value++
   }
@@ -267,6 +301,14 @@ async function runApiCall() {
   isLoading.value  = true
   apiError.value   = false
   loadingMsgIdx.value = 0
+
+  if ($trackInitiateCheckout) {
+    ;($trackInitiateCheckout as Function)({
+      value: 4.99,
+      currency: 'USD',
+      content_name: 'Compatibility Reading',
+    })
+  }
   loadingInterval = setInterval(() => {
     loadingMsgIdx.value++
   }, 1200)
@@ -317,9 +359,12 @@ onBeforeUnmount(() => {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--surface-base);
+  background: var(--omn-bg-page);
+  color: var(--omn-text-primary);
 }
 
+/* Step container — narrow form measure (32rem ≈ 512px). Editorial bg,
+   centered, with --space-* tokens for rhythm. */
 .cq__step {
   flex: 1;
   display: flex;
@@ -330,6 +375,9 @@ onBeforeUnmount(() => {
   margin: 0 auto;
   padding: var(--space-12) var(--space-6);
 }
+@media (min-width: 768px) {
+  .cq__step { padding: var(--space-16) var(--space-8); }
+}
 
 .cq__nav {
   max-width: 32rem;
@@ -338,33 +386,20 @@ onBeforeUnmount(() => {
   padding: var(--space-4) var(--space-6) var(--space-8);
 }
 
-.cq__back {
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  cursor: pointer;
-}
-
-.cq__back:hover {
-  color: var(--text-secondary);
-}
-
 .cq__loading {
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-base);
+  background: var(--omn-bg-page);
   z-index: 50;
 }
 
 .cq__loading-msg {
   text-align: center;
   padding: var(--space-6);
+  color: var(--omn-text-primary);
 }
 
 .cq__error {
@@ -379,14 +414,16 @@ onBeforeUnmount(() => {
 }
 
 .cq__error-msg {
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
 }
 
-/* Step transition */
+/* Step transition — uses canonical motion tokens so the timing
+   matches every other section reveal in the design system. */
 .step-fade-enter-active,
 .step-fade-leave-active {
-  transition: opacity var(--duration-base) var(--ease-out),
-              transform var(--duration-base) var(--ease-out);
+  transition:
+    opacity var(--omn-duration-base) var(--omn-ease),
+    transform var(--omn-duration-base) var(--omn-ease);
 }
 
 .step-fade-enter-from {
@@ -397,5 +434,25 @@ onBeforeUnmount(() => {
 .step-fade-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-fade-enter-active,
+  .step-fade-leave-active { transition: none; }
+}
+
+/* Sticky Continue CTA on mobile — pins the primary action button to the
+   viewport bottom so it remains reachable without scrolling. Applied to
+   all step types that render a Continue button (not single_select,
+   which auto-advances on tap with no Continue button needed). */
+@media (max-width: 767px) {
+  .cq__step--sticky-cta :deep(.app-button--primary) {
+    position: sticky;
+    bottom: 0;
+    bottom: env(safe-area-inset-bottom, 0px);
+    z-index: 10;
+    width: 100%;
+    align-self: stretch;
+  }
 }
 </style>

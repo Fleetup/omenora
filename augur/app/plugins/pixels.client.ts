@@ -139,7 +139,7 @@ export default defineNuxtPlugin(() => {
 
   // ─── B-3: UTM + context helpers ─────────────────────────────────────────────
   const UTM_SESSION_KEY = 'omenora_utms'
-  const UTM_KEYS = ['utm_source', 'utm_campaign', 'utm_adset', 'utm_creative', 'utm_medium', 'utm_content'] as const
+  const UTM_KEYS = ['utm_source', 'utm_campaign', 'utm_adset', 'utm_creative', 'utm_medium', 'utm_content', 'ttclid', 'fbclid'] as const
 
   function getUtmParams(): Record<string, string> {
     try {

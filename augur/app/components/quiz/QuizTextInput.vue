@@ -12,7 +12,7 @@
       :placeholder="placeholder"
       :maxlength="maxLength"
       :value="value ?? ''"
-      autocomplete="off"
+      autocomplete="on"
       @input="onInput"
       @keydown.enter="onContinue"
     />
@@ -85,36 +85,38 @@ function onContinue() {
 
 .text-input__subtext {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
 }
 
 .text-input__field {
   width: 100%;
   padding: var(--space-4) 0;
-  font-family: var(--font-sans);
+  font-family: var(--omn-font-display);
   font-size: var(--text-xl);
-  font-weight: 300;
-  color: var(--text-primary);
+  font-weight: var(--weight-light);
+  letter-spacing: var(--tracking-snug);
+  color: var(--omn-text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--omn-border-primary);
   outline: none;
   border-radius: 0;
-  transition: border-color var(--duration-fast) var(--ease-out);
+  transition: border-color var(--omn-duration-fast) var(--omn-ease);
 }
 
 .text-input__field:focus {
-  border-bottom-color: var(--text-primary);
+  /* Bronze accent on focus — editorial-system focus indicator. */
+  border-bottom-color: var(--omn-accent);
 }
 
 .text-input__field::placeholder {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   font-style: italic;
 }
 
 .text-input__disclaimer {
   margin: 0;
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   line-height: 1.6;
 }
 
