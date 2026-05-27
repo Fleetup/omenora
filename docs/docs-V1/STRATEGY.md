@@ -18,13 +18,17 @@ It is not a horoscope app. Horoscopes are written for one-in-twelve people who s
 
 ## 2. The product
 
-### The primary product is the mobile app.
+### OMENORA is a mobile-first product.
 
-The mobile app is where OMENORA monetizes. Subscription, premium features, retention, and lifetime value all happen inside the mobile app.
+The mobile app is the product. Subscription, premium features, retention, lifetime value, Counsel chat, daily personalized content, and all four product surfaces (Today / Readings / Counsel / Tradition switching) live inside the mobile app.
 
 ### The web exists to acquire users into the mobile app.
 
 The web is the top-of-funnel acquisition mechanism. It does not exist to monetize standalone. Web pages either drive users into the mobile subscription, or they support brand and trust.
+
+### Web and mobile are parallel workstreams, not sequential.
+
+Both must complete before paid acquisition scales. Web cleanup does not precede mobile launch; they ship together. Mobile is the destination, web is the path — and both paths must be built.
 
 ### Web has two phases.
 
@@ -32,7 +36,7 @@ The web is the top-of-funnel acquisition mechanism. It does not exist to monetiz
 Web runs quiz funnels under multiple curiosity hooks. Each funnel drives the same paywall conversion event. Paid traffic from TikTok and Meta lands on these funnels. After conversion, users install and activate the mobile app.
 
 **Phase 2 — Informational marketing site.**
-Once the mobile app has reached operational maturity and App Store acquisition becomes the dominant conversion surface, web is redesigned into a pure informational marketing site. SEO content, brand presence, trust signals, support documentation. The web no longer hosts conversion funnels; it directs visitors to download the app.
+Once the mobile app has reached operational maturity and App Store acquisition becomes the dominant conversion surface, web is redesigned into a pure informational marketing site. SEO content, brand presence, trust signals, support documentation. The web no longer hosts conversion funnels; it directs visitors to download the app. App Store and Google Play download buttons become primary CTAs on the homepage.
 
 ---
 
@@ -64,7 +68,7 @@ Founding Members solves all three at once. A $20 deposit at `/founding`:
 In Phase 1 (current), all acquisition funnels can drive to either Founding Member deposit or future Premium subscription paywall depending on launch state:
 
 - Before mobile app launch: funnels drive to `/founding` deposit ($20 one-time)
-- At and after mobile app launch: funnels drive to subscription paywall ($14.99/mo with trial, or $99.99/yr with trial)
+- At and after mobile app launch: funnels drive to subscription paywall — hard paywall, no trial ($5.99/week, $14.99/month, or $99.99/year)
 
 Founding Members is therefore not a parallel side-channel. It is the active acquisition target during the pre-launch phase and the conversion seed for subscription at launch.
 
@@ -113,7 +117,7 @@ OMENORA monetizes through four mechanisms across the product lifecycle:
 
 ### Founding Member deposit (pre-launch capital)
 
-$20 one-time founding deposit at `/founding`. Active during pre-launch phase. Founding Members lock in 50% off Premium subscription for life. Closes at App Store launch at scale.
+$20 one-time founding deposit at `/founding`. Active during pre-launch phase. Founding Members lock in 50% off Premium subscription for life — applicable to any plan: Weekly at $2.99/wk (vs $5.99), Monthly at $7.50/mo (vs $14.99), or Annual at $49.99/yr (vs $99.99). Founder picks their plan at launch and may switch between plans while founding status persists. Closes at App Store launch at scale.
 
 ### Subscription (primary post-launch revenue)
 
@@ -166,6 +170,8 @@ On-demand generation of full reading types: Archetype, Natal Chart, 90-Day Forec
 
 AI chat conversations grounded in the user's natal chart and prior reading history. Capped at 30 conversations per month in Premium scope; expandable via Boost Pack credits.
 
+**Counsel is hosted only in the mobile app for v1.** Web pages MAY name Counsel as a Founding Member benefit and as a named feature of the OMENORA mobile app — this is correct app-landing-page marketing per 2026 conversion research (specificity beats vagueness; specific feature names convert 23% better than generic "premium experience" copy). Web pages MUST NOT host Counsel chat UI and MUST NOT imply Counsel access is available via web subscription. See Section 11 open question on cross-platform Counsel for post-launch.
+
 ### Tradition switching
 
 Free movement between four interpretive traditions (Western, Vedic, BaZi, Tarot) on any reading. Unlimited inside Premium.
@@ -183,6 +189,7 @@ The following have been explicitly eliminated from the product roadmap. They exi
 - Per-tradition one-time reports (BaZi report standalone, Vedic report standalone, etc.)
 - Multi-tier subscription (Standard / Premium / Premium+ — single tier model only)
 - Daily archetype on the free `/daily` page (Premium feature only)
+- Counsel chat UI hosted on web (chat widget, message input, conversation interface) — Counsel is mobile-only in v1. Web markets Counsel as a mobile feature (permitted and conversion-positive per 2026 specificity research) but does not host the chat experience itself. Strategic reasoning: Counsel is the retention/value anchor for Premium subscription; gating the actual usage behind mobile install drives users where OMENORA monetizes. Web checkout → mobile download → mobile Counsel access is the entire architecture. Cross-platform Counsel for v1.1/v1.2 is tracked as an open question in Section 11.
 
 ---
 
@@ -235,7 +242,7 @@ All funnels converge on a single paywall conversion event.
 The conversion offer is determined by lifecycle phase:
 
 - **Pre-launch phase:** $20 Founding Member deposit at `/founding`. Locks in 50% off Premium for life. Seeds the Day-1 subscriber base for App Store launch.
-- **Post-launch phase:** Subscription trial — $14.99/mo or $99.99/yr — with 7-day free trial. Immediate post-paywall IAP upsell offers $4.99 single compatibility reading or $4.99 annual calendar.
+- **Post-launch phase:** Hard-paywall subscription — $5.99/week, $14.99/month, or $99.99/year, no trial on any plan. Immediate post-paywall IAP upsell offers $4.99 single compatibility reading or $4.99 annual calendar.
 
 **Activation layer (mobile).**
 After payment, the user installs and activates the mobile app. Inside the app, the four product surfaces deliver value:
@@ -260,6 +267,7 @@ These are tracked here so they cannot be re-litigated in tactical conversations:
 - Felt-personalization vs actual-personalization: does the 25-question quiz data flow into the generation prompt, or is some portion of it psychological theater?
 - Mobile App Store launch timing and the corresponding Phase 2 web informational redesign trigger criteria.
 - Founding Members close criteria: target deposit count, target deposit revenue, or App Store launch date.
+- **Cross-platform Counsel (post-launch decision).** Market leader Nebula offers Counsel chat on both web and mobile and explicitly markets cross-platform chat as a feature. 2026 data shows AI features benefit from a "60-second aha moment" effect that triples willingness-to-pay when users experience AI value before committing; cross-device sync is a key retention driver. v1 locks Counsel as mobile-only. Decision to add limited web Counsel (try-before-download conversion accelerator) deferred until after mobile launches and we have baseline LTV/CAC data. Trigger to revisit: when mobile MAU stabilizes and unit economics are measured, evaluate web Counsel against mobile-only retention metrics.
 
 ### Decision history — trial policy
 

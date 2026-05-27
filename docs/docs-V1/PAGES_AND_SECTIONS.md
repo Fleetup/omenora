@@ -46,6 +46,20 @@
 
 ## 2. Homepage — section-by-section content lock
 
+### Future content lock — App Store download buttons (POST-MOBILE-LAUNCH)
+
+When the OMENORA mobile app ships to the App Store, the homepage adds App Store and Google Play download badges as primary CTAs. Trigger: mobile app status changes from PRE-LAUNCH to LIVE in PRODUCT_MAP.md §1.
+
+Required changes when triggered:
+- Add App Store badge (official Apple-supplied SVG) in hero section
+- Add Google Play badge (official Google-supplied SVG) in hero section if Android is enabled
+- Wire badges to App Store / Play Store product pages
+- Update hero copy to reference download as the primary action
+- Update Final CTA section to emphasize download instead of Founding Member deposit
+- Founding Member deposit transitions from primary CTA to closed offer (per STRATEGY.md §4 close criteria)
+
+Until that trigger, the homepage hero CTA remains Founding Member ($20 deposit) per STRATEGY.md §4.
+
 Route: `/`
 File: `app/pages/index.vue`
 Status: **REDESIGNED** with content drift requiring correction.
@@ -288,6 +302,7 @@ Status: **PRE-REDESIGN**
 ### What's correct
 
 - Primary CTA already routes to `/founding`
+- **Counsel-marketing cleanup required:** Premium upsell subtitle (`reportPremiumSubtitle` translation key) describes "Counsel access" as a Premium benefit. Counsel is mobile-only per STRATEGY.md §7 and §8. Rewrite to describe Premium as unlocking the OMENORA mobile app experience, not Counsel specifically. Applies to all six language variants (en, es, pt, hi, ko, zh).
 - noindex meta set
 
 ### What needs work
@@ -377,7 +392,7 @@ Status: **PRE-REDESIGN**
 
 - **Content update required:**
   - Remove "$2.99 Destiny Reading Reports" reference (`refund-policy.vue:43`) — no product at this price
-  - Remove "$4.99/month Subscriptions" reference (`refund-policy.vue:57`) — superseded by $14.99/mo per PRODUCT_MAP.md §6.2
+  - Remove "$4.99/month Subscriptions" reference (`refund-policy.vue:57`) — superseded by 3-plan subscription structure (Weekly $5.99 / Monthly $14.99 / Annual $99.99, hard paywall no trial) per PRODUCT_MAP.md §1
   - Add Founding Member deposit refund language (Stripe-standard 14-day window or per terms)
   - Add post-launch subscription refund language (App Store / RevenueCat policies)
 - Migrate token CSS to `--omn-*`
@@ -414,8 +429,9 @@ Status: **DEPRECATED — DO NOT REDESIGN**
 ### Why deprecated
 
 - Sells the deprecated Daily Horoscope Subscription at the legacy `$6.99/mo` price (PRODUCT_MAP.md §6.2)
-- The locked subscription model is mobile-only ($14.99/mo via RevenueCat per STRATEGY.md §6)
+- The locked subscription model is mobile-only (3-plan structure: Weekly $5.99 / Monthly $14.99 / Annual $99.99, hard paywall no trial, via RevenueCat per STRATEGY.md §6)
 - Per PRODUCT_MAP.md §7, Premium subscription env vars are not configured — `/subscribe` returns 503 on any attempted checkout
+- "Full Counsel access" listed as a Premium benefit — off-strategy. Counsel is mobile-only per STRATEGY.md §7 and §8. Web cannot fulfill this promise.
 
 ### Disposition
 

@@ -6,15 +6,18 @@
 
 ---
 
-## The five documents
+## The documents
 
-| Document | What it answers |
-|---|---|
-| [STRATEGY.md](./STRATEGY.md) | **Why.** What OMENORA is, who it serves, how it makes money, what we are not selling. The locked strategic direction. |
-| [PRODUCT_MAP.md](./PRODUCT_MAP.md) | **What.** Every product, SKU, funnel surface, and price, with current status (LIVE / PRE-LAUNCH / DEPRECATED). |
-| [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) | **How (visual).** Atoms, sections, composables, tokens, utilities. The visual operating system. |
-| [PAGES_AND_SECTIONS.md](./PAGES_AND_SECTIONS.md) | **Where.** Every page in the codebase with strategic role, redesign status, and section-by-section content lock. |
-| [DEPRECATED.md](./DEPRECATED.md) | **What to remove.** Consolidated cleanup list with file:line evidence and tier-ranked removal sequence. |
+CONTEXT.md is the orientation entry point. The five master documents below cover strategic, product, design, page, and deprecation references.
+
+| Document | Role | What it answers |
+|---|---|---|
+| [CONTEXT.md](./CONTEXT.md) | **Orientation (read first)** | Repo paths, tech stack, workflow discipline, current phase, known blockers. The operational context Claude needs to start work without asking clarifying questions. |
+| [STRATEGY.md](./STRATEGY.md) | Strategic | **Why.** What OMENORA is, who it serves, how it makes money, what we are not selling. The locked strategic direction. |
+| [PRODUCT_MAP.md](./PRODUCT_MAP.md) | Strategic | **What.** Every product, SKU, funnel surface, and price, with current status (LIVE / PRE-LAUNCH / DEPRECATED). |
+| [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) | Strategic | **How (visual).** Atoms, sections, composables, tokens, utilities. The visual operating system. |
+| [PAGES_AND_SECTIONS.md](./PAGES_AND_SECTIONS.md) | Strategic | **Where.** Every page in the codebase with strategic role, redesign status, and section-by-section content lock. |
+| [DEPRECATED.md](./DEPRECATED.md) | Strategic | **What to remove.** Consolidated cleanup list with file:line evidence and tier-ranked removal sequence. |
 
 ---
 
@@ -22,11 +25,12 @@
 
 Read in this order the first time:
 
-1. **STRATEGY.md** — establishes the why
-2. **PRODUCT_MAP.md** — instantiates the why as a product catalog
-3. **DESIGN_SYSTEM.md** — establishes the visual primitives
-4. **PAGES_AND_SECTIONS.md** — applies primitives to pages, with strategic role per page
-5. **DEPRECATED.md** — what doesn't fit anymore
+1. **CONTEXT.md** — orientation: repo paths, stack, workflow, current phase
+2. **STRATEGY.md** — establishes the why
+3. **PRODUCT_MAP.md** — instantiates the why as a product catalog
+4. **DESIGN_SYSTEM.md** — establishes the visual primitives
+5. **PAGES_AND_SECTIONS.md** — applies primitives to pages, with strategic role per page
+6. **DEPRECATED.md** — what doesn't fit anymore
 
 After the first read, jump directly to the document that answers your current question.
 
@@ -38,6 +42,7 @@ After the first read, jump directly to the document that answers your current qu
 
 Before any implementation work begins, the relevant master documents must be read. Specifically:
 
+- **Repo / stack / workflow / blocker questions** ("where does the mobile app live?", "is RevenueCat configured?") → CONTEXT.md
 - **Strategy questions** ("should we add a daily archetype to the free page?") → STRATEGY.md
 - **Pricing or SKU questions** ("what does the $20 founding deposit get the buyer?") → PRODUCT_MAP.md
 - **Component or token questions** ("which section molecule do I use for a testimonial block?") → DESIGN_SYSTEM.md

@@ -84,9 +84,10 @@ Platform: iOS mobile app (Android disabled in current build). RevenueCat-managed
 ### Implementation status
 
 - Stripe webhook credit-grant logic exists at `augur/server/api/stripe/webhook.post.ts` (lines ~77–82 and 748)
-- Branches handle `counsel_boost_spark`, `counsel_boost_insight`, `counsel_boost_ascend` → `grantCredits()`
-- **No purchase endpoints exist** for Counsel Boost Packs on web
+- Branches handle `counsel_boost_spark`, `counsel_boost_insight`, `counsel_boost_ascend` → `grantCredits()` 
+- **No purchase endpoints exist** for Counsel Boost Packs on web — and none should be created. Counsel is mobile-only per STRATEGY.md §7 and §8.
 - Mobile purchase invocation pending RevenueCat integration
+- **Counsel is mobile-only.** The webhook credit-grant branches exist for future mobile→backend sync only. Web must not surface Counsel UI, paywall, purchase, or marketing copy.
 
 ---
 
@@ -106,7 +107,7 @@ Platform: omenora.com (Nuxt 3). Stripe-managed.
 | Endpoint | `POST /api/founding/create-checkout` |
 | Webhook branch | `metadata.type === 'founding_member'` |
 | Surface page | `/founding` |
-| Reward | 50% off Premium subscription for life |
+| Reward | 50% off Premium subscription for life — applies to any plan (Weekly $2.99/wk, Monthly $7.50/mo, or Annual $49.99/yr). Founder selects plan at launch and may switch between plans while founding status persists. |
 | Lifecycle | Closes when Premium launches to App Store at scale |
 
 ### 4.2 Single Compatibility Reading — web tripwire
@@ -198,6 +199,7 @@ These are **not deprecated**. They are pre-launch infrastructure that requires c
 
 | Item | Issue | Required action |
 |---|---|---|
+| `NUXT_STRIPE_PREMIUM_WEEKLY_PRICE_ID` | Missing from `.env` | Create Stripe Price object for `omenora_weekly` $5.99/wk, populate env var in Railway production |
 | `NUXT_STRIPE_PREMIUM_MONTHLY_PRICE_ID` | Missing from `.env` | Create Stripe Price object for `omenora_monthly` $14.99/mo, populate env var in Railway production |
 | `NUXT_STRIPE_PREMIUM_YEARLY_PRICE_ID` | Missing from `.env` | Create Stripe Price object for `omenora_annual` $99.99/yr, populate env var in Railway production |
 | `POST /api/create-subscription` | Returns 503 without price IDs configured | Will be functional once above env vars are set |

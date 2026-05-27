@@ -210,7 +210,12 @@ After the endpoints in section 3 are deleted, remove the corresponding webhook b
   1. Audit all consuming files — search for `CTAButton` import statements
   2. Migrate each call site to `AppButton` with the equivalent variant
   3. Delete `app/components/CTAButton.vue`
-- **Known consumers:** `app/pages/index-legacy.vue` (already slated for removal in section 1.1)
+- **Known consumers (verified Phase 0 audit 2026-05-27):**
+  - `app/pages/index-legacy.vue` (already slated for removal in section 1.1)
+  - `app/pages/analysis.vue` (active PRE-REDESIGN page — must be migrated to `AppButton` during the per-page redesign workstream before `CTAButton.vue` can be deleted)
+  - `app/components/atoms/AppButton.vue` (likely internal reference; verify whether it's a true consumer or an internal import during migration audit)
+
+CTAButton removal is therefore blocked until `analysis.vue` is migrated. Tracked accordingly: removal moves from Tier 8 simple action to Tier 8 conditional on `analysis.vue` migration completion in Phase 2 page-by-page workstream.
 
 ### 6.2 `EditorialRule.vue` — REMOVE
 
@@ -283,10 +288,9 @@ The homepage is REDESIGNED in structure but has content drift from the sandbox s
 - **Remove** three fabricated testimonials (Amara K., Daniel R., Priya S.) at lines ~389–393. The Priya S. testimonial references "$24" which corresponds only to the deprecated Full Oracle Bundle.
 - **Action:** Section can be either backed by real Trustpilot/testimonial data OR removed from the homepage entirely until real social proof exists.
 
-### 8.4 JSON-LD offers — REPLACE
+### 8.4 JSON-LD offers — ✅ COMPLETE (verified 2026-05-27)
 
-- `index.vue:447–451` contains deprecated SKUs ($4.99 Basic Reading, $9.99 Popular Bundle, $24.99 Full Oracle)
-- Replace with the Founding Member offer ($20) or remove the `offers` array entirely
+Previously: `index.vue:447–451` contained deprecated SKUs ($4.99 Basic Reading, $9.99 Popular Bundle, $24.99 Full Oracle). Phase 0 verification audit (2026-05-27) confirmed these are no longer present in `index.vue`. The deprecated JSON-LD offers array has been removed during a prior homepage rebuild commit. No further action required.
 
 ### 8.5 SEO meta — REPLACE
 
@@ -325,6 +329,25 @@ The homepage is REDESIGNED in structure but has content drift from the sandbox s
 - `mobile-app/src/screens/CompatibilityScreen.tsx:88`
 - Both display "Also included in Full Oracle · $12.99" — no product at this price exists anywhere. Full Oracle is deprecated.
 - Remove these label strings entirely.
+
+### 9.5 Counsel-on-web cleanup — NARROWED SCOPE
+
+Per STRATEGY.md §7 and §8 (revised), web pages MAY name Counsel as a Founding Member benefit and as a named feature of the OMENORA mobile app. This is correct app-landing-page marketing per 2026 conversion research (specificity beats vagueness; named features convert better than generic "premium experience" copy). Web pages must NOT host Counsel chat UI and must NOT imply Counsel access is available through web subscription.
+
+**Counsel references on `/` (homepage) and `/founding/*.vue`:** KEEP. These name Counsel as a Founding Member benefit / future mobile feature and are conversion-positive. No action.
+
+**Cleanup targets (only these):**
+
+- `augur/app/pages/subscribe.vue` — "Full Counsel access" listed in `subscribeInclude` translation keys (1–5). Subscribe page is DEPRECATED entirely (section 2.1) — page deletion handles this. No standalone fix needed.
+- `augur/app/pages/report.vue` — Premium upsell uses `reportPremiumSubtitle` translation key that mentions Counsel. The fix here is NOT to rewrite the Counsel word; it is to **remove the Premium upsell section entirely from `/report`**. `/report` is PRESERVED-for-legacy-fulfillment-only (section 2.3) and should not host new Premium marketing at all. Removing the entire upsell block resolves the Counsel issue as a side effect.
+- `augur/app/utils/translations.ts` — `reportPremiumSubtitle` key (lines 314, 624, 934, 1236, 1544, 1852 across en/es/pt/hi/ko/zh) becomes orphaned after the report.vue upsell is removed. Delete the unused translation key across all six language variants in the same cleanup.
+
+**Action sequence:**
+
+1. Remove the Premium upsell section from `report.vue` (entire block, not just Counsel wording)
+2. Delete the orphaned `reportPremiumSubtitle` key across all six language variants in `translations.ts` 
+3. Verify Counsel references on `/` and `/founding/*.vue` are kept (these are correct marketing)
+4. No Windsurf rule needed forbidding Counsel marketing on web — that was based on the over-corrected scope
 
 ---
 
@@ -372,10 +395,10 @@ Per the design system audit:
 - `augur/PHASE_B_EXECUTION_PLAN.md` — execution plan; move to `docs/` or delete
 - `augur/SANDBOX_REDESIGN_AUDIT.md` — audit document; move to `docs/` or delete
 - `augur/public/images/hero/Architectural-cosmic.webp` — hero image candidate; commit or remove
-- `augur/public/images/hero/ChatGPT Image May 23, 2026, 10_02_49 AM.png` — rename and commit, or remove (section 8.6)
+- `augur/public/images/hero/ChatGPT Image May 23, 2026, 10_02_49 AM.png` — rename and commit, or remove (section 8.6). Phase 0 audit found `final-cta-cosmic.webp` already exists alongside — likely the renamed version. Verify and remove the original.
 - `augur/public/images/hero/Cosmic-gold-ascension.webp` — active LCP hero image; commit
 - `augur/public/images/hero/Distant-horizon-emergence.webp` — hero image candidate; commit or remove
-- `augur/public/images/hero/Image-Landing-1.webp` — hero image candidate; commit or remove
+- `augur/public/images/hero/final-cta-cosmic.webp` — Final CTA section hero image; commit
 - `augur/public/images/hero/Nebula-void.webp` — hero image candidate; commit or remove
 - `augur/public/images/hero/Threshold-moment.webp` — hero image candidate; commit or remove
 
@@ -409,6 +432,7 @@ Higher tiers must complete before lower tiers. Items within a tier can run in pa
 12. `/daily` off-strategy CTA removal (section 9.2)
 13. `/compatibility` upsell target replacement (section 9.3)
 14. Mobile $12.99 orphan label removal (section 9.4)
+15. Counsel-on-web marketing copy removal across `/report` and `translations.ts` (section 9.5)
 
 ### Tier 4 — Stripe product removals (after Tier 3 verifies no inbound sale paths)
 
