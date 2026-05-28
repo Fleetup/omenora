@@ -15,11 +15,33 @@
 
 ---
 
+## 0. Completed
+
+The following items have been verified resolved in code. Full context (what was deprecated and why) remains in each section below.
+
+| Item | Resolved | Commit | Note |
+|---|---|---|---|
+| §1.1 /index-legacy.vue deleted | ✅ | e5497f5 | Was untracked; removed in deprecation sweep |
+| §1.3 /compatibility-quiz noindex | ✅ | 1333dc3 | Added in compatibility-quiz Tier 1 |
+| §2.1 /subscribe deleted | ✅ | e5497f5 | Inbound links (account, daily) redirected to /founding |
+| §2.2 /subscription deleted | ✅ | e5497f5 | Zero inbound refs |
+| §2.3 /report secondary /subscribe upsell link removed | ✅ | e5497f5 | Fulfillment navigateTo paths preserved |
+| §6.1 CTAButton.vue deleted | ✅ | e5497f5 | Blocker (analysis.vue migration) resolved earlier in ba66d62 |
+| §6.2 EditorialRule.vue deleted | ✅ | e5497f5 | Only consumer was index-legacy.vue |
+| §8.1 Homepage hero copy replaced | ✅ | fe8e666 | FM-aligned natal positioning |
+| §8.2 Homepage Section 4 copy rewritten | ✅ | fe8e666 | FM intro replaces PDF/no-subscription framing |
+| §8.3 Fabricated social proof removed | ✅ | fe8e666 | Testimonials deferred until real FM data |
+| §8.5 Homepage SEO meta replaced | ✅ | fe8e666 | FM title; no "Free Daily Horoscope" |
+| §9.1 /preview secondary CTA to /subscribe removed | ✅ | b8911c3 | Single-CTA paywall |
+| §9.3 /compatibility upsell → /founding | ✅ | a8db836 | Routes to Founding Member |
+
+---
+
 ## 1. Tier 1 — Urgent removals (active liability)
 
 These items are actively harming SEO, leaking deprecated content to search engines, or exposing publicly-accessible routes that contradict locked strategy. Remove first.
 
-### 1.1 `/index-legacy.vue` — REMOVE
+### 1.1 `/index-legacy.vue` — ✅ DONE (e5497f5)
 
 - **File:** `app/pages/index-legacy.vue` (~1265 lines)
 - **Route served:** `/index-legacy` (actively crawlable)
@@ -33,7 +55,7 @@ These items are actively harming SEO, leaking deprecated content to search engin
 - **Issue:** Was the sandbox design source for the homepage redesign. That work is complete (homepage is REDESIGNED per PAGES_AND_SECTIONS.md). The file no longer belongs under `app/pages/` because Nuxt routes everything in that directory.
 - **Action:** Move the file to `docs/design-references/` or delete it. Either action removes the live route. If retained as reference, ensure it lives outside any Nuxt-routed directory.
 
-### 1.3 `/compatibility-quiz` missing noindex — ADD NOINDEX
+### 1.3 `/compatibility-quiz` missing noindex — ✅ DONE (1333dc3)
 
 - **File:** `app/pages/compatibility-quiz.vue` (402 lines)
 - **Issue:** All other funnel pages set `robots: 'noindex, nofollow'`. This one does not. It is currently crawlable.
@@ -43,14 +65,14 @@ These items are actively harming SEO, leaking deprecated content to search engin
 
 ## 2. Pages to remove
 
-### 2.1 `/subscribe` — REMOVE
+### 2.1 `/subscribe` — ✅ DONE (e5497f5)
 
 - **File:** `app/pages/subscribe.vue` (1172 lines)
 - **Why:** Sells the deprecated Daily Horoscope Subscription at $6.99/mo (PRODUCT_MAP.md §6.2). Locked subscription model is mobile-only at $14.99/mo via RevenueCat per STRATEGY.md §6. Per PRODUCT_MAP.md §7, Premium subscription env vars are not configured — the page returns 503 on any attempted checkout.
 - **Pre-removal verification:** Confirm zero active legacy `daily_horoscope` subscriptions. If any exist, refund or migrate before deletion.
 - **Post-removal:** Update inbound links — `/preview` and `/daily` currently reference `/subscribe`. Both link removals are tracked separately (sections 9.2 and 9.3 below).
 
-### 2.2 `/subscription` — REMOVE
+### 2.2 `/subscription` — ✅ DONE (e5497f5)
 
 - **File:** `app/pages/subscription.vue` (255 lines)
 - **Why:** Post-purchase confirmation for the deprecated `/subscribe` flow. Tracks `$6.99` purchase pixel. No purpose without `/subscribe`.
@@ -66,6 +88,11 @@ These items are actively harming SEO, leaking deprecated content to search engin
   - Leave operational until all legacy purchases age out and zero customers depend on it
   - Eventual deletion in a future cleanup pass, after sufficient time has passed and analytics confirm no traffic
 - **Pricing string to update:** `report.vue:515` displays `$6.99/mo` — must be removed even if the page is preserved, since the link target (`/subscribe`) is being removed.
+
+**Partial status:**
+- ✅ Secondary `/subscribe` upsell link removed (`e5497f5`)
+- 🔲 PENDING: `$6.99/mo` price string at `report.vue:512` still present
+- ✅ Fulfillment `navigateTo('/subscribe')` paths (lines ~1296, ~1398) PRESERVED intentionally (legacy purchaser access)
 
 ---
 
@@ -202,7 +229,7 @@ After the endpoints in section 3 are deleted, remove the corresponding webhook b
 
 ## 6. Components to delete
 
-### 6.1 `CTAButton.vue` — REMOVE
+### 6.1 `CTAButton.vue` — ✅ DONE (e5497f5)
 
 - **File:** `app/components/CTAButton.vue` (121 lines)
 - **Why:** Superseded by `AppButton` (DESIGN_SYSTEM.md §1). Three legacy variants (solid/outline/cta) using legacy token aliases. `AppButton` covers all use cases with canonical `--omn-*` tokens.
@@ -215,9 +242,9 @@ After the endpoints in section 3 are deleted, remove the corresponding webhook b
   - `app/pages/analysis.vue` (active PRE-REDESIGN page — must be migrated to `AppButton` during the per-page redesign workstream before `CTAButton.vue` can be deleted)
   - `app/components/atoms/AppButton.vue` (likely internal reference; verify whether it's a true consumer or an internal import during migration audit)
 
-CTAButton removal is therefore blocked until `analysis.vue` is migrated. Tracked accordingly: removal moves from Tier 8 simple action to Tier 8 conditional on `analysis.vue` migration completion in Phase 2 page-by-page workstream.
+**✅ RESOLVED & DONE.** `analysis.vue` migration to `AppButton` completed in `ba66d62`. `CTAButton.vue` deleted in `e5497f5` (its only remaining consumer, `index-legacy.vue`, was deleted in the same sweep).
 
-### 6.2 `EditorialRule.vue` — REMOVE
+### 6.2 `EditorialRule.vue` — ✅ DONE (e5497f5)
 
 - **File:** `app/components/EditorialRule.vue` (38 lines)
 - **Why:** Single-purpose component. Superseded by `AppDivider` (`variant="labeled"` covers the ornamented case).
@@ -270,18 +297,18 @@ Location: `app/pages/index.vue`
 
 The homepage is REDESIGNED in structure but has content drift from the sandbox source. Per PAGES_AND_SECTIONS.md §2:
 
-### 8.1 Hero section — REPLACE COPY
+### 8.1 Hero section — ✅ DONE (fe8e666)
 
 - Replace display lines `"Astrology that / feels / not generic."` with strategy-aligned headline
 - Replace subhead containing "daily cosmic patterns" with locked product description
 - Remove hardcoded `readingCount = ref('47,392')` fallback (line ~312) — let live API value render, or use a real fallback
 
-### 8.2 Section 4 (Three Card Grid) — REWRITE INTRO AND CARDS
+### 8.2 Section 4 (Three Card Grid) — ✅ DONE (fe8e666)
 
 - Remove intro body line "Delivered as a continuous PDF and a web report. Yours forever, no subscription, no account." — contradicts STRATEGY.md §2
 - Rewrite card content to describe Founding Member deliverable, not legacy destiny report
 
-### 8.3 Section 7 (Social Proof) — REMOVE FABRICATED CONTENT
+### 8.3 Section 7 (Social Proof) — ✅ DONE (fe8e666)
 
 - **Remove** counter stat `value: 12400` "Charts written to date" — conflicts with hero `readingCount`. Unify on live API value.
 - **Remove** counter stats `'96'` (% would recommend) and `'4.8'` (rating out of 5) — no source, fabricated. Either back with real data or remove entirely.
@@ -292,33 +319,47 @@ The homepage is REDESIGNED in structure but has content drift from the sandbox s
 
 Previously: `index.vue:447–451` contained deprecated SKUs ($4.99 Basic Reading, $9.99 Popular Bundle, $24.99 Full Oracle). Phase 0 verification audit (2026-05-27) confirmed these are no longer present in `index.vue`. The deprecated JSON-LD offers array has been removed during a prior homepage rebuild commit. No further action required.
 
-### 8.5 SEO meta — REPLACE
+### 8.5 SEO meta — ✅ DONE (fe8e666)
 
 - Title and description currently include "Free Daily Horoscope" — off-strategy positioning
 - Replace with locked product positioning (natal reading, Founding Member, etc.)
 
-### 8.6 Final CTA image — RENAME
+### 8.6 Final CTA image — RENAME (PARTIAL)
 
 - Filename `ChatGPT Image May 23, 2026, 10_02_49 AM.png` — replace with semantic filename (e.g. `final-cta-cosmic.webp`)
 - Convert to WebP if not already
+
+**Partial status:**
+- ✅ Code uses semantic `/images/hero/final-cta-cosmic.webp` (`fe8e666`)
+- 🔲 PENDING: original `ChatGPT Image May 23, 2026, 10_02_49 AM.png` file still on disk (untracked) — delete or git-rm
 
 ---
 
 ## 9. Page content corrections — funnel and trust surfaces
 
-### 9.1 `/preview` — REMOVE DEPRECATED REFERENCES
+### 9.1 `/preview` — REMOVE DEPRECATED REFERENCES (PARTIAL)
 
 - Remove bundle/oracle promo-code branches (`preview.vue:541–548`)
 - Remove `$9.99` pixel-tracking value (`preview.vue:405`)
 - Remove or repurpose secondary CTA to `/subscribe` (`preview.vue:669`) — `/subscribe` is being removed (section 2.1)
 
-### 9.2 `/daily` — REMOVE OFF-STRATEGY CTAs
+**Partial status:**
+- ✅ Secondary CTA to `/subscribe` removed (`b8911c3`) — single-CTA paywall
+- 🔲 PENDING: bundle/oracle promo-code branches (`preview.vue:~541–548`) still present
+- 🔲 PENDING: `$9.99` pixel-tracking value (`preview.vue:405`) still present
+
+### 9.2 `/daily` — REMOVE OFF-STRATEGY CTAs (PARTIAL)
 
 - Remove `$6.99` subscription upsell card (`daily.vue:341–350`)
 - Remove daily archetype tab — Premium-only feature per STRATEGY.md §8
 - Verify no remaining links to `/subscribe`
 
-### 9.3 `/compatibility` — REPLACE UPSELL TARGET
+**Partial status:**
+- ✅ `/subscribe` link redirected to `/founding` (`e5497f5`)
+- 🔲 PENDING: `$6.99` upsell card HTML + price display still present (`daily.vue:344`)
+- 🔲 PENDING: daily archetype tab still present
+
+### 9.3 `/compatibility` — ✅ DONE (a8db836)
 
 - Replace Premium subscription upsell with Founding Member CTA → `/founding`
 - Verify $4.99 single compatibility primary CTA remains unchanged
@@ -453,7 +494,7 @@ Higher tiers must complete before lower tiers. Items within a tier can run in pa
 
 ### Tier 6 — Deprecated page removals
 
-26. Delete `/subscribe` and `/subscription` (sections 2.1, 2.2) — after Tier 3 removes inbound links
+26. ✅ DONE (e5497f5) — Delete `/subscribe` and `/subscription` (sections 2.1, 2.2)
 
 ### Tier 7 — Legal copy updates
 
@@ -462,8 +503,8 @@ Higher tiers must complete before lower tiers. Items within a tier can run in pa
 
 ### Tier 8 — Component removals (after consumer migration)
 
-29. Audit and migrate all `CTAButton` consumers to `AppButton`, then delete (section 6.1)
-30. Audit and migrate all `EditorialRule` consumers to `AppDivider`, then delete (section 6.2)
+29. ✅ DONE (e5497f5) — Audit and migrate all `CTAButton` consumers to `AppButton`, then delete (section 6.1)
+30. ✅ DONE (e5497f5) — Audit and migrate all `EditorialRule` consumers to `AppDivider`, then delete (section 6.2)
 
 ### Tier 9 — Token alias removal (after consumer migration)
 
