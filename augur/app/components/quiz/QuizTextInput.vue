@@ -1,6 +1,6 @@
 <template>
   <div class="text-input">
-    <AppHeadline variant="italic" as="h2" class="text-input__headline">
+    <AppHeadline variant="lg" as="h2" class="text-input__headline">
       {{ headline }}
     </AppHeadline>
     <AppCaption v-if="subtext" variant="default" as="p" class="text-input__subtext">

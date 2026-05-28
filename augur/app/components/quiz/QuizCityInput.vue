@@ -1,6 +1,6 @@
 <template>
   <div class="city-input">
-    <AppHeadline variant="italic" as="h2" class="city-input__headline">
+    <AppHeadline variant="lg" as="h2" class="city-input__headline">
       {{ headline }}
     </AppHeadline>
     <AppCaption v-if="subtext" variant="default" as="p" class="city-input__subtext">
@@ -20,14 +20,14 @@
       >
         Continue
       </AppButton>
-      <button
+      <AppButton
         v-if="skipLabel"
-        type="button"
-        class="city-input__skip"
+        variant="ghost"
+        size="sm"
         @click="onSkip"
       >
         {{ skipLabel }}
-      </button>
+      </AppButton>
     </div>
   </div>
 </template>
@@ -103,28 +103,13 @@ function onSkip() {
 
 .city-input__subtext {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
 }
 
 .city-input__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
-}
-
-.city-input__skip {
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.city-input__skip:hover {
-  color: var(--text-secondary);
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="date-input">
-    <AppHeadline variant="italic" as="h2" class="date-input__headline">
+    <AppHeadline variant="lg" as="h2" class="date-input__headline">
       {{ headline }}
     </AppHeadline>
     <AppCaption v-if="subtext" variant="default" as="p" class="date-input__subtext">
@@ -69,26 +69,28 @@ function onContinue() {
 
 .date-input__subtext {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
 }
 
 .date-input__field {
   width: 100%;
   padding: var(--space-4) 0;
-  font-family: var(--font-sans);
+  font-family: var(--omn-font-display);
   font-size: var(--text-xl);
-  font-weight: 300;
-  color: var(--text-primary);
+  font-weight: var(--weight-light);
+  letter-spacing: var(--tracking-snug);
+  color: var(--omn-text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--omn-border-primary);
   outline: none;
   border-radius: 0;
   color-scheme: dark;
+  transition: border-color var(--omn-duration-fast) var(--omn-ease);
 }
 
 .date-input__field:focus {
-  border-bottom-color: var(--text-primary);
+  border-bottom-color: var(--omn-accent);
 }
 
 .date-input__cta {

@@ -1,6 +1,6 @@
 <template>
   <div class="single-select">
-    <AppHeadline variant="italic" as="h2" class="single-select__headline">
+    <AppHeadline variant="lg" as="h2" class="single-select__headline">
       {{ headline }}
     </AppHeadline>
     <AppCaption v-if="subtext" variant="default" as="p" class="single-select__subtext">
@@ -15,7 +15,6 @@
         type="button"
         @click="onSelect(opt.id)"
       >
-        <span v-if="opt.emoji" class="single-select__emoji">{{ opt.emoji }}</span>
         <span class="single-select__label">{{ opt.label }}</span>
       </button>
     </div>
@@ -26,7 +25,6 @@
 interface Option {
   id: string
   label: string
-  emoji?: string
 }
 
 interface Props {
@@ -60,7 +58,7 @@ function onSelect(id: string) {
 
 .single-select__subtext {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
 }
 
 .single-select__grid {
@@ -69,10 +67,15 @@ function onSelect(id: string) {
   gap: var(--space-3);
 }
 
+/* Two-col layout reserved for ≥6 option sets. Single column on narrow
+   viewports for thumb-comfortable scanning. */
 .single-select__grid--two-col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--space-3);
+}
+@media (min-width: 600px) {
+  .single-select__grid--two-col { grid-template-columns: 1fr 1fr; }
 }
 
 .single-select__chip {
@@ -80,34 +83,39 @@ function onSelect(id: string) {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
-  background: var(--surface-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  background: var(--omn-bg-primary);
+  border: 1px solid var(--omn-border-subtle);
+  border-radius: 0;
   cursor: pointer;
   text-align: left;
-  font-family: var(--font-sans);
+  font-family: var(--omn-font-body);
   font-size: var(--text-base);
-  font-weight: 400;
-  color: var(--text-primary);
-  transition: background var(--duration-fast) var(--ease-out),
-              border-color var(--duration-fast) var(--ease-out);
+  font-weight: var(--weight-regular);
+  color: var(--omn-text-primary);
+  letter-spacing: var(--tracking-body);
+  transition:
+    background var(--omn-duration-fast) var(--omn-ease),
+    border-color var(--omn-duration-fast) var(--omn-ease),
+    transform var(--omn-duration-fast) var(--omn-ease);
 }
 
 .single-select__chip:hover {
-  background: var(--surface-elevated);
-  border-color: var(--border-default);
+  background: var(--omn-bg-elevated);
+  border-color: var(--omn-border-emphasis);
 }
+.single-select__chip:active { transform: translateY(1px); }
 
+/* Selected — bronze accent border for the editorial conversion moment. */
 .single-select__chip--selected {
-  background: var(--surface-elevated);
-  border-color: var(--text-primary);
+  background: var(--omn-bg-elevated);
+  border-color: var(--omn-accent);
 }
 
-.single-select__emoji {
-  font-size: var(--text-lg);
-  line-height: 1;
-  flex-shrink: 0;
+.single-select__chip:focus-visible {
+  outline: 2px solid var(--omn-accent);
+  outline-offset: 3px;
 }
+
 
 .single-select__label {
   line-height: 1.4;

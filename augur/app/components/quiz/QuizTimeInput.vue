@@ -1,6 +1,6 @@
 <template>
   <div class="time-input">
-    <AppHeadline variant="italic" as="h2" class="time-input__headline">
+    <AppHeadline variant="lg" as="h2" class="time-input__headline">
       {{ headline }}
     </AppHeadline>
     <AppCaption v-if="subtext" variant="default" as="p" class="time-input__subtext">
@@ -19,13 +19,13 @@
       >
         Continue
       </AppButton>
-      <button
-        type="button"
-        class="time-input__skip"
+      <AppButton
+        variant="ghost"
+        size="sm"
         @click="onSkip"
       >
         {{ skipLabel }}
-      </button>
+      </AppButton>
     </div>
   </div>
 </template>
@@ -76,47 +76,34 @@ function onSkip() {
 
 .time-input__subtext {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
 }
 
 .time-input__field {
   width: 100%;
   padding: var(--space-4) 0;
-  font-family: var(--font-sans);
+  font-family: var(--omn-font-display);
   font-size: var(--text-xl);
-  font-weight: 300;
-  color: var(--text-primary);
+  font-weight: var(--weight-light);
+  letter-spacing: var(--tracking-snug);
+  color: var(--omn-text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--omn-border-primary);
   outline: none;
   border-radius: 0;
   color-scheme: dark;
+  transition: border-color var(--omn-duration-fast) var(--omn-ease);
 }
 
 .time-input__field:focus {
-  border-bottom-color: var(--text-primary);
+  border-bottom-color: var(--omn-accent);
 }
 
 .time-input__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
-}
-
-.time-input__skip {
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.time-input__skip:hover {
-  color: var(--text-secondary);
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 </style>

@@ -1,8 +1,7 @@
 <template>
   <div class="reward-screen">
     <div class="reward-screen__inner">
-      <div class="reward-screen__emoji">{{ emoji }}</div>
-      <AppHeadline variant="italic" as="h2" class="reward-screen__headline">
+      <AppHeadline variant="lg" as="h2" class="reward-screen__headline">
         {{ headline }}
       </AppHeadline>
       <AppBody as="p" class="reward-screen__body">
@@ -23,7 +22,6 @@
 import { onMounted, onBeforeUnmount, ref } from 'vue'
 
 interface Props {
-  emoji: string
   headline: string
   body: string
   continueLabel?: string
@@ -67,7 +65,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   padding: var(--space-12) var(--space-6);
-  animation: rewardEnter 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rewardEnter var(--omn-duration-slow) var(--omn-ease) both;
 }
 
 .reward-screen__inner {
@@ -79,20 +77,13 @@ onBeforeUnmount(() => {
   gap: var(--space-6);
 }
 
-.reward-screen__emoji {
-  font-size: 3rem;
-  line-height: 1;
-  opacity: 0;
-  animation: emojiFade 800ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
-}
-
 .reward-screen__headline {
   margin: 0;
 }
 
 .reward-screen__body {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
   max-width: 26rem;
 }
 
@@ -105,14 +96,8 @@ onBeforeUnmount(() => {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes emojiFade {
-  from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .reward-screen,
-  .reward-screen__emoji {
+  .reward-screen {
     animation: none;
     opacity: 1;
     transform: none;

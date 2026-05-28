@@ -5,7 +5,6 @@ import type { CompatibilityQuizAnswers } from '~/stores/analysisStore'
 export interface QuizOption {
   id: string
   label: string
-  emoji?: string
 }
 
 // ── Step type shapes ─────────────────────────────────────────────────────────
@@ -69,7 +68,6 @@ export interface RewardStep {
   stepNumber: number
   id: string
   type: 'reward'
-  emoji: string
   headline: string
   body: string
 }
@@ -91,7 +89,7 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     id: 'q1_intent',
     type: 'single_select',
     storeKey: 'q1_intent',
-    headline: "Let's start here — what brought you here today?",
+    headline: "Let's start here. What brought you here today?",
     options: [
       { id: 'specific_person', label: 'A specific person I want to understand' },
       { id: 'new_curiosity',   label: "A new connection I'm curious about" },
@@ -108,10 +106,10 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     storeKey: 'q2_feeling',
     headline: 'When you think about this person, what\'s the first feeling that comes up?',
     options: [
-      { id: 'curiosity', label: 'Curiosity',                 emoji: '💭' },
-      { id: 'hope',      label: 'Hope',                      emoji: '✨' },
-      { id: 'confusion', label: 'Confusion',                 emoji: '🌫' },
-      { id: 'longing',   label: 'Longing',                   emoji: '💫' },
+      { id: 'curiosity', label: 'Curiosity' },
+      { id: 'hope',      label: 'Hope' },
+      { id: 'confusion', label: 'Confusion' },
+      { id: 'longing',   label: 'Longing' },
       { id: 'unnamed',   label: "Something I can't quite name" },
     ],
   },
@@ -142,7 +140,7 @@ export const QUIZ_SCHEMA: QuizStep[] = [
       { id: 'lead_feelings', label: 'I lead with my feelings' },
       { id: 'observe_first', label: 'I observe first, then open up' },
       { id: 'match_energy',  label: 'I match their energy' },
-      { id: 'take_time',     label: "I'm careful — I take my time" },
+      { id: 'take_time',     label: "I'm careful. I take my time" },
     ],
   },
 
@@ -227,7 +225,6 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     stepNumber: 10,
     id: 'reward_1',
     type: 'reward',
-    emoji: '✨',
     headline: "You're showing us something most people never name out loud.",
     body: "Most people don't notice the way they show up in connection. You just told us yours.",
   },
@@ -239,7 +236,7 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     type: 'text_input',
     storeTarget: 'partnerName',
     headline: 'What name should we use for them?',
-    subtext: 'We only ask for a first name or initial — never a full name. This is your reading, not theirs.',
+    subtext: 'We only ask for a first name or initial. Never a full name. This is your reading, not theirs.',
     placeholder: 'First name or initial',
     maxLength: 50,
     inputType: 'text',
@@ -264,7 +261,7 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     type: 'time_input',
     storeTarget: 'partnerTime',
     headline: 'Do you know their time of birth?',
-    subtext: "Optional. We'll use noon if you skip — slightly less precise, but the reading still works.",
+    subtext: "Optional. We'll use noon if you skip. Slightly less precise, but the reading still works.",
     skipLabel: "I don't know",
   },
 
@@ -323,10 +320,10 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     storeKey: 'q16_season',
     headline: 'If this connection were a season, which one is it right now?',
     options: [
-      { id: 'spring', label: 'Spring', emoji: '🌱' },
-      { id: 'summer', label: 'Summer', emoji: '☀️' },
-      { id: 'autumn', label: 'Autumn', emoji: '🍂' },
-      { id: 'winter', label: 'Winter', emoji: '❄️' },
+      { id: 'spring', label: 'Spring' },
+      { id: 'summer', label: 'Summer' },
+      { id: 'autumn', label: 'Autumn' },
+      { id: 'winter', label: 'Winter' },
     ],
   },
 
@@ -354,10 +351,10 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     storeKey: 'q18_trust_texture',
     headline: "What's the texture of trust between you?",
     options: [
-      { id: 'stone', label: 'Stone — solid, weathered',        emoji: '🪨' },
-      { id: 'water', label: "Water — fluid, finding its level", emoji: '💧' },
-      { id: 'glass', label: 'Glass — clear but fragile',        emoji: '🪞' },
-      { id: 'silk',  label: 'Silk — soft, present',             emoji: '🕊' },
+      { id: 'stone', label: 'Stone, solid and weathered' },
+      { id: 'water', label: 'Water, fluid and finding its level' },
+      { id: 'glass', label: 'Glass, clear but fragile' },
+      { id: 'silk',  label: 'Silk, soft and present' },
     ],
   },
 
@@ -381,7 +378,6 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     stepNumber: 21,
     id: 'reward_2',
     type: 'reward',
-    emoji: '🌙',
     headline: "We're starting to see the shape of this connection.",
     body: "Most readings can't go this deep. Yours is going to.",
   },
@@ -424,7 +420,6 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     stepNumber: 25,
     id: 'reward_3',
     type: 'reward',
-    emoji: '✨',
     headline: "Now we're building a reading that's specifically yours.",
     body: "Both charts. The texture you described. The pattern you noticed. All of it.",
   },
@@ -437,10 +432,10 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     storeKey: 'q23_time_of_day',
     headline: 'What time of day does this connection feel most like?',
     options: [
-      { id: 'dawn',  label: 'Dawn — something just beginning', emoji: '🌅' },
-      { id: 'noon',  label: 'Noon — clear, present, visible',  emoji: '☀️' },
-      { id: 'dusk',  label: 'Dusk — warm, ending, golden',     emoji: '🌆' },
-      { id: 'night', label: 'Night — quiet, hidden, deep',     emoji: '🌙' },
+      { id: 'dawn',  label: 'Dawn, something just beginning' },
+      { id: 'noon',  label: 'Noon, clear and present' },
+      { id: 'dusk',  label: 'Dusk, warm and golden' },
+      { id: 'night', label: 'Night, quiet and deep' },
     ],
   },
 
@@ -497,6 +492,6 @@ export const QUIZ_SCHEMA: QuizStep[] = [
     placeholder: 'you@example.com',
     inputType: 'email',
     required: true,
-    disclaimerText: 'By continuing, you agree to receive your reading and occasional astrology insights from OMENORA. You can unsubscribe anytime. We never share your data. This reading is for reflection and entertainment — it is not professional advice.',
+    disclaimerText: 'By continuing, you agree to receive your reading and occasional astrology insights from OMENORA. You can unsubscribe anytime. We never share your data. This reading is for reflection and entertainment. It is not professional advice.',
   },
 ]

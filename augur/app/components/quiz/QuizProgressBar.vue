@@ -23,13 +23,15 @@ const pct = computed(() => Math.min(100, Math.max(0, (props.current / props.tota
 .progress-bar {
   width: 100%;
   height: 2px;
-  background: var(--border-subtle);
+  background: var(--omn-border-subtle);
   overflow: hidden;
 }
 
 .progress-bar__fill {
   height: 100%;
-  background: var(--text-primary);
-  transition: width var(--duration-base) var(--ease-out);
+  /* Bronze fill so progress reads as the same accent system the rest of
+     the page uses (section markers, hairlines, scroll-progress). */
+  background: linear-gradient(90deg, var(--omn-accent-quiet), var(--omn-accent));
+  transition: width var(--omn-duration-base) var(--omn-ease);
 }
 </style>

@@ -1,111 +1,128 @@
 <template>
-  <div class="cq">
-    <!-- Editorial sticky header (sandbox §01 visual pattern) -->
+  <div class="cq" :style="bgStyle">
+
+    <!-- ── Atmospheric background layers ──────────────────────────────────── -->
+    <div class="cq__bg-image" aria-hidden="true" />
+    <div class="cq__bg-overlay" aria-hidden="true" />
+
+    <!-- ── Page grain texture ──────────────────────────────────────────────── -->
+    <div class="page-grain" aria-hidden="true" />
+
+    <!-- ── Sticky header — translucent bg + backdrop blur floats over image ── -->
     <AppHeader />
 
-    <!-- Quiz progress bar sits directly under the header — uses bronze
-         fill (accent token) so it visually extends the header hairline. -->
-    <QuizProgressBar :current="currentStepIndex + 1" :total="QUIZ_SCHEMA.length" />
+    <!-- ── Progress bar — bronze fill, hairline below header ─────────────── -->
+    <div class="cq__progress">
+      <QuizProgressBar :current="currentStepIndex + 1" :total="QUIZ_SCHEMA.length" />
+    </div>
 
+    <!-- ── Step content ────────────────────────────────────────────────────── -->
     <Transition name="step-fade" mode="out-in">
-      <div :key="currentStepIndex" class="cq__step" :class="{ 'cq__step--sticky-cta': step.type !== 'single_select' }">
+      <div
+        :key="currentStepIndex"
+        class="cq__step"
+        :class="{ 'cq__step--sticky-cta': step.type !== 'single_select' }"
+      >
 
-        <!-- single_select -->
-        <QuizSingleSelect
-          v-if="step.type === 'single_select'"
-          :headline="step.headline"
-          :subtext="step.subtext"
-          :options="step.options"
-          :selected="getSingleSelectValue(step)"
-          @select="onSingleSelect(step, $event)"
-        />
+        <!-- Back button — top of card, hidden on reward screens and step 1 -->
+        <div v-if="step.type !== 'reward' && currentStepIndex > 0" class="cq__back">
+          <AppButton
+            variant="ghost"
+            size="sm"
+            @click="goBack"
+          >
+            ← Back
+          </AppButton>
+        </div>
 
-        <!-- date_input -->
-        <QuizDateInput
-          v-else-if="step.type === 'date_input'"
-          :headline="step.headline"
-          :subtext="step.subtext"
-          :value="getDateValue(step)"
-          :required="step.required"
-          @update="onDateUpdate(step, $event)"
-          @continue="advance"
-        />
+        <!-- AppCard glass variant — transparent frosted surface over atmospheric image -->
+        <AppCard variant="glass" :hoverable="false" class="cq__card">
 
-        <!-- time_input -->
-        <QuizTimeInput
-          v-else-if="step.type === 'time_input'"
-          :headline="step.headline"
-          :subtext="step.subtext"
-          :value="getTimeValue(step)"
-          :skip-label="step.skipLabel"
-          @update="onTimeUpdate(step, $event)"
-          @continue="advance"
-        />
+          <!-- single_select -->
+          <QuizSingleSelect
+            v-if="step.type === 'single_select'"
+            :headline="step.headline"
+            :subtext="step.subtext"
+            :options="step.options"
+            :selected="getSingleSelectValue(step)"
+            @select="onSingleSelect(step, $event)"
+          />
 
-        <!-- city_input -->
-        <QuizCityInput
-          v-else-if="step.type === 'city_input'"
-          :headline="step.headline"
-          :subtext="step.subtext"
-          :value="getCityValue(step)"
-          :lat="getCityLat(step)"
-          :lng="getCityLng(step)"
-          :skip-label="step.skipLabel"
-          :required="step.required"
-          @update="onCityUpdate(step, $event)"
-          @skip="advance"
-          @continue="advance"
-        />
+          <!-- date_input -->
+          <QuizDateInput
+            v-else-if="step.type === 'date_input'"
+            :headline="step.headline"
+            :subtext="step.subtext"
+            :value="getDateValue(step)"
+            :required="step.required"
+            @update="onDateUpdate(step, $event)"
+            @continue="advance"
+          />
 
-        <!-- text_input -->
-        <QuizTextInput
-          v-else-if="step.type === 'text_input'"
-          :headline="step.headline"
-          :subtext="step.subtext"
-          :value="getTextValue(step)"
-          :placeholder="step.placeholder"
-          :max-length="step.maxLength"
-          :input-type="step.inputType"
-          :required="step.required"
-          :disclaimer-text="step.disclaimerText"
-          @update="onTextUpdate(step, $event)"
-          @continue="onTextContinue(step)"
-        />
+          <!-- time_input -->
+          <QuizTimeInput
+            v-else-if="step.type === 'time_input'"
+            :headline="step.headline"
+            :subtext="step.subtext"
+            :value="getTimeValue(step)"
+            :skip-label="step.skipLabel"
+            @update="onTimeUpdate(step, $event)"
+            @continue="advance"
+          />
 
-        <!-- reward -->
-        <QuizRewardScreen
-          v-else-if="step.type === 'reward'"
-          :emoji="step.emoji"
-          :headline="step.headline"
-          :body="step.body"
-          @continue="advance"
-        />
+          <!-- city_input -->
+          <QuizCityInput
+            v-else-if="step.type === 'city_input'"
+            :headline="step.headline"
+            :subtext="step.subtext"
+            :value="getCityValue(step)"
+            :lat="getCityLat(step)"
+            :lng="getCityLng(step)"
+            :skip-label="step.skipLabel"
+            :required="step.required"
+            @update="onCityUpdate(step, $event)"
+            @skip="advance"
+            @continue="advance"
+          />
+
+          <!-- text_input -->
+          <QuizTextInput
+            v-else-if="step.type === 'text_input'"
+            :headline="step.headline"
+            :subtext="step.subtext"
+            :value="getTextValue(step)"
+            :placeholder="step.placeholder"
+            :max-length="step.maxLength"
+            :input-type="step.inputType"
+            :required="step.required"
+            :disclaimer-text="step.disclaimerText"
+            @update="onTextUpdate(step, $event)"
+            @continue="onTextContinue(step)"
+          />
+
+          <!-- reward -->
+          <QuizRewardScreen
+            v-else-if="step.type === 'reward'"
+            :headline="step.headline"
+            :body="step.body"
+            @continue="advance"
+          />
+
+        </AppCard>
 
       </div>
     </Transition>
 
-    <!-- Back button — hidden on reward screens and step 1 -->
-    <div class="cq__nav">
-      <AppButton
-        v-if="step.type !== 'reward' && currentStepIndex > 0"
-        variant="ghost"
-        size="sm"
-        @click="goBack"
-      >
-        ← Back
-      </AppButton>
-    </div>
-
-    <!-- Loading overlay -->
+    <!-- ── Loading overlay ─────────────────────────────────────────────────── -->
     <Transition name="step-fade">
       <div v-if="isLoading" class="cq__loading">
-        <AppHeadline variant="italic" as="p" class="cq__loading-msg">
+        <AppHeadline variant="lg" as="p" class="cq__loading-msg">
           {{ loadingMessages[loadingMsgIdx % loadingMessages.length] }}
         </AppHeadline>
       </div>
     </Transition>
 
-    <!-- Error -->
+    <!-- ── Error state ──────────────────────────────────────────────────────── -->
     <div v-if="apiError" class="cq__error">
       <AppCaption variant="default" as="p" class="cq__error-msg">
         Something went wrong. Please try again.
@@ -114,6 +131,7 @@
         Retry
       </AppButton>
     </div>
+
   </div>
 </template>
 
@@ -146,9 +164,34 @@ onMounted(() => {
   $trackCompatibilityQuizStart?.()
 })
 
+// ── Background phase map ───────────────────────────────────────────────────────
+// Four atmospheric images keyed to narrative phases of the 30-step quiz:
+//   Phase A  steps  1–8   emotional context (user)
+//   Phase B  steps  9–14  birth data capture (user)
+//   Phase C  steps 15–21  partner data capture
+//   Phase D  steps 22–30  email + resolution
+
+const PHASE_IMAGES: Record<'A' | 'B' | 'C' | 'D', string> = {
+  A: '/images/hero/Distant-horizon-emergence.webp',
+  B: '/images/hero/Nebula-void.webp',
+  C: '/images/hero/Architectural-cosmic.webp',
+  D: '/images/hero/Cosmic-gold-ascension.webp',
+}
+
 // ── Local state ───────────────────────────────────────────────────────────────
 
 const currentStepIndex = ref(0)
+
+function getPhase(idx: number): 'A' | 'B' | 'C' | 'D' {
+  if (idx <= 7)  return 'A'
+  if (idx <= 13) return 'B'
+  if (idx <= 20) return 'C'
+  return 'D'
+}
+
+const bgStyle = computed(() => ({
+  '--cq-bg-image': `url('${PHASE_IMAGES[getPhase(currentStepIndex.value)]}')`,
+}))
 const partnerTime = ref<string | null>(null)
 const userTime    = ref<string | null>(null)
 const isLoading   = ref(false)
@@ -355,45 +398,198 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* ── Page root ──
+   Full-bleed atmospheric canvas. position: relative contains the
+   absolutely-positioned background layers. Overflow: hidden clips the
+   diagonal mask geometry at the viewport edge. */
 .cq {
+  position: relative;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--omn-bg-page);
   color: var(--omn-text-primary);
+  overflow: hidden;
 }
 
-/* Step container — narrow form measure (32rem ≈ 512px). Editorial bg,
-   centered, with --space-* tokens for rhythm. */
+/* ── Bronze diagonal seam glow (::after) ──
+   Identical geometry to SectionHero — warm accent band along the
+   168° diagonal. rgba values are structural to the bronze glow. */
+.cq::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(168, 125, 78, 0.08) 48%,
+    rgba(168, 125, 78, 0.15) 52%,
+    rgba(168, 125, 78, 0.08) 56%,
+    transparent 64%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+}
+
+/* ── Atmospheric background image ──
+   Absolutely positioned, fills the page, masked with 168° diagonal
+   so the image fades from transparent upper-left to visible lower-right.
+   Image is driven by the --cq-bg-image CSS variable set from bgStyle
+   computed. transition on background-image is not supported; instead
+   we rely on the step-fade Transition to crossfade the whole step,
+   and the image swap is imperceptible at phase boundaries. */
+.cq__bg-image {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--cq-bg-image);
+  background-size: cover;
+  background-position: center 55%;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  filter: saturate(0.85) contrast(1.05);
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+/* ── Dark overlay ──
+   Two-gradient composite: top-to-bottom vignette for text legibility
+   over input fields + diagonal bronze warmth on the seam.
+   rgba(18, 18, 20, …) = --omn-bg-page as rgba (partial opacity). */
+.cq__bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(18, 18, 20, 0.92) 0%,
+      rgba(18, 18, 20, 0.55) 25%,
+      rgba(18, 18, 20, 0.10) 50%,
+      rgba(18, 18, 20, 0.50) 80%,
+      rgba(18, 18, 20, 0.90) 100%),
+    linear-gradient(168deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(168, 125, 78, 0.05) 50%,
+      transparent 60%,
+      transparent 100%);
+}
+
+/* ── Page grain texture ──
+   Identical to home/founding pages. Fixed so it doesn't scroll.
+   z-index 200 sits above all content but is pointer-events: none.
+   The SVG turbulence filter is inlined via the data-URI. */
+.page-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: pageGrainShift 8s steps(1) infinite;
+}
+
+@keyframes pageGrainShift {
+  0%   { background-position:   0px   0px; }
+  12%  { background-position: -40px -20px; }
+  24%  { background-position:  20px -40px; }
+  36%  { background-position: -60px  10px; }
+  48%  { background-position:  30px  40px; }
+  60%  { background-position: -20px -50px; }
+  72%  { background-position:  50px  20px; }
+  84%  { background-position: -30px  60px; }
+  100% { background-position:   0px   0px; }
+}
+
+/* ── Progress bar wrapper ──
+   Sits directly in the stacking order above the atmospheric layers
+   (z-index 3) and below the glass card (z-index 4). */
+.cq__progress {
+  position: relative;
+  z-index: 3;
+}
+
+/* ── Step outer container ──
+   Flex column, vertically and horizontally centered within the
+   remaining viewport height. Provides editorial gutters.
+   z-index 3 brings it above all background layers. */
 .cq__step {
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  max-width: 32rem;
   width: 100%;
-  margin: 0 auto;
-  padding: var(--space-12) var(--space-6);
+  padding: var(--space-8) var(--space-6) var(--space-12);
+  position: relative;
+  z-index: 3;
 }
 @media (min-width: 768px) {
-  .cq__step { padding: var(--space-16) var(--space-8); }
+  .cq__step {
+    padding: var(--space-12) var(--space-8) var(--space-16);
+  }
 }
 
-.cq__nav {
-  max-width: 32rem;
+/* ── Back button row ──
+   Sits above the glass card, left-aligned within the card's max-width. */
+.cq__back {
   width: 100%;
-  margin: 0 auto;
-  padding: var(--space-4) var(--space-6) var(--space-8);
+  max-width: 36rem;
+  margin-bottom: var(--space-3);
 }
 
+/* ── AppCard quiz overrides ──
+   glass variant handles background, backdrop-filter, and border.
+   Only override: max-width for editorial column + mobile edge-to-edge. */
+.cq__card {
+  width: 100%;
+  max-width: 36rem;
+}
+@media (max-width: 767px) {
+  .cq__card {
+    max-width: 100%;
+    border-left: none !important;
+    border-right: none !important;
+  }
+}
+
+/* ── Loading overlay ──
+   Full-screen takeover matching the atmospheric treatment. */
 .cq__loading {
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--omn-bg-page);
-  z-index: 50;
+  background: rgba(18, 18, 20, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 100;
 }
 
 .cq__loading-msg {
@@ -402,23 +598,27 @@ onBeforeUnmount(() => {
   color: var(--omn-text-primary);
 }
 
+/* ── Error state ──
+   Centered card matching glass card dimensions. */
 .cq__error {
-  max-width: 32rem;
   width: 100%;
+  max-width: 36rem;
   margin: 0 auto;
-  padding: var(--space-6);
+  padding: var(--space-6) var(--space-8);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-4);
+  position: relative;
+  z-index: 3;
 }
 
 .cq__error-msg {
   color: var(--omn-text-secondary);
 }
 
-/* Step transition — uses canonical motion tokens so the timing
-   matches every other section reveal in the design system. */
+/* ── Step transition ──
+   Canonical motion tokens match every other section reveal. */
 .step-fade-enter-active,
 .step-fade-leave-active {
   transition:
@@ -428,31 +628,31 @@ onBeforeUnmount(() => {
 
 .step-fade-enter-from {
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(8px);
 }
 
 .step-fade-leave-to {
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(-8px);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .step-fade-enter-active,
-  .step-fade-leave-active { transition: none; }
-}
-
-/* Sticky Continue CTA on mobile — pins the primary action button to the
-   viewport bottom so it remains reachable without scrolling. Applied to
-   all step types that render a Continue button (not single_select,
-   which auto-advances on tap with no Continue button needed). */
+/* ── Sticky Continue CTA on mobile ──
+   Pins .app-button--primary to the viewport bottom on narrow screens.
+   Applied only to non-single_select steps via the --sticky-cta modifier. */
 @media (max-width: 767px) {
   .cq__step--sticky-cta :deep(.app-button--primary) {
     position: sticky;
-    bottom: 0;
     bottom: env(safe-area-inset-bottom, 0px);
     z-index: 10;
     width: 100%;
     align-self: stretch;
   }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .step-fade-enter-active,
+  .step-fade-leave-active { transition: none; }
+  .page-grain { animation: none; }
 }
 </style>
