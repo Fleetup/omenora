@@ -493,9 +493,6 @@
           {{ t('foundingCtaReport') }}
         </NuxtLink>
         <AppCaption as="p" class="upsell-section__founding-sub">{{ t('foundingCtaSubtitle') }}</AppCaption>
-        <NuxtLink to="/subscribe" class="upsell-cta-btn upsell-cta-btn--link upsell-cta-btn--secondary">
-          {{ t('subscribeCtaMonthly') }}
-        </NuxtLink>
       </div>
       <div class="editorial-rule" />
     </section>

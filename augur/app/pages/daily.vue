@@ -345,7 +345,7 @@
         </div>
         <AppSubhead as="h2" class="daily-sub-headline">Get YOUR personal horoscope every morning</AppSubhead>
         <AppCaption as="p" class="daily-sub-copy">Based on your exact birth chart — not just your sun sign. Love, Work &amp; Health, personalized to you.</AppCaption>
-        <NuxtLink to="/subscribe" class="daily-sub-btn label-caps">Start Personal Horoscope →</NuxtLink>
+        <NuxtLink to="/founding" class="daily-sub-btn label-caps">Start Personal Horoscope →</NuxtLink>
         <AppCaption as="p" class="daily-sub-note">Cancel anytime · No commitment</AppCaption>
       </div>
     </div>

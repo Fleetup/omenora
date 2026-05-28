@@ -244,7 +244,7 @@
             </div>
             <div class="account-section__actions">
               <p class="account-section__desc">Get personalized daily readings tailored to your natal chart and archetype.</p>
-              <AppButton variant="primary" to="/subscribe" :arrow="true">View plans</AppButton>
+              <AppButton variant="primary" to="/founding" :arrow="true">View plans</AppButton>
             </div>
           </template>
         </section>
