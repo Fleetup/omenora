@@ -7,7 +7,7 @@
     data-businessunit-id="69f37a2519d955d321733cd4"
     data-style-height="24px"
     data-style-width="100%"
-    data-theme="light"
+    data-theme="dark"
   >
     <a
       href="https://www.trustpilot.com/review/omenora.com"

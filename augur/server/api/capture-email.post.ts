@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
   const firstName        = sanitizeString(body.firstName, 50)
   const archetypeName    = sanitizeString(body.archetypeName, 100)
   const archetypeEmoji   = sanitizeString(body.archetypeEmoji, 10)
+  const archetypeSymbol  = sanitizeString(body.archetypeSymbol, 10)
   const archetypeElement = sanitizeString(body.archetypeElement, 50)
   const lifePath         = sanitizeString(String(body.lifePath ?? ''), 5)
   const birthCity        = sanitizeString(body.birthCity, 100)
@@ -26,6 +27,7 @@ export default defineEventHandler(async (event) => {
     first_name:        firstName,
     archetype_name:    archetypeName,
     archetype_emoji:   archetypeEmoji,
+    archetype_symbol:  archetypeSymbol,
     archetype_element: archetypeElement,
     life_path:         lifePath,
     archetype_traits:  archetypeTraits,
@@ -77,6 +79,7 @@ export default defineEventHandler(async (event) => {
         firstName:        firstName || '',
         archetypeName:    archetypeName || '',
         archetypeEmoji:   archetypeEmoji || '',
+        archetypeSymbol:  archetypeSymbol || '',
         archetypeElement: archetypeElement || '',
         lifePath:         lifePath || '',
         birthCity:        birthCity || '',

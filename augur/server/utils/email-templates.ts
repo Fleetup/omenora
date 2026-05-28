@@ -1,12 +1,23 @@
 import { Resend } from 'resend'
 import { unsubscribeToken } from '~~/server/api/unsubscribe.get'
 import { EMAIL_ADDRESS_LINE, emailFooterText, emailFooterHtml, emailFooterHtmlMinimal } from '~~/server/utils/email-footer'
+import {
+  E_BG_PAGE, E_BORDER_FAINT, E_TEXT_PRIMARY, E_TEXT_SECONDARY, E_TEXT_TERTIARY,
+  E_ACCENT, E_CTA, E_CTA_URGENT, E_CTA_TEXT,
+  E_FONT_DISPLAY, E_FONT_UI,
+  E_TEXT_XS, E_TEXT_BASE, E_TEXT_XL,
+  E_TRACKING_CAPS, E_TRACKING_WIDE,
+  E_SPACE_3, E_SPACE_4, E_SPACE_6, E_SPACE_8, E_SPACE_10,
+  E_RADIUS_SM,
+  emailSymbolImg,
+} from '~~/server/utils/email-design-tokens'
 
 export interface EmailPersonalization {
   email: string
   firstName: string
   archetypeName: string
-  archetypeEmoji: string
+  archetypeEmoji: string   // legacy: kept for DB rows that pre-date archetypeSymbol
+  archetypeSymbol?: string // preferred: Unicode char e.g. '◆' → resolves to hosted PNG
   archetypeElement: string
   lifePath: string
   readingTradition: string
@@ -28,7 +39,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}, your ${data.archetypeName} reading is still here`,
         preview: `We held it for you. It won't be here forever.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}, your reading is still here.`,
@@ -48,7 +59,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `What the ${data.archetypeName} never finds out about themselves`,
         preview: `This is in your locked sections.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `What's locked in your reading.`,
@@ -74,7 +85,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName} — your reading expires tomorrow`,
         preview: `After that, your reading will no longer be accessible.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Your reading expires in 23 hours.`,
@@ -95,7 +106,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `Last chance. Your ${data.archetypeName} reading deletes tonight.`,
         preview: `This is the last email we'll send.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `This is the last email.`,
@@ -116,7 +127,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}, tu lectura de ${data.archetypeName} sigue aquí`,
         preview: `La guardamos para ti. No estará aquí para siempre.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}, tu lectura sigue aquí.`,
@@ -136,7 +147,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `Lo que el ${data.archetypeName} nunca descubre sobre sí mismo`,
         preview: `Esto está en tus secciones bloqueadas.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Lo que hay en tu lectura bloqueada.`,
@@ -160,7 +171,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName} — tu lectura expira mañana`,
         preview: `Después de eso, tu análisis se elimina.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Tu lectura expira en 23 horas.`,
@@ -179,7 +190,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `Última oportunidad. Tu lectura de ${data.archetypeName} se elimina esta noche.`,
         preview: `Este es el último correo que enviaremos.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Este es el último correo.`,
@@ -199,7 +210,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}, sua leitura de ${data.archetypeName} ainda está aqui`,
         preview: `Guardamos para você. Não vai durar para sempre.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}, sua leitura ainda está aqui.`,
@@ -219,7 +230,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `O que o ${data.archetypeName} nunca descobre sobre si mesmo`,
         preview: `Isso está nas suas seções bloqueadas.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `O que está na sua leitura bloqueada.`,
@@ -241,7 +252,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName} — sua leitura expira amanhã`,
         preview: `Depois disso, sua análise é deletada.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Sua leitura expira em 23 horas.`,
@@ -259,7 +270,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `Última chance. Sua leitura de ${data.archetypeName} é deletada hoje à noite.`,
         preview: `Este é o último e-mail que enviaremos.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Este é o último e-mail.`,
@@ -276,7 +287,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}님, 당신의 ${data.archetypeName} 리딩이 아직 여기 있습니다`,
         preview: `저희가 보관하고 있습니다. 영원히 있지는 않습니다.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}님, 리딩이 아직 여기 있습니다.`,
@@ -294,7 +305,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.archetypeName}이 자신에 대해 결코 알지 못하는 것`,
         preview: `이것은 잠긴 섹션에 있습니다.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `잠긴 리딩에 있는 내용.`,
@@ -316,7 +327,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}님 — 리딩이 내일 만료됩니다`,
         preview: `이후에는 분석이 삭제됩니다.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `리딩이 23시간 후에 만료됩니다.`,
@@ -331,7 +342,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `마지막 기회. ${data.archetypeName} 리딩이 오늘 밤 삭제됩니다.`,
         preview: `이것이 마지막 이메일입니다.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `이것이 마지막 이메일입니다.`,
@@ -348,7 +359,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}，您的${data.archetypeName}解读仍在这里`,
         preview: `我们为您保留了它，但不会永远保留。`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}，您的解读仍在这里。`,
@@ -366,7 +377,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.archetypeName}从未发现的关于自己的事`,
         preview: `这在您的锁定部分中。`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `您锁定解读中的内容。`,
@@ -388,7 +399,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}——您的解读明天过期`,
         preview: `之后，您的分析将被删除。`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `您的解读将在23小时后过期。`,
@@ -403,7 +414,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `最后机会。您的${data.archetypeName}解读今晚删除。`,
         preview: `这是我们发送的最后一封邮件。`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `这是最后一封邮件。`,
@@ -420,7 +431,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}, आपकी ${data.archetypeName} रीडिंग अभी भी यहाँ है`,
         preview: `हमने इसे आपके लिए रखा है। यह हमेशा नहीं रहेगी।`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}, आपकी रीडिंग अभी भी यहाँ है।`,
@@ -438,7 +449,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `वह जो ${data.archetypeName} खुद के बारे में कभी नहीं जान पाता`,
         preview: `यह आपके बंद अनुभागों में है।`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `आपकी बंद रीडिंग में क्या है।`,
@@ -460,7 +471,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName} — आपकी रीडिंग कल समाप्त होती है`,
         preview: `उसके बाद, आपका विश्लेषण हटा दिया जाएगा।`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `आपकी रीडिंग 23 घंटों में समाप्त होती है।`,
@@ -475,7 +486,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `अंतिम मौका। आपकी ${data.archetypeName} रीडिंग आज रात हटा दी जाएगी।`,
         preview: `यह अंतिम ईमेल है जो हम भेजेंगे।`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `यह अंतिम ईमेल है।`,
@@ -733,7 +744,7 @@ export function buildFoundingMemberEmail(data: FoundingMemberEmailData): {
 }
 
 function buildHtmlEmail({
-  emoji,
+  symbol,
   title,
   body,
   ctaText,
@@ -743,7 +754,7 @@ function buildHtmlEmail({
   email,
   secret = '',
 }: {
-  emoji: string
+  symbol: string
   title: string
   body: string
   ctaText: string
@@ -753,7 +764,8 @@ function buildHtmlEmail({
   email: string
   secret?: string
 }) {
-  const ctaColor = urgent ? '#8B0000' : '#4B3F8C'
+  const ctaColor = urgent ? E_CTA_URGENT : E_CTA
+  const ctaTextColor = urgent ? E_TEXT_PRIMARY : E_CTA_TEXT
   const token    = secret ? unsubscribeToken(email, secret) : ''
   const unsubUrl = token
     ? `https://omenora.com/api/unsubscribe?token=${token}&e=${encodeURIComponent(email)}`
@@ -791,69 +803,70 @@ function buildHtmlEmail({
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#0a0a0f;font-family:Georgia,serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0f;padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:${E_BG_PAGE};font-family:${E_FONT_DISPLAY};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${E_BG_PAGE};padding:${E_SPACE_10} 20px;">
     <tr>
       <td align="center">
         <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
 
-          <!-- Header -->
+          <!-- Wordmark -->
           <tr>
-            <td style="padding-bottom:32px;text-align:center;">
-              <p style="margin:0;font-size:11px;letter-spacing:0.2em;color:#666;text-transform:uppercase;">OMENORA</p>
+            <td style="padding-bottom:${E_SPACE_8};text-align:center;">
+              <p style="margin:0;font-size:${E_TEXT_XS};letter-spacing:${E_TRACKING_WIDE};color:${E_TEXT_TERTIARY};text-transform:uppercase;font-family:${E_FONT_UI};">OMENORA</p>
             </td>
           </tr>
 
-          <!-- Emoji -->
+          <!-- Archetype Symbol -->
           <tr>
-            <td style="padding-bottom:16px;text-align:center;">
-              <span style="font-size:40px;">${emoji}</span>
+            <td style="padding-bottom:${E_SPACE_4};text-align:center;">
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr><td>${emailSymbolImg(symbol, 56)}</td></tr></table>
             </td>
           </tr>
 
           <!-- Title -->
           <tr>
-            <td style="padding-bottom:24px;text-align:center;">
-              <h1 style="margin:0;font-size:24px;font-weight:400;color:#f0ece4;font-family:Georgia,serif;line-height:1.4;">${title}</h1>
+            <td style="padding-bottom:${E_SPACE_6};text-align:center;">
+              <h1 style="margin:0;font-size:${E_TEXT_XL};font-weight:400;color:${E_TEXT_PRIMARY};font-family:${E_FONT_DISPLAY};line-height:1.4;">${title}</h1>
             </td>
           </tr>
 
           <!-- Divider -->
           <tr>
-            <td style="padding-bottom:28px;">
-              <hr style="border:none;border-top:1px solid #222;margin:0;">
+            <td style="padding-bottom:${E_SPACE_8};">
+              <div style="height:1px;background:${E_BORDER_FAINT};margin:0;"></div>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
-            <td style="color:#a09880;font-size:16px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+            <td style="color:${E_TEXT_SECONDARY};font-size:${E_TEXT_BASE};line-height:1.8;font-family:${E_FONT_DISPLAY};padding-bottom:${E_SPACE_8};">
               ${body}
             </td>
           </tr>
 
           <!-- CTA Button -->
           <tr>
-            <td style="padding-bottom:32px;text-align:center;">
-              <a href="${ctaUrl}"
-                 style="display:inline-block;background-color:${ctaColor};color:#f0ece4;font-family:Georgia,serif;font-size:15px;padding:16px 32px;text-decoration:none;border-radius:2px;letter-spacing:0.05em;">
-                ${ctaText}
-              </a>
+            <td style="padding-bottom:${E_SPACE_8};text-align:center;">
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr>
+                <td style="background-color:${ctaColor};border-radius:${E_RADIUS_SM};padding:${E_SPACE_4} ${E_SPACE_8};">
+                  <a href="${ctaUrl}" style="display:inline-block;color:${ctaTextColor};font-family:${E_FONT_UI};font-size:${E_TEXT_BASE};font-weight:500;text-decoration:none;letter-spacing:0.03em;white-space:nowrap;">${ctaText}</a>
+                </td>
+              </tr></table>
             </td>
           </tr>
 
           ${footerNote ? `
           <!-- Footer note -->
           <tr>
-            <td style="text-align:center;padding-bottom:24px;">
-              <p style="margin:0;font-size:12px;color:#555;font-family:Georgia,serif;">${footerNote}</p>
+            <td style="text-align:center;padding-bottom:${E_SPACE_6};">
+              <p style="margin:0;font-size:${E_TEXT_XS};color:${E_TEXT_TERTIARY};font-family:${E_FONT_UI};">${footerNote}</p>
             </td>
           </tr>` : ''}
 
           <!-- Disclaimer -->
           <tr>
-            <td style="text-align:center;padding:16px 0 8px;">
-              <p style="margin:0;font-size:10px;color:#3a3a3a;font-family:sans-serif;line-height:1.5;">
+            <td style="text-align:center;padding:${E_SPACE_4} 0 ${E_SPACE_3};">
+              <p style="margin:0;font-size:${E_TEXT_XS};color:${E_TEXT_TERTIARY};font-family:${E_FONT_UI};line-height:1.5;">
                 For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.
               </p>
             </td>

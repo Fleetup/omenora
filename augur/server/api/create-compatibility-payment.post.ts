@@ -32,6 +32,12 @@ export default defineEventHandler(async (event) => {
     ? body.quizAnswers as Record<string, string>
     : {}
 
+  // ── Archetype fields — carried through to post-payment generation to ensure
+  // the compatibility score is computed from identical inputs as the preview call.
+  const archetype       = body.archetype       != null ? sanitizeString(body.archetype, 30)        : ''
+  const element         = body.element         != null ? sanitizeString(body.element, 20)          : ''
+  const lifePathNumber  = body.lifePathNumber  != null ? String(Number(body.lifePathNumber) || '')  : ''
+
   // ── Coordinates needed for ascendant computation ──────────────────────────
   const cityLat        = typeof body.cityLat        === 'number' ? body.cityLat        : undefined
   const cityLng        = typeof body.cityLng        === 'number' ? body.cityLng        : undefined
@@ -57,13 +63,16 @@ export default defineEventHandler(async (event) => {
     email: isValidEmail(email) ? email : '',
     tempId,
     language,
-    type: 'compat_credit',
+    type: 'compatibility',
     ...(partnerDob         ? { partnerDob }                        : {}),
     ...(partnerCity        ? { partnerCity }                       : {}),
     ...(dateOfBirth        ? { dateOfBirth }                       : {}),
     ...(city               ? { city }                              : {}),
     ...(timeOfBirth        ? { timeOfBirth }                       : {}),
     ...(partnerTimeOfBirth ? { partnerTimeOfBirth }                : {}),
+    ...(archetype          ? { archetype }                         : {}),
+    ...(element            ? { element }                           : {}),
+    ...(lifePathNumber     ? { lifePathNumber }                    : {}),
     ...(utmCreative        ? { utm_creative: utmCreative }         : {}),
     ...(utmSource    ? { utm_source:   utmSource }   : {}),
     ...(utmCampaign  ? { utm_campaign: utmCampaign } : {}),

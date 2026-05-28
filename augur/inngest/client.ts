@@ -59,7 +59,8 @@ export const subscriberWelcomeSend = eventType(
  *   sessionId         — the browser/quiz session ID at capture time
  *   firstName         — visitor's first name (for personalisation)
  *   archetypeName     — archetype display name (e.g. "The Phoenix")
- *   archetypeEmoji    — emoji for the archetype (e.g. "🔥")
+ *   archetypeEmoji    — legacy emoji field (kept for backward-compat)
+ *   archetypeSymbol   — preferred: Unicode symbol char (e.g. '◆') → resolves to hosted PNG in emails
  *   archetypeElement  — element name (e.g. "Fire")
  *   lifePath          — life path number as string (e.g. "7")
  *   birthCity         — city of birth (for personalisation)
@@ -75,6 +76,7 @@ export const abandonmentStarted = eventType(
       firstName:        string
       archetypeName:    string
       archetypeEmoji:   string
+      archetypeSymbol?: string
       archetypeElement: string
       lifePath:         string
       birthCity:        string

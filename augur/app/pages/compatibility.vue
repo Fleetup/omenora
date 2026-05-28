@@ -1,30 +1,36 @@
 <template>
-  <!-- ── Loading ── -->
-  <div v-if="isLoading" class="compat-state-page" aria-live="polite">
-    <div class="compat-state-inner">
-      <PhoenixLoader :size="72" />
-      <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
-      <AppCaption as="p" class="compat-state-msg">{{ t('analyzingCompat') }}</AppCaption>
-    </div>
-  </div>
+  <!-- ── Atmospheric page root — shared by all states ── -->
+  <div class="compat-page">
 
-  <!-- ── Error (post-payment path) ── -->
-  <div v-else-if="hasError && !isPreviewMode" class="compat-state-page">
-    <div class="compat-state-inner">
-      <PhoenixLoader :size="72" />
-      <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
-      <AppCaption as="p" class="compat-state-msg">{{ t('somethingWrong') }}</AppCaption>
-    </div>
-  </div>
+    <!-- Atmospheric background layers (same pattern as compatibility-quiz.vue) -->
+    <div class="compat-page__bg-image" aria-hidden="true" />
+    <div class="compat-page__bg-overlay" aria-hidden="true" />
+    <div class="page-grain" aria-hidden="true" />
 
-  <!-- ── Session expired (preview path, no store data) ── -->
-  <div v-else-if="isPreviewMode && !previewData" class="compat-state-page">
-    <div class="compat-state-inner">
-      <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
-      <AppCaption as="p" class="compat-state-msg" style="max-width: 280px;">{{ t('compatSessionExpired') }}</AppCaption>
-      <AppButton variant="primary" :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</AppButton>
+    <!-- ── Loading (fixed overlay — independent of v-else-if chain below) ── -->
+    <div v-if="isLoading" class="compat-loading" aria-live="polite">
+      <AppHeadline variant="lg" as="p" class="compat-loading__msg">
+        {{ compatLoadingMessages[compatLoadingMsgIdx % compatLoadingMessages.length] }}
+      </AppHeadline>
     </div>
-  </div>
+
+    <!-- ── Error (post-payment path) ── -->
+    <div v-if="hasError && !isPreviewMode" class="compat-state-layer">
+      <AppCard variant="glass" :hoverable="false" class="compat-state-card">
+        <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
+        <AppCaption as="p" class="compat-state-msg">{{ t('somethingWrong') }}</AppCaption>
+        <AppButton variant="primary" :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</AppButton>
+      </AppCard>
+    </div>
+
+    <!-- ── Session expired (preview path, no store data) ── -->
+    <div v-else-if="isPreviewMode && !previewData" class="compat-state-layer">
+      <AppCard variant="glass" :hoverable="false" class="compat-state-card">
+        <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
+        <AppCaption as="p" class="compat-state-msg" style="max-width: 280px;">{{ t('compatSessionExpired') }}</AppCaption>
+        <AppButton variant="primary" :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</AppButton>
+      </AppCard>
+    </div>
 
   <!-- ── CASE A: Full post-payment report ── -->
   <div v-else-if="!isPreviewMode && compatibility" class="compat-full-page">
@@ -379,27 +385,27 @@
       </AppCaption>
 
       <!-- Single IAP card -->
-      <div class="pay-card pay-card--single">
-        <AppSubhead as="p" variant="strong" class="pay-card__price">
-          {{ t('compatIAPPrice') }}<AppCaption class="pay-card__freq"> {{ t('compatIAPLabel') }}</AppCaption>
-        </AppSubhead>
-        <AppCaption as="ul" class="pay-card__bullets">
-          <li>{{ t('compatIAPBullet1') }}</li>
-          <li>{{ t('compatIAPBullet2') }}</li>
-          <li>{{ t('compatIAPBullet3') }}</li>
-        </AppCaption>
-        <AppButton
-          variant="primary"
-          :arrow="false"
-          :disabled="isProcessing || !isEmailValid"
-          class="pay-card__btn"
-          :class="{ 'pay-card__btn--processing': isProcessing }"
-          @click="handleCheckout()"
-        >
-          <span v-if="isProcessing">{{ t('compatProcessing') }}</span>
-          <span v-else>{{ t('compatIAPCta') }}</span>
-        </AppButton>
-      </div>
+      <SectionPaywallCard
+        :items="compatPaywallItems"
+        :price-label="t('compatIAPLabel')"
+        :price-value="t('compatIAPPrice')"
+        :trust-items="compatPaywallTrust"
+        :cta-label="isProcessing ? t('compatProcessing') : t('compatIAPCta')"
+        class="compat-paywall-card"
+      >
+        <template #cta>
+          <AppButton
+            variant="primary"
+            :full="true"
+            :disabled="isProcessing || !isEmailValid"
+            :class="{ 'pay-card__btn--processing': isProcessing }"
+            @click="handleCheckout()"
+          >
+            <span v-if="isProcessing">{{ t('compatProcessing') }}</span>
+            <span v-else>{{ t('compatIAPCta') }}</span>
+          </AppButton>
+        </template>
+      </SectionPaywallCard>
 
       <!-- Upsell link to Founding Member -->
       <NuxtLink to="/founding" class="paywall__premium-link annotation">
@@ -460,15 +466,18 @@
       </nav>
     </footer>
   </div>
+
+  </div><!-- /.compat-page -->
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import type { CompatibilityQuizAnswers } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
 import { useAuth } from '~/composables/useAuth'
 import { useClarity } from '~/composables/useClarity'
+import SectionPaywallCard from '~/components/sections/SectionPaywallCard.vue'
 
 useSeoMeta({ title: 'Your Love Compatibility Reading', robots: 'noindex, nofollow' })
 useHead({ link: [{ rel: 'canonical', href: 'https://omenora.com/compatibility' }] })
@@ -518,6 +527,32 @@ const isCanceled = computed(() => route.query.canceled === '1')
 const isLoading  = ref(false)
 const hasError   = ref(false)
 const compatibility = ref<any>(null)
+
+// ── Loading messages (mirrors compatibility-quiz.vue pattern) ─────────────────
+const compatLoadingMessages = [
+  'Reading the charts…',
+  'Mapping the connection…',
+  'Finding what matters…',
+  'Almost there…',
+]
+const compatLoadingMsgIdx = ref(0)
+let compatLoadingInterval: ReturnType<typeof setInterval> | null = null
+
+function startCompatLoading() {
+  compatLoadingMsgIdx.value = 0
+  compatLoadingInterval = setInterval(() => { compatLoadingMsgIdx.value++ }, 1200)
+}
+function stopCompatLoading() {
+  if (compatLoadingInterval) { clearInterval(compatLoadingInterval); compatLoadingInterval = null }
+}
+
+// ── Pay card items (SectionPaywallCard) ───────────────────────────────────────
+const compatPaywallItems = computed(() => [
+  { key: 'What you unlock', value: '7 compatibility sections' },
+  { key: 'Sections', value: 'Bond · Strength · Challenge · Communication · Dynamics · Forecast · Advice' },
+  { key: 'Format', value: 'Full written reading' },
+])
+const compatPaywallTrust = ['Secure checkout', '14-day refund', 'Stripe protected']
 
 // ── T2 birth chart data (compat with_charts tier) ─────────────────────────────
 const userBirthChart    = ref<any>(null)
@@ -766,6 +801,9 @@ async function handleCheckout() {
           email,
           tempId:            store.tempId || `compat_${Date.now()}`,
           language:          store.language || 'en',
+          archetype:         store.archetype          || undefined,
+          element:           store.report?.element    || undefined,
+          lifePathNumber:    store.lifePathNumber      || undefined,
           origin:            window.location.origin,
           quizAnswers:       store.compatibilityQuizAnswers,
           cityLat:           store.cityLat        ?? undefined,
@@ -788,6 +826,10 @@ async function handleCheckout() {
 }
 
 // ── onMounted: routing branches ───────────────────────────────────────────────
+onBeforeUnmount(() => {
+  stopCompatLoading()
+})
+
 onMounted(async () => {
   await nextTick() // ensure route query is fully settled after navigation
 
@@ -888,6 +930,7 @@ onMounted(async () => {
     }
 
     isLoading.value = true
+    startCompatLoading()
     try {
       const paymentData = await $fetch<{
         paid: boolean
@@ -912,6 +955,7 @@ onMounted(async () => {
       if (!store.partnerDob && meta.partnerDob)   store.setPartnerData({ name: store.partnerName, dob: meta.partnerDob, city: meta.partnerCity || store.partnerCity })
       if (!store.tempId)       store.setTempId(meta.tempId || '')
       if (!store.languageManualOverride && meta.language) store.setLanguage(meta.language)
+      if (!store.archetype && meta.archetype) store.archetype = meta.archetype
 
       // ── New quiz answer hydration ─────────────────────────────────────
       const newQuizKeys: (keyof CompatibilityQuizAnswers)[] = [
@@ -951,9 +995,9 @@ onMounted(async () => {
         body: {
           firstName:      store.firstName,
           dateOfBirth:    store.dateOfBirth || meta.dateOfBirth || '',
-          archetype:      store.archetype   || undefined,
-          element:        store.report?.element        || undefined,
-          lifePathNumber: store.lifePathNumber          || undefined,
+          archetype:      store.archetype   || meta.archetype   || undefined,
+          element:        store.report?.element        || meta.element        || undefined,
+          lifePathNumber: store.lifePathNumber          || (meta.lifePathNumber ? Number(meta.lifePathNumber) : undefined) || undefined,
           powerTraits:    store.report?.powerTraits     || undefined,
           partnerName:    store.partnerName,
           partnerDob:          store.partnerDob,
@@ -1086,9 +1130,11 @@ onMounted(async () => {
         }))
       } catch { /* sessionStorage quota exceeded — non-critical */ }
 
+      stopCompatLoading()
       isLoading.value = false
     } catch {
       console.error('Compatibility page load failed')
+      stopCompatLoading()
       hasError.value  = true
       isLoading.value = false
     }
@@ -1102,208 +1148,367 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ── Centered state pages (loading / error / expired) ── */
-.compat-state-page {
-  min-height: 100vh;
-  background: var(--surface-base);
+/* ════════════════════════════════════════════════════════════════
+   ATMOSPHERIC PAGE ROOT
+   Shared canvas for all states: loading, error, preview, full report.
+   Pattern mirrors compatibility-quiz.vue exactly.
+   ════════════════════════════════════════════════════════════════ */
+.compat-page {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--omn-bg-page);
+  color: var(--omn-text-primary);
+  overflow: hidden;
+}
+
+/* Bronze diagonal seam glow — identical geometry to compatibility-quiz */
+.compat-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(168, 125, 78, 0.08) 48%,
+    rgba(168, 125, 78, 0.15) 52%,
+    rgba(168, 125, 78, 0.08) 56%,
+    transparent 64%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+}
+
+/* Atmospheric background image — fixed, diagonal mask */
+.compat-page__bg-image {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url('/images/hero/Nebula-void.webp');
+  background-size: cover;
+  background-position: center 55%;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  filter: saturate(0.85) contrast(1.05);
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+/* Dark overlay — vignette for text legibility */
+.compat-page__bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(18, 18, 20, 0.92) 0%,
+      rgba(18, 18, 20, 0.55) 25%,
+      rgba(18, 18, 20, 0.10) 50%,
+      rgba(18, 18, 20, 0.50) 80%,
+      rgba(18, 18, 20, 0.90) 100%),
+    linear-gradient(168deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(168, 125, 78, 0.05) 50%,
+      transparent 60%,
+      transparent 100%);
+}
+
+/* Page grain texture — mirrors home/founding/quiz pages */
+.page-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: pageGrainShift 8s steps(1) infinite;
+}
+
+@keyframes pageGrainShift {
+  0%   { background-position:   0px   0px; }
+  12%  { background-position: -40px -20px; }
+  24%  { background-position:  20px -40px; }
+  36%  { background-position: -60px  10px; }
+  48%  { background-position:  30px  40px; }
+  60%  { background-position: -20px -50px; }
+  72%  { background-position:  50px  20px; }
+  84%  { background-position: -30px  60px; }
+  100% { background-position:   0px   0px; }
+}
+
+/* ── Loading overlay (quiz-style fullscreen blur + cycling message) ── */
+.compat-loading {
+  position: fixed;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(18, 18, 20, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 100;
 }
 
-.compat-state-inner {
+.compat-loading__msg {
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--omn-text-primary);
+}
+
+/* ── Centered state layer (error / session expired) ── */
+.compat-state-layer {
+  position: relative;
+  z-index: 3;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-edge);
+}
+
+.compat-state-card {
+  width: 100%;
+  max-width: 28rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-5);
   text-align: center;
-  padding: 0 clamp(20px, 5vw, 48px);
 }
 
 .compat-state-brand {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
+}
+
+/* ── Paywall card (SectionPaywallCard scoping) ── */
+.compat-paywall-card {
+  max-width: 480px;
+  margin-bottom: var(--space-4);
+}
+
+/* ── Step fade transition (matches quiz) ── */
+.step-fade-enter-active,
+.step-fade-leave-active {
+  transition:
+    opacity var(--omn-duration-base) var(--omn-ease),
+    transform var(--omn-duration-base) var(--omn-ease);
+}
+.step-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.step-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 .compat-state-msg {
-  color: var(--text-tertiary);
-  max-width: 300px;
-  line-height: 1.6;
+  color: var(--omn-text-secondary);
+  max-width: 280px;
+  line-height: var(--leading-base);
 }
 
 /* ── Full report page ── */
 .compat-full-page {
-  min-height: 100vh;
-  background: var(--surface-base);
+  position: relative;
+  z-index: 3;
+  min-height: 100dvh;
 }
 
 .compat-full-page__badge {
-  color: var(--text-tertiary);
-  font-size: 10px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
 }
 
 /* ── Preview page ── */
 .compat-preview-page {
-  min-height: 100vh;
-  background: var(--surface-base);
+  position: relative;
+  z-index: 3;
+  min-height: 100dvh;
 }
 
 .compat-preview__badge {
-  color: var(--text-tertiary);
-  font-size: 10px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
 }
 
 /* ── Canceled banner ── */
 .compat-canceled {
-  border-top: 1px solid var(--border-subtle);
-  padding: 14px clamp(20px, 5vw, 48px);
+  border-top: 1px solid var(--omn-border-subtle);
+  padding: var(--space-4) var(--space-edge);
   text-align: center;
 }
 
 /* ── Masthead ── */
 .compat-masthead {
-  padding: clamp(48px, 8vw, 80px) clamp(20px, 5vw, 80px) clamp(40px, 6vw, 64px);
-  max-width: 1400px;
+  padding: var(--space-block) var(--space-edge) var(--space-content);
+  max-width: var(--width-bleed);
   margin: 0 auto;
 }
 
 .compat-masthead__kicker {
-  color: var(--text-tertiary);
-  margin-bottom: 20px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-5);
 }
 
 .compat-masthead__names {
-  font-family: var(--font-sans);
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(36px, 8vw, 72px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  color: var(--text-primary);
-  margin: 0 0 24px;
+  font-size: clamp(var(--text-3xl), 8vw, var(--text-6xl));
+  line-height: var(--leading-3xl);
+  letter-spacing: var(--tracking-tight);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-6);
 }
 
 .compat-masthead__score {
-  font-family: var(--font-sans);
-  font-size: clamp(72px, 16vw, 120px);
-  font-weight: 300;
-  line-height: 1;
-  margin: 0 0 24px;
-  letter-spacing: -0.04em;
+  font-family: var(--omn-font-display);
+  font-size: clamp(var(--text-5xl), 16vw, var(--text-7xl));
+  font-weight: var(--weight-light);
+  line-height: var(--leading-7xl);
+  margin: 0 0 var(--space-6);
+  letter-spacing: var(--tracking-tight);
 }
 
 .editorial-rule {
-  width: 48px;
+  width: var(--space-12);
   height: 1px;
-  background: var(--text-secondary);
-  margin-bottom: 24px;
+  background: var(--omn-text-secondary);
+  margin-bottom: var(--space-6);
 }
 
 .compat-masthead__title {
-  font-family: var(--font-sans);
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(18px, 3vw, 24px);
-  line-height: 1.4;
-  color: var(--text-secondary);
+  font-size: clamp(var(--text-md), 3vw, var(--text-xl));
+  line-height: var(--leading-xl);
+  color: var(--omn-text-secondary);
   margin: 0;
 }
 
 /* ── Report body ── */
 .report-body {
-  max-width: 1400px;
-  padding: 0 clamp(20px, 5vw, 80px);
+  max-width: var(--width-bleed);
+  padding: 0 var(--space-edge);
   margin: 0 auto;
 }
 
 /* ── Report sections ── */
 .report-section {
-  padding: clamp(36px, 6vw, 56px) 0;
-  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-content) 0;
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .report-section--last {
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--omn-border-subtle);
 }
 
 .report-section__header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .report-section__num {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   flex-shrink: 0;
 }
 
 .report-section__rule {
   flex: 1;
   height: 1px;
-  background: var(--border-subtle);
+  background: var(--omn-border-subtle);
 }
 
 .report-section__kicker {
-  color: var(--text-tertiary);
-  margin-bottom: 16px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-4);
 }
 
 .report-section__heading {
-  font-family: var(--font-sans);
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(22px, 4vw, 32px);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  margin: 0 0 24px;
+  font-size: clamp(var(--text-xl), 4vw, var(--text-2xl));
+  line-height: var(--leading-2xl);
+  letter-spacing: var(--tracking-snug);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-6);
 }
 
 .report-section__body {
-  font-family: var(--font-sans);
-  font-size: clamp(17px, 2.5vw, 20px);
-  font-weight: 300;
+  font-family: var(--omn-font-body);
+  font-size: clamp(var(--text-md), 2.5vw, var(--text-lg));
+  font-weight: var(--weight-light);
   line-height: 1.8;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
   margin: 0;
 }
 
 /* ── Advice block ── */
 .advice-block {
-  border-left: 2px solid var(--text-secondary);
-  padding-left: 24px;
+  border-left: 2px solid var(--omn-text-secondary);
+  padding-left: var(--space-6);
 }
 
 /* ── Challenge section (free preview hook) ── */
 .report-section--challenge {
-  border-top: 2px solid var(--text-primary);
+  border-top: 2px solid var(--omn-text-primary);
 }
 
 /* ── Locked strip ── */
 .locked-strip {
-  max-width: 1400px;
-  padding: clamp(28px, 4vw, 40px) clamp(20px, 5vw, 80px);
-  border-top: 1px solid var(--border-subtle);
+  max-width: var(--width-bleed);
+  padding: var(--space-content) var(--space-edge);
+  border-top: 1px solid var(--omn-border-subtle);
   margin: 0 auto;
 }
 
 .locked-strip__header {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .locked-strip__label {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
 }
 
 .locked-strip__cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .locked-card {
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--omn-border-subtle);
 }
 
 .locked-card:last-child {
@@ -1313,17 +1518,17 @@ onMounted(async () => {
 .locked-card__header {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .locked-card__icon {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   flex-shrink: 0;
 }
 
 .locked-card__title {
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
   font-style: italic;
 }
 
@@ -1334,86 +1539,86 @@ onMounted(async () => {
   user-select: none;
   overflow: hidden;
   max-height: 48px;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
   margin: 0;
-  line-height: 1.6;
+  line-height: var(--leading-base);
 }
 
 /* ── Calculation receipt ── */
 .calc-receipt {
-  max-width: 1400px;
-  padding: clamp(20px, 3vw, 32px) clamp(20px, 5vw, 80px);
-  border-top: 1px solid var(--border-subtle);
+  max-width: var(--width-bleed);
+  padding: var(--space-gap) var(--space-edge);
+  border-top: 1px solid var(--omn-border-subtle);
   opacity: 0.7;
   margin: 0 auto;
 }
 
 .calc-receipt--full {
   opacity: 1;
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--omn-border-subtle);
+  border-bottom: 1px solid var(--omn-border-subtle);
   margin-bottom: 0;
 }
 
 .calc-receipt__header {
-  color: var(--text-tertiary);
-  margin-bottom: 16px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-4);
 }
 
 .calc-receipt__rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .calc-receipt__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: var(--space-2) var(--space-4);
   align-items: baseline;
 }
 
 .calc-receipt__row--note {
-  padding-top: 6px;
-  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .calc-receipt__person {
-  color: var(--text-secondary);
-  font-weight: 500;
+  color: var(--omn-text-secondary);
+  font-weight: var(--weight-medium);
   flex-shrink: 0;
   min-width: 72px;
 }
 
 .calc-receipt__detail {
-  color: var(--text-tertiary);
-  line-height: 1.6;
+  color: var(--omn-text-tertiary);
+  line-height: var(--leading-base);
 }
 
 .calc-receipt__body {
-  color: var(--text-tertiary);
-  line-height: 1.6;
-  margin: 0 0 4px;
+  color: var(--omn-text-tertiary);
+  line-height: var(--leading-base);
+  margin: 0 0 var(--space-1);
 }
 
 .calc-receipt__meta {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   margin: 0;
   opacity: 0.7;
 }
 
 /* ── Trustpilot block ── */
 .compat-tp-block {
-  max-width: 1400px;
-  padding: clamp(16px, 2.5vw, 24px) clamp(20px, 5vw, 80px);
+  max-width: var(--width-bleed);
+  padding: var(--space-gap) var(--space-edge);
   margin: 0 auto;
 }
 
 .compat-tp-label {
-  color: var(--text-tertiary);
-  margin-bottom: 8px;
-  letter-spacing: 0.15em;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-2);
+  letter-spacing: var(--tracking-label);
 }
 
 .compat-tp-widget {
@@ -1422,18 +1627,18 @@ onMounted(async () => {
 
 /* ── Trust line ── */
 .compat-trust {
-  max-width: 1400px;
-  padding: 0 clamp(20px, 5vw, 80px) clamp(24px, 4vw, 36px);
-  color: var(--text-tertiary);
+  max-width: var(--width-bleed);
+  padding: 0 var(--space-edge) var(--space-content);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  line-height: 1.6;
+  line-height: var(--leading-base);
   margin: 0 auto;
 }
 
 /* ── Promo code (compatibility) ── */
 .compat-promo {
-  max-width: 1400px;
-  padding: 0 clamp(20px, 5vw, 80px) clamp(20px, 3vw, 28px);
+  max-width: var(--width-bleed);
+  padding: 0 var(--space-edge) var(--space-gap);
   margin: 0 auto;
 }
 
@@ -1441,7 +1646,7 @@ onMounted(async () => {
   background: none;
   border: none;
   padding: 0;
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   font-style: italic;
   cursor: pointer;
   text-decoration: underline;
@@ -1451,7 +1656,7 @@ onMounted(async () => {
 .compat-promo__row {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .compat-promo__input {
@@ -1462,15 +1667,15 @@ onMounted(async () => {
 .compat-promo__apply {
   background: none;
   border: none;
-  padding: 0 0 12px;
-  color: var(--text-secondary);
+  padding: 0 0 var(--space-3);
+  color: var(--omn-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  transition: color 0.2s;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
 
 .compat-promo__apply:hover:not(:disabled) {
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
 }
 
 .compat-promo__apply:disabled {
@@ -1479,17 +1684,17 @@ onMounted(async () => {
 }
 
 .compat-promo__msg {
-  margin: 10px 0 0;
-  line-height: 1.5;
+  margin: var(--space-2) 0 0;
+  line-height: var(--leading-sm);
 }
 
 .compat-promo__msg--error {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   font-style: italic;
 }
 
 .compat-promo__msg--success {
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
   font-style: italic;
 }
 
@@ -1500,137 +1705,137 @@ onMounted(async () => {
 
 /* ── Paywall ── */
 .paywall {
-  max-width: 1400px;
-  padding: clamp(36px, 6vw, 56px) clamp(20px, 5vw, 80px) clamp(48px, 8vw, 72px);
-  border-top: 1px solid var(--border-subtle);
+  max-width: var(--width-bleed);
+  padding: var(--space-content) var(--space-edge) var(--space-block);
+  border-top: 1px solid var(--omn-border-subtle);
   margin: 0 auto;
 }
 
 .paywall__heading {
-  font-family: var(--font-sans);
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(28px, 6vw, 48px);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  color: var(--text-primary);
-  margin: 0 0 16px;
+  font-size: clamp(var(--text-2xl), 6vw, var(--text-4xl));
+  line-height: var(--leading-4xl);
+  letter-spacing: var(--tracking-tight);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-4);
 }
 
 .paywall__sub {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  line-height: 1.6;
-  margin: 0 0 32px;
+  line-height: var(--leading-base);
+  margin: 0 0 var(--space-8);
   max-width: 520px;
 }
 
 /* ── Paywall urgency line ── */
 .paywall__urgency {
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
   font-style: italic;
-  line-height: 1.6;
-  margin: 0 0 20px;
+  line-height: var(--leading-base);
+  margin: 0 0 var(--space-5);
 }
 
 /* ── Capture block ── */
 .capture-block {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .capture-block__label {
   display: block;
-  color: var(--text-tertiary);
-  margin-bottom: 10px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-2);
 }
 
 .capture-block__label--spaced {
-  margin-top: 24px;
+  margin-top: var(--space-6);
 }
 
 .editorial-input {
   width: 100%;
   max-width: 480px;
-  padding: 12px 0;
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 300;
-  color: var(--text-primary);
+  padding: var(--space-3) 0;
+  font-family: var(--omn-font-body);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  color: var(--omn-text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid rgba(250, 250, 250, 0.15);
   outline: none;
   border-radius: 0;
-  transition: border-color 0.2s;
+  transition: border-color var(--omn-duration-micro) var(--omn-ease);
   display: block;
 }
 
 .editorial-input:focus {
-  border-bottom-color: var(--text-primary);
+  border-bottom-color: var(--omn-text-primary);
 }
 
 .editorial-input::placeholder {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   font-style: italic;
 }
 
 /* ── Prompts / errors ── */
 .compat-email-prompt {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  border: 1px solid var(--border-subtle);
-  padding: 10px 14px;
-  margin-bottom: 12px;
-  line-height: 1.5;
+  border: 1px solid var(--omn-border-subtle);
+  padding: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+  line-height: var(--leading-sm);
 }
 
 .compat-checkout-error {
-  color: var(--text-tertiary);
-  border: 1px solid var(--border-subtle);
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  line-height: 1.55;
+  color: var(--omn-text-tertiary);
+  border: 1px solid var(--omn-border-subtle);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  line-height: var(--leading-md);
 }
 
 /* ── Pay cards ── */
 .pay-card {
-  padding: 24px;
-  margin-bottom: 16px;
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
   position: relative;
 }
 
 .pay-card--single {
-  border: 1px solid var(--text-secondary);
-  border-left: 2px solid var(--text-primary);
+  border: 1px solid var(--omn-text-secondary);
+  border-left: 2px solid var(--omn-text-primary);
 }
 
 .pay-card__price {
-  font-family: var(--font-sans);
-  font-size: clamp(32px, 6vw, 44px);
-  font-weight: 300;
-  color: var(--text-primary);
-  margin: 0 0 16px;
+  font-family: var(--omn-font-display);
+  font-size: clamp(var(--text-2xl), 6vw, var(--text-4xl));
+  font-weight: var(--weight-light);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-4);
   line-height: 1;
 }
 
 .pay-card__freq {
-  font-size: 14px;
-  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+  color: var(--omn-text-tertiary);
 }
 
 .pay-card__bullets {
   list-style: none;
   padding: 0;
-  margin: 0 0 20px;
+  margin: 0 0 var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .pay-card__bullets li {
-  color: var(--text-secondary);
-  line-height: 1.5;
-  padding-left: 16px;
+  color: var(--omn-text-secondary);
+  line-height: var(--leading-sm);
+  padding-left: var(--space-4);
   position: relative;
 }
 
@@ -1638,14 +1843,14 @@ onMounted(async () => {
   content: '—';
   position: absolute;
   left: 0;
-  color: var(--text-tertiary);
-  font-size: 10px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
   top: 3px;
 }
 
 .pay-card__btn {
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .pay-card__btn--processing {
@@ -1655,22 +1860,22 @@ onMounted(async () => {
 
 .paywall__premium-link {
   display: block;
-  margin-top: 4px;
-  margin-bottom: 20px;
-  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-5);
+  color: var(--omn-text-tertiary);
   text-decoration: none;
   font-style: italic;
-  transition: color 0.2s;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
 
 .paywall__premium-link:hover {
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
 }
 
 .pay-card__footnote {
-  color: var(--text-tertiary);
-  margin: 4px 0 0;
-  line-height: 1.5;
+  color: var(--omn-text-tertiary);
+  margin: var(--space-1) 0 0;
+  line-height: var(--leading-sm);
 }
 
 .pay-card__footnote--muted {
@@ -1679,91 +1884,91 @@ onMounted(async () => {
 
 /* ── Guarantee ── */
 .guarantee {
-  margin-top: 24px;
-  padding: 16px 20px;
-  border: 1px solid var(--border-subtle);
+  margin-top: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--omn-border-subtle);
 }
 
 .guarantee__text {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  line-height: 1.6;
+  line-height: var(--leading-base);
   margin: 0;
 }
 
 .compat-trust-secure {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   text-align: center;
-  margin-top: 14px;
+  margin-top: var(--space-4);
   opacity: 0.7;
 }
 
 /* ── Share section (full report) ── */
 .compat-share {
-  max-width: 1400px;
-  padding: clamp(40px, 6vw, 60px) clamp(20px, 5vw, 80px);
-  border-top: 1px solid var(--border-subtle);
+  max-width: var(--width-bleed);
+  padding: var(--space-block) var(--space-edge);
+  border-top: 1px solid var(--omn-border-subtle);
   text-align: center;
   margin: 0 auto;
 }
 
 .compat-share__heading {
-  font-family: var(--font-sans);
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(22px, 4vw, 32px);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  margin: 0 0 10px;
+  font-size: clamp(var(--text-xl), 4vw, var(--text-2xl));
+  line-height: var(--leading-2xl);
+  letter-spacing: var(--tracking-snug);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-2);
 }
 
 .compat-share__sub {
-  color: var(--text-tertiary);
-  margin: 0 0 28px;
+  color: var(--omn-text-tertiary);
+  margin: 0 0 var(--space-7);
 }
 
 .compat-share-card {
   width: min(300px, 100%);
-  border: 1px solid var(--border-subtle);
-  margin: 0 auto 24px;
-  padding: 24px 20px;
+  border: 1px solid var(--omn-border-subtle);
+  margin: 0 auto var(--space-6);
+  padding: var(--space-6) var(--space-5);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .compat-share-card__kicker {
-  color: var(--text-tertiary);
-  margin: 0 0 8px;
+  color: var(--omn-text-tertiary);
+  margin: 0 0 var(--space-2);
 }
 
 .compat-share-card__names {
-  font-family: var(--font-sans);
-  font-size: 18px;
-  font-weight: 300;
-  color: var(--text-primary);
+  font-family: var(--omn-font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-light);
+  color: var(--omn-text-primary);
   margin: 0;
 }
 
 .compat-share-card__score {
-  font-family: var(--font-sans);
-  font-size: 48px;
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-light);
   line-height: 1;
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 
 .compat-share-card__title {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-style: italic;
-  color: var(--text-secondary);
-  margin: 4px 0 8px;
+  color: var(--omn-text-secondary);
+  margin: var(--space-1) 0 var(--space-2);
 }
 
 .compat-share-card__domain {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   margin: 0;
   opacity: 0.7;
 }
@@ -1773,9 +1978,9 @@ onMounted(async () => {
 }
 
 .compat-download-error {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   text-align: center;
-  margin-top: 8px;
+  margin-top: var(--space-2);
   font-style: italic;
 }
 
@@ -1784,108 +1989,113 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(24px, 4vw, 40px) clamp(20px, 5vw, 48px);
-  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-content) var(--space-edge);
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .compat-footer nav {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .footer-link {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
 
 .footer-link:hover {
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
 }
 
 .footer-sep {
-  color: var(--border-subtle);
+  color: var(--omn-border-subtle);
 }
 
 /* ── Birth Chart Sections (T2 with_charts tier) ── */
 .compat-bc-body {
-  max-width: 1400px;
-  padding: 0 clamp(20px, 5vw, 80px);
+  max-width: var(--width-bleed);
+  padding: 0 var(--space-edge);
   margin: 0 auto;
 }
 
 .compat-bc-section {
-  padding: clamp(36px, 6vw, 56px) 0;
-  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-content) 0;
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .compat-bc-section__person {
-  color: var(--text-tertiary);
-  margin: 0 0 12px;
-  letter-spacing: 0.1em;
+  color: var(--omn-text-tertiary);
+  margin: 0 0 var(--space-3);
+  letter-spacing: var(--tracking-mid);
 }
 
 .birth-chart-signs-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 1px;
-  margin-bottom: 24px;
-  background: var(--border-subtle);
+  margin-bottom: var(--space-6);
+  background: var(--omn-border-subtle);
 }
 
 .bc-sign-cell {
   flex: 1;
   min-width: 80px;
-  padding: 12px 14px;
-  background: var(--surface-base);
+  padding: var(--space-3) var(--space-4);
+  background: var(--omn-bg-page);
 }
 
 .bc-sign-cell__label {
-  margin: 0 0 4px;
-  color: var(--text-tertiary);
+  margin: 0 0 var(--space-1);
+  color: var(--omn-text-tertiary);
 }
 
 .bc-sign-cell__value {
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 300;
-  color: var(--text-primary);
+  font-family: var(--omn-font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-light);
+  color: var(--omn-text-primary);
   margin: 0;
 }
 
 .bc-forecast-box {
-  padding: 14px 16px;
-  border-left: 2px solid var(--text-secondary);
-  margin-top: 20px;
+  padding: var(--space-4);
+  border-left: 2px solid var(--omn-text-secondary);
+  margin-top: var(--space-5);
 }
 
 .bc-forecast-box__label {
-  margin: 0 0 6px;
-  color: var(--text-tertiary);
+  margin: 0 0 var(--space-1);
+  color: var(--omn-text-tertiary);
 }
 
 .bc-forecast-box__text {
-  font-family: var(--font-sans);
+  font-family: var(--omn-font-body);
   font-style: italic;
-  font-size: clamp(16px, 2.2vw, 18px);
-  font-weight: 300;
-  color: var(--text-secondary);
+  font-size: clamp(var(--text-base), 2.2vw, var(--text-md));
+  font-weight: var(--weight-light);
+  color: var(--omn-text-secondary);
   margin: 0;
   line-height: 1.7;
 }
 
 .compat-bc-noon-note {
-  margin-top: 14px;
-  color: var(--text-tertiary);
+  margin-top: var(--space-4);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  line-height: 1.5;
+  line-height: var(--leading-sm);
   opacity: 0.7;
 }
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
-  .compat-masthead__score { font-size: clamp(60px, 18vw, 90px); }
-  .pay-card__price { font-size: clamp(28px, 8vw, 36px); }
+  .compat-masthead__score { font-size: clamp(var(--text-5xl), 18vw, var(--text-6xl)); }
+  .pay-card__price { font-size: clamp(var(--text-2xl), 8vw, var(--text-3xl)); }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .page-grain { animation: none; }
 }
 </style>
