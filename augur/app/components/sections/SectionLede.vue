@@ -170,9 +170,9 @@ const sectionStyle = computed(() => {
           as="h2"
           class="section-lede__heading"
         >{{ heading }}<template v-if="$slots['heading-em']"
-          > <em><slot name="heading-em" /></em></template><template
+          >{{ ' ' }}<em><slot name="heading-em" /></em></template><template
           v-if="$slots['heading-tail']"
-          > <slot name="heading-tail" /></template></AppHeadline>
+          >{{ ' ' }}<slot name="heading-tail" /></template></AppHeadline>
 
         <AppBody
           variant="lede"
