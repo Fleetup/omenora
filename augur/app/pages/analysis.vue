@@ -1,33 +1,48 @@
 <template>
-  <div class="analysis-page">
+  <div class="aq" :style="bgStyle">
 
-    <AppHeader>
-      <template #action>
-        <span class="label-caps analysis-header__step">
-          {{ currentStep + 1 }} / {{ totalSteps }}
-        </span>
-      </template>
-    </AppHeader>
+    <!-- ── Atmospheric background layers ──────────────────────────────────── -->
+    <div class="aq__bg-image" aria-hidden="true" />
+    <div class="aq__bg-overlay" aria-hidden="true" />
 
-    <!-- Progress bar — canonical QuizProgressBar (bronze fill) -->
-    <QuizProgressBar :current="currentStep + 1" :total="totalSteps" />
+    <!-- ── Page grain texture ──────────────────────────────────────────────── -->
+    <div class="page-grain" aria-hidden="true" />
 
-    <!-- Step container -->
-    <div class="analysis-steps">
-      <Transition :name="transitionDir" mode="out-in">
-        <div :key="currentStep" class="analysis-step">
+    <!-- ── Sticky header ───────────────────────────────────────────────────── -->
+    <AppHeader />
 
-          <AppEyebrow class="analysis-step__label">
+    <!-- ── Progress bar ────────────────────────────────────────────────────── -->
+    <div class="aq__progress">
+      <QuizProgressBar :current="currentStep + 1" :total="totalSteps" />
+    </div>
+
+    <!-- ── Step content ────────────────────────────────────────────────────── -->
+    <Transition name="step-fade" mode="out-in">
+      <div
+        :key="currentStep"
+        class="aq__step"
+        :class="{ 'aq__step--sticky-cta': currentStep !== 0 && currentStep !== 5 && currentStep !== 6 }"
+      >
+
+        <!-- Back button -->
+        <div v-if="currentStep > 0" class="aq__back">
+          <AppButton variant="ghost" size="sm" @click="back">
+            ← Back
+          </AppButton>
+        </div>
+
+        <!-- AppCard glass variant — transparent frosted surface over atmospheric image -->
+        <AppCard variant="glass" :hoverable="false" class="aq__card">
+
+          <AppEyebrow class="aq-step__eyebrow">
             Step {{ currentStep + 1 }}
           </AppEyebrow>
 
-          <AppHeadline variant="italic" as="h1" class="analysis-step__headline">
+          <AppHeadline variant="lg" as="h1" class="aq-step__headline">
             {{ stepConfig[currentStep]?.headline }}
           </AppHeadline>
 
-          <div class="analysis-step__rule" />
-
-          <div class="analysis-step__content">
+          <div class="aq-step__content">
 
             <!-- Step 0: Clarity focus -->
             <template v-if="currentStep === 0">
@@ -92,7 +107,7 @@
 
             <!-- Step 4: Birth time -->
             <template v-else-if="currentStep === 4">
-              <AppCaption variant="default" as="p" class="field-hint" style="margin-bottom: 24px;">Birth time improves your Rising sign accuracy.</AppCaption>
+              <AppCaption variant="default" as="p" class="field-hint field-hint--top">Birth time improves your Rising sign accuracy.</AppCaption>
               <div class="birth-time-row">
                 <label class="field-label label-caps" for="birth-time">Birth time</label>
                 <button type="button" class="skip-time-btn label-caps" @click="skipBirthTime">Skip</button>
@@ -176,36 +191,26 @@
           </div>
 
           <!-- Navigation -->
-          <div class="analysis-step__nav">
-            <button
-              v-if="currentStep > 0"
-              class="back-link label-caps"
-              @click="back"
-            >
-              ← Back
-            </button>
-
-            <!-- Step 7: submit button instead of CTAButton -->
+          <div class="aq-step__nav">
+            <!-- Step 7: submit -->
             <template v-if="currentStep === 7">
               <AppButton
-                variant="primary"
                 v-if="(store.answers as Record<string,string>)['p3']"
+                variant="primary"
                 :arrow="true"
                 :disabled="isCalculating"
-                class="advance-btn"
                 @click="handleSubmit"
               >
                 {{ isCalculating ? 'Calculating…' : t('revealDestiny') }}
               </AppButton>
             </template>
 
-            <!-- Step 0: no nav button — selection auto-advances -->
-            <template v-else-if="currentStep !== 0 && !(currentStep === 5 || currentStep === 6)">
+            <!-- Steps 1–4: Continue -->
+            <template v-else-if="currentStep !== 0 && currentStep !== 5 && currentStep !== 6">
               <AppButton
                 variant="primary"
                 :arrow="true"
                 :disabled="!canAdvance"
-                class="advance-btn"
                 @click="advance"
               >
                 Continue
@@ -213,12 +218,15 @@
             </template>
           </div>
 
-        </div>
-      </Transition>
-    </div>
+        </AppCard>
 
-    <!-- Trust footer -->
-    <AppCaption variant="default" as="p" class="trust-footer">🔒 Your birth data is used only to generate your reading. Never sold.</AppCaption>
+      </div>
+    </Transition>
+
+    <!-- ── Trust footer ──────────────────────────────────────────────────────── -->
+    <AppCaption variant="default" as="p" class="aq__trust">
+      Your birth data is used only to generate your reading. Never sold.
+    </AppCaption>
 
   </div>
 </template>
@@ -241,6 +249,24 @@ onMounted(() => {
 const store = useAnalysisStore()
 const { t } = useLanguage()
 const currentStep = ref(0)
+
+// ── Background phase map ───────────────────────────────────────────────────────
+// Steps 0–2 = emotional/personal context, 3–5 = birth data, 6–7 = personality quiz
+const PHASE_IMAGES: Record<'A' | 'B' | 'C', string> = {
+  A: '/images/hero/Distant-horizon-emergence.webp',
+  B: '/images/hero/Nebula-void.webp',
+  C: '/images/hero/Cosmic-gold-ascension.webp',
+}
+
+function getPhase(idx: number): 'A' | 'B' | 'C' {
+  if (idx <= 2) return 'A'
+  if (idx <= 5) return 'B'
+  return 'C'
+}
+
+const bgStyle = computed(() => ({
+  '--aq-bg-image': `url('${PHASE_IMAGES[getPhase(currentStep.value)]}')`,
+}))
 const isCalculating = ref(false)
 const submitError   = ref<string | null>(null)
 
@@ -487,58 +513,195 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-/* ── Page shell ── */
-.analysis-page {
-  min-height: 100vh;
+/* ── Page root ──
+   Full-bleed atmospheric canvas. position: relative contains the
+   absolutely-positioned background layers. */
+.aq {
+  position: relative;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--omn-bg-page);
   color: var(--omn-text-primary);
+  overflow: hidden;
 }
 
-/* ── Step container ── */
-.analysis-steps {
+/* ── Bronze diagonal seam glow (::after) ──
+   Identical geometry to compatibility-quiz and SectionHero. */
+.aq::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(168, 125, 78, 0.08) 48%,
+    rgba(168, 125, 78, 0.15) 52%,
+    rgba(168, 125, 78, 0.08) 56%,
+    transparent 64%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+}
+
+/* ── Atmospheric background image ──
+   Driven by --aq-bg-image CSS variable from bgStyle computed.
+   168° diagonal mask mirrors compatibility-quiz pattern. */
+.aq__bg-image {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--aq-bg-image);
+  background-size: cover;
+  background-position: center 55%;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  filter: saturate(0.85) contrast(1.05);
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+/* ── Dark overlay ──
+   Two-gradient composite: top-to-bottom vignette + diagonal bronze warmth. */
+.aq__bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(18, 18, 20, 0.92) 0%,
+      rgba(18, 18, 20, 0.55) 25%,
+      rgba(18, 18, 20, 0.10) 50%,
+      rgba(18, 18, 20, 0.50) 80%,
+      rgba(18, 18, 20, 0.90) 100%),
+    linear-gradient(168deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(168, 125, 78, 0.05) 50%,
+      transparent 60%,
+      transparent 100%);
+}
+
+/* ── Page grain texture ──
+   Fixed, pointer-events: none. z-index 200 sits above all content. */
+.page-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: pageGrainShift 8s steps(1) infinite;
+}
+
+@keyframes pageGrainShift {
+  0%   { background-position:   0px   0px; }
+  12%  { background-position: -40px -20px; }
+  24%  { background-position:  20px -40px; }
+  36%  { background-position: -60px  10px; }
+  48%  { background-position:  30px  40px; }
+  60%  { background-position: -20px -50px; }
+  72%  { background-position:  50px  20px; }
+  84%  { background-position: -30px  60px; }
+  100% { background-position:   0px   0px; }
+}
+
+/* ── Progress bar wrapper ── */
+.aq__progress {
+  position: relative;
+  z-index: 3;
+}
+
+/* ── Step outer container ──
+   Flex column, vertically and horizontally centered.
+   z-index 3 brings it above all background layers. */
+.aq__step {
   flex: 1;
   display: flex;
-  align-items: flex-start;
-  padding: clamp(48px, 10vw, 96px) clamp(20px, 5vw, 80px) 80px;
-  max-width: 1400px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-12);
+  position: relative;
+  z-index: 3;
+}
+@media (min-width: 768px) {
+  .aq__step {
+    padding: var(--space-12) var(--space-8) var(--space-16);
+  }
 }
 
-.analysis-step {
+/* ── Back button row ── */
+.aq__back {
   width: 100%;
+  max-width: 36rem;
+  margin-bottom: var(--space-3);
 }
 
-/* ── Step label ── */
-.analysis-step__label {
+/* ── AppCard quiz overrides ──
+   glass variant handles background, backdrop-filter, and border.
+   Override: max-width for editorial column + mobile edge-to-edge. */
+.aq__card {
+  width: 100%;
+  max-width: 36rem;
+}
+@media (max-width: 767px) {
+  .aq__card {
+    max-width: 100%;
+    border-left: none !important;
+    border-right: none !important;
+  }
+}
+
+/* ── Step eyebrow ── */
+.aq-step__eyebrow {
+  margin-bottom: var(--space-3);
   color: var(--omn-text-tertiary);
-  margin-bottom: 20px;
 }
 
-/* ── Step headline ── */
-.analysis-step__headline {
-  font-family: var(--omn-font-display);
-  font-weight: var(--weight-light);
-  font-style: italic;
-  font-size: clamp(36px, 8vw, 64px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  margin: 0 0 32px;
-  color: var(--omn-text-primary);
+/* ── Step headline ──
+   AppHeadline variant="lg" handles sizing; only override is bottom margin. */
+.aq-step__headline {
+  margin-bottom: var(--space-6);
 }
 
-/* ── Decorative rule ── */
-.analysis-step__rule {
-  width: 48px;
-  height: 1px;
-  background: var(--omn-text-secondary);
-  margin-bottom: 36px;
+/* ── Step content ── */
+.aq-step__content {
+  margin-bottom: var(--space-6);
 }
 
-.analysis-step__content {
-  margin-bottom: 40px;
+/* ── Nav row ── */
+.aq-step__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
 }
 
 /* ── Field label ── */
@@ -548,11 +711,7 @@ async function handleSubmit() {
   margin-bottom: 12px;
 }
 
-/* ── Editorial inputs ──
-   Aligned to QuizTextInput/QuizDateInput pattern: --omn-font-display,
-   weight-light, --omn-border-primary baseline, --omn-accent on focus,
-   italic placeholder. Width cap (480px) and bottom margin preserved
-   because /analysis lays inputs out inline rather than via gap. */
+/* ── Editorial inputs ── */
 .editorial-input {
   width: 100%;
   max-width: 480px;
@@ -593,21 +752,16 @@ input[type="time"] {
   margin-top: 10px;
   color: var(--omn-text-tertiary);
 }
+.field-hint--top {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
 
-/* ── Quiz options ──
-   Aligned to QuizSingleSelect chip pattern: --omn-bg-primary surface,
-   --omn-border-subtle baseline, hover lifts to --omn-bg-elevated +
-   --omn-border-emphasis, selected uses bronze --omn-accent border.
-   Border-radius stays 0 per design system (editorial cards are square). */
+/* ── Quiz options ── */
 .quiz-options {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  max-width: 540px;
-}
-
-.quiz-options--two {
-  max-width: 380px;
 }
 
 .quiz-option {
@@ -665,7 +819,6 @@ input[type="time"] {
   align-items: flex-start;
   gap: var(--space-4);
   margin-bottom: 28px;
-  max-width: 540px;
 }
 
 .quiz-question__num {
@@ -712,30 +865,6 @@ input[type="time"] {
 
 .skip-time-btn:hover { color: var(--omn-text-primary); }
 
-/* ── Navigation ── */
-.analysis-step__nav {
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  flex-wrap: wrap;
-}
-
-.back-link {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--omn-text-tertiary);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  font-family: var(--omn-font-mono);
-  font-weight: var(--weight-medium);
-  padding: 0;
-  transition: color var(--omn-duration-micro) var(--omn-ease);
-}
-
-.back-link:hover { color: var(--omn-text-primary); }
-
 /* ── Error ── */
 .step-error {
   margin-top: var(--space-4);
@@ -743,60 +872,55 @@ input[type="time"] {
 }
 
 /* ── Trust footer ── */
-.trust-footer {
+.aq__trust {
   text-align: center;
   color: var(--omn-text-tertiary);
   padding: 20px clamp(20px, 5vw, 80px) clamp(32px, 6vw, 48px);
-  max-width: 1400px;
-  margin: 0 auto;
+  position: relative;
+  z-index: 3;
 }
 
-/* ── Header step counter ── */
-.analysis-header__step {
-  color: var(--omn-text-tertiary);
-  font-size: var(--text-xs);
-  font-family: var(--omn-font-mono);
-  letter-spacing: var(--tracking-caps);
+/* ── Sticky Continue CTA on mobile ──
+   Mirrors compatibility-quiz pattern for non-select steps. */
+@media (max-width: 767px) {
+  .aq__step--sticky-cta :deep(.app-button--primary) {
+    position: sticky;
+    bottom: env(safe-area-inset-bottom, 0px);
+    z-index: 10;
+    width: 100%;
+    align-self: stretch;
+  }
 }
 
-/* ── Step transitions — canonical motion tokens ── */
-.slide-left-enter-active,
-.slide-left-leave-active,
-.slide-right-enter-active,
-.slide-right-leave-active {
-  transition: all var(--omn-duration-base) var(--omn-ease);
+/* ── Step transition ── */
+.step-fade-enter-active,
+.step-fade-leave-active {
+  transition:
+    opacity var(--omn-duration-base) var(--omn-ease),
+    transform var(--omn-duration-base) var(--omn-ease);
 }
 
-.slide-left-enter-from  { opacity: 0; transform: translateX(32px); }
-.slide-left-leave-to    { opacity: 0; transform: translateX(-32px); }
-.slide-right-enter-from { opacity: 0; transform: translateX(-32px); }
-.slide-right-leave-to   { opacity: 0; transform: translateX(32px); }
+.step-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
 
-/* ── Advance button disabled state ── */
-.advance-btn:disabled,
-.advance-btn[disabled] {
-  opacity: 0.35;
-  pointer-events: none;
+.step-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
-  .analysis-step__headline { font-size: clamp(30px, 9vw, 42px); }
-  .quiz-option__text { font-size: var(--text-md); }
+  .quiz-option__text  { font-size: var(--text-md); }
   .quiz-question__text { font-size: var(--text-lg); }
-  .editorial-input { font-size: var(--text-lg); }
+  .editorial-input    { font-size: var(--text-lg); }
 }
 
+/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .slide-left-enter-active,
-  .slide-left-leave-active,
-  .slide-right-enter-active,
-  .slide-right-leave-active {
-    transition: opacity var(--omn-duration-fast) var(--omn-ease);
-  }
-  .slide-left-enter-from,
-  .slide-right-enter-from { transform: none; }
-  .slide-left-leave-to,
-  .slide-right-leave-to   { transform: none; }
+  .step-fade-enter-active,
+  .step-fade-leave-active { transition: none; }
+  .page-grain { animation: none; }
 }
 </style>
