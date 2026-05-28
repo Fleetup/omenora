@@ -31,9 +31,13 @@
     sampleHref? string — href for the sample link (default "#").
     hoverable?  boolean — applies hover lift/border transition.
                 Default true. Set false for static display contexts.
-    variant?    'default' | 'elevated' — default for standard card;
-                'elevated' reserved for future testimonial variant
-                (exposed in type union, no additional styles yet).
+    variant?    'default' | 'elevated' | 'glass'
+                default: standard opaque card (--omn-bg-elevated)
+                elevated: reserved for future testimonial context
+                glass: transparent frosted-glass surface for use over
+                atmospheric background images. background: transparent
+                (rgba(18,18,20,0.55)), backdrop-filter: blur(18px),
+                border: --omn-border-subtle, bronze accent top border.
 
   Slots:
     #default    — overrides body string with rich content
@@ -115,7 +119,7 @@ withDefaults(defineProps<{
   sample?: string
   sampleHref?: string
   hoverable?: boolean
-  variant?: 'default' | 'elevated'
+  variant?: 'default' | 'elevated' | 'glass'
 }>(), {
   numeral: undefined,
   label: undefined,
@@ -398,6 +402,25 @@ withDefaults(defineProps<{
   gap: var(--space-3);
   position: relative;
   z-index: 2;
+}
+
+/* ── Glass variant ──
+   Transparent frosted-glass surface for use over atmospheric images.
+   background: rgba(18,18,20,0.55) — semi-transparent page-dark base.
+   backdrop-filter: blur(18px) + saturate(120%) — frosted depth effect.
+   border-color: --omn-border-subtle (lighter than default's primary).
+   border-top: bronze accent lip matching the diagonal seam system.
+   No background change on hover — the image behind is the depth cue. */
+.app-card--glass {
+  background: rgba(18, 18, 20, 0.55);
+  backdrop-filter: saturate(120%) blur(18px);
+  -webkit-backdrop-filter: saturate(120%) blur(18px);
+  border-color: var(--omn-border-subtle);
+  border-top: 1px solid rgba(168, 125, 78, 0.22);
+}
+.app-card--glass.app-card--hoverable:hover {
+  background: rgba(18, 18, 20, 0.68);
+  border-color: var(--omn-border-primary);
 }
 
 /* ── Mobile ──
