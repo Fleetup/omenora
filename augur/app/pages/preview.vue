@@ -197,18 +197,6 @@
         </button>
         <AppCaption as="p" class="paywall__founding-sub">{{ t('foundingCtaSubtitle') }}</AppCaption>
 
-        <!-- Premium CTA (secondary) -->
-        <button
-          class="paywall__cta paywall__cta--secondary"
-          :class="{ 'paywall__cta--processing': isProcessingPayment || isApplyingFreeAccess }"
-          :disabled="isProcessingPayment || isApplyingFreeAccess || !email"
-          @click="appliedPromo?.codeType === 'full_access' ? applyFreeAccess() : handlePremiumCta()"
-        >
-          <span v-if="isProcessingPayment || isApplyingFreeAccess">Processing…</span>
-          <span v-else-if="appliedPromo?.codeType === 'full_access'">Get My Complete Reading →</span>
-          <span v-else>{{ t('paywallCtaPremium') }}</span>
-        </button>
-
         <!-- Trust line: refund + subscription -->
         <AppCaption as="div" class="paywall__guarantee">
           <span class="paywall__guarantee-check">✦</span>
@@ -269,6 +257,7 @@ import { useLanguage } from '~/composables/useLanguage'
 import { useClarity } from '~/composables/useClarity'
 
 useSeoMeta({ title: 'Your Personality Archetype Reading', robots: 'noindex, nofollow' })
+useHead({ link: [{ rel: 'canonical', href: 'https://omenora.com/preview' }] })
 
 const store = useAnalysisStore()
 const route = useRoute()
@@ -615,50 +604,6 @@ async function handleFoundingCta() {
       region:         store.region,
       language:       store.language,
       tempId:         store.tempId,
-      ...utmParams,
-    }
-    sessionStorage.setItem('omenora_preview_context', JSON.stringify(context))
-  } catch {
-    // sessionStorage unavailable — proceed without context
-  }
-
-  await navigateTo('/founding')
-}
-
-async function handlePremiumCta() {
-  if (isProcessingPayment.value) return
-  if (!email.value) return
-
-  $trackTierSelected({
-    tier: 'premium' as any,
-    price: 14.99,
-    archetype: store.archetype,
-    language: store.language,
-  })
-  $trackInitiateCheckout({
-    value: 14.99,
-    currency: 'USD',
-    content_name: 'Premium Subscription',
-  })
-  useClarity().trackEvent('initiate_checkout')
-
-  store.setEmail(email.value)
-
-  try {
-    const utms = sessionStorage.getItem('omenora_utms')
-    const utmParams: Record<string, string> = utms ? JSON.parse(utms) : {}
-
-    const context = {
-      firstName:     store.firstName,
-      email:         email.value,
-      archetype:     store.archetype,
-      lifePathNumber: store.lifePathNumber,
-      dateOfBirth:   store.dateOfBirth,
-      timeOfBirth:   store.timeOfBirth,
-      city:          store.city,
-      region:        store.region,
-      language:      store.language,
-      tempId:        store.tempId,
       ...utmParams,
     }
     sessionStorage.setItem('omenora_preview_context', JSON.stringify(context))

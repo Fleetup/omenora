@@ -278,14 +278,14 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeInclude4: 'Your complete birth chart — Western, Vedic, BaZi, Tarot',
     subscribeInclude5: 'iOS and Android — your reading travels with you',
     subscribeMobileDisclosure: 'After checkout, download the OMENORA app for iOS or Android. Your subscription unlocks the full experience in the app.',
-    subscribeRefundClause: '7-day refund window. Contact support@omenora.com.',
+    subscribeRefundClause: '14-day refund window. Contact support@omenora.com.',
     subscribeAlreadyPremium: 'You have an active Premium subscription',
     preparingCheckout: 'Preparing checkout…',
 
     paywallHeading: 'Your reading is ready',
-    paywallSubtitle: 'Unlock everything with Premium — or get your forecast for a one-time fee',
+    paywallSubtitle: 'Get your full reading and lock in lifetime 50% off OMENORA when the app launches',
     paywallCtaPremium: 'Start Premium',
-    paywallTrustSubscription: 'Cancel any time. No commitment.',
+    paywallTrustSubscription: 'One-time payment. 14-day refund window.',
 
     compatIAPPrice: '$4.99',
     compatIAPLabel: 'one-time',
@@ -588,14 +588,14 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeInclude4: 'Tu carta natal completa — Occidental, Védica, BaZi, Tarot',
     subscribeInclude5: 'iOS y Android — tu lectura te acompaña',
     subscribeMobileDisclosure: 'Después del pago, descarga la app OMENORA para iOS o Android. Tu suscripción desbloquea la experiencia completa en la app.',
-    subscribeRefundClause: 'Ventana de reembolso de 7 días. Contacta a support@omenora.com.',
+    subscribeRefundClause: 'Ventana de reembolso de 14 días. Contacta a support@omenora.com.',
     subscribeAlreadyPremium: 'Tienes una suscripción Premium activa',
     preparingCheckout: 'Preparando pago…',
 
     paywallHeading: 'Tu lectura está lista',
-    paywallSubtitle: 'Desbloquea todo con Premium — o consigue tu pronóstico por un pago único',
+    paywallSubtitle: 'Obtén tu lectura completa y asegura 50% de descuento de por vida en OMENORA cuando se lance la app',
     paywallCtaPremium: 'Iniciar Premium',
-    paywallTrustSubscription: 'Cancela en cualquier momento. Sin compromiso.',
+    paywallTrustSubscription: 'Pago único. Ventana de reembolso de 14 días.',
 
     compatIAPPrice: '$4.99',
     compatIAPLabel: 'pago único',
@@ -898,14 +898,14 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeInclude4: 'Seu mapa natal completo — Ocidental, Védico, BaZi, Tarot',
     subscribeInclude5: 'iOS e Android — sua leitura vai com você',
     subscribeMobileDisclosure: 'Após o pagamento, baixe o app OMENORA para iOS ou Android. Sua assinatura desbloqueia a experiência completa no app.',
-    subscribeRefundClause: 'Janela de reembolso de 7 dias. Contate support@omenora.com.',
+    subscribeRefundClause: 'Janela de reembolso de 14 dias. Contate support@omenora.com.',
     subscribeAlreadyPremium: 'Você tem uma assinatura Premium ativa',
     preparingCheckout: 'Preparando checkout…',
 
     paywallHeading: 'Sua leitura está pronta',
-    paywallSubtitle: 'Desbloqueie tudo com Premium — ou obtenha seu pronóstico com pagamento único',
+    paywallSubtitle: 'Obtenha sua leitura completa e garanta 50% de desconto vitalício no OMENORA quando o app for lançado',
     paywallCtaPremium: 'Iniciar Premium',
-    paywallTrustSubscription: 'Cancele a qualquer momento. Sem compromisso.',
+    paywallTrustSubscription: 'Pagamento único. Janela de reembolso de 14 dias.',
 
     compatIAPPrice: '$4.99',
     compatIAPLabel: 'pagamento único',
@@ -1140,14 +1140,14 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeInclude4: 'आपकी पूर्ण जन्म कुंडली — पाश्चात्य, वैदिक, BaZi, टैरो', // REVIEW
     subscribeInclude5: 'iOS और Android — आपकी रीडिंग आपके साथ', // REVIEW
     subscribeMobileDisclosure: 'भुगतान के बाद, iOS या Android के लिए OMENORA ऐप डाउनलोड करें। आपकी सदस्यता ऐप में पूरा अनुभव अनलॉक करती है।', // REVIEW
-    subscribeRefundClause: '7-दिन रिफंड विंडो। support@omenora.com पर संपर्क करें।',
+    subscribeRefundClause: '14-दिन रिफंड विंडो। support@omenora.com पर संपर्क करें।',
     subscribeAlreadyPremium: 'आपके पास सक्रिय Premium सब्सक्रिप्शन है',
     preparingCheckout: 'चेकआउट तैयार हो रहा है…', // REVIEW
 
     paywallHeading: 'आपकी रीडिंग तैयार है',
-    paywallSubtitle: 'Premium के साथ सब कुछ अनलॉक करें — या एक बार के भुगतान से अपना पूर्वानुमान पाएं',
+    paywallSubtitle: 'अपनी पूरी रीडिंग पाएं और OMENORA ऐप लॉन्च होने पर आजीवन 50% छूट सुनिश्चित करें',
     paywallCtaPremium: 'Premium शुरू करें', // REVIEW
-    paywallTrustSubscription: 'कभी भी रद्द करें। कोई प्रतिबद्धता नहीं।', // REVIEW
+    paywallTrustSubscription: 'एकमुश्त भुगतान। 14-दिन रिफंड विंडो।',
 
     compatIAPPrice: '$4.99',
     compatIAPLabel: 'एकमुश्त',
@@ -1508,14 +1508,14 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeInclude4: '완전한 출생 차트 — 서양, 베다, BaZi, 타로',
     subscribeInclude5: 'iOS 및 Android — 리딩이 당신과 함께',
     subscribeMobileDisclosure: '결제 후 iOS 또는 Android용 OMENORA 앱을 다운로드하세요. 구독으로 앱에서 전체 경험이 잠금 해제됩니다.',
-    subscribeRefundClause: '7일 환불 기간. support@omenora.com 으로 문의.',
+    subscribeRefundClause: '14일 환불 기간. support@omenora.com 으로 문의.',
     subscribeAlreadyPremium: '활성 Premium 구독을 보유하고 있습니다',
     preparingCheckout: '결제 준비 중…',
 
     paywallHeading: '리딩이 준비되었습니다',
-    paywallSubtitle: 'Premium으로 모든 것을 잠금 해제 — 또는 일회성 결제로 예측 받기',
+    paywallSubtitle: '전체 리딩을 받고 OMENORA 앱 출시 시 평생 50% 할인을 확보하세요',
     paywallCtaPremium: 'Premium 시작',
-    paywallTrustSubscription: '언제든 취소 가능. 약정 없음.',
+    paywallTrustSubscription: '일회성 결제. 14일 환불 기간.',
 
     compatIAPPrice: '$4.99',
     compatIAPLabel: '일회성',
@@ -1816,14 +1816,14 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     subscribeInclude4: '完整星盘 — 西方、吠陀、八字、塔罗',
     subscribeInclude5: 'iOS 和 Android — 你的解读随身携带',
     subscribeMobileDisclosure: '付款后，下载 iOS 或 Android 版 OMENORA 应用。订阅在应用内解锁完整体验。',
-    subscribeRefundClause: '7天退款窗口。联系 support@omenora.com。',
+    subscribeRefundClause: '14天退款窗口。联系 support@omenora.com。',
     subscribeAlreadyPremium: '您拥有有效的 Premium 订阅',
     preparingCheckout: '准备结账…',
 
     paywallHeading: '你的解读已准备好',
-    paywallSubtitle: '使用 Premium 解锁一切 — 或一次性付费获得预测',
+    paywallSubtitle: '获取完整解读，并在 OMENORA 应用上线时锁定终身 50% 折扣',
     paywallCtaPremium: '开始 Premium',
-    paywallTrustSubscription: '随时取消。无承诺。',
+    paywallTrustSubscription: '一次性付款。14天退款窗口。',
 
     compatIAPPrice: '$4.99',
     compatIAPLabel: '一次性',
