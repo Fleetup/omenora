@@ -1,51 +1,73 @@
 <template>
-  <AppShell :dark="true">
+  <div class="daily-page">
 
-    <!-- Tab switcher in header action slot -->
-    <template #headerAction>
-      <div class="daily-tabs">
-        <button
-          class="daily-tab label-caps"
-          :class="{ 'daily-tab--active': activeTab === 'horoscope' }"
-          @click="activeTab = 'horoscope'"
-        >
-          Daily
-        </button>
-        <span class="daily-tab-sep">·</span>
-        <button
-          class="daily-tab label-caps"
-          :class="{ 'daily-tab--active': activeTab === 'archetype' }"
-          @click="activeTab = 'archetype'"
-        >
-          Archetype
-        </button>
+    <AppHeader />
+
+    <!-- ── Atmospheric layers (pointer-events: none) ── -->
+    <div class="page-grain" aria-hidden="true" />
+    <div class="page-scroll-progress" aria-hidden="true">
+      <div class="page-scroll-progress__bar" :style="{ transform: `scaleY(${pageProgress})` }" />
+    </div>
+
+    <!-- ── HERO BAND (diag-band with background image) ── -->
+    <section
+      :ref="setHeroRevealEl"
+      class="daily-hero diag-band"
+      :class="{ 'is-revealed': heroIsRevealed }"
+      :style="{ '--section-img': `url('/images/hero/Nebula-void.webp')`, '--section-img-pos': 'center 40%', '--section-img-pos-mobile': 'center 50%' }"
+    >
+      <div class="diag-band__image" aria-hidden="true" />
+      <div class="diag-band__overlay" aria-hidden="true" />
+
+      <div class="diag-band__content daily-hero__content page-wrapper">
+        <!-- Tab switcher -->
+        <div class="daily-tabs">
+          <button
+            class="daily-tab label-caps"
+            :class="{ 'daily-tab--active': activeTab === 'horoscope' }"
+            @click="activeTab = 'horoscope'"
+          >
+            Daily
+          </button>
+          <span class="daily-tab-sep">·</span>
+          <button
+            class="daily-tab label-caps"
+            :class="{ 'daily-tab--active': activeTab === 'archetype' }"
+            @click="activeTab = 'archetype'"
+          >
+            Archetype
+          </button>
+        </div>
+
+        <!-- Section headline -->
+        <div class="daily-hero__headline-block">
+          <AppEyebrow class="daily-hero__eyebrow">{{ todayFormatted }}</AppEyebrow>
+          <AppHeadline variant="display" as="h1" class="daily-hero__headline">
+            <template v-if="activeTab === 'horoscope'">Daily Horoscope</template>
+            <template v-else>Archetype Reading</template>
+          </AppHeadline>
+          <div class="daily-hero__rule" />
+        </div>
       </div>
-    </template>
+    </section>
 
     <!-- ── TAB: DAILY HOROSCOPE ── -->
     <div v-if="activeTab === 'horoscope'" class="daily-horoscope">
 
-      <!-- Section header -->
-      <div class="daily-header">
-        <AppEyebrow variant="muted" class="daily-header__eyebrow">{{ todayFormatted }}</AppEyebrow>
-        <AppHeadline as="h1" class="daily-header__headline">Daily Horoscope</AppHeadline>
-        <div class="daily-header__rule" />
-      </div>
-
       <!-- Loading -->
-      <div v-if="loading" class="daily-loading">
+      <div v-if="loading" class="daily-loading page-wrapper">
         <div class="daily-loading__bar"><div class="daily-loading__fill" /></div>
         <AppCaption as="p">Loading today's readings…</AppCaption>
       </div>
 
       <!-- No data -->
-      <div v-else-if="!zodiacData" class="daily-empty">
+      <div v-else-if="!zodiacData" class="daily-empty page-wrapper">
         <AppCaption as="p">Today's horoscopes are being prepared. Check back shortly.</AppCaption>
       </div>
 
       <!-- Featured sign: no reading yet (cache empty or error) -->
       <template v-else-if="featuredSign && !featuredSignReading">
-        <div class="reading-view">
+        <div class="reading-view page-wrapper">
           <button class="back-link label-caps" @click="navigateTo('/daily')">← All signs</button>
 
           <div class="reading-sign-header">
@@ -62,11 +84,11 @@
             </div>
           </div>
 
-          <AppDivider variant="rule" spacing="lg" />
+          <AppDivider variant="rule" />
 
           <div class="reading-empty">
             <AppEyebrow variant="muted" class="reading-empty__label">{{ todayFormatted }}</AppEyebrow>
-            <p class="pull-quote reading-empty__msg">Today's reading is being prepared.</p>
+            <AppSubhead variant="default" color="primary" class="reading-empty__msg">Today's reading is being prepared.</AppSubhead>
             <AppCaption as="p" class="reading-empty__sub">Daily horoscopes are generated each morning. Check back shortly.</AppCaption>
             <button class="back-link label-caps" @click="navigateTo('/daily')" style="margin-top: 24px">← Choose another sign</button>
           </div>
@@ -75,7 +97,7 @@
 
       <!-- Featured sign view (deep link ?sign=) -->
       <template v-else-if="featuredSign && featuredSignReading">
-        <div class="reading-view">
+        <div class="reading-view page-wrapper">
           <button class="back-link label-caps" @click="navigateTo('/daily')">← All signs</button>
 
           <div class="reading-sign-header">
@@ -93,15 +115,15 @@
             </div>
           </div>
 
-          <AppDivider variant="rule" spacing="lg" />
+          <AppDivider variant="rule" />
 
           <div class="reading-content">
             <div class="reading-content__theme">
               <AppEyebrow as="span" variant="accent" class="reading-content__theme-label">Today's theme</AppEyebrow>
-              <p class="pull-quote reading-content__theme-text">{{ featuredSignReading.theme }}</p>
+              <AppSubhead variant="default" color="primary" class="reading-content__theme-text">{{ featuredSignReading.theme }}</AppSubhead>
             </div>
 
-            <AppDivider variant="rule" spacing="lg" />
+            <AppDivider variant="rule" />
 
             <AppCaption as="p" class="reading-moon-line">
               ☽ Moon in {{ featuredSignReading.moon_sign }} · {{ featuredSignReading.moon_phase }}
@@ -126,22 +148,22 @@
             </div>
 
             <div v-if="featuredSignReading.planetary_weather" class="reading-weather">
-              <AppDivider variant="rule" spacing="lg" />
+              <AppDivider variant="rule" />
               <AppCaption as="p" class="reading-weather__text">{{ featuredSignReading.planetary_weather }}</AppCaption>
             </div>
 
             <div class="reading-cta">
-              <AppDivider variant="labeled" label="◇" spacing="lg" />
-              <p class="pull-quote reading-cta__pull">
+              <AppDivider variant="labeled" label="◇" />
+              <AppSubhead variant="default" class="reading-cta__pull">
                 This is your sun sign forecast. Your natal chart gives the full picture.
-              </p>
+              </AppSubhead>
               <AppButton variant="primary" to="/analysis" :arrow="true">Get your natal reading</AppButton>
             </div>
           </div>
         </div>
 
         <!-- Other signs grid -->
-        <div class="others-section">
+        <div class="others-section page-wrapper">
           <AppEyebrow variant="muted" class="others-section__label">All Signs</AppEyebrow>
           <div class="sign-grid sign-grid--mini">
             <template v-for="sign in otherSigns" :key="sign">
@@ -162,7 +184,7 @@
 
       <!-- All 12 signs selector grid -->
       <template v-else>
-        <div class="sign-selector">
+        <div class="sign-selector page-wrapper">
           <AppCaption as="p" class="sign-selector__prompt">Select your sun sign</AppCaption>
           <div class="sign-grid">
             <button
@@ -184,26 +206,20 @@
     <!-- ── TAB: ARCHETYPE READING ── -->
     <div v-if="activeTab === 'archetype'" class="daily-archetype">
 
-      <div class="daily-header">
-        <AppEyebrow variant="muted" class="daily-header__eyebrow">{{ todayFormatted }}</AppEyebrow>
-        <AppHeadline as="h1" class="daily-header__headline">Archetype Reading</AppHeadline>
-        <div class="daily-header__rule" />
-      </div>
-
       <!-- Loading -->
-      <div v-if="loading" class="daily-loading">
+      <div v-if="loading" class="daily-loading page-wrapper">
         <div class="daily-loading__bar"><div class="daily-loading__fill" /></div>
         <AppCaption as="p">Loading today's readings…</AppCaption>
       </div>
 
       <!-- No data -->
-      <div v-else-if="!archetypeData" class="daily-empty">
+      <div v-else-if="!archetypeData" class="daily-empty page-wrapper">
         <AppCaption as="p">Today's archetype readings are being prepared. Check back shortly.</AppCaption>
       </div>
 
       <!-- Featured archetype: no reading yet (cache empty or error) -->
       <template v-else-if="featuredArchetype && !featuredReading">
-        <div class="reading-view">
+        <div class="reading-view page-wrapper">
           <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')">← All archetypes</button>
 
           <div class="reading-sign-header">
@@ -220,11 +236,11 @@
             </div>
           </div>
 
-          <AppDivider variant="rule" spacing="lg" />
+          <AppDivider variant="rule" />
 
           <div class="reading-empty">
             <AppEyebrow variant="muted" class="reading-empty__label">{{ todayFormatted }}</AppEyebrow>
-            <p class="pull-quote reading-empty__msg">Today's reading is being prepared.</p>
+            <AppSubhead variant="default" color="primary" class="reading-empty__msg">Today's reading is being prepared.</AppSubhead>
             <AppCaption as="p" class="reading-empty__sub">Archetype readings are generated each morning. Check back shortly.</AppCaption>
             <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')" style="margin-top: 24px">← Choose another archetype</button>
           </div>
@@ -233,7 +249,7 @@
 
       <!-- Featured archetype view (deep link ?archetype=) -->
       <template v-else-if="featuredArchetype && featuredReading">
-        <div class="reading-view">
+        <div class="reading-view page-wrapper">
           <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')">← All archetypes</button>
 
           <div class="reading-sign-header">
@@ -250,15 +266,15 @@
             </div>
           </div>
 
-          <AppDivider variant="rule" spacing="lg" />
+          <AppDivider variant="rule" />
 
           <div class="reading-content">
             <div class="reading-content__theme">
               <AppEyebrow as="span" variant="accent" class="reading-content__theme-label">Today's focus</AppEyebrow>
-              <p class="pull-quote reading-content__theme-text">{{ featuredReading.theme }}</p>
+              <AppSubhead variant="default" color="primary" class="reading-content__theme-text">{{ featuredReading.theme }}</AppSubhead>
             </div>
 
-            <AppDivider variant="rule" spacing="lg" />
+            <AppDivider variant="rule" />
 
             <div class="reading-content__body">
               <p class="reading-content__para">{{ featuredReading.insight }}</p>
@@ -270,15 +286,15 @@
             </div>
 
             <div class="reading-cta">
-              <AppDivider variant="labeled" label="◇" spacing="lg" />
-              <p class="pull-quote reading-cta__pull">Don't know your archetype yet?</p>
+              <AppDivider variant="labeled" label="◇" />
+              <AppSubhead variant="default" class="reading-cta__pull">Don't know your archetype yet?</AppSubhead>
               <AppButton variant="primary" to="/analysis" :arrow="true">Discover yours</AppButton>
             </div>
           </div>
         </div>
 
         <!-- Other archetypes grid -->
-        <div class="others-section">
+        <div class="others-section page-wrapper">
           <AppEyebrow variant="muted" class="others-section__label">All Archetypes</AppEyebrow>
           <div class="archetype-grid archetype-grid--mini">
             <NuxtLink
@@ -301,7 +317,7 @@
 
       <!-- All archetypes selector grid -->
       <template v-else>
-        <div class="archetype-selector">
+        <div class="archetype-selector page-wrapper">
           <AppCaption as="p" class="archetype-selector__prompt">Select your archetype</AppCaption>
           <div class="archetype-grid">
             <button
@@ -323,40 +339,47 @@
 
     </div>
 
-    <!-- ── CTA STRIP ── -->
-    <div class="daily-cta-strip">
-      <AppDivider variant="rule" spacing="lg" />
-      <div class="daily-cta-strip__inner">
-        <p class="pull-quote daily-cta-strip__pull">
-          <template v-if="featuredSign">See what YOUR chart says beyond {{ signDisplayName(featuredSign) }}</template>
-          <template v-else-if="featuredArchetype">Get your full {{ archetypeDisplayName(featuredArchetype) }} reading</template>
-          <template v-else>Your horoscope is the general reading. Get the full picture.</template>
-        </p>
-        <AppButton variant="primary" to="/analysis" :arrow="true">Get my natal reading</AppButton>
-      </div>
-    </div>
+    <!-- ── CLOSING CTA BAND ── -->
+    <SectionFinalCTA
+      eyebrow="Your chart · Full picture"
+      heading="The sun sign reading"
+      :heading-variant="'xl'"
+      body="Daily horoscopes give you the sky's energy for your sun sign. Your natal chart reveals how that energy lands specifically for you — your exact rising, moon, and 10-planet positions across four traditions."
+      cta-label="Start your natal reading"
+      cta-href="/analysis"
+      :trust-items="['No account required', 'Real Swiss Ephemeris', '14-day refund']"
+      band-tone="page"
+      bg-image="/images/hero/Cosmic-gold-ascension.webp"
+      bg-image-pos="right 50%"
+      bg-image-pos-mobile="right center"
+    >
+      <template #heading-em>is only the start.</template>
+      <template #secondary-cta>
+        <AppButton variant="ghost" to="/founding">Founding membership — $20 →</AppButton>
+      </template>
+    </SectionFinalCTA>
 
-    <!-- ── SUBSCRIPTION CARD ── -->
-    <div class="daily-sub-wrap">
-      <div class="daily-sub-card">
-        <div class="daily-sub-top">
-          <AppEyebrow as="span" variant="accent" class="daily-sub-badge">Personal</AppEyebrow>
-          <AppSubhead as="span" variant="strong" class="daily-sub-price">$6.99<span class="daily-sub-price-period">/mo</span></AppSubhead>
-        </div>
-        <AppSubhead as="h2" class="daily-sub-headline">Get YOUR personal horoscope every morning</AppSubhead>
-        <AppCaption as="p" class="daily-sub-copy">Based on your exact birth chart — not just your sun sign. Love, Work &amp; Health, personalized to you.</AppCaption>
-        <NuxtLink to="/founding" class="daily-sub-btn label-caps">Start Personal Horoscope →</NuxtLink>
-        <AppCaption as="p" class="daily-sub-note">Cancel anytime · No commitment</AppCaption>
-      </div>
-    </div>
+    <!-- ── FOOTER ── -->
+    <SectionFooter
+      :columns="footerColumns"
+      tagline="Computed natal readings, not horoscopes."
+      brand-meta="Est. 2026 · Vol. 001 · MMXXVI"
+      :copyright="`© ${currentYear} OMENORA — United Northwest Carriers Inc.`"
+      meta="Built on Swiss Ephemeris · Stripe payments"
+    />
 
-  </AppShell>
+  </div>
 </template>
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, type ComponentPublicInstance } from 'vue'
 import { useRoute } from 'vue-router'
+import { useReveal } from '~/composables/useReveal'
+import SectionFinalCTA from '~/components/sections/SectionFinalCTA.vue'
+import SectionFooter from '~/components/sections/SectionFooter.vue'
+import AppHeader from '~/components/AppHeader.vue'
+import AppButton from '~/components/atoms/AppButton.vue'
 
 // ── SEO ───────────────────────────────────────
 useSeoMeta({
@@ -416,6 +439,34 @@ function archetypeDisplayName(slug: string): string {
 // ── Route & params ─────────────────────────────
 const route = useRoute()
 
+// ── Hero reveal (diag-band entrance animation) ──
+const { el: heroRevealEl, isRevealed: heroIsRevealed } = useReveal()
+function setHeroRevealEl(el: Element | ComponentPublicInstance | null) {
+  heroRevealEl.value = el instanceof HTMLElement ? el : null
+}
+
+// ── Page scroll progress ──────────────────────
+const pageProgress = ref(0)
+let pageProgressRaf: number | null = null
+function updatePageProgress() {
+  pageProgressRaf = null
+  const doc = document.documentElement
+  const max = Math.max(1, doc.scrollHeight - window.innerHeight)
+  pageProgress.value = Math.min(1, Math.max(0, window.scrollY / max))
+}
+function onPageScroll() {
+  if (pageProgressRaf == null) pageProgressRaf = requestAnimationFrame(updatePageProgress)
+}
+
+// ── Footer columns ─────────────────────────────
+const footerColumns = [
+  { heading: 'Product',  links: [{ label: 'Daily horoscope', href: '/daily' }, { label: 'Natal reading', href: '/analysis' }, { label: 'Founding Member', href: '/founding' }, { label: 'Compatibility', href: '/compatibility-quiz' }] },
+  { heading: 'Company',  links: [{ label: 'Contact', href: 'mailto:hello@omenora.com' }] },
+  { heading: 'Legal',    links: [{ label: 'Terms', href: '/terms' }, { label: 'Privacy', href: '/privacy' }, { label: 'Refund policy', href: '/refund-policy' }] },
+]
+
+const currentYear = computed(() => new Date().getFullYear())
+
 // ── Tab state ──────────────────────────────────
 const activeTab = ref<'horoscope' | 'archetype'>('horoscope')
 
@@ -454,7 +505,6 @@ const formattedDate = computed(() =>
 
 const todayFormatted = formattedDate
 
-const cardDate = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
 // ── Zodiac signs array (for selector grid) ────
 const zodiacSigns = [
@@ -574,8 +624,11 @@ function firstSentence(text: string): string {
   return match ? match[0] : text
 }
 
-// ── Fetch on mount ─────────────────────────────
+// ── Fetch on mount + scroll watcher ───────────
 onMounted(async () => {
+  window.addEventListener('scroll', onPageScroll, { passive: true })
+  updatePageProgress()
+
   moonPhase.value = computeMoonPhase(today)
 
   const tabParam = route.query.tab
@@ -603,16 +656,110 @@ onMounted(async () => {
   }
 })
 
+onUnmounted(() => {
+  window.removeEventListener('scroll', onPageScroll)
+  if (pageProgressRaf != null) cancelAnimationFrame(pageProgressRaf)
+})
+
 </script>
 
 <style scoped>
+/* ─────────────────────────────────────────────
+   PAGE SHELL
+───────────────────────────────────────────── */
+.daily-page {
+  min-height: 100vh;
+  background: var(--omn-bg-page);
+}
+
+/* ── Film grain ── */
+.page-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.93  0 0 0 0 0.90  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  animation: pageGrainShift 7s steps(8) infinite;
+}
+@keyframes pageGrainShift {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(3%, 4%); }
+  40%  { transform: translate(4%, -2%); }
+  60%  { transform: translate(2%, -4%); }
+  80%  { transform: translate(4%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-grain { animation: none; }
+}
+
+/* ── Scroll progress hairline ── */
+.page-scroll-progress {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: 100vh;
+  z-index: 100;
+  pointer-events: none;
+  background: var(--omn-border-subtle);
+}
+.page-scroll-progress__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  background: linear-gradient(180deg,
+    var(--omn-accent-quiet) 0%,
+    var(--omn-accent)       100%);
+  transform-origin: top;
+  transform: scaleY(0);
+  transition: transform 80ms linear;
+}
+
+/* ─────────────────────────────────────────────
+   HERO BAND
+───────────────────────────────────────────── */
+.daily-hero {
+  padding-bottom: 0 !important;
+}
+
+.daily-hero__content {
+  padding-top: clamp(96px, 14vw, 160px);
+  padding-bottom: clamp(48px, 6vw, 80px);
+}
+
+.daily-hero__headline-block {
+  margin-top: var(--space-8);
+}
+
+.daily-hero__eyebrow {
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-4);
+  display: block;
+}
+
+.daily-hero__headline {
+  margin: 0 0 var(--space-8);
+}
+
+.daily-hero__rule {
+  width: var(--space-12);
+  height: 1px;
+  background: var(--omn-border-subtle);
+}
+
 /* ─────────────────────────────────────────────
    TAB SWITCHER
 ───────────────────────────────────────────── */
 .daily-tabs {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
 }
 
 .daily-tab {
@@ -620,73 +767,49 @@ onMounted(async () => {
   border: none;
   cursor: pointer;
   padding: 0;
-  color: var(--text-tertiary);
-  transition: color 0.2s;
+  color: var(--omn-text-tertiary);
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
 
 .daily-tab--active {
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
 }
 
 .daily-tab-sep {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   opacity: 0.5;
   font-size: 12px;
 }
 
 /* ─────────────────────────────────────────────
-   SECTION HEADER
+   CONTENT SECTIONS — shared padding
 ───────────────────────────────────────────── */
-.daily-header {
-  padding: clamp(48px, 8vw, 80px) clamp(20px, 5vw, 80px) 0;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.daily-header__eyebrow {
-  color: var(--text-tertiary);
-  margin-bottom: 16px;
-}
-
-.daily-header__headline {
-  font-family: var(--font-sans);
-  font-weight: 300;
-  font-style: italic;
-  font-size: clamp(40px, 9vw, 80px);
-  line-height: 1.0;
-  letter-spacing: -0.03em;
-  margin: 0 0 32px;
-  color: var(--text-primary);
-}
-
-.daily-header__rule {
-  width: 48px;
-  height: 1px;
-  background: var(--border-subtle);
-  margin-bottom: 40px;
+.daily-horoscope,
+.daily-archetype {
+  padding-top: clamp(40px, 6vw, 64px);
 }
 
 /* ─────────────────────────────────────────────
    LOADING / EMPTY
 ───────────────────────────────────────────── */
 .daily-loading {
-  padding: clamp(20px, 5vw, 48px);
+  padding-bottom: clamp(20px, 5vw, 48px);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
   max-width: 240px;
 }
 
 .daily-loading__bar {
   width: 160px;
   height: 1px;
-  background: var(--border-subtle);
+  background: var(--omn-border-subtle);
   overflow: hidden;
 }
 
 .daily-loading__fill {
   height: 100%;
-  background: var(--accent-gold);
+  background: var(--omn-accent);
   width: 0;
   animation: load-sweep 1.8s ease-in-out infinite;
 }
@@ -698,19 +821,19 @@ onMounted(async () => {
 }
 
 .daily-empty {
-  padding: clamp(20px, 5vw, 48px);
-  color: var(--text-tertiary);
+  padding-bottom: clamp(20px, 5vw, 48px);
+  color: var(--omn-text-tertiary);
 }
 
 .reading-empty {
-  padding: 32px 0;
+  padding: var(--space-8) 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .reading-empty__label {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
 }
 
 .reading-empty__msg {
@@ -719,7 +842,7 @@ onMounted(async () => {
 }
 
 .reading-empty__sub {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   max-width: 44ch;
 }
 
@@ -727,22 +850,20 @@ onMounted(async () => {
    SIGN SELECTOR GRID
 ───────────────────────────────────────────── */
 .sign-selector {
-  padding: 0 clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
-  max-width: 1400px;
-  margin: 0 auto;
+  padding-bottom: clamp(48px, 8vw, 80px);
 }
 
 .sign-selector__prompt {
-  color: var(--text-tertiary);
-  margin-bottom: 28px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-7);
 }
 
 .sign-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: var(--border-subtle);
-  border: 1px solid var(--border-subtle);
+  background: var(--omn-border-subtle);
+  border: 1px solid var(--omn-border-subtle);
   max-width: 680px;
 }
 
@@ -758,27 +879,25 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 24px 12px 20px;
-  background: var(--surface-base);
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-3) var(--space-5);
+  background: var(--omn-bg-page);
   border: none;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--omn-duration-fast) var(--omn-ease);
   text-align: center;
 }
 
 .sign-tile:hover {
-  background: var(--surface-raised);
+  background: var(--omn-bg-primary);
 }
 
 .sign-tile__img {
   width: 72px;
   height: 72px;
   object-fit: contain;
-  /* Darken the gold fill to ink color for strong contrast on bone */
-  filter: brightness(0) saturate(0);
   opacity: 0.7;
-  transition: opacity 0.2s;
+  transition: opacity var(--omn-duration-fast) var(--omn-ease);
 }
 
 .sign-tile:hover .sign-tile__img {
@@ -786,11 +905,11 @@ onMounted(async () => {
 }
 
 .sign-tile__name {
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
 }
 
 .sign-tile__dates {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
 }
 
 /* ─────────────────────────────────────────────
@@ -804,25 +923,24 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 18px 12px;
-  background: var(--surface-base);
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-3);
+  background: var(--omn-bg-page);
   text-decoration: none;
-  transition: background 0.15s;
+  transition: background var(--omn-duration-fast) var(--omn-ease);
   text-align: center;
 }
 
 .sign-mini-card:hover {
-  background: var(--surface-raised);
+  background: var(--omn-bg-primary);
 }
 
 .sign-mini-card__img {
   width: 36px;
   height: 36px;
   object-fit: contain;
-  filter: brightness(0) saturate(0);
   opacity: 0.45;
-  transition: opacity 0.2s;
+  transition: opacity var(--omn-duration-fast) var(--omn-ease);
 }
 
 .sign-mini-card:hover .sign-mini-card__img {
@@ -830,11 +948,11 @@ onMounted(async () => {
 }
 
 .sign-mini-card__name {
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
 }
 
 .sign-mini-card__theme {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   margin: 0;
   line-height: 1.4;
 }
@@ -847,22 +965,20 @@ onMounted(async () => {
    ARCHETYPE SELECTOR GRID
 ───────────────────────────────────────────── */
 .archetype-selector {
-  padding: 0 clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
-  max-width: 1400px;
-  margin: 0 auto;
+  padding-bottom: clamp(48px, 8vw, 80px);
 }
 
 .archetype-selector__prompt {
-  color: var(--text-tertiary);
-  margin-bottom: 28px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-7);
 }
 
 .archetype-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: var(--border-subtle);
-  border: 1px solid var(--border-subtle);
+  background: var(--omn-border-subtle);
+  border: 1px solid var(--omn-border-subtle);
   max-width: 680px;
 }
 
@@ -874,16 +990,16 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 24px 12px;
-  background: var(--surface-base);
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-3);
+  background: var(--omn-bg-page);
   border: none;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--omn-duration-fast) var(--omn-ease);
 }
 
 .archetype-tile:hover {
-  background: var(--surface-raised);
+  background: var(--omn-bg-primary);
 }
 
 .archetype-tile__img {
@@ -891,7 +1007,7 @@ onMounted(async () => {
   height: 56px;
   object-fit: contain;
   opacity: 0.8;
-  transition: opacity 0.15s;
+  transition: opacity var(--omn-duration-fast) var(--omn-ease);
 }
 
 .archetype-tile:hover .archetype-tile__img {
@@ -899,7 +1015,7 @@ onMounted(async () => {
 }
 
 .archetype-tile__name {
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
 }
 
 /* ─────────────────────────────────────────────
@@ -913,16 +1029,16 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px 12px;
-  background: var(--surface-base);
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-3);
+  background: var(--omn-bg-page);
   text-decoration: none;
-  transition: background 0.15s;
+  transition: background var(--omn-duration-fast) var(--omn-ease);
   text-align: center;
 }
 
 .archetype-mini-card:hover {
-  background: var(--surface-raised);
+  background: var(--omn-bg-primary);
 }
 
 .archetype-mini-card__img {
@@ -930,7 +1046,7 @@ onMounted(async () => {
   height: 44px;
   object-fit: contain;
   opacity: 0.75;
-  transition: opacity 0.15s;
+  transition: opacity var(--omn-duration-fast) var(--omn-ease);
 }
 
 .archetype-mini-card:hover .archetype-mini-card__img {
@@ -938,11 +1054,11 @@ onMounted(async () => {
 }
 
 .archetype-mini-card__name {
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
 }
 
 .archetype-mini-card__theme {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   margin: 0;
   line-height: 1.4;
 }
@@ -951,9 +1067,7 @@ onMounted(async () => {
    READING VIEW
 ───────────────────────────────────────────── */
 .reading-view {
-  padding: 0 clamp(20px, 5vw, 80px);
-  max-width: 1400px;
-  margin: 0 auto;
+  padding-bottom: var(--space-8);
 }
 
 /* ── Back link ── */
@@ -961,37 +1075,48 @@ onMounted(async () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   padding: 0;
-  margin-bottom: 28px;
+  margin-bottom: var(--space-7);
   display: inline-block;
-  transition: color 0.2s;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
 
 .back-link:hover {
-  color: var(--text-primary);
+  color: var(--omn-text-primary);
+}
+
+/* ── AppDivider margin rhythm in reading view ── */
+.reading-view :deep(.app-divider) {
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-8);
+}
+
+.reading-cta :deep(.app-divider) {
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-6);
 }
 
 /* ── Reading sign header ── */
 .reading-sign-header {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 8px;
+  gap: var(--space-5);
+  margin-bottom: 0;
+  padding-top: var(--space-8);
 }
 
 .reading-sign-header__sign {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .reading-sign-img {
   width: 64px;
   height: 64px;
   object-fit: contain;
-  filter: brightness(0) saturate(0);
-  opacity: 0.6;
+  opacity: 0.65;
   flex-shrink: 0;
 }
 
@@ -1004,65 +1129,64 @@ onMounted(async () => {
 }
 
 .reading-sign-name {
-  font-family: var(--font-sans);
-  font-size: 28px;
-  font-weight: 400;
-  margin: 0 0 4px;
-  color: var(--text-primary);
+  font-family: var(--omn-font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-regular);
+  margin: 0 0 var(--space-1);
+  color: var(--omn-text-primary);
 }
 
 /* ── Reading content ── */
 .reading-content {
-  padding: 0 0 clamp(40px, 6vw, 80px);
+  padding-bottom: clamp(40px, 6vw, 80px);
 }
 
 .reading-content__theme {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .reading-content__theme-label {
-  color: var(--accent-gold);
+  color: var(--omn-accent);
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .reading-content__theme-text {
-  margin: 0;
   max-width: 44ch;
-  color: var(--text-primary);
+  margin-top: var(--space-3);
 }
 
 .reading-moon-line {
-  color: var(--text-tertiary);
-  margin-bottom: 20px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-5);
   display: block;
 }
 
 .reading-content__body {
-  padding: 8px 0;
+  padding: var(--space-2) 0;
 }
 
 .reading-content__para {
   font-size: var(--text-base);
   line-height: 1.8;
-  color: var(--text-secondary);
-  margin-bottom: 20px;
+  color: var(--omn-text-secondary);
+  margin-bottom: var(--space-5);
 }
 
 /* ── Sign sections (love / work / health) ── */
 .sign-sections {
   display: flex;
   flex-direction: column;
-  margin: 16px 0;
+  margin: var(--space-4) 0;
 }
 
 .sign-section-row {
   display: grid;
   grid-template-columns: 16px 52px 1fr;
   align-items: baseline;
-  gap: 10px;
-  padding: 12px 0;
-  border-top: 1px solid var(--border-subtle);
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .sign-section-row:first-child {
@@ -1072,181 +1196,71 @@ onMounted(async () => {
 
 .section-icon {
   font-size: 11px;
-  color: var(--accent-gold);
+  color: var(--omn-accent);
   line-height: 1;
 }
 
 .section-label {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
 }
 
 .section-text {
   font-size: var(--text-sm);
   line-height: 1.65;
-  color: var(--text-secondary);
+  color: var(--omn-text-secondary);
 }
 
 /* ── Planetary weather ── */
 .reading-weather__text {
-  color: var(--text-tertiary);
+  color: var(--omn-text-tertiary);
   font-style: italic;
   font-size: var(--text-sm);
 }
 
 /* ── Reflection block ── */
 .reading-reflection {
-  padding: 20px 0;
-  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .reading-reflection__label {
-  color: var(--accent-gold);
-  margin-bottom: 8px;
+  color: var(--omn-accent);
+  margin-bottom: var(--space-2);
   display: block;
 }
 
 .reading-reflection__text {
-  font-family: var(--font-sans);
+  font-family: var(--omn-font-body);
   font-style: italic;
-  font-size: 18px;
-  font-weight: 300;
-  color: var(--text-secondary);
+  font-size: var(--text-md);
+  font-weight: var(--weight-light);
+  color: var(--omn-text-secondary);
   line-height: 1.65;
   margin: 0;
 }
 
 /* ── Reading CTA ── */
 .reading-cta {
-  padding-top: 8px;
+  padding-top: var(--space-2);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .reading-cta__pull {
   max-width: 36ch;
-  margin: 0;
-  color: var(--text-secondary);
 }
 
 /* ─────────────────────────────────────────────
    OTHERS SECTION
 ───────────────────────────────────────────── */
 .others-section {
-  padding: 0 clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
-  max-width: 1400px;
-  margin: 0 auto;
+  padding-bottom: clamp(48px, 8vw, 80px);
 }
 
 .others-section__label {
-  color: var(--text-tertiary);
-  margin-bottom: 20px;
-}
-
-/* ─────────────────────────────────────────────
-   CTA STRIP
-───────────────────────────────────────────── */
-.daily-cta-strip {
-  padding: 0 clamp(20px, 5vw, 80px) clamp(32px, 5vw, 48px);
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.daily-cta-strip__inner {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 24px 0;
-}
-
-.daily-cta-strip__pull {
-  margin: 0;
-  max-width: 44ch;
-  color: var(--text-secondary);
-}
-
-/* ─────────────────────────────────────────────
-   SUBSCRIPTION CARD
-───────────────────────────────────────────── */
-.daily-sub-wrap {
-  padding: 0 clamp(20px, 5vw, 80px) clamp(48px, 8vw, 80px);
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.daily-sub-card {
-  padding: 24px 20px;
-  background: rgba(201, 169, 97, 0.06);
-  border: 1px solid var(--rule-gold, rgba(201, 169, 97, 0.4));
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  max-width: 480px;
-}
-
-.daily-sub-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.daily-sub-badge {
-  color: var(--accent-gold);
-}
-
-.daily-sub-price {
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--accent-gold);
-  line-height: 1;
-}
-
-.daily-sub-price-period {
-  font-size: 13px;
-  color: var(--accent-dim);
-}
-
-.daily-sub-headline {
-  font-family: var(--font-sans);
-  font-style: italic;
-  font-size: 20px;
-  font-weight: 300;
-  color: var(--text-primary);
-  margin: 0;
-  line-height: 1.35;
-}
-
-.daily-sub-copy {
-  color: var(--text-tertiary);
-  margin: 0;
-}
-
-.daily-sub-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 12px 20px;
-  background: rgba(201, 169, 97, 0.1);
-  border: 1px solid var(--rule-gold, rgba(201, 169, 97, 0.4));
-  color: var(--accent-gold);
-  text-decoration: none;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.daily-sub-btn:hover {
-  background: rgba(201, 169, 97, 0.18);
-  border-color: var(--accent-gold);
-}
-
-.daily-sub-note {
-  color: var(--text-tertiary);
-  margin: 0;
-  text-align: left;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-5);
 }
 
 /* ─────────────────────────────────────────────
@@ -1254,11 +1268,7 @@ onMounted(async () => {
 ───────────────────────────────────────────── */
 @media (max-width: 480px) {
   .reading-sign-name {
-    font-size: 22px;
-  }
-
-  .daily-sub-headline {
-    font-size: 18px;
+    font-size: var(--text-xl);
   }
 }
 
