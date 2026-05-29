@@ -45,7 +45,7 @@ Platform: iOS mobile app (Android disabled in current build). RevenueCat-managed
 - `isPremium` derived from `customerInfo.entitlements.active['premium']`
 - `purchasePackage()` call is **not yet implemented** — paywall UI exists, purchase invocation does not
 - Products configured in RevenueCat dashboard, not hardcoded in source
-- **No free trial on any plan.** Hard paywall configuration per Adapty SOIS 2026 Lifestyle benchmarks (trial users in this category generate 21–27% lower LTV than direct buyers)
+- **No free trial on any plan.** Hard paywall configuration per Adapty SOIS 2026 Lifestyle benchmarks (trial users in this category generate 21.2% lower LTV than direct buyers — the only category in the report where trials reduce LTV)
 
 ---
 
