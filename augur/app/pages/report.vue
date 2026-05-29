@@ -19,14 +19,15 @@
   </div>
 
   <!-- ── No report recovered ── -->
-  <div v-else-if="!store.report" class="report-state-page">
-    <div class="report-state-inner">
-      <PhoenixLoader :size="88" class="report-state__phoenix" />
-      <AppEyebrow class="report-state__eyebrow">Forecast complete</AppEyebrow>
-      <AppHeadline as="h2" class="report-state__heading">{{ t('reportReady') }}</AppHeadline>
-      <AppCaption as="p" class="report-state__sub">{{ t('checkEmail') }}</AppCaption>
-    </div>
-  </div>
+  <ErrorState
+    v-else-if="!store.report"
+    title="We couldn't find your reading"
+    message="This can happen if your link expired or the page was opened without an active session. If you've purchased a reading, it's safe — check the email from your purchase for your link, or contact us and we'll help you get back to it."
+    primary-label="Return home"
+    primary-href="/"
+    secondary-label="Contact support"
+    secondary-href="mailto:support@omenora.com"
+  />
 
   <!-- ── Full report ── -->
   <div v-else class="report-page">
@@ -1376,9 +1377,6 @@ async function downloadReportPDF() {
   max-width: 360px;
 }
 
-.report-state__phoenix {
-  margin-bottom: 8px;
-}
 
 .report-state__eyebrow {
   margin: 0;

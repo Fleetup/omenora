@@ -3,12 +3,15 @@
   <LoaderBar v-if="isLoading" :active="isLoading" :messages="loadingMessages" :interval="2000" />
 
   <!-- Error -->
-  <div v-else-if="hasError" class="center-page">
-    <div class="center-content">
-      <PhoenixLoader :size="72" />
-      <p class="loading-msg">{{ t('somethingWrong') }}</p>
-    </div>
-  </div>
+  <ErrorState
+    v-else-if="hasError"
+    title="Something went wrong loading your calendar"
+    message="We hit a snag retrieving your calendar. Your purchase is safe. Try again, and if it keeps happening, contact us and we'll sort it out."
+    primary-label="Reload page"
+    :primary-action="reloadPage"
+    secondary-label="Contact support"
+    secondary-href="mailto:support@omenora.com"
+  />
 
   <!-- Calendar -->
   <div v-else-if="calendarData" class="cal-page">
@@ -138,6 +141,8 @@ const { t } = useLanguage()
 const isLoading = ref(true)
 const hasError = ref(false)
 const calendarData = ref<any>(null)
+
+function reloadPage() { window.location.reload() }
 
 const loadingMessages = computed(() => [
   t('calLoading1'),
