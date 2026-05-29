@@ -113,14 +113,8 @@
       </div>
     </Transition>
 
-    <!-- ── Loading overlay ─────────────────────────────────────────────────── -->
-    <Transition name="step-fade">
-      <div v-if="isLoading" class="cq__loading">
-        <AppHeadline variant="lg" as="p" class="cq__loading-msg">
-          {{ loadingMessages[loadingMsgIdx % loadingMessages.length] }}
-        </AppHeadline>
-      </div>
-    </Transition>
+    <!-- ── Loading ────────────────────────────────────────────────────────── -->
+    <LoaderBar :active="isLoading" :messages="loadingMessages" :interval="1200" />
 
     <!-- ── Error state ──────────────────────────────────────────────────────── -->
     <div v-if="apiError" class="cq__error">
@@ -136,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { QUIZ_SCHEMA, type QuizStep, type SingleSelectStep, type DateInputStep, type TimeInputStep, type CityInputStep, type TextInputStep } from '~/components/quiz/quiz-schema'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import type { CompatibilityQuizAnswers } from '~/stores/analysisStore'
@@ -196,10 +190,6 @@ const partnerTime = ref<string | null>(null)
 const userTime    = ref<string | null>(null)
 const isLoading   = ref(false)
 const apiError    = ref(false)
-const loadingMsgIdx = ref(0)
-
-let loadingInterval: ReturnType<typeof setInterval> | null = null
-
 const loadingMessages = [
   'Reading the charts…',
   'Mapping the connection…',
@@ -343,7 +333,6 @@ function goBack() {
 async function runApiCall() {
   isLoading.value  = true
   apiError.value   = false
-  loadingMsgIdx.value = 0
 
   if ($trackInitiateCheckout) {
     ;($trackInitiateCheckout as Function)({
@@ -352,9 +341,6 @@ async function runApiCall() {
       content_name: 'Compatibility Reading',
     })
   }
-  loadingInterval = setInterval(() => {
-    loadingMsgIdx.value++
-  }, 1200)
 
   try {
     const result = await $fetch<{ success: boolean; compatibility: Record<string, unknown> }>(
@@ -380,21 +366,15 @@ async function runApiCall() {
       },
     )
 
-    if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null }
     isLoading.value = false
 
     store.setCompatibilityData(result.compatibility)
     router.push('/compatibility?preview=1')
   } catch {
-    if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null }
     isLoading.value = false
     apiError.value  = true
   }
 }
-
-onBeforeUnmount(() => {
-  if (loadingInterval) clearInterval(loadingInterval)
-})
 </script>
 
 <style scoped>
@@ -576,26 +556,6 @@ onBeforeUnmount(() => {
     border-left: none !important;
     border-right: none !important;
   }
-}
-
-/* ── Loading overlay ──
-   Full-screen takeover matching the atmospheric treatment. */
-.cq__loading {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(18, 18, 20, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 100;
-}
-
-.cq__loading-msg {
-  text-align: center;
-  padding: var(--space-6);
-  color: var(--omn-text-primary);
 }
 
 /* ── Error state ──

@@ -1,9 +1,6 @@
 <template>
   <!-- ── STATE: Loading ── -->
-  <div v-if="isLoading" class="account-state-page">
-    <PhoenixLoader :size="72" />
-    <AppCaption as="p" color="tertiary" style="margin-top: 16px;">Loading your account…</AppCaption>
-  </div>
+  <LoaderOverlay v-if="isLoading" :active="isLoading" :messages="['Restoring your session…']" />
 
   <!-- ── STATE: Magic link pending (click-to-confirm) ── -->
   <div v-else-if="pendingTokenHash" class="account-state-page">

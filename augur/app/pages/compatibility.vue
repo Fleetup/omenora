@@ -7,12 +7,8 @@
     <div class="compat-page__bg-overlay" aria-hidden="true" />
     <div class="page-grain" aria-hidden="true" />
 
-    <!-- ── Loading (fixed overlay — independent of v-else-if chain below) ── -->
-    <div v-if="isLoading" class="compat-loading" aria-live="polite">
-      <AppHeadline variant="lg" as="p" class="compat-loading__msg">
-        {{ compatLoadingMessages[compatLoadingMsgIdx % compatLoadingMessages.length] }}
-      </AppHeadline>
-    </div>
+    <!-- ── Loading ── -->
+    <LoaderBar :active="isLoading" :messages="compatLoadingMessages" :interval="1200" />
 
     <!-- ── Error (post-payment path) ── -->
     <div v-if="hasError && !isPreviewMode" class="compat-state-layer">
@@ -471,7 +467,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
 import type { CompatibilityQuizAnswers } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
@@ -535,17 +531,6 @@ const compatLoadingMessages = [
   'Finding what matters…',
   'Almost there…',
 ]
-const compatLoadingMsgIdx = ref(0)
-let compatLoadingInterval: ReturnType<typeof setInterval> | null = null
-
-function startCompatLoading() {
-  compatLoadingMsgIdx.value = 0
-  compatLoadingInterval = setInterval(() => { compatLoadingMsgIdx.value++ }, 1200)
-}
-function stopCompatLoading() {
-  if (compatLoadingInterval) { clearInterval(compatLoadingInterval); compatLoadingInterval = null }
-}
-
 // ── Pay card items (SectionPaywallCard) ───────────────────────────────────────
 const compatPaywallItems = computed(() => [
   { key: 'What you unlock', value: '7 compatibility sections' },
@@ -826,9 +811,6 @@ async function handleCheckout() {
 }
 
 // ── onMounted: routing branches ───────────────────────────────────────────────
-onBeforeUnmount(() => {
-  stopCompatLoading()
-})
 
 onMounted(async () => {
   await nextTick() // ensure route query is fully settled after navigation
@@ -930,7 +912,6 @@ onMounted(async () => {
     }
 
     isLoading.value = true
-    startCompatLoading()
     try {
       const paymentData = await $fetch<{
         paid: boolean
@@ -1130,11 +1111,9 @@ onMounted(async () => {
         }))
       } catch { /* sessionStorage quota exceeded — non-critical */ }
 
-      stopCompatLoading()
       isLoading.value = false
     } catch {
       console.error('Compatibility page load failed')
-      stopCompatLoading()
       hasError.value  = true
       isLoading.value = false
     }
@@ -1259,25 +1238,6 @@ onMounted(async () => {
   72%  { background-position:  50px  20px; }
   84%  { background-position: -30px  60px; }
   100% { background-position:   0px   0px; }
-}
-
-/* ── Loading overlay (quiz-style fullscreen blur + cycling message) ── */
-.compat-loading {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(18, 18, 20, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 100;
-}
-
-.compat-loading__msg {
-  text-align: center;
-  padding: var(--space-6);
-  color: var(--omn-text-primary);
 }
 
 /* ── Centered state layer (error / session expired) ── */

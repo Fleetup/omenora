@@ -34,14 +34,11 @@
     <!-- ── TAB: DAILY HOROSCOPE ── -->
     <div class="daily-horoscope">
 
-      <!-- Loading -->
-      <div v-if="loading" class="daily-loading page-wrapper">
-        <div class="daily-loading__bar"><div class="daily-loading__fill" /></div>
-        <AppCaption as="p">Loading today's readings…</AppCaption>
-      </div>
+      <!-- Loading overlay (fixed, outside the v-if chain) -->
+      <LoaderOverlay :active="loading" :messages="dailyLoadingMessages" />
 
       <!-- No data -->
-      <div v-else-if="!zodiacData" class="daily-empty page-wrapper">
+      <div v-if="!loading && !zodiacData" class="daily-empty page-wrapper">
         <AppCaption as="p">Today's horoscopes are being prepared. Check back shortly.</AppCaption>
       </div>
 
@@ -382,6 +379,7 @@ interface ZodiacReading {
 }
 
 const loading      = ref(true)
+const dailyLoadingMessages = ['Loading today\u2019s reading\u2026']
 const zodiacData    = ref<Record<string, ZodiacReading> | null>(null)
 
 const featuredSignReading = computed<ZodiacReading | null>(() => {
@@ -522,34 +520,6 @@ onUnmounted(() => {
 /* ─────────────────────────────────────────────
    LOADING / EMPTY
 ───────────────────────────────────────────── */
-.daily-loading {
-  padding-bottom: clamp(20px, 5vw, 48px);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  max-width: 240px;
-}
-
-.daily-loading__bar {
-  width: 160px;
-  height: 1px;
-  background: var(--omn-border-subtle);
-  overflow: hidden;
-}
-
-.daily-loading__fill {
-  height: 100%;
-  background: var(--omn-accent);
-  width: 0;
-  animation: load-sweep 1.8s ease-in-out infinite;
-}
-
-@keyframes load-sweep {
-  0%   { width: 0%;  margin-left: 0%; }
-  50%  { width: 60%; margin-left: 20%; }
-  100% { width: 0%;  margin-left: 100%; }
-}
-
 .daily-empty {
   padding-bottom: clamp(20px, 5vw, 48px);
   color: var(--omn-text-tertiary);
@@ -893,9 +863,4 @@ onUnmounted(() => {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .daily-loading__fill {
-    animation: none;
-  }
-}
 </style>
