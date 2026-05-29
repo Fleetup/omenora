@@ -80,9 +80,9 @@ const SITE_URL = 'https://omenora.com'
 
 useSeoMeta({
   title: 'Refund Policy — OMENORA',
-  description: 'OMENORA refund policy for founding member purchases, destiny reading reports, and subscriptions. Full details on eligibility, timelines, and how to request a refund.',
+  description: 'OMENORA refund policy — Founding Member deposits are refundable within 14 days. Premium subscription refunds are handled through the Apple App Store.',
   ogTitle: 'Refund Policy — OMENORA',
-  ogDescription: 'Refund terms for OMENORA purchases including founding memberships, one-time reports, and monthly subscriptions.',
+  ogDescription: 'OMENORA refund policy — Founding Member deposits are refundable within 14 days. Premium subscription refunds are handled through the Apple App Store.',
   ogUrl: `${SITE_URL}/refund-policy`,
   robots: 'index, follow',
 })
