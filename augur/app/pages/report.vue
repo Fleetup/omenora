@@ -214,28 +214,6 @@
             <p v-else class="report-section__para">{{ store.report.sections[key].content }}</p>
           </div>
         </article>
-
-        <!-- Mid-content subscription upsell — inline after forecast section -->
-        <section
-          v-if="key === 'forecast' && store.report && !store.subscriptionActive && !store.oraclePurchased"
-          class="upsell-section upsell-section--sub upsell-section--inline"
-        >
-          <div class="editorial-rule" />
-          <div class="upsell-section__inner">
-            <AppEyebrow class="upsell-section__eyebrow">What's next</AppEyebrow>
-            <AppSubhead as="h3" class="upsell-section__heading">
-              Continue tomorrow, {{ store.firstName || store.report.archetypeName }}
-            </AppSubhead>
-            <AppCaption as="p" class="upsell-section__sub">
-              Your forecast just covered the months ahead. See what tomorrow holds for the {{ store.report.archetypeName.replace('The ', '') }} in you, every morning.
-            </AppCaption>
-            <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription('mid_content')">
-              {{ isStartingSub ? 'Loading...' : 'Start my 7-day free trial' }}
-            </button>
-            <AppCaption as="p" class="upsell-section__note">Free 7 days · Cancel anytime</AppCaption>
-          </div>
-          <div class="editorial-rule" />
-        </section>
       </template>
     </div>
 
@@ -482,48 +460,6 @@
       </div>
     </section>
 
-    <!-- ── PREMIUM UPGRADE CTA ── -->
-    <section v-if="store.report && !store.subscriptionActive && !store.bundlePurchased && !store.oraclePurchased" class="upsell-section upsell-section--premium">
-      <div class="editorial-rule" />
-      <div class="upsell-section__inner">
-        <AppEyebrow class="upsell-section__eyebrow">Premium</AppEyebrow>
-        <AppSubhead as="h3" class="upsell-section__heading">{{ t('reportPremiumCta') }}</AppSubhead>
-        <AppCaption as="p" class="upsell-section__sub">{{ t('reportPremiumSubtitle') }}</AppCaption>
-        <NuxtLink to="/founding" class="upsell-cta-btn upsell-cta-btn--link">
-          {{ t('foundingCtaReport') }}
-        </NuxtLink>
-        <AppCaption as="p" class="upsell-section__founding-sub">{{ t('foundingCtaSubtitle') }}</AppCaption>
-      </div>
-      <div class="editorial-rule" />
-    </section>
-
-    <!-- Subscription upsell — end of content -->
-    <section v-if="store.report && !store.subscriptionActive && !store.oraclePurchased" class="upsell-section upsell-section--sub">
-      <div class="editorial-rule" />
-      <div class="upsell-section__inner">
-        <div class="upsell-section__header-row">
-          <div>
-            <AppEyebrow class="upsell-section__eyebrow">Daily forecast</AppEyebrow>
-            <AppSubhead as="h3" class="upsell-section__heading">Tomorrow, for {{ store.report.archetypeName }}</AppSubhead>
-            <AppCaption as="p" class="upsell-section__sub">Your natal chart, read every morning at 6am</AppCaption>
-          </div>
-          <div class="upsell-section__price-block">
-            <AppCaption as="p" class="upsell-section__trial-label">Free 7 days, then</AppCaption>
-            <AppSubhead as="span" variant="strong" class="upsell-section__price">$6.99<span class="upsell-section__price-period">/mo</span></AppSubhead>
-          </div>
-        </div>
-        <div class="upsell-features">
-          <AppCaption as="p" class="upsell-feature">✦ Tailored to your {{ store.report.archetypeName }} archetype</AppCaption>
-          <AppCaption as="p" class="upsell-feature">✦ Delivered each morning, written by your stars</AppCaption>
-          <AppCaption as="p" class="upsell-feature">✦ Cancel anytime — keep your reading</AppCaption>
-        </div>
-        <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription('end_content')">
-          {{ isStartingSub ? 'Loading...' : 'Start my 7-day free trial' }}
-        </button>
-        <AppCaption as="p" class="upsell-section__note">Cancel anytime · No charge until day 8 · Your card stays secure with Stripe</AppCaption>
-      </div>
-      <div class="editorial-rule" />
-    </section>
 
 
     <!-- ── SHARE & EXPORT ── -->
@@ -618,7 +554,7 @@ const store = useAnalysisStore()
 const route = useRoute()
 const { provisionUser } = useAuth()
 const { t } = useLanguage()
-const { $trackPurchase, $trackReportViewed, $trackUpsellViewed, $trackUpsellAccepted, $trackShareCardOpened, $trackShareCardDownloaded } = useNuxtApp() as any
+const { $trackPurchase, $trackReportViewed, $trackShareCardOpened, $trackShareCardDownloaded } = useNuxtApp() as any
 
 useSeoMeta({
   title: () => store.firstName ? `${store.firstName}'s Personality Reading — OMENORA` : 'Your Personality Reading — OMENORA',
@@ -1296,45 +1232,7 @@ async function buyBirthChart() {
   navigateTo('/subscribe')
 }
 
-const isStartingSub = ref(false)
 
-async function startSubscription(placement: 'mid_content' | 'end_content' = 'end_content') {
-  if (isStartingSub.value) return
-  isStartingSub.value = true
-  $trackUpsellAccepted({ type: 'subscription', placement, price: 6.99, archetype: store.archetype, language: store.language })
-  try {
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>('/api/create-subscription', {
-      method: 'POST',
-      body: {
-        email: store.email,
-        firstName: store.firstName,
-        archetype: store.archetype,
-        lifePathNumber: store.lifePathNumber,
-        origin: window.location.origin,
-      },
-    })
-    if (url) window.location.href = url
-  } catch {
-    console.error('Subscription start failed')
-    isStartingSub.value = false
-  }
-}
-
-watch(isLoadingReport, (loading) => {
-  if (loading) return
-  if (!store.report || store.subscriptionActive || store.oraclePurchased) return
-  const sessionKey = store.reportSessionId || store.tempId || 'anon'
-  const midKey = `omenora_sub_viewed_mid_${sessionKey}`
-  if (!sessionStorage.getItem(midKey)) {
-    sessionStorage.setItem(midKey, '1')
-    $trackUpsellViewed({ type: 'subscription', placement: 'mid_content', archetype: store.archetype, language: store.language })
-  }
-  const endKey = `omenora_sub_viewed_end_${sessionKey}`
-  if (!sessionStorage.getItem(endKey)) {
-    sessionStorage.setItem(endKey, '1')
-    $trackUpsellViewed({ type: 'subscription', placement: 'end_content', archetype: store.archetype, language: store.language })
-  }
-})
 
 // ── Tradition Switcher ────────────────────────────────────────────────────
 
