@@ -29,8 +29,9 @@
       <nav class="app-header__links" aria-label="Primary">
         <NuxtLink to="/#method"     class="app-header__link">Method</NuxtLink>
         <NuxtLink to="/#traditions" class="app-header__link">Traditions</NuxtLink>
-        <NuxtLink to="/#paywall"    class="app-header__link">Pricing</NuxtLink>
+        <NuxtLink to="/#paywall"    class="app-header__link">Founding</NuxtLink>
         <NuxtLink to="/daily"       class="app-header__link">Daily</NuxtLink>
+        <NuxtLink to="/compatibility-quiz" class="app-header__link">Compatibility</NuxtLink>
       </nav>
 
       <!-- Right: action slot + burger -->
@@ -97,7 +98,7 @@
           <NuxtLink to="/"                    class="drawer-link" @click="menuOpen = false">Home</NuxtLink>
           <NuxtLink to="/#method"             class="drawer-link" @click="menuOpen = false">Method</NuxtLink>
           <NuxtLink to="/#traditions"         class="drawer-link" @click="menuOpen = false">Traditions</NuxtLink>
-          <NuxtLink to="/#paywall"            class="drawer-link" @click="menuOpen = false">Pricing</NuxtLink>
+          <NuxtLink to="/#paywall"            class="drawer-link" @click="menuOpen = false">Founding</NuxtLink>
           <NuxtLink to="/daily"               class="drawer-link" @click="menuOpen = false">Daily Horoscope</NuxtLink>
           <NuxtLink to="/compatibility-quiz"  class="drawer-link" @click="menuOpen = false">Compatibility</NuxtLink>
           <NuxtLink to="/analysis"            class="drawer-link" @click="menuOpen = false">Begin a Reading</NuxtLink>
