@@ -29,7 +29,7 @@ export const inngest = new Inngest({
  *   lifePathNumber  — numerology life path number (0 if unavailable)
  *   element         — elemental affinity (e.g. "Earth")
  *   region          — regional style variant (e.g. "western")
- *   planType        — subscription tier: "premium" | "daily_horoscope" | "compatibility_plus"
+ *   planType        — subscription tier: "premium" | "daily_horoscope"
  *   sessionId       — Stripe checkout session ID — used as the Inngest idempotency key
  */
 export const subscriberWelcomeSend = eventType(
@@ -42,7 +42,7 @@ export const subscriberWelcomeSend = eventType(
       lifePathNumber: number
       element:        string
       region:         string
-      planType:       'premium' | 'daily_horoscope' | 'compatibility_plus'
+      planType:       'premium' | 'daily_horoscope'
       sessionId:      string
     }>(),
   },
@@ -127,8 +127,8 @@ export const userUnsubscribed = eventType(
 )
 
 /**
- * Fired by the weekly transit orchestrator once per compatibility_plus
- * subscriber on Monday morning. The worker fetches the compatibility report,
+ * Fired by the weekly transit orchestrator once per eligible subscriber
+ * on Monday morning. The worker fetches the compatibility report,
  * calls Claude for the weekly relationship weather, sends the email, and logs.
  *
  *   email          — subscriber email address

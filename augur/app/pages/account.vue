@@ -160,7 +160,7 @@
             </div>
             <div class="data-row">
               <span class="data-row__label">Plan</span>
-              <span class="data-row__value">{{ subscriptionPlanName || (subscriptionPlanType === 'compatibility_plus' ? 'Compatibility Plus' : 'Daily Personal Horoscope') }}</span>
+              <span class="data-row__value">{{ subscriptionPlanName || 'Daily Personal Horoscope' }}</span>
             </div>
             <div class="data-row">
               <span class="data-row__label">Billing</span>
@@ -170,8 +170,6 @@
             <div class="plan-includes-block">
               <AppEyebrow variant="muted" class="plan-includes-block__label">What's included</AppEyebrow>
               <ul class="plan-includes-list">
-                <li v-if="subscriptionPlanType === 'compatibility_plus'">Unlimited compatibility readings</li>
-                <li v-if="subscriptionPlanType === 'compatibility_plus'">Weekly relationship weather (coming soon)</li>
                 <li>Daily horoscope tailored to your natal chart</li>
                 <li>Love, work &amp; health insights</li>
                 <li>Delivered to your inbox every morning</li>

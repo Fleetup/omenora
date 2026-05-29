@@ -53,7 +53,6 @@ export default defineNuxtConfig({
     stripeDailyPriceId: '', // DEPRECATED — keep for backward compat until B1b cleanup
     stripePremiumMonthlyPriceId: '', // NUXT_STRIPE_PREMIUM_MONTHLY_PRICE_ID — $14.99/mo Premium
     stripePremiumYearlyPriceId: '',  // NUXT_STRIPE_PREMIUM_YEARLY_PRICE_ID  — $99.99/yr Premium
-    // stripeCompatPlusPriceId: '', // DEPRECATED — Compatibility Plus subscription removed (Phase 2)
     stripeCompatSinglePriceId: '',
     stripeFoundingPriceId: '',
     emailJobSecret: '',
