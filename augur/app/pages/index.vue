@@ -80,7 +80,7 @@
       <template #heading-em></template>
       <template #heading-tail></template>
       <template #actions>
-        <AppButton variant="ghost" href="/founding">Read what your chart says →</AppButton>
+        <AppButton variant="ghost" href="/analysis">Read what your chart says →</AppButton>
       </template>
     </SectionLede>
     </div>
@@ -322,8 +322,8 @@ const receiveCards: CardItem[] = [
     body:    'Your Sun, Moon and Rising synthesized into one archetype — the one your full chart points to, not the one your birthday suggests. Available inside Premium, unlocked first for Founding Members.',
     foot:    'Reading',
     tag:     'Computed',
-    sample:  'Reserve your reading →',
-    sampleHref: '/founding',
+    sample:  'Preview your archetype →',
+    sampleHref: '/analysis',
   },
   {
     numeral: '02',
