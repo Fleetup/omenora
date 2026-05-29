@@ -232,9 +232,15 @@ useSeoMeta({
   description: 'Your free daily horoscope for today. Love, work and health reading for all 12 zodiac signs. Real planetary positions updated every morning.',
   ogTitle: 'Free Daily Horoscope for All 12 Signs — OMENORA',
   ogDescription: 'Love, work and health horoscope for Aries, Taurus, Gemini and all 12 signs. Real planetary data. Free every day.',
+  ogImage: 'https://omenora.com/og-image.png',
   ogUrl: 'https://omenora.com/daily',
   twitterCard: 'summary_large_image',
+  twitterImage: 'https://omenora.com/og-image.png',
   robots: 'index, follow',
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: 'https://omenora.com/daily' }],
 })
 
 // ── Zodiac sign map ────────────────────────────
