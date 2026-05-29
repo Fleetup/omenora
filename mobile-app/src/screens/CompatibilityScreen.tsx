@@ -85,7 +85,6 @@ export const CompatibilityScreen: React.FC<CompatibilityScreenProps> = ({ naviga
                   <FeatureListItem key={f} label={f} icon="♥" />
                 ))}
               </View>
-              <Text style={styles.upgradeNote}>Also included in Full Oracle · $12.99</Text>
             </View>
         </ScrollView>
       </LinearGradient>

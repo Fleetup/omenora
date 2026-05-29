@@ -72,7 +72,6 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) =>
                   <FeatureListItem key={f} label={f} />
                 ))}
               </View>
-              <Text style={styles.upgradeNote}>Also included in Full Oracle · $12.99</Text>
             </View>
         </ScrollView>
       </LinearGradient>

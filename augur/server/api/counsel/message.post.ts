@@ -1,7 +1,7 @@
 /**
  * POST /api/counsel/message
  *
- * STUB endpoint. Validates premium entitlement + daily cap (30/day) and
+ * STUB endpoint. Validates premium entitlement + monthly cap (30/month) and
  * increments usage. Real Claude streaming chat deferred to Phase 4 when
  * the Counsel chat screen is built.
  */
