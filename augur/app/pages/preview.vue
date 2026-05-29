@@ -614,43 +614,6 @@ async function handleFoundingCta() {
   await navigateTo('/founding')
 }
 
-async function handlePayment() {
-  if (isProcessingPayment.value) return
-  if (!email.value) return
-
-  isProcessingPayment.value = true
-
-  store.setEmail(email.value)
-
-  try {
-    // Discount promo code path — routes through apply-promo-discount
-    if (appliedPromo.value?.codeType === 'discount_percent') {
-      const { url } = await $fetch<{ sessionId: string; url: string | null }>('/api/apply-promo-discount', {
-        method: 'POST',
-        body: {
-          codeId:        appliedPromo.value.codeId,
-          code:          promoCodeInput.value.trim(),
-          email:         email.value,
-          tier:          'bundle',
-          firstName:     store.firstName,
-          archetype:     store.archetype,
-          lifePathNumber: store.lifePathNumber,
-          dateOfBirth:   store.dateOfBirth,
-          timeOfBirth:   store.timeOfBirth,
-          tempId:        store.tempId,
-          region:        store.region,
-          language:      store.language,
-          origin:        window.location.origin,
-        },
-      })
-      if (url) window.location.href = url
-      return
-    }
-  } catch {
-    console.error('Payment processing failed')
-    isProcessingPayment.value = false
-  }
-}
 </script>
 
 <style scoped>
