@@ -1,13 +1,6 @@
 <template>
   <!-- Loading -->
-  <div v-if="isLoading" class="center-page">
-    <div class="center-content">
-      <PhoenixLoader :size="72" />
-      <p :key="currentMessageIndex" class="loading-msg">
-        {{ loadingMessages[currentMessageIndex] }}
-      </p>
-    </div>
-  </div>
+  <LoaderBar v-if="isLoading" :active="isLoading" :messages="loadingMessages" :interval="2000" />
 
   <!-- Error -->
   <div v-else-if="hasError" class="center-page">
@@ -152,8 +145,6 @@ const loadingMessages = computed(() => [
   t('calLoading3'),
   t('calLoading4'),
 ])
-const currentMessageIndex = ref(0)
-let messageInterval: ReturnType<typeof setInterval> | null = null
 
 function energyColor(level: number): string {
   if (level >= 75) return 'rgba(140, 110, 255, 0.9)'
@@ -170,10 +161,6 @@ const visibleMonths = computed(() => {
 })
 
 onMounted(async () => {
-  messageInterval = setInterval(() => {
-    currentMessageIndex.value = (currentMessageIndex.value + 1) % loadingMessages.value.length
-  }, 2000)
-
   const sessionId = route.query.session_id as string
 
   if (!sessionId) {
@@ -294,17 +281,6 @@ onMounted(async () => {
     console.error('Calendar page load failed')
     hasError.value = true
     isLoading.value = false
-  } finally {
-    if (messageInterval) {
-      clearInterval(messageInterval)
-      messageInterval = null
-    }
-  }
-})
-
-onUnmounted(() => {
-  if (messageInterval) {
-    clearInterval(messageInterval)
   }
 })
 

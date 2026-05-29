@@ -13,25 +13,14 @@
       <!-- ── LOADING ────────────────────────────────────────────────────────── -->
       <section v-if="pageState === 'loading'" class="ty-section ty-functional">
         <div class="page-wrapper">
-          <div class="ty-loading">
-            <div class="ty-loading__bar">
-              <div class="ty-loading__fill" />
-            </div>
-            <AppCaption variant="default" as="p" class="ty-loading__label">Confirming your purchase…</AppCaption>
-          </div>
+          <LoaderBar :active="true" :messages="['Confirming your purchase…']" />
         </div>
       </section>
 
       <!-- ── PENDING ────────────────────────────────────────────────────────── -->
       <section v-else-if="pageState === 'pending'" class="ty-section ty-functional">
         <div class="page-wrapper">
-          <div class="ty-pending">
-            <div class="ty-loading__bar">
-              <div class="ty-loading__fill" />
-            </div>
-            <AppSubhead variant="default" class="ty-pending__label">Confirming your payment with Stripe…</AppSubhead>
-            <AppCaption variant="default" as="p" class="ty-pending__sub">This usually takes a few seconds.</AppCaption>
-          </div>
+          <LoaderBar :active="true" :messages="['Confirming your payment with Stripe…', 'This usually takes a few seconds…']" />
         </div>
       </section>
 
@@ -479,56 +468,8 @@ const footerColumns = [
 }
 
 /* ── Loading bar ───────────────────────────────────────────────────────────── */
-.ty-loading {
-  padding: clamp(80px, 15vw, 140px) 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.ty-loading__bar {
-  width: 160px;
-  height: 1px;
-  background: var(--omn-border-subtle);
-  overflow: hidden;
-}
-
-.ty-loading__fill {
-  height: 100%;
-  width: 40%;
-  background: var(--omn-accent);
-  animation: ty-scan 1.6s ease-in-out infinite;
-}
-
-@keyframes ty-scan {
-  0%   { transform: translateX(-150%); }
-  100% { transform: translateX(350%); }
-}
-
-.ty-loading__label {
-  font-size: 11px;
-  color: var(--omn-text-tertiary);
-}
 
 /* ── Pending ───────────────────────────────────────────────────────────────── */
-.ty-pending {
-  padding: clamp(80px, 15vw, 140px) 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.ty-pending__label {
-  font-size: clamp(18px, 3vw, 24px);
-  color: var(--omn-text-primary);
-  font-style: italic;
-}
-
-.ty-pending__sub {
-  color: var(--omn-text-tertiary);
-}
 
 /* ── Error / Pending-timeout ────────────────────────────────────────────────── */
 .ty-error,

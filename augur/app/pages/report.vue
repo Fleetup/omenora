@@ -1,15 +1,6 @@
 <template>
   <!-- ── Loading state ── -->
-  <div v-if="isLoadingReport" class="report-loading-page">
-    <div class="report-loading-content">
-      <AppEyebrow class="rload-eyebrow">Omenora</AppEyebrow>
-      <AppSubhead class="rload-msg">{{ t('craftingReport') }}</AppSubhead>
-      <div class="rload-track">
-        <div class="rload-fill" />
-      </div>
-    </div>
-
-  </div>
+  <LoaderBar v-if="isLoadingReport" :active="isLoadingReport" :messages="[t('craftingReport')]" />
 
   <!-- ── Error state ── -->
   <div v-else-if="hasError" class="report-state-page">
@@ -1363,60 +1354,8 @@ async function downloadReportPDF() {
 }
 
 /* ─────────────────────────────────────────────
-   LOADING / STATE PAGES
+   STATE PAGES
    ───────────────────────────────────────────── */
-
-.report-loading-page {
-  background: var(--surface-base);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
-  box-sizing: border-box;
-  gap: 40px;
-}
-
-.report-loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.rload-eyebrow {
-  margin: 0;
-  color: var(--text-tertiary);
-}
-
-.rload-msg {
-  font-family: var(--font-sans);
-  font-style: italic;
-  font-size: 16px;
-  font-weight: 300;
-  color: var(--text-secondary);
-  margin: 0;
-  text-align: center;
-}
-
-.rload-track {
-  width: 120px;
-  height: 1px;
-  background: var(--border-subtle);
-  overflow: hidden;
-}
-
-@keyframes fillProgress {
-  from { width: 0 }
-  to   { width: 90% }
-}
-
-.rload-fill {
-  height: 100%;
-  background: linear-gradient(90deg, rgba(201,168,76,0.4), rgba(201,168,76,0.8));
-  animation: fillProgress 8s ease-out forwards;
-}
 
 .report-state-page {
   background: var(--surface-base);
@@ -3006,7 +2945,6 @@ async function downloadReportPDF() {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rload-fill,
   .tradition-loading__ring {
     animation: none;
   }

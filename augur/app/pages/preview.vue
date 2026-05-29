@@ -2,29 +2,10 @@
   <div class="preview-page">
 
     <!-- ── STATE A: LOADING ── -->
-    <div v-if="isLoading" class="preview-loading">
-      <div class="preview-loading__inner">
-        <div class="loading-ornament">
-          <PhoenixLoader :size="96" />
-        </div>
-
-        <AppEyebrow as="p" class="loading-status">
-          <template v-if="loadingStage === 0">Mapping your natal chart, {{ store.firstName }}…</template>
-          <template v-else-if="loadingStage === 1">Computing across four traditions…</template>
-          <template v-else-if="loadingStage === 2">Your {{ loadingArchetypeLabel }} archetype is being mapped…</template>
-          <template v-else>Your reading is ready.</template>
-        </AppEyebrow>
-
-        <div class="loading-progress">
-          <div class="loading-progress__fill" />
-        </div>
-
-        <AppCaption as="p" class="loading-subtext">Computing across four traditions</AppCaption>
-      </div>
-    </div>
+    <LoaderBar :active="isLoading" :messages="previewLoadingMessages" />
 
     <!-- ── STATE C: ERROR ── -->
-    <div v-else-if="hasError" class="preview-error">
+    <div v-if="!isLoading && hasError" class="preview-error">
       <div class="preview-error__inner">
         <AppEyebrow variant="muted">Something went wrong</AppEyebrow>
         <AppHeadline as="h2" class="preview-error__msg">We couldn't generate your reading.</AppHeadline>
@@ -36,7 +17,7 @@
     </div>
 
     <!-- ── STATE B: PREVIEW ── -->
-    <template v-else-if="report">
+    <template v-else-if="!isLoading && report">
 
       <AppHeader>
         <template #action>
@@ -279,6 +260,13 @@ const archetypeShortName: ComputedRef<string> = computed(() =>
 const loadingArchetypeLabel = computed(() =>
   store.archetype ? archetypeShortName.value : 'Your destiny archetype'
 )
+
+const previewLoadingMessages = computed(() => [
+  `Mapping your natal chart, ${store.firstName}…`,
+  'Computing across four traditions…',
+  `Your ${loadingArchetypeLabel.value} archetype is being mapped…`,
+  'Your reading is ready.',
+])
 
 // Map archetype name → @2x.png filename in /public/symbols/
 // e.g. "The Alchemist" → "alchemist@2x.png"
@@ -629,78 +617,6 @@ async function handleFoundingCta() {
 .preview-header__meta {
   color: var(--text-tertiary);
   font-size: 10px;
-}
-
-/* ── LOADING STATE ── */
-.preview-loading {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(48px, 10vw, 96px) clamp(20px, 5vw, 48px);
-}
-
-.preview-loading__inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  max-width: 360px;
-  text-align: center;
-}
-
-.loading-ornament {
-  width: 96px;
-  height: 96px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.loading-ornament__img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  opacity: 0.7;
-}
-
-.loading-ornament__placeholder {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  border: 1px solid var(--border-subtle);
-}
-
-
-.loading-status {
-  color: var(--text-primary);
-  font-size: 11px;
-  min-height: 1.4em;
-}
-
-.loading-progress {
-  width: 200px;
-  height: 1px;
-  background: var(--border-subtle);
-}
-
-.loading-progress__fill {
-  height: 100%;
-  background: var(--text-primary);
-  width: 0%;
-  animation: loading-fill 8s ease forwards;
-}
-
-@keyframes loading-fill {
-  0%   { width: 0%; }
-  30%  { width: 35%; }
-  60%  { width: 65%; }
-  90%  { width: 90%; }
-  100% { width: 95%; }
-}
-
-.loading-subtext {
-  color: var(--text-tertiary);
 }
 
 /* ── ERROR STATE ── */
@@ -1163,8 +1079,6 @@ async function handleFoundingCta() {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loading-ornament { animation: none; opacity: 1; }
-  .loading-progress__fill { animation: none; width: 80%; }
   .paywall__cta:hover:not(:disabled) { transform: none; }
 }
 
