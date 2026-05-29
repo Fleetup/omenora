@@ -54,9 +54,9 @@
         <p>OMENORA provides AI-powered astrology, numerology, and destiny analysis services. Our Services include:</p>
         <ul>
           <li>Free initial destiny analysis based on your birth data (name, date of birth, time of birth, city of birth)</li>
-          <li>Paid comprehensive destiny reports delivered by email</li>
-          <li>Paid supplementary content including personal forecast calendars, love compatibility readings, and extended forecasts</li>
-          <li>Optional daily subscription services providing ongoing personalized insights</li>
+          <li>A Founding Member deposit that reserves access to the OMENORA product at launch and confers a lifetime discount on the Premium subscription</li>
+          <li>A single compatibility reading available as a one-time purchase</li>
+          <li>The OMENORA Premium subscription (available at mobile app launch), providing access to personalized natal-chart readings across multiple interpretive traditions, daily content, and the Counsel feature within the mobile app</li>
         </ul>
         <p>All Services are provided for <strong>personal, non-commercial use only</strong> unless otherwise agreed in writing with OMENORA.</p>
         </div>

@@ -14,8 +14,8 @@
         <AppEyebrow class="toc-label">Contents</AppEyebrow>
         <ol class="toc-list">
           <li><a href="#r1" class="toc-link">Founding Member Purchases ($20 one-time)</a></li>
-          <li><a href="#r2" class="toc-link">Destiny Reading Reports ($2.99 one-time)</a></li>
-          <li><a href="#r3" class="toc-link">Subscriptions ($4.99/month)</a></li>
+          <li><a href="#r2" class="toc-link">Founding Member Deposit ($20 one-time)</a></li>
+          <li><a href="#r3" class="toc-link">Premium Subscription (at launch)</a></li>
           <li><a href="#r4" class="toc-link">Contact</a></li>
         </ol>
       </div>
@@ -40,25 +40,16 @@
       </section>
 
       <section id="r2" class="legal-section">
-        <h2 class="legal-section__heading">2. Destiny Reading Reports ($2.99 one-time)</h2>
+        <h2 class="legal-section__heading">2. Founding Member Deposit ($20 one-time)</h2>
         <div class="legal-section__content">
-          <p>Due to the personalized, instantly delivered digital nature of these reports, <strong>all sales are final</strong> once the report has been generated and delivered to your email address.</p>
-          <p>Refunds are available only in the following cases:</p>
-          <ul>
-            <li>Payment was processed but the report was never delivered</li>
-            <li>A duplicate charge was made for the same report</li>
-            <li>A technical failure prevented report generation entirely</li>
-          </ul>
-          <p>Refund requests must be submitted within <strong>30 days of purchase</strong> to <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a>. Please include the email address used at checkout and any order or payment reference you have available.</p>
+          <p>The Founding Member deposit reserves your access to OMENORA at launch and locks in 50% off the Premium subscription for life. It is fully refundable for <strong>14 days from the date of purchase</strong> — no form, no questions. If you are located in the EU/EEA, this 14-day window reflects your statutory right of withdrawal. To request a refund, email <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a> from the address used at checkout. Refunds are issued to the original payment method via Stripe and typically appear within <strong>5–10 business days</strong>.</p>
         </div>
       </section>
 
       <section id="r3" class="legal-section">
-        <h2 class="legal-section__heading">3. Subscriptions ($4.99/month)</h2>
+        <h2 class="legal-section__heading">3. Premium Subscription (at launch)</h2>
         <div class="legal-section__content">
-          <p>You may cancel your subscription at any time from your <NuxtLink to="/account" class="inline-link">account page</NuxtLink>. Cancellation stops future billing but does not refund the current billing period. <strong>No partial refunds are issued for unused time within a billing period.</strong></p>
-          <p>In the case of an accidental renewal — within 48 hours of the renewal date, with no usage of premium features in that period — a full refund of the most recent charge is available on request to <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a>.</p>
-          <p>Refunds for charges older than 48 hours are considered on a case-by-case basis.</p>
+          <p>When the OMENORA mobile app launches, Premium subscriptions are sold through the Apple App Store. Subscription refunds are handled by Apple under the App Store's refund policy, not directly by OMENORA. You can request a subscription refund through your Apple account. Founding Members' lifetime 50% discount applies automatically to the subscription plan selected at launch.</p>
         </div>
       </section>
 
