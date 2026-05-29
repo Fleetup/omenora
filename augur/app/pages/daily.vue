@@ -20,31 +20,11 @@
       <div class="diag-band__overlay" aria-hidden="true" />
 
       <div class="diag-band__content daily-hero__content page-wrapper">
-        <!-- Tab switcher -->
-        <div class="daily-tabs">
-          <button
-            class="daily-tab label-caps"
-            :class="{ 'daily-tab--active': activeTab === 'horoscope' }"
-            @click="activeTab = 'horoscope'"
-          >
-            Daily
-          </button>
-          <span class="daily-tab-sep">·</span>
-          <button
-            class="daily-tab label-caps"
-            :class="{ 'daily-tab--active': activeTab === 'archetype' }"
-            @click="activeTab = 'archetype'"
-          >
-            Archetype
-          </button>
-        </div>
-
         <!-- Section headline -->
         <div class="daily-hero__headline-block">
           <AppEyebrow class="daily-hero__eyebrow">{{ todayFormatted }}</AppEyebrow>
           <AppHeadline variant="display" as="h1" class="daily-hero__headline">
-            <template v-if="activeTab === 'horoscope'">Daily Horoscope</template>
-            <template v-else>Archetype Reading</template>
+            Daily Horoscope
           </AppHeadline>
           <div class="daily-hero__rule" />
         </div>
@@ -52,7 +32,7 @@
     </section>
 
     <!-- ── TAB: DAILY HOROSCOPE ── -->
-    <div v-if="activeTab === 'horoscope'" class="daily-horoscope">
+    <div class="daily-horoscope">
 
       <!-- Loading -->
       <div v-if="loading" class="daily-loading page-wrapper">
@@ -203,141 +183,6 @@
 
     </div>
 
-    <!-- ── TAB: ARCHETYPE READING ── -->
-    <div v-if="activeTab === 'archetype'" class="daily-archetype">
-
-      <!-- Loading -->
-      <div v-if="loading" class="daily-loading page-wrapper">
-        <div class="daily-loading__bar"><div class="daily-loading__fill" /></div>
-        <AppCaption as="p">Loading today's readings…</AppCaption>
-      </div>
-
-      <!-- No data -->
-      <div v-else-if="!archetypeData" class="daily-empty page-wrapper">
-        <AppCaption as="p">Today's archetype readings are being prepared. Check back shortly.</AppCaption>
-      </div>
-
-      <!-- Featured archetype: no reading yet (cache empty or error) -->
-      <template v-else-if="featuredArchetype && !featuredReading">
-        <div class="reading-view page-wrapper">
-          <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')">← All archetypes</button>
-
-          <div class="reading-sign-header">
-            <div class="reading-sign-header__sign">
-              <img
-                :src="`/symbols/${selectedArchetypeFile}`"
-                :alt="featuredDisplayName"
-                class="reading-archetype-symbol symbol-editorial"
-              />
-              <div>
-                <AppSubhead as="h2" variant="strong" color="primary" class="reading-sign-name">{{ featuredDisplayName }}</AppSubhead>
-                <AppCaption>Archetype Reading</AppCaption>
-              </div>
-            </div>
-          </div>
-
-          <AppDivider variant="rule" />
-
-          <div class="reading-empty">
-            <AppEyebrow variant="muted" class="reading-empty__label">{{ todayFormatted }}</AppEyebrow>
-            <AppSubhead variant="default" color="primary" class="reading-empty__msg">Today's reading is being prepared.</AppSubhead>
-            <AppCaption as="p" class="reading-empty__sub">Archetype readings are generated each morning. Check back shortly.</AppCaption>
-            <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')" style="margin-top: 24px">← Choose another archetype</button>
-          </div>
-        </div>
-      </template>
-
-      <!-- Featured archetype view (deep link ?archetype=) -->
-      <template v-else-if="featuredArchetype && featuredReading">
-        <div class="reading-view page-wrapper">
-          <button class="back-link label-caps" @click="navigateTo('/daily?tab=archetype')">← All archetypes</button>
-
-          <div class="reading-sign-header">
-            <div class="reading-sign-header__sign">
-              <img
-                :src="`/symbols/${selectedArchetypeFile}`"
-                :alt="featuredDisplayName"
-                class="reading-archetype-symbol symbol-editorial"
-              />
-              <div>
-                <AppSubhead as="h2" variant="strong" color="primary" class="reading-sign-name">{{ featuredDisplayName }}</AppSubhead>
-                <AppCaption>Archetype Reading</AppCaption>
-              </div>
-            </div>
-          </div>
-
-          <AppDivider variant="rule" />
-
-          <div class="reading-content">
-            <div class="reading-content__theme">
-              <AppEyebrow as="span" variant="accent" class="reading-content__theme-label">Today's focus</AppEyebrow>
-              <AppSubhead variant="default" color="primary" class="reading-content__theme-text">{{ featuredReading.theme }}</AppSubhead>
-            </div>
-
-            <AppDivider variant="rule" />
-
-            <div class="reading-content__body">
-              <p class="reading-content__para">{{ featuredReading.insight }}</p>
-            </div>
-
-            <div v-if="featuredReading.reflection" class="reading-reflection">
-              <AppEyebrow as="p" variant="accent" class="reading-reflection__label">Reflection</AppEyebrow>
-              <AppSubhead as="p" class="reading-reflection__text">{{ featuredReading.reflection }}</AppSubhead>
-            </div>
-
-            <div class="reading-cta">
-              <AppDivider variant="labeled" label="◇" />
-              <AppSubhead variant="default" class="reading-cta__pull">Don't know your archetype yet?</AppSubhead>
-              <AppButton variant="primary" to="/analysis" :arrow="true">Discover yours</AppButton>
-            </div>
-          </div>
-        </div>
-
-        <!-- Other archetypes grid -->
-        <div class="others-section page-wrapper">
-          <AppEyebrow variant="muted" class="others-section__label">All Archetypes</AppEyebrow>
-          <div class="archetype-grid archetype-grid--mini">
-            <NuxtLink
-              v-for="slug in otherArchetypes"
-              :key="slug"
-              :to="`/daily?archetype=${slug}`"
-              class="archetype-mini-card"
-            >
-              <img
-                :src="`/symbols/${archetypeFile(slug)}`"
-                :alt="archetypeDisplayName(slug)"
-                class="archetype-mini-card__img symbol-editorial"
-              />
-              <AppEyebrow as="span" class="archetype-mini-card__name">{{ archetypeDisplayName(slug) }}</AppEyebrow>
-              <AppCaption as="p" v-if="archetypeData[slug]" class="archetype-mini-card__theme">{{ archetypeData[slug]?.theme }}</AppCaption>
-            </NuxtLink>
-          </div>
-        </div>
-      </template>
-
-      <!-- All archetypes selector grid -->
-      <template v-else>
-        <div class="archetype-selector page-wrapper">
-          <AppCaption as="p" class="archetype-selector__prompt">Select your archetype</AppCaption>
-          <div class="archetype-grid">
-            <button
-              v-for="a in archetypeList"
-              :key="a.key"
-              class="archetype-tile"
-              @click="selectArchetype(a.key)"
-            >
-              <img
-                :src="`/symbols/${a.file}`"
-                :alt="a.name"
-                class="archetype-tile__img symbol-editorial"
-              />
-              <AppEyebrow as="span" class="archetype-tile__name">{{ a.name }}</AppEyebrow>
-            </button>
-          </div>
-        </div>
-      </template>
-
-    </div>
 
     <!-- ── CLOSING CTA BAND ── -->
     <SectionFinalCTA
@@ -414,28 +259,6 @@ function signDisplayName(slug: string): string {
   return SIGN_NAMES[slug] ?? slug
 }
 
-// ── Archetype map ──────────────────────────────
-const ARCHETYPE_NAMES: Record<string, string> = {
-  phoenix:    'The Phoenix',
-  architect:  'The Silent Architect',
-  storm:      'The Storm Caller',
-  lighthouse: 'The Lighthouse',
-  wanderer:   'The Wanderer',
-  alchemist:  'The Alchemist',
-  guardian:   'The Guardian',
-  visionary:  'The Visionary',
-  mirror:     'The Mirror',
-  catalyst:   'The Catalyst',
-  sage:       'The Sage',
-  wildfire:   'The Wildfire',
-}
-
-const ALL_ARCHETYPES = Object.keys(ARCHETYPE_NAMES)
-
-function archetypeDisplayName(slug: string): string {
-  return ARCHETYPE_NAMES[slug] ?? slug
-}
-
 // ── Route & params ─────────────────────────────
 const route = useRoute()
 
@@ -467,9 +290,6 @@ const footerColumns = [
 
 const currentYear = computed(() => new Date().getFullYear())
 
-// ── Tab state ──────────────────────────────────
-const activeTab = ref<'horoscope' | 'archetype'>('horoscope')
-
 // ── Featured sign (horoscope tab) ─────────────
 const featuredSign = computed<string | null>(() => {
   const param = route.query.sign
@@ -479,21 +299,6 @@ const featuredSign = computed<string | null>(() => {
 
 const otherSigns = computed(() =>
   ALL_SIGNS.filter(s => s !== featuredSign.value)
-)
-
-// ── Featured archetype (archetype tab) ────────
-const featuredArchetype = computed<string | null>(() => {
-  const param = route.query.archetype
-  if (typeof param === 'string' && param in ARCHETYPE_NAMES) return param
-  return null
-})
-
-const featuredDisplayName = computed(() =>
-  featuredArchetype.value ? archetypeDisplayName(featuredArchetype.value) : ''
-)
-
-const otherArchetypes = computed(() =>
-  ALL_ARCHETYPES.filter(s => s !== featuredArchetype.value)
 )
 
 // ── Date & moon phase ──────────────────────────
@@ -538,34 +343,6 @@ function selectSign(key: string): void {
   navigateTo(`/daily?sign=${key}`)
 }
 
-// ── Archetype list (for selector grid) ────────
-const archetypeList = [
-  { key: 'phoenix',    name: 'The Phoenix',          file: 'phoenix@2x.png'    },
-  { key: 'architect',  name: 'The Silent Architect',  file: 'architect@2x.png'  },
-  { key: 'storm',      name: 'The Storm Caller',      file: 'storm@2x.png'      },
-  { key: 'lighthouse', name: 'The Lighthouse',        file: 'lighthouse@2x.png' },
-  { key: 'wanderer',   name: 'The Wanderer',          file: 'wanderer@2x.png'   },
-  { key: 'alchemist',  name: 'The Alchemist',         file: 'alchemist@2x.png'  },
-  { key: 'guardian',   name: 'The Guardian',          file: 'guardian@2x.png'   },
-  { key: 'visionary',  name: 'The Visionary',         file: 'visionary@2x.png'  },
-  { key: 'mirror',     name: 'The Mirror',            file: 'mirror@2x.png'     },
-  { key: 'catalyst',   name: 'The Catalyst',          file: 'catalyst@2x.png'   },
-  { key: 'sage',       name: 'The Sage',              file: 'sage@2x.png'       },
-  { key: 'wildfire',   name: 'The Wildfire',          file: 'wildfire@2x.png'   },
-]
-
-function archetypeFile(key: string): string {
-  return archetypeList.find(a => a.key === key)?.file ?? `${key}@2x.png`
-}
-
-const selectedArchetypeFile = computed(() =>
-  featuredArchetype.value ? archetypeFile(featuredArchetype.value) : ''
-)
-
-function selectArchetype(key: string): void {
-  navigateTo(`/daily?archetype=${key}`)
-}
-
 const moonPhase = ref<string | null>(null)
 
 function computeMoonPhase(date: Date): string {
@@ -586,13 +363,6 @@ function computeMoonPhase(date: Date): string {
 }
 
 // ── Cache data ─────────────────────────────────
-interface ArchetypeReading {
-  theme:      string
-  insight:    string
-  reflection: string
-  moon_phase: string
-}
-
 interface ZodiacReading {
   horoscope:         string
   love:              string
@@ -606,13 +376,7 @@ interface ZodiacReading {
 }
 
 const loading      = ref(true)
-const archetypeData = ref<Record<string, ArchetypeReading> | null>(null)
 const zodiacData    = ref<Record<string, ZodiacReading> | null>(null)
-
-const featuredReading = computed<ArchetypeReading | null>(() => {
-  if (!featuredArchetype.value || !archetypeData.value) return null
-  return archetypeData.value[featuredArchetype.value] ?? null
-})
 
 const featuredSignReading = computed<ZodiacReading | null>(() => {
   if (!featuredSign.value || !zodiacData.value) return null
@@ -631,25 +395,15 @@ onMounted(async () => {
 
   moonPhase.value = computeMoonPhase(today)
 
-  const tabParam = route.query.tab
-  if (tabParam === 'archetype' || (route.query.archetype && typeof route.query.archetype === 'string')) {
-    activeTab.value = 'archetype'
-  } else if (route.query.sign && typeof route.query.sign === 'string') {
-    activeTab.value = 'horoscope'
-  }
-
   try {
     const res = await $fetch<{
-      success:    boolean
-      date:       string
-      archetypes: Record<string, ArchetypeReading> | null
-      zodiac:     Record<string, ZodiacReading>    | null
+      success: boolean
+      date:    string
+      zodiac:  Record<string, ZodiacReading> | null
     }>('/api/get-daily-cache', { method: 'POST' })
 
-    archetypeData.value = res.archetypes && Object.keys(res.archetypes).length > 0 ? res.archetypes : null
     zodiacData.value    = res.zodiac    && Object.keys(res.zodiac).length    > 0 ? res.zodiac    : null
   } catch {
-    archetypeData.value = null
     zodiacData.value    = null
   } finally {
     loading.value = false
@@ -753,39 +507,9 @@ onUnmounted(() => {
 }
 
 /* ─────────────────────────────────────────────
-   TAB SWITCHER
-───────────────────────────────────────────── */
-.daily-tabs {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-8);
-}
-
-.daily-tab {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  color: var(--omn-text-tertiary);
-  transition: color var(--omn-duration-micro) var(--omn-ease);
-}
-
-.daily-tab--active {
-  color: var(--omn-text-primary);
-}
-
-.daily-tab-sep {
-  color: var(--omn-text-tertiary);
-  opacity: 0.5;
-  font-size: 12px;
-}
-
-/* ─────────────────────────────────────────────
    CONTENT SECTIONS — shared padding
 ───────────────────────────────────────────── */
-.daily-horoscope,
-.daily-archetype {
+.daily-horoscope {
   padding-top: clamp(40px, 6vw, 64px);
 }
 
@@ -962,108 +686,6 @@ onUnmounted(() => {
 }
 
 /* ─────────────────────────────────────────────
-   ARCHETYPE SELECTOR GRID
-───────────────────────────────────────────── */
-.archetype-selector {
-  padding-bottom: clamp(48px, 8vw, 80px);
-}
-
-.archetype-selector__prompt {
-  color: var(--omn-text-tertiary);
-  margin-bottom: var(--space-7);
-}
-
-.archetype-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--omn-border-subtle);
-  border: 1px solid var(--omn-border-subtle);
-  max-width: 680px;
-}
-
-@media (min-width: 640px) {
-  .archetype-grid { grid-template-columns: repeat(4, 1fr); }
-}
-
-.archetype-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-6) var(--space-3);
-  background: var(--omn-bg-page);
-  border: none;
-  cursor: pointer;
-  transition: background var(--omn-duration-fast) var(--omn-ease);
-}
-
-.archetype-tile:hover {
-  background: var(--omn-bg-primary);
-}
-
-.archetype-tile__img {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-  opacity: 0.8;
-  transition: opacity var(--omn-duration-fast) var(--omn-ease);
-}
-
-.archetype-tile:hover .archetype-tile__img {
-  opacity: 1;
-}
-
-.archetype-tile__name {
-  color: var(--omn-text-primary);
-}
-
-/* ─────────────────────────────────────────────
-   ARCHETYPE MINI CARDS
-───────────────────────────────────────────── */
-.archetype-grid--mini {
-  gap: 1px;
-}
-
-.archetype-mini-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-5) var(--space-3);
-  background: var(--omn-bg-page);
-  text-decoration: none;
-  transition: background var(--omn-duration-fast) var(--omn-ease);
-  text-align: center;
-}
-
-.archetype-mini-card:hover {
-  background: var(--omn-bg-primary);
-}
-
-.archetype-mini-card__img {
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
-  opacity: 0.75;
-  transition: opacity var(--omn-duration-fast) var(--omn-ease);
-}
-
-.archetype-mini-card:hover .archetype-mini-card__img {
-  opacity: 1;
-}
-
-.archetype-mini-card__name {
-  color: var(--omn-text-primary);
-}
-
-.archetype-mini-card__theme {
-  color: var(--omn-text-tertiary);
-  margin: 0;
-  line-height: 1.4;
-}
-
-/* ─────────────────────────────────────────────
    READING VIEW
 ───────────────────────────────────────────── */
 .reading-view {
@@ -1120,13 +742,6 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.reading-archetype-symbol {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  opacity: 0.8;
-  flex-shrink: 0;
-}
 
 .reading-sign-name {
   font-family: var(--omn-font-display);
