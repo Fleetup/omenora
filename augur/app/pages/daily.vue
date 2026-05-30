@@ -9,6 +9,8 @@
       <div class="page-scroll-progress__bar" :style="{ transform: `scaleY(${pageProgress})` }" />
     </div>
 
+    <main>
+
     <!-- ── HERO BAND (diag-band with background image) ── -->
     <section
       :ref="setHeroRevealEl"
@@ -200,6 +202,8 @@
         <AppButton variant="ghost" to="/founding">Founding membership — $20 →</AppButton>
       </template>
     </SectionFinalCTA>
+
+    </main>
 
     <!-- ── FOOTER ── -->
     <SectionFooter

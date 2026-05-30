@@ -209,6 +209,7 @@ withDefaults(defineProps<{
 .section-footer {
   border-top: 1px solid var(--omn-border-subtle);
   padding: clamp(80px, 10vw, 120px) 0 0;
+  --omn-text-tertiary: #908A82;
 }
 .section-footer--page    { background: var(--omn-bg-page); }
 .section-footer--primary { background: var(--omn-bg-primary); }

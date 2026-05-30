@@ -8,6 +8,8 @@
       <div class="page-scroll-progress__bar" :style="{ transform: `scaleY(${pageProgress})` }" />
     </div>
 
+    <main>
+
     <!-- ── § 01 — Hero ───────────────────────────────────────────────────── -->
     <SectionHero
       :display-lines="heroLines"
@@ -159,6 +161,8 @@
         <p v-if="errorMessage" class="fcta-error" role="alert">{{ errorMessage }}</p>
       </template>
     </SectionFinalCTA>
+
+    </main>
 
     <!-- ── Footer ─────────────────────────────────────────────────────────── -->
     <SectionFooter

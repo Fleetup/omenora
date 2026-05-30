@@ -37,6 +37,8 @@
       </template>
     </AppHeader>
 
+    <main>
+
     <!-- Report masthead -->
     <div class="compat-masthead">
       <AppEyebrow class="compat-masthead__kicker">{{ t('destinyCompat') }}</AppEyebrow>
@@ -216,6 +218,8 @@
       <AppCaption as="p" v-if="cardDownloadError" class="compat-download-error">{{ cardDownloadError }}</AppCaption>
     </div>
 
+    </main>
+
     <footer class="compat-footer">
       <nav aria-label="Legal">
         <NuxtLink to="/privacy" class="footer-link annotation">{{ t('compatPrivacy') }}</NuxtLink>
@@ -233,6 +237,8 @@
         <AppEyebrow as="span" class="compat-preview__badge">{{ t('compatFreeBadge') }}</AppEyebrow>
       </template>
     </AppHeader>
+
+    <main>
 
     <!-- Canceled banner (CASE C) -->
     <div v-if="isCanceled" class="compat-canceled" role="status">
@@ -453,6 +459,8 @@
       </div>
       <AppEyebrow class="compat-trust-secure">{{ t('compatSecurePayment') }}</AppEyebrow>
     </div>
+
+    </main>
 
     <footer class="compat-footer">
       <nav aria-label="Legal">

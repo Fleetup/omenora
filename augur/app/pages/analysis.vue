@@ -11,6 +11,8 @@
     <!-- ── Sticky header ───────────────────────────────────────────────────── -->
     <AppHeader />
 
+    <main>
+
     <!-- ── Progress bar ────────────────────────────────────────────────────── -->
     <div class="aq__progress">
       <QuizProgressBar :current="currentStep + 1" :total="totalSteps" />
@@ -227,6 +229,8 @@
     <AppCaption variant="default" as="p" class="aq__trust">
       Your birth data is used only to generate your reading. Never sold.
     </AppCaption>
+
+    </main>
 
   </div>
 </template>

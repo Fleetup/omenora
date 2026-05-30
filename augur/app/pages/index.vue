@@ -13,6 +13,8 @@
       <div class="page-scroll-progress__bar" :style="{ transform: `scaleY(${pageProgress})` }" />
     </div>
 
+    <main>
+
     <SectionHero
       :display-lines="heroDisplayLines"
       :subhead="heroSubhead"
@@ -194,6 +196,8 @@
       <template #heading-em>already exists.</template>
       <template #heading-tail>You just haven't read it yet.</template>
     </SectionFinalCTA>
+
+    </main>
 
     <SectionFooter
       :columns="footerColumns"
