@@ -5,7 +5,7 @@
     <div class="legal-masthead">
       <AppEyebrow class="legal-masthead__eyebrow">Omenora</AppEyebrow>
       <AppHeadline variant="italic" as="h1" class="legal-masthead__headline">Terms of Service</AppHeadline>
-      <AppCaption variant="fine" as="p" class="legal-masthead__date">Last Updated: April 20, 2026 · Effective Date: April 20, 2026</AppCaption>
+      <AppCaption variant="fine" as="p" class="legal-masthead__date">Last Updated: May 30, 2026 · Effective Date: April 20, 2026</AppCaption>
       <div class="editorial-rule" />
     </div>
 
@@ -142,7 +142,7 @@
         <h2 class="legal-section__heading">7. Subscriptions &amp; Auto-Renewal</h2>
         <div class="legal-section__content">
         <div class="highlight-box">
-          <p><strong>Auto-Renewal Disclosure:</strong> If you purchase a subscription (such as our Daily Cosmic Insights plan), your subscription will automatically renew at the end of each billing period at the then-current price unless you cancel before the renewal date.</p>
+          <p><strong>Auto-Renewal Disclosure:</strong> If you purchase a subscription (such as our Premium subscription), your subscription will automatically renew at the end of each billing period at the then-current price unless you cancel before the renewal date.</p>
         </div>
 
         <h3 class="legal-section__subheading">7.1 How Subscriptions Work</h3>
@@ -157,9 +157,6 @@
 
         <h3 class="legal-section__subheading">7.3 Price Changes for Subscriptions</h3>
         <p>We will provide at least <strong>14 days' advance notice</strong> of any price change to your subscription by email. If you do not cancel before the new price takes effect, you will be deemed to have accepted the new price.</p>
-
-        <h3 class="legal-section__subheading">7.4 Free Trials</h3>
-        <p>If we offer a free trial period, we will clearly state the trial duration and the price that will apply upon conversion. Your payment method will be charged the stated price automatically at the end of the free trial unless you cancel before the trial expires.</p>
         </div>
       </section>
 
@@ -179,7 +176,7 @@
         <p>Subscription fees are non-refundable for any portion of a billing period already charged. There are no prorated refunds for early cancellation. If you cancel a subscription, you will retain access until the end of the paid period.</p>
 
         <h3 class="legal-section__subheading">8.3 Dispute Resolution</h3>
-        <p>To request a refund or report a billing issue, contact us at <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a> within <strong>7 days</strong> of the charge. We will investigate and respond within 5 business days.</p>
+        <p>To request a refund or report a billing issue, contact us at <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a> within <strong>14 days</strong> of the charge. We will investigate and respond within 5 business days.</p>
         <p>Initiating a chargeback with your payment provider without first contacting us is a violation of these Terms and may result in suspension of your access and/or referral to collections.</p>
         </div>
       </section>
