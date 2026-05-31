@@ -14,17 +14,17 @@ defineEmits(['click'])
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 10px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   padding: 0;
   transition: color 0.2s;
 }
 
 .back-btn:hover {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 </style>

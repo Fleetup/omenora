@@ -6,10 +6,40 @@ export default defineNuxtConfig({
   css: ['~/assets/css/editorial.css'],
 
   modules: [
+    '@nuxt/fonts',
+    '@nuxt/image',
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
-    '@sentry/nuxt/module',
+    'motion-v/nuxt',
+    ...(process.env.SENTRY_DSN ? ['@nuxtjs/sentry'] : []),
   ],
+
+  components: [
+    { path: '~/components', pathPrefix: false },
+  ],
+
+  fonts: {
+    families: [
+      {
+        name: 'Onest',
+        provider: 'google',
+        weights: [200, 300, 400, 500, 600],
+        styles: ['normal'],
+      },
+      {
+        name: 'Geist Mono',
+        provider: 'google',
+        weights: [300, 400, 500],
+        styles: ['normal'],
+      },
+    ],
+    defaults: {
+      weights: [400, 500, 600, 700],
+      styles: ['normal', 'italic'],
+      formats: ['woff2'],
+      preload: true,
+    },
+  },
 
   runtimeConfig: {
     // Empty string defaults — Nitro reads the actual process.env at container
@@ -20,9 +50,11 @@ export default defineNuxtConfig({
     resendApiKey: '',
     supabaseUrl: '',
     supabaseServiceKey: '',
-    stripeDailyPriceId: '',
-    // stripeCompatPlusPriceId: '', // DEPRECATED — Compatibility Plus subscription removed (Phase 2)
+    stripeDailyPriceId: '', // DEPRECATED — keep for backward compat until B1b cleanup
+    stripePremiumMonthlyPriceId: '', // NUXT_STRIPE_PREMIUM_MONTHLY_PRICE_ID — $14.99/mo Premium
+    stripePremiumYearlyPriceId: '',  // NUXT_STRIPE_PREMIUM_YEARLY_PRICE_ID  — $99.99/yr Premium
     stripeCompatSinglePriceId: '',
+    stripeFoundingPriceId: '',
     emailJobSecret: '',
     cronSecret: '',
     inngestEventKey: '',
@@ -37,7 +69,7 @@ export default defineNuxtConfig({
       supabaseUrl: '',
       supabaseAnonKey: '',
       siteUrl: 'https://omenora.com',
-      sentry: { dsn: process.env.NUXT_PUBLIC_SENTRY_DSN },
+      sentryDsn: '',
       tiktokPixelId: '',
       metaPixelId: '',
       posthogKey: '',
@@ -69,22 +101,32 @@ export default defineNuxtConfig({
         'X-XSS-Protection': '1; mode=block',
       },
     },
+    '/compatibility-quiz-legacy': { redirect: { to: '/compatibility-quiz', statusCode: 301 } },
+    '/compatibility-quiz-v2': { redirect: { to: '/compatibility-quiz', statusCode: 301 } },
   },
 
-  // @ts-ignore - @sentry/nuxt/module extends NuxtConfig type after nuxt prepare
+  // @ts-ignore - @nuxtjs/sentry module extends NuxtConfig type
   sentry: {
-    sourceMapsUploadOptions: {
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    publishRelease: {
+      authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
-      authToken: process.env.SENTRY_AUTH_TOKEN,
+    },
+    config: {
+      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+      replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.01 : 0.0,
+      replaysOnErrorSampleRate: 1.0,
     },
   },
-
-  sourcemap: { client: 'hidden' },
 
   vite: {
     optimizeDeps: {
       exclude: ['canvas'],
+    },
+    build: {
+      sourcemap: false,
     },
   },
 
@@ -151,10 +193,11 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
         { rel: 'manifest', href: '/site.webmanifest' },
         { rel: 'sitemap', type: 'application/xml', href: 'https://omenora.com/sitemap.xml' },
-        // Fraunces + Cormorant Garamond + Hanken Grotesk + JetBrains Mono — Editorial design system
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..900;1,9..144,200..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Hanken+Grotesk:wght@300..800&family=JetBrains+Mono:wght@300..700&display=swap' },
+        // Hero LCP imagery — preload the WebP background used by SectionHero
+        // (CSS background-image via --section-img custom property). A single
+        // preload without `media` is correct here because SectionHero always
+        // renders the same image at all breakpoints; position shifts via CSS.
+        { rel: 'preload', as: 'image', href: '/images/hero/Cosmic-gold-ascension.webp', type: 'image/webp', fetchpriority: 'high' },
         // Performance: Preconnect to critical third-party domains
         { rel: 'preconnect', href: 'https://js.stripe.com' },
         { rel: 'preconnect', href: 'https://api.stripe.com' },

@@ -2,9 +2,23 @@ import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { CalendarSchema, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
-import { getLanguageInstruction } from '~~/server/utils/language-instructions'
+import { requirePremiumOrEntitlement } from '~~/server/utils/entitlements'
 
+/**
+ * POST /api/generate-calendar
+ *
+ * Generates a 12-month lucky timing calendar for the authenticated user.
+ * Guarded by requirePremiumOrEntitlement — requires an active 'premium'
+ * subscription OR an active 'calendar_2026' entitlement (omenora_calendar_2026
+ * non-consumable IAP). Calendar is a permanent unlock; no usage cap applies.
+ */
 export default defineEventHandler(async (event) => {
+  await requirePremiumOrEntitlement(
+    event,
+    'calendar_2026',
+    ['omenora_monthly', 'omenora_annual', 'omenora_calendar_2026'],
+  )
+
   const config = useRuntimeConfig()
 
   const body = await readBody(event)
@@ -21,7 +35,15 @@ export default defineEventHandler(async (event) => {
   assertInput(isValidArchetype(archetype), 'Invalid archetype')
   assertInput(isValidDateOfBirth(dateOfBirth), 'Invalid dateOfBirth')
 
-  const langInstruction = getLanguageInstruction(language as string)
+  const languageInstructions: Record<string, string> = {
+    en: 'Respond entirely in English.',
+    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
+    pt: 'Responda completamente em português brasileiro. Use tom caloroso e pessoal.',
+    hi: 'पूरी तरह से हिंदी में जवाब दें।',
+    ko: '전체적으로 한국어로 답변해 주세요.',
+    zh: '完全用简体中文回答。',
+  }
+  const langInstruction = languageInstructions[language as string] ?? languageInstructions['en'] ?? ''
 
   const client = new Anthropic({
     apiKey: config.anthropicApiKey as string,

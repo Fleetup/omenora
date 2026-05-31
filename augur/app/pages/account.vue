@@ -1,16 +1,13 @@
 <template>
   <!-- ── STATE: Loading ── -->
-  <div v-if="isLoading" class="account-state-page">
-    <PhoenixLoader :size="72" />
-    <p class="annotation" style="margin-top: 16px; color: var(--color-ink-faint);">Loading your account…</p>
-  </div>
+  <LoaderOverlay v-if="isLoading" :active="isLoading" :messages="['Restoring your session…']" />
 
   <!-- ── STATE: Magic link pending (click-to-confirm) ── -->
   <div v-else-if="pendingTokenHash" class="account-state-page">
     <AppHeader />
     <div class="auth-card">
-      <p class="label-caps auth-card__eyebrow">Sign in</p>
-      <h1 class="auth-card__headline font-display-italic">Complete your sign-in.</h1>
+      <AppEyebrow variant="muted" class="auth-card__eyebrow">Sign in</AppEyebrow>
+      <AppHeadline as="h1" class="auth-card__headline">Complete your sign-in.</AppHeadline>
       <div class="editorial-rule" />
       <p class="auth-card__body">Click the button below to finish signing in to your account.</p>
       <button class="auth-submit label-caps" :disabled="isConfirming" @click="handleConfirmMagicLink">
@@ -31,8 +28,8 @@
   <div v-else-if="!isAuthenticated" class="account-state-page">
     <AppHeader />
     <div class="auth-card">
-      <p class="label-caps auth-card__eyebrow">Account</p>
-      <h1 class="auth-card__headline font-display-italic">Sign in to your account.</h1>
+      <AppEyebrow variant="muted" class="auth-card__eyebrow">Account</AppEyebrow>
+      <AppHeadline as="h1" class="auth-card__headline">Sign in to your account.</AppHeadline>
       <div class="editorial-rule" />
       <p class="auth-card__body">We'll send a magic link to your email. No password needed.</p>
 
@@ -59,7 +56,7 @@
       </template>
 
       <div v-else class="auth-sent">
-        <p class="label-caps" style="color: var(--color-gold); margin-bottom: 12px;">✦ Check your email</p>
+        <AppEyebrow variant="accent" style="margin-bottom: 12px;">✦ Check your email</AppEyebrow>
         <p class="auth-card__body">We sent a sign-in link to <strong>{{ emailInput }}</strong>. It expires in 1 hour.</p>
       </div>
     </div>
@@ -74,10 +71,10 @@
       <!-- Sidebar -->
       <aside class="account-sidebar">
         <div class="account-sidebar__user">
-          <p class="account-sidebar__name font-serif">
+          <AppSubhead as="p" variant="strong" color="primary" class="account-sidebar__name">
             {{ store.firstName || 'Your Account' }}
-          </p>
-          <p class="annotation account-sidebar__email">{{ userEmail }}</p>
+          </AppSubhead>
+          <AppCaption as="p" class="account-sidebar__email">{{ userEmail }}</AppCaption>
         </div>
 
         <div class="editorial-rule" />
@@ -104,7 +101,7 @@
 
         <!-- ── PROFILE ── -->
         <section v-if="activeSection === 'profile'">
-          <h2 class="account-section__headline font-display-italic">Profile</h2>
+          <AppHeadline as="h2" class="account-section__headline">Profile</AppHeadline>
           <p class="account-section__desc">Your birth data used for natal calculations.</p>
           <div class="editorial-rule" />
 
@@ -130,7 +127,7 @@
           </div>
           <div class="data-row">
             <span class="data-row__label">Archetype</span>
-            <span class="data-row__value font-serif">{{ store.archetype || '—' }}</span>
+            <AppSubhead as="span" class="data-row__value">{{ store.archetype || '—' }}</AppSubhead>
           </div>
           <div class="data-row">
             <span class="data-row__label">Life Path</span>
@@ -138,13 +135,13 @@
           </div>
 
           <div class="account-section__actions">
-            <CTAButton to="/analysis" variant="outline" :arrow="true">Recalculate chart</CTAButton>
+            <AppButton variant="secondary" to="/analysis" :arrow="true">Recalculate chart</AppButton>
           </div>
         </section>
 
         <!-- ── PLAN ── -->
         <section v-else-if="activeSection === 'plan'">
-          <h2 class="account-section__headline font-display-italic">Your Plan</h2>
+          <AppHeadline as="h2" class="account-section__headline">Your Plan</AppHeadline>
           <p class="account-section__desc">Manage your subscription and billing.</p>
           <div class="editorial-rule" />
 
@@ -160,7 +157,7 @@
             </div>
             <div class="data-row">
               <span class="data-row__label">Plan</span>
-              <span class="data-row__value">{{ subscriptionPlanName || (subscriptionPlanType === 'compatibility_plus' ? 'Compatibility Plus' : 'Daily Personal Horoscope') }}</span>
+              <span class="data-row__value">{{ subscriptionPlanName || 'Daily Personal Horoscope' }}</span>
             </div>
             <div class="data-row">
               <span class="data-row__label">Billing</span>
@@ -168,10 +165,8 @@
             </div>
 
             <div class="plan-includes-block">
-              <p class="label-caps plan-includes-block__label">What's included</p>
+              <AppEyebrow variant="muted" class="plan-includes-block__label">What's included</AppEyebrow>
               <ul class="plan-includes-list">
-                <li v-if="subscriptionPlanType === 'compatibility_plus'">Unlimited compatibility readings</li>
-                <li v-if="subscriptionPlanType === 'compatibility_plus'">Weekly relationship weather (coming soon)</li>
                 <li>Daily horoscope tailored to your natal chart</li>
                 <li>Love, work &amp; health insights</li>
                 <li>Delivered to your inbox every morning</li>
@@ -189,15 +184,15 @@
               <template v-else-if="cancelState === 'confirm'">
                 <div class="cancel-confirm">
                   <div class="editorial-rule" />
-                  <p class="label-caps cancel-confirm__eyebrow">Before you go</p>
-                  <h3 class="cancel-confirm__headline font-serif">Are you sure you want to cancel?</h3>
+                  <AppEyebrow variant="muted" class="cancel-confirm__eyebrow">Before you go</AppEyebrow>
+                  <AppSubhead as="h3" variant="strong" color="primary" class="cancel-confirm__headline">Are you sure you want to cancel?</AppSubhead>
                   <p class="cancel-confirm__body">
                     Your subscription will remain active until the end of the billing period.
                     After that, you will lose access to personalized daily readings.
                   </p>
 
                   <div class="cancel-reason">
-                    <p class="label-caps cancel-reason__label">Reason (optional)</p>
+                    <AppEyebrow variant="muted" class="cancel-reason__label">Reason (optional)</AppEyebrow>
                     <div class="cancel-reason__options">
                       <button
                         v-for="r in cancelReasons"
@@ -212,7 +207,7 @@
                   </div>
 
                   <div class="cancel-confirm__actions">
-                    <CTAButton variant="outline" @click="cancelState = 'idle'">Keep my plan</CTAButton>
+                    <AppButton variant="secondary" @click="cancelState = 'idle'">Keep my plan</AppButton>
                     <button
                       class="cancel-confirm__confirm-btn label-caps"
                       :disabled="isCancelling"
@@ -228,10 +223,10 @@
               <template v-else-if="cancelState === 'cancelled'">
                 <div class="cancel-done">
                   <div class="editorial-rule" />
-                  <p class="label-caps" style="color: var(--color-ink-faint)">Cancellation initiated</p>
-                  <p class="cancel-done__body font-serif">
+                  <AppEyebrow variant="muted">Cancellation initiated</AppEyebrow>
+                  <AppSubhead as="p" class="cancel-done__body">
                     Your access continues until the end of the billing period. We hope to see you again.
-                  </p>
+                  </AppSubhead>
                 </div>
               </template>
             </div>
@@ -244,27 +239,27 @@
             </div>
             <div class="account-section__actions">
               <p class="account-section__desc">Get personalized daily readings tailored to your natal chart and archetype.</p>
-              <CTAButton to="/subscribe" :arrow="true">View plans</CTAButton>
+              <AppButton variant="primary" to="/founding" :arrow="true">View plans</AppButton>
             </div>
           </template>
         </section>
 
         <!-- ── HISTORY ── -->
         <section v-else-if="activeSection === 'history'">
-          <h2 class="account-section__headline font-display-italic">History</h2>
+          <AppHeadline as="h2" class="account-section__headline">History</AppHeadline>
           <p class="account-section__desc">Your natal readings and compatibility reports.</p>
           <div class="editorial-rule" />
 
           <!-- Natal / Archetype readings -->
           <template v-if="reports.length > 0">
-            <p class="label-caps" style="color: var(--color-ink-faint); margin-bottom: 16px;">Natal Readings</p>
+            <AppEyebrow variant="muted" style="margin-bottom: 16px;">Natal Readings</AppEyebrow>
             <div
               v-for="report in reports.filter((r: any) => r.type !== 'compatibility')"
               :key="report.id"
               class="data-row"
             >
               <div>
-                <span class="data-row__value font-serif">{{ report.archetype || report.first_name || 'Reading' }}</span>
+                <AppSubhead as="span" class="data-row__value">{{ report.archetype || report.first_name || 'Reading' }}</AppSubhead>
                 <span class="data-row__label" style="display: block; margin-top: 2px;">{{ formatDate(report.created_at) }}</span>
               </div>
               <button class="reading-card__view label-caps" @click="viewReport(report)">View</button>
@@ -273,7 +268,7 @@
 
           <!-- Daily insights (subscribers only) -->
           <template v-if="subscriptionActive && dailyInsights.length > 0">
-            <p class="label-caps" style="color: var(--color-ink-faint); margin-top: 32px; margin-bottom: 16px;">Recent Daily Readings</p>
+            <AppEyebrow variant="muted" style="margin-top: 32px; margin-bottom: 16px;">Recent Daily Readings</AppEyebrow>
             <div
               v-for="insight in dailyInsights"
               :key="insight.sent_date"
@@ -286,9 +281,9 @@
                 @click="toggleInsight(insight.sent_date)"
               >
                 <div class="insight-row__left">
-                  <span class="data-row__value font-serif">
+                  <AppSubhead as="span" class="data-row__value">
                     {{ insight.theme_used || 'Daily Reading' }}
-                  </span>
+                  </AppSubhead>
                   <span class="data-row__label" style="display: block; margin-top: 2px;">
                     {{ formatDate(insight.sent_date) }}
                   </span>
@@ -309,23 +304,23 @@
                     <div class="insight-sign-sections">
                       <div class="insight-sign-section-row">
                         <HoroscopeSymbol type="love" :size="16" />
-                        <span class="label-caps insight-section-label">Love</span>
+                        <AppEyebrow as="span" variant="muted" class="insight-section-label">Love</AppEyebrow>
                         <span class="insight-section-text">{{ insight.structured.love }}</span>
                       </div>
                       <div class="insight-sign-section-row">
                         <HoroscopeSymbol type="work" :size="16" />
-                        <span class="label-caps insight-section-label">Work</span>
+                        <AppEyebrow as="span" variant="muted" class="insight-section-label">Work</AppEyebrow>
                         <span class="insight-section-text">{{ insight.structured.work }}</span>
                       </div>
                       <div class="insight-sign-section-row">
                         <HoroscopeSymbol type="health" :size="16" />
-                        <span class="label-caps insight-section-label">Health</span>
+                        <AppEyebrow as="span" variant="muted" class="insight-section-label">Health</AppEyebrow>
                         <span class="insight-section-text">{{ insight.structured.health }}</span>
                       </div>
                     </div>
                     <div v-if="insight.structured.reflection_question" class="insight-row__reflection">
-                      <span class="label-caps insight-row__reflection-label">Today's reflection</span>
-                      <p class="insight-row__reflection-text font-serif">{{ insight.structured.reflection_question }}</p>
+                      <AppEyebrow as="span" variant="accent" class="insight-row__reflection-label">Today's reflection</AppEyebrow>
+                      <AppSubhead as="p" class="insight-row__reflection-text">{{ insight.structured.reflection_question }}</AppSubhead>
                     </div>
                   </template>
 
@@ -333,8 +328,8 @@
                   <template v-else>
                     <p class="insight-row__text">{{ insight.insight_preview }}</p>
                     <div v-if="insight.reflection_question" class="insight-row__reflection">
-                      <span class="label-caps insight-row__reflection-label">Today's reflection</span>
-                      <p class="insight-row__reflection-text font-serif">{{ insight.reflection_question }}</p>
+                      <AppEyebrow as="span" variant="accent" class="insight-row__reflection-label">Today's reflection</AppEyebrow>
+                      <AppSubhead as="p" class="insight-row__reflection-text">{{ insight.reflection_question }}</AppSubhead>
                     </div>
                   </template>
                 </div>
@@ -344,18 +339,18 @@
 
           <!-- Compatibility readings -->
           <template v-if="compatibilityReadings.length > 0">
-            <p class="label-caps" style="color: var(--color-ink-faint); margin-top: 32px; margin-bottom: 16px;">Compatibility Readings</p>
+            <AppEyebrow variant="muted" style="margin-top: 32px; margin-bottom: 16px;">Compatibility Readings</AppEyebrow>
             <div
               v-for="reading in compatibilityReadings"
               :key="reading.id"
               class="data-row"
             >
               <div>
-                <span class="data-row__value font-serif">{{ reading.partnerName ? `With ${reading.partnerName}` : 'Compatibility Reading' }}</span>
+                <AppSubhead as="span" class="data-row__value">{{ reading.partnerName ? `With ${reading.partnerName}` : 'Compatibility Reading' }}</AppSubhead>
                 <span class="data-row__label" style="display: block; margin-top: 2px;">{{ formatDate(reading.createdAt) }}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 16px;">
-                <span v-if="reading.score" class="data-row__value font-serif">{{ reading.score }}/100</span>
+                <AppSubhead v-if="reading.score" as="span" class="data-row__value">{{ reading.score }}/100</AppSubhead>
                 <button class="reading-card__view label-caps" @click="navigateTo('/compatibility?session_id=' + reading.sessionId)">View</button>
               </div>
             </div>
@@ -363,8 +358,8 @@
 
           <!-- Empty state -->
           <div v-if="reports.length === 0 && compatibilityReadings.length === 0 && dailyInsights.length === 0">
-            <p class="account-section__empty annotation">No readings yet.</p>
-            <CTAButton to="/analysis" :arrow="true">Begin your reading</CTAButton>
+            <AppCaption as="p" color="tertiary" class="account-section__empty">No readings yet.</AppCaption>
+            <AppButton variant="primary" to="/analysis" :arrow="true">Begin your reading</AppButton>
           </div>
 
         </section>
@@ -642,7 +637,7 @@ function toggleInsight(date: string) {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 80) return 'var(--color-gold)'
+  if (score >= 80) return 'var(--accent-gold)'
   if (score >= 60) return 'rgba(200, 150, 50, 0.9)'
   return 'rgba(180, 80, 80, 0.9)'
 }
@@ -723,7 +718,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 /* ── Loading / auth states ── */
 .account-state-page {
   min-height: 100vh;
-  background: var(--color-bone);
+  background: var(--surface-base);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -737,7 +732,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   max-width: 480px;
   margin: 0 auto;
   padding: clamp(32px, 5vw, 56px) clamp(24px, 4vw, 40px);
-  background: var(--color-bone);
+  background: var(--surface-base);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -745,35 +740,35 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .auth-card__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
 .auth-card__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(36px, 7vw, 56px);
   line-height: 1.0;
   letter-spacing: -0.03em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 20px;
 }
 
 .auth-card__body {
   font-size: 15px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   line-height: 1.65;
   margin: 0 0 24px;
 }
 
 .field-label {
   display: block;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 8px;
 }
 
@@ -781,11 +776,11 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
   padding: 8px 0;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 18px;
-  color: var(--color-ink);
+  color: var(--text-primary);
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s;
@@ -793,22 +788,22 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .editorial-input:focus {
-  border-bottom-color: var(--color-ink-mid);
+  border-bottom-color: var(--text-secondary);
 }
 
 .editorial-input::placeholder {
-  color: var(--color-ink-ghost);
+  color: var(--border-subtle);
 }
 
 .auth-submit {
-  background: var(--color-ink);
-  color: var(--color-bone);
+  background: var(--text-primary);
+  color: var(--surface-base);
   border: none;
   padding: 14px 28px;
   font-size: 11px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -844,7 +839,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   font-size: 13px;
   font-family: inherit;
   padding: 0;
@@ -861,14 +856,14 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 /* ── Authenticated page shell ── */
 .account-page {
   min-height: 100vh;
-  background: var(--color-bone);
+  background: var(--surface-base);
 }
 
 .account-layout {
   display: grid;
   grid-template-columns: 240px 1fr;
   min-height: calc(100vh - 57px);
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -882,7 +877,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 /* ── Sidebar ── */
 .account-sidebar {
   padding: 40px 32px;
-  border-right: 1px solid var(--color-ink-ghost);
+  border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -892,7 +887,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   .account-sidebar {
     padding: 24px 20px;
     border-right: none;
-    border-bottom: 1px solid var(--color-ink-ghost);
+    border-bottom: 1px solid var(--border-subtle);
   }
 }
 
@@ -901,15 +896,15 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .account-sidebar__name {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 400;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 4px;
 }
 
 .account-sidebar__email {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   word-break: break-all;
 }
 
@@ -953,21 +948,21 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   font-size: 10px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   transition: color 0.15s, background 0.15s;
   border-radius: 2px;
 }
 
 .account-nav__item:hover {
-  color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.04);
+  color: var(--text-primary);
+  background: var(--border-faint);
 }
 
 .account-nav__item--active {
-  color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.06);
+  color: var(--text-primary);
+  background: var(--border-subtle);
 }
 
 .account-signout {
@@ -979,9 +974,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   font-size: 10px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   transition: color 0.15s;
   margin-top: 8px;
 }
@@ -997,19 +992,19 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .account-section__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(32px, 6vw, 52px);
   line-height: 1.0;
   letter-spacing: -0.03em;
   margin: 0 0 12px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .account-section__desc {
   font-size: 15px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0 0 8px;
 }
@@ -1023,7 +1018,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .account-section__empty {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 24px;
   display: block;
 }
@@ -1034,10 +1029,10 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   padding: 16px 0;
 }
 
@@ -1051,7 +1046,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--color-ink-mid);
+  background: var(--text-secondary);
   animation: account-pulse 1.4s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -1062,29 +1057,29 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: center;
   justify-content: space-between;
   padding: 16px 0;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
   gap: 16px;
   flex-wrap: wrap;
 }
 
 .data-row:first-of-type {
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .data-row__label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   flex-shrink: 0;
 }
 
 .data-row__value {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 400;
-  color: var(--color-ink);
+  color: var(--text-primary);
   text-align: right;
 }
 
@@ -1101,31 +1096,31 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border: 1px solid var(--color-ink-ghost);
-  font-family: 'Hanken Grotesk', sans-serif;
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-sans);
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
 .status-badge--active {
-  border-color: var(--color-gold);
-  color: var(--color-gold);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
 }
 
 .status-badge--inactive {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 /* ── Plan includes ── */
 .plan-includes-block {
   margin: 28px 0;
   padding: 24px;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
 }
 
 .plan-includes-block__label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 16px;
   display: block;
 }
@@ -1141,7 +1136,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 
 .plan-includes-list li {
   font-size: 14px;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1149,7 +1144,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 
 .plan-includes-list li::before {
   content: '✦';
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 10px;
   flex-shrink: 0;
 }
@@ -1163,11 +1158,11 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1183,22 +1178,22 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .cancel-confirm__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
 }
 
 .cancel-confirm__headline {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 24px;
   font-weight: 400;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 16px;
 }
 
 .cancel-confirm__body {
   font-size: 15px;
   line-height: 1.65;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin-bottom: 24px;
 }
 
@@ -1207,7 +1202,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .cancel-reason__label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   display: block;
   margin-bottom: 12px;
 }
@@ -1220,27 +1215,27 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 
 .cancel-reason__option {
   background: none;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   padding: 8px 14px;
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   transition: all 0.15s;
 }
 
 .cancel-reason__option:hover {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .cancel-reason__option--selected {
-  border-color: var(--color-ink);
-  color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.05);
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--border-subtle);
 }
 
 .cancel-confirm__actions {
@@ -1258,7 +1253,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   font-size: 10px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   padding: 0;
   text-decoration: underline;
@@ -1278,10 +1273,10 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .cancel-done__body {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 400;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 12px 0 0;
 }
 
@@ -1297,12 +1292,12 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: center;
   justify-content: space-between;
   padding: 14px 0;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
   gap: 16px;
 }
 
 .reading-card:first-child {
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .reading-card__info {
@@ -1311,9 +1306,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .reading-card__title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: 17px;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -1321,38 +1316,38 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .reading-card__date {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0;
 }
 
 .reading-card__view {
   background: none;
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   padding: 6px 14px;
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   white-space: nowrap;
   flex-shrink: 0;
   transition: all 0.15s;
 }
 
 .reading-card__view:hover {
-  color: var(--color-ink);
-  border-color: var(--color-ink-mid);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
 }
 
 /* ── Insight expandable rows ── */
 .insight-row {
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .insight-row:first-of-type {
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .insight-row__header {
@@ -1380,7 +1375,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .insight-row__toggle {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 16px;
   flex-shrink: 0;
   width: 20px;
@@ -1408,7 +1403,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   align-items: baseline;
   gap: 10px;
   padding: 12px 0;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .insight-sign-section-row:first-child {
@@ -1417,32 +1412,32 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 .insight-section-label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 .insight-section-text {
   font-size: 13px;
   line-height: 1.65;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 .insight-row__text {
   font-size: 15px;
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 0;
 }
 
 .insight-row__reflection {
   padding: 16px 20px;
-  border-left: 2px solid var(--color-gold);
+  border-left: 2px solid var(--accent-gold);
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .insight-row__reflection-label {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 10px;
 }
 
@@ -1450,7 +1445,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   font-size: 15px;
   font-style: italic;
   line-height: 1.65;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -1472,9 +1467,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
-  background: var(--color-ink);
-  color: var(--color-bone);
-  font-family: 'Hanken Grotesk', sans-serif;
+  background: var(--text-primary);
+  color: var(--surface-base);
+  font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;

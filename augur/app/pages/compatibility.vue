@@ -1,51 +1,55 @@
 <template>
-  <!-- ── Loading ── -->
-  <div v-if="isLoading" class="compat-state-page" aria-live="polite">
-    <div class="compat-state-inner">
-      <PhoenixLoader :size="72" />
-      <p class="label-caps compat-state-brand">Omenora</p>
-      <p class="annotation compat-state-msg">{{ t('analyzingCompat') }}</p>
-    </div>
-  </div>
+  <!-- ── Atmospheric page root — shared by all states ── -->
+  <div class="compat-page">
 
-  <!-- ── Error (post-payment path) ── -->
-  <div v-else-if="hasError && !isPreviewMode" class="compat-state-page">
-    <div class="compat-state-inner">
-      <PhoenixLoader :size="72" />
-      <p class="label-caps compat-state-brand">Omenora</p>
-      <p class="annotation compat-state-msg">{{ t('somethingWrong') }}</p>
-    </div>
-  </div>
+    <!-- Atmospheric background layers (same pattern as compatibility-quiz.vue) -->
+    <div class="compat-page__bg-image" aria-hidden="true" />
+    <div class="compat-page__bg-overlay" aria-hidden="true" />
+    <div class="page-grain" aria-hidden="true" />
 
-  <!-- ── Session expired (preview path, no store data) ── -->
-  <div v-else-if="isPreviewMode && !previewData" class="compat-state-page">
-    <div class="compat-state-inner">
-      <p class="label-caps compat-state-brand">Omenora</p>
-      <p class="annotation compat-state-msg" style="max-width: 280px;">{{ t('compatSessionExpired') }}</p>
-      <CTAButton :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</CTAButton>
+    <!-- ── Loading ── -->
+    <LoaderBar :active="isLoading" :messages="compatLoadingMessages" :interval="1200" />
+
+    <!-- ── Error (post-payment path) ── -->
+    <div v-if="hasError && !isPreviewMode" class="compat-state-layer">
+      <AppCard variant="glass" :hoverable="false" class="compat-state-card">
+        <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
+        <AppCaption as="p" class="compat-state-msg">{{ t('somethingWrong') }}</AppCaption>
+        <AppButton variant="primary" :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</AppButton>
+      </AppCard>
     </div>
-  </div>
+
+    <!-- ── Session expired (preview path, no store data) ── -->
+    <div v-else-if="isPreviewMode && !previewData" class="compat-state-layer">
+      <AppCard variant="glass" :hoverable="false" class="compat-state-card">
+        <AppEyebrow class="compat-state-brand">Omenora</AppEyebrow>
+        <AppCaption as="p" class="compat-state-msg" style="max-width: 280px;">{{ t('compatSessionExpired') }}</AppCaption>
+        <AppButton variant="primary" :arrow="true" @click="navigateTo('/compatibility-quiz')">{{ t('compatRestartQuiz') }}</AppButton>
+      </AppCard>
+    </div>
 
   <!-- ── CASE A: Full post-payment report ── -->
   <div v-else-if="!isPreviewMode && compatibility" class="compat-full-page">
 
     <AppHeader>
       <template #action>
-        <span class="label-caps compat-full-page__badge">{{ t('compatReading') }}</span>
+        <AppEyebrow as="span" class="compat-full-page__badge">{{ t('compatReading') }}</AppEyebrow>
       </template>
     </AppHeader>
 
+    <main>
+
     <!-- Report masthead -->
     <div class="compat-masthead">
-      <p class="label-caps compat-masthead__kicker">{{ t('destinyCompat') }}</p>
-      <h1 class="compat-masthead__names font-display-italic">
+      <AppEyebrow class="compat-masthead__kicker">{{ t('destinyCompat') }}</AppEyebrow>
+      <AppHeadline as="h1" class="compat-masthead__names">
         {{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}
-      </h1>
-      <p class="compat-masthead__score font-serif" :style="{ color: scoreColor }">
+      </AppHeadline>
+      <AppSubhead as="p" variant="strong" class="compat-masthead__score" :style="{ color: scoreColor }">
         {{ compatibility.compatibilityScore }}%
-      </p>
+      </AppSubhead>
       <div class="editorial-rule" />
-      <p class="compat-masthead__title font-display-italic">{{ compatibility.compatibilityTitle }}</p>
+      <AppHeadline as="p" class="compat-masthead__title">{{ compatibility.compatibilityTitle }}</AppHeadline>
     </div>
 
     <!-- All 7 sections (full read) -->
@@ -57,12 +61,12 @@
         :class="{ 'report-section--last': idx === SECTION_ORDER.length - 1 }"
       >
         <div class="report-section__header">
-          <span class="report-section__num label-caps">{{ String(idx + 1).padStart(2, '0') }}</span>
+          <AppEyebrow as="span" class="report-section__num">{{ String(idx + 1).padStart(2, '0') }}</AppEyebrow>
           <div class="report-section__rule" />
         </div>
-        <h2 class="report-section__heading font-display-italic">
+        <AppHeadline as="h2" class="report-section__heading">
           {{ compatibility.sections[key]?.title }}
-        </h2>
+        </AppHeadline>
         <div v-if="key === 'advice'" class="advice-block">
           <p class="report-section__body">{{ compatibility.sections[key]?.content }}</p>
         </div>
@@ -75,143 +79,146 @@
 
       <div v-if="userBirthChart" class="compat-bc-section">
         <div class="report-section__header">
-          <span class="report-section__num label-caps">❖</span>
+          <AppEyebrow as="span" class="report-section__num">❖</AppEyebrow>
           <div class="report-section__rule" />
         </div>
-        <p class="label-caps compat-bc-section__person">{{ store.firstName || 'You' }}'s Birth Chart</p>
-        <h2 class="report-section__heading font-display-italic">{{ userBirthChart.chartTitle }}</h2>
+        <AppEyebrow class="compat-bc-section__person">{{ store.firstName || 'You' }}'s Birth Chart</AppEyebrow>
+        <AppHeadline as="h2" class="report-section__heading">{{ userBirthChart.chartTitle }}</AppHeadline>
         <div class="birth-chart-signs-grid">
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Rising</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.risingSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Rising</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.risingSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Sun</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.sunSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Sun</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.sunSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Moon</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.moonSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Moon</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.moonSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Dominant</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.dominantPlanet }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Dominant</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.dominantPlanet }}</AppSubhead>
           </div>
           <div v-if="userBirthChart.powerHouse" class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Power House</p>
-            <p class="bc-sign-cell__value font-serif">{{ userBirthChart.powerHouse }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Power House</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ userBirthChart.powerHouse }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__body">{{ userBirthChart.reading }}</p>
         <div v-if="userBirthChart.forecast2026" class="bc-forecast-box">
-          <p class="label-caps bc-forecast-box__label">2026 Planetary Forecast</p>
+          <AppEyebrow class="bc-forecast-box__label">2026 Planetary Forecast</AppEyebrow>
           <p class="bc-forecast-box__text">{{ userBirthChart.forecast2026 }}</p>
         </div>
-        <p v-if="userNoonFallback" class="annotation compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</p>
+        <AppCaption as="p" v-if="userNoonFallback" class="compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</AppCaption>
       </div>
 
       <div v-if="partnerBirthChart" class="compat-bc-section">
         <div class="report-section__header">
-          <span class="report-section__num label-caps">❖</span>
+          <AppEyebrow as="span" class="report-section__num">❖</AppEyebrow>
           <div class="report-section__rule" />
         </div>
-        <p class="label-caps compat-bc-section__person">{{ store.partnerName || 'Them' }}'s Birth Chart</p>
-        <h2 class="report-section__heading font-display-italic">{{ partnerBirthChart.chartTitle }}</h2>
+        <AppEyebrow class="compat-bc-section__person">{{ store.partnerName || 'Them' }}'s Birth Chart</AppEyebrow>
+        <AppHeadline as="h2" class="report-section__heading">{{ partnerBirthChart.chartTitle }}</AppHeadline>
         <div class="birth-chart-signs-grid">
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Rising</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.risingSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Rising</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.risingSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Sun</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.sunSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Sun</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.sunSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Moon</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.moonSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Moon</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.moonSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Dominant</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.dominantPlanet }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Dominant</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.dominantPlanet }}</AppSubhead>
           </div>
           <div v-if="partnerBirthChart.powerHouse" class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Power House</p>
-            <p class="bc-sign-cell__value font-serif">{{ partnerBirthChart.powerHouse }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Power House</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ partnerBirthChart.powerHouse }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__body">{{ partnerBirthChart.reading }}</p>
         <div v-if="partnerBirthChart.forecast2026" class="bc-forecast-box">
-          <p class="label-caps bc-forecast-box__label">2026 Planetary Forecast</p>
+          <AppEyebrow class="bc-forecast-box__label">2026 Planetary Forecast</AppEyebrow>
           <p class="bc-forecast-box__text">{{ partnerBirthChart.forecast2026 }}</p>
         </div>
-        <p v-if="partnerNoonFallback" class="annotation compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</p>
+        <AppCaption as="p" v-if="partnerNoonFallback" class="compat-bc-noon-note">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</AppCaption>
       </div>
 
     </div>
 
     <!-- Calculation receipt -->
     <div v-if="compatibility.calculationReceipt" class="calc-receipt calc-receipt--full">
-      <p class="label-caps calc-receipt__header">{{ t('compatHowCalculated') }}</p>
+      <AppEyebrow class="calc-receipt__header">{{ t('compatHowCalculated') }}</AppEyebrow>
       <div class="calc-receipt__rows">
         <div class="calc-receipt__row">
-          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person1?.name || t('quizYouLabel') }}</span>
-          <span class="annotation calc-receipt__detail">
+          <AppCaption class="calc-receipt__person">{{ compatibility.calculationReceipt.person1?.name || t('quizYouLabel') }}</AppCaption>
+          <AppCaption class="calc-receipt__detail">
             {{ compatibility.calculationReceipt.person1?.sunSign }}
             · {{ compatibility.calculationReceipt.person1?.element }}
             · {{ t('compatLifePathLabel') }} {{ compatibility.calculationReceipt.person1?.lifePathNumber }}
             <template v-if="compatibility.calculationReceipt.person1?.archetype">
               · {{ compatibility.calculationReceipt.person1.archetype }}
             </template>
-          </span>
+          </AppCaption>
         </div>
         <div class="calc-receipt__row">
-          <span class="annotation calc-receipt__person">{{ compatibility.calculationReceipt.person2?.name || t('quizThemLabel') }}</span>
-          <span class="annotation calc-receipt__detail">
+          <AppCaption class="calc-receipt__person">{{ compatibility.calculationReceipt.person2?.name || t('quizThemLabel') }}</AppCaption>
+          <AppCaption class="calc-receipt__detail">
             {{ compatibility.calculationReceipt.person2?.sunSign }}
             · {{ compatibility.calculationReceipt.person2?.element }}
             · {{ t('compatLifePathLabel') }} {{ compatibility.calculationReceipt.person2?.lifePathNumber }}
-          </span>
+          </AppCaption>
         </div>
         <div v-for="(note, i) in compatibility.calculationReceipt.synastryNotes" :key="i" class="calc-receipt__row calc-receipt__row--note">
-          <span class="annotation calc-receipt__detail">{{ note }}</span>
+          <AppCaption class="calc-receipt__detail">{{ note }}</AppCaption>
         </div>
       </div>
-      <p class="annotation calc-receipt__meta">{{ compatibility.calculationReceipt.tradition }} · {{ compatibility.calculationReceipt.calculationSource }}</p>
+      <AppCaption as="p" class="calc-receipt__meta">{{ compatibility.calculationReceipt.tradition }} · {{ compatibility.calculationReceipt.calculationSource }}</AppCaption>
     </div>
 
     <!-- Trustpilot widget -->
     <div class="compat-tp-block">
-      <p class="annotation compat-tp-label">Rated Excellent by our readers</p>
+      <AppCaption as="p" class="compat-tp-label">Rated Excellent by our readers</AppCaption>
       <TrustpilotWidget />
     </div>
 
     <!-- Share / download -->
     <div class="compat-share">
-      <h2 class="compat-share__heading font-display-italic">{{ t('shareYourReading') }}</h2>
-      <p class="compat-share__sub annotation">
+      <AppHeadline as="h2" class="compat-share__heading">{{ t('shareYourReading') }}</AppHeadline>
+      <AppCaption as="p" class="compat-share__sub">
         {{ t('shareCompatSubtitle').replace('{name}', store.partnerName || 'them') }}
-      </p>
+      </AppCaption>
 
       <div class="compat-share-card">
-        <p class="label-caps compat-share-card__kicker">{{ t('compatShareCardKicker') }}</p>
-        <p class="compat-share-card__names font-serif">{{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}</p>
-        <p class="compat-share-card__score font-serif" :style="{ color: scoreColor }">
+        <AppEyebrow class="compat-share-card__kicker">{{ t('compatShareCardKicker') }}</AppEyebrow>
+        <AppSubhead as="p" variant="strong" class="compat-share-card__names">{{ store.firstName || 'You' }} &amp; {{ store.partnerName || 'Them' }}</AppSubhead>
+        <AppSubhead as="p" variant="strong" class="compat-share-card__score" :style="{ color: scoreColor }">
           {{ compatibility.compatibilityScore }}%
-        </p>
+        </AppSubhead>
         <p class="compat-share-card__title">{{ compatibility.compatibilityTitle }}</p>
-        <p class="label-caps compat-share-card__domain">omenora.com</p>
+        <AppEyebrow class="compat-share-card__domain">omenora.com</AppEyebrow>
       </div>
 
-      <CTAButton
+      <AppButton
+        variant="primary"
         :arrow="false"
         :disabled="isDownloadingCard"
         class="compat-download-btn"
         @click="downloadCompatCard"
       >
         {{ isDownloadingCard ? t('compatDownloadGenerating') : t('compatDownloadCta') }}
-      </CTAButton>
-      <p v-if="cardDownloadError" class="annotation compat-download-error">{{ cardDownloadError }}</p>
+      </AppButton>
+      <AppCaption as="p" v-if="cardDownloadError" class="compat-download-error">{{ cardDownloadError }}</AppCaption>
     </div>
+
+    </main>
 
     <footer class="compat-footer">
       <nav aria-label="Legal">
@@ -227,39 +234,41 @@
 
     <AppHeader>
       <template #action>
-        <span class="label-caps compat-preview__badge">{{ t('compatFreeBadge') }}</span>
+        <AppEyebrow as="span" class="compat-preview__badge">{{ t('compatFreeBadge') }}</AppEyebrow>
       </template>
     </AppHeader>
 
+    <main>
+
     <!-- Canceled banner (CASE C) -->
     <div v-if="isCanceled" class="compat-canceled" role="status">
-      <p class="annotation">{{ t('compatCanceled') }}</p>
+      <AppCaption as="p">{{ t('compatCanceled') }}</AppCaption>
     </div>
 
     <!-- Preview masthead -->
     <div class="compat-masthead compat-masthead--preview">
-      <p class="label-caps compat-masthead__kicker">{{ t('compatDestinyLabel') }}</p>
-      <h1 class="compat-masthead__names font-display-italic">
+      <AppEyebrow class="compat-masthead__kicker">{{ t('compatDestinyLabel') }}</AppEyebrow>
+      <AppHeadline as="h1" class="compat-masthead__names">
         {{ displayMyName }} &amp; {{ displayTheirName }}
-      </h1>
-      <p class="compat-masthead__score font-serif" :style="{ color: previewScoreColor }">
+      </AppHeadline>
+      <AppSubhead as="p" variant="strong" class="compat-masthead__score" :style="{ color: previewScoreColor }">
         {{ previewData.compatibilityScore }}%
-      </p>
+      </AppSubhead>
       <div class="editorial-rule" />
-      <p class="compat-masthead__title font-display-italic">{{ previewData.compatibilityTitle }}</p>
+      <AppHeadline as="p" class="compat-masthead__title">{{ previewData.compatibilityTitle }}</AppHeadline>
     </div>
 
     <!-- Challenge section (free hook) -->
     <div class="report-body">
       <div class="report-section report-section--challenge">
-        <p class="label-caps report-section__kicker">{{ t('compatChallengeKicker') }}</p>
+        <AppEyebrow class="report-section__kicker">{{ t('compatChallengeKicker') }}</AppEyebrow>
         <div class="report-section__header">
-          <span class="report-section__num label-caps">01</span>
+          <AppEyebrow as="span" class="report-section__num">01</AppEyebrow>
           <div class="report-section__rule" />
         </div>
-        <h2 class="report-section__heading font-display-italic">
+        <AppHeadline as="h2" class="report-section__heading">
           {{ previewData.sections?.challenge?.title }}
-        </h2>
+        </AppHeadline>
         <p class="report-section__body">{{ previewData.sections?.challenge?.content }}</p>
       </div>
     </div>
@@ -267,36 +276,36 @@
     <!-- Locked sections strip -->
     <div class="locked-strip">
       <div class="locked-strip__header">
-        <span class="label-caps locked-strip__label">{{ t('compatLockedLabel') }}</span>
+        <AppEyebrow as="span" class="locked-strip__label">{{ t('compatLockedLabel') }}</AppEyebrow>
       </div>
       <div class="locked-strip__cards">
         <div v-for="key in LOCKED_SECTIONS" :key="key" class="locked-card">
           <div class="locked-card__header">
             <span class="locked-card__icon">—</span>
-            <span class="locked-card__title annotation">
+            <AppCaption class="locked-card__title">
               {{ previewData.sections?.[key]?.title || LOCKED_FALLBACK_TITLES[key] }}
-            </span>
+            </AppCaption>
           </div>
-          <p class="locked-card__blur annotation">{{ LOCKED_PLACEHOLDER_TEXT[key] }}</p>
+          <AppCaption as="p" class="locked-card__blur">{{ LOCKED_PLACEHOLDER_TEXT[key] }}</AppCaption>
         </div>
       </div>
     </div>
 
     <!-- Calculation receipt -->
     <div class="calc-receipt">
-      <p class="label-caps calc-receipt__header">{{ t('compatHowCalculated') }}</p>
-      <p class="annotation calc-receipt__body">
+      <AppEyebrow class="calc-receipt__header">{{ t('compatHowCalculated') }}</AppEyebrow>
+      <AppCaption as="p" class="calc-receipt__body">
         {{ t('compatBornPrefix') }} {{ formatDob(store.dateOfBirth) }}{{ store.city ? t('compatBornIn') + store.city : '' }}
         · {{ t('compatBornPrefix') }} {{ formatDob(store.partnerDob) }}{{ store.partnerCity ? t('compatBornIn') + store.partnerCity : '' }}
-      </p>
-      <p class="annotation calc-receipt__meta">{{ t('compatCalcSource') }}</p>
+      </AppCaption>
+      <AppCaption as="p" class="calc-receipt__meta">{{ t('compatCalcSource') }}</AppCaption>
     </div>
 
     <!-- Trust line -->
-    <p class="compat-trust annotation">{{ t('compatTrustLine') }}</p>
+    <AppCaption as="p" class="compat-trust">{{ t('compatTrustLine') }}</AppCaption>
 
     <div class="compat-tp-block">
-      <p class="annotation compat-tp-label">Rated Excellent by our readers</p>
+      <AppCaption as="p" class="compat-tp-label">Rated Excellent by our readers</AppCaption>
       <TrustpilotWidget />
     </div>
 
@@ -331,13 +340,13 @@
             {{ isValidatingCompatPromo ? '…' : 'Apply' }}
           </button>
         </div>
-        <p v-if="compatPromoValidationResult && !compatPromoValidationResult.valid" class="compat-promo__msg compat-promo__msg--error annotation">
+        <AppCaption as="p" v-if="compatPromoValidationResult && !compatPromoValidationResult.valid" class="compat-promo__msg compat-promo__msg--error">
           {{ compatPromoValidationResult.message }}
-        </p>
+        </AppCaption>
       </template>
-      <p v-if="compatAppliedPromo" class="compat-promo__msg compat-promo__msg--success annotation">
+      <AppCaption as="p" v-if="compatAppliedPromo" class="compat-promo__msg compat-promo__msg--success">
         ✦ Full access unlocked
-      </p>
+      </AppCaption>
     </div>
 
     <!-- Free-access block (replaces paywall when full_access code applied) -->
@@ -354,10 +363,11 @@
           class="editorial-input"
         />
       </div>
-      <p v-if="compatPromoErrorMessage" class="compat-promo__msg compat-promo__msg--error annotation" role="alert">
+      <AppCaption as="p" v-if="compatPromoErrorMessage" class="compat-promo__msg compat-promo__msg--error" role="alert">
         {{ compatPromoErrorMessage }}
-      </p>
-      <CTAButton
+      </AppCaption>
+      <AppButton
+        variant="primary"
         :arrow="false"
         :disabled="isApplyingCompatAccess || !emailInput"
         :class="{ 'pay-card__btn--processing': isApplyingCompatAccess }"
@@ -365,62 +375,44 @@
       >
         <span v-if="isApplyingCompatAccess">{{ t('compatProcessing') }}</span>
         <span v-else>Get Free Access →</span>
-      </CTAButton>
+      </AppButton>
     </div>
 
-    <!-- Paywall block -->
+    <!-- Paywall block (single $4.99 IAP) -->
     <div v-if="!compatAppliedPromo" class="paywall">
-      <h2 class="paywall__heading font-display-italic">{{ t('compatUnlockHeading') }}</h2>
-      <p class="paywall__sub annotation">{{ t('compatUnlockSub') }}</p>
+      <AppHeadline as="h2" class="paywall__heading">{{ t('compatUnlockHeading') }}</AppHeadline>
 
-      <div v-if="checkoutError" class="compat-checkout-error annotation" role="alert">
+      <AppCaption as="div" v-if="checkoutError" class="compat-checkout-error" role="alert">
         {{ checkoutError }}
-      </div>
+      </AppCaption>
 
-      <!-- Urgency line -->
-      <p class="paywall__urgency annotation">Your reading is ready — unlock it before this session expires.</p>
+      <!-- Single IAP card -->
+      <SectionPaywallCard
+        :items="compatPaywallItems"
+        :price-label="t('compatIAPLabel')"
+        :price-value="t('compatIAPPrice')"
+        :trust-items="compatPaywallTrust"
+        :cta-label="isProcessing ? t('compatProcessing') : t('compatIAPCta')"
+        class="compat-paywall-card"
+      >
+        <template #cta>
+          <AppButton
+            variant="primary"
+            :full="true"
+            :disabled="isProcessing || !isEmailValid"
+            :class="{ 'pay-card__btn--processing': isProcessing }"
+            @click="handleCheckout()"
+          >
+            <span v-if="isProcessing">{{ t('compatProcessing') }}</span>
+            <span v-else>{{ t('compatIAPCta') }}</span>
+          </AppButton>
+        </template>
+      </SectionPaywallCard>
 
-      <!-- Option 1: With Charts (featured — primary) -->
-      <div class="pay-card pay-card--primary">
-        <span class="pay-card__badge label-caps">❖ {{ t('compatWithChartsHeader') }}</span>
-        <p class="pay-card__name">{{ t('compatWithChartsName') }}</p>
-        <p class="pay-card__price font-serif">{{ t('compatWithChartsPrice') }}<span class="pay-card__freq annotation"> {{ t('compatWithChartsFreq') }}</span></p>
-        <ul class="pay-card__bullets annotation">
-          <li>{{ t('compatWithChartsBullet1') }}</li>
-          <li>{{ t('compatWithChartsBullet2') }}</li>
-          <li>{{ t('compatWithChartsBullet3') }}</li>
-          <li>{{ t('compatWithChartsBullet4') }}</li>
-        </ul>
-        <CTAButton
-          :arrow="false"
-          :disabled="isProcessing"
-          class="pay-card__btn"
-          :class="{ 'pay-card__btn--processing': isProcessing && activeTier === 'with_charts' }"
-          @click="handleCheckout('with_charts')"
-        >
-          <span v-if="isProcessing && activeTier === 'with_charts'">{{ t('compatProcessing') }}</span>
-          <span v-else>{{ t('compatWithChartsCta') }}</span>
-        </CTAButton>
-      </div>
-
-      <!-- Option 2: Single reading only -->
-      <div class="pay-card pay-card--secondary">
-        <p class="pay-card__name">{{ t('compatSingleName') }}</p>
-        <p class="pay-card__price font-serif">{{ t('compatSinglePrice') }}<span class="pay-card__freq annotation"> {{ t('compatSingleFreq') }}</span></p>
-        <ul class="pay-card__bullets annotation">
-          <li>{{ t('compatSingleBullet1') }}</li>
-          <li>{{ t('compatSingleBullet2') }}</li>
-          <li>{{ t('compatSingleBullet3') }}</li>
-        </ul>
-        <button
-          class="pay-card__btn--secondary"
-          :disabled="isProcessing"
-          @click="handleCheckout('single')"
-        >
-          <span v-if="isProcessing && activeTier === 'single'">{{ t('compatProcessing') }}</span>
-          <span v-else>{{ t('compatSingleCta') }}</span>
-        </button>
-      </div>
+      <!-- Upsell link to Founding Member -->
+      <NuxtLink to="/founding" class="paywall__premium-link annotation">
+        {{ t('compatOrPremium') }}
+      </NuxtLink>
 
       <!-- Name + email capture -->
       <div class="capture-block">
@@ -461,12 +453,14 @@
 
       <!-- Guarantee -->
       <div class="guarantee">
-        <p class="annotation guarantee__text">
+        <AppCaption as="p" class="guarantee__text">
           {{ t('compatGuarantee') }}
-        </p>
+        </AppCaption>
       </div>
-      <p class="label-caps compat-trust-secure">{{ t('compatSecurePayment') }}</p>
+      <AppEyebrow class="compat-trust-secure">{{ t('compatSecurePayment') }}</AppEyebrow>
     </div>
+
+    </main>
 
     <footer class="compat-footer">
       <nav aria-label="Legal">
@@ -476,16 +470,21 @@
       </nav>
     </footer>
   </div>
+
+  </div><!-- /.compat-page -->
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useAnalysisStore } from '~/stores/analysisStore'
+import type { CompatibilityQuizAnswers } from '~/stores/analysisStore'
 import { useLanguage } from '~/composables/useLanguage'
 import { useAuth } from '~/composables/useAuth'
 import { useClarity } from '~/composables/useClarity'
+import SectionPaywallCard from '~/components/sections/SectionPaywallCard.vue'
 
 useSeoMeta({ title: 'Your Love Compatibility Reading', robots: 'noindex, nofollow' })
+useHead({ link: [{ rel: 'canonical', href: 'https://omenora.com/compatibility' }] })
 
 const store = useAnalysisStore()
 const route = useRoute()
@@ -532,6 +531,21 @@ const isCanceled = computed(() => route.query.canceled === '1')
 const isLoading  = ref(false)
 const hasError   = ref(false)
 const compatibility = ref<any>(null)
+
+// ── Loading messages (mirrors compatibility-quiz.vue pattern) ─────────────────
+const compatLoadingMessages = [
+  'Reading the charts…',
+  'Mapping the connection…',
+  'Finding what matters…',
+  'Almost there…',
+]
+// ── Pay card items (SectionPaywallCard) ───────────────────────────────────────
+const compatPaywallItems = computed(() => [
+  { key: 'What you unlock', value: '7 compatibility sections' },
+  { key: 'Sections', value: 'Bond · Strength · Challenge · Communication · Dynamics · Forecast · Advice' },
+  { key: 'Format', value: 'Full written reading' },
+])
+const compatPaywallTrust = ['Secure checkout', '14-day refund', 'Stripe protected']
 
 // ── T2 birth chart data (compat with_charts tier) ─────────────────────────────
 const userBirthChart    = ref<any>(null)
@@ -733,29 +747,23 @@ async function applyCompatFreeAccess() {
 
 // ── Checkout ──────────────────────────────────────────────────────────────────
 const isProcessing  = ref(false)
-const activeTier    = ref<'single' | 'with_charts' | null>(null)
 const checkoutError = ref('')
 
-async function handleCheckout(tier: 'single' | 'with_charts') {
+async function handleCheckout() {
   if (isProcessing.value) return
-
-  const tierValue = tier === 'with_charts' ? 14.99 : 9.99
-  const tierLabel = tier === 'with_charts' ? 'Compatibility Reading + Birth Charts' : 'Compatibility Reading'
 
   try {
     $trackInitiateCheckout?.({
-      value:        tierValue,
+      value:        4.99,
       currency:     'USD',
-      content_name: tierLabel,
+      content_name: 'Compatibility Reading',
     })
   } catch { /* never block UI */ }
   trackEvent('initiate_checkout', {
-    tier,
-    value: tierValue,
+    value: 4.99,
   })
 
   isProcessing.value  = true
-  activeTier.value    = tier
   checkoutError.value = ''
 
   const email       = emailInput.value.trim()   || store.email       || ''
@@ -775,35 +783,43 @@ async function handleCheckout(tier: 'single' | 'with_charts') {
       {
         method: 'POST',
         body: {
-          tier,
           firstName,
           partnerName,
           dateOfBirth: store.dateOfBirth,
           partnerDob:  store.partnerDob,
           partnerCity:  store.partnerCity,
-          city:         store.city,
-          timeOfBirth:  store.timeOfBirth,
+          city:              store.city,
+          timeOfBirth:       store.timeOfBirth        || undefined,
+          partnerTimeOfBirth: undefined,
           email,
-          tempId:      store.tempId || `compat_${Date.now()}`,
-          language:    store.language || 'en',
-          origin:      window.location.origin,
-          utmCreative: utmParams.utm_creative || '',
-          utmSource:   utmParams.utm_source   || '',
-          utmCampaign: utmParams.utm_campaign  || '',
-          utmMedium:   utmParams.utm_medium    || '',
+          tempId:            store.tempId || `compat_${Date.now()}`,
+          language:          store.language || 'en',
+          archetype:         store.archetype          || undefined,
+          element:           store.report?.element    || undefined,
+          lifePathNumber:    store.lifePathNumber      || undefined,
+          origin:            window.location.origin,
+          quizAnswers:       store.compatibilityQuizAnswers,
+          cityLat:           store.cityLat        ?? undefined,
+          cityLng:           store.cityLng        ?? undefined,
+          partnerCityLat:    store.partnerCityLat ?? undefined,
+          partnerCityLng:    store.partnerCityLng ?? undefined,
+          utmCreative:       utmParams.utm_creative || '',
+          utmSource:         utmParams.utm_source   || '',
+          utmCampaign:       utmParams.utm_campaign  || '',
+          utmMedium:         utmParams.utm_medium    || '',
         },
       },
     )
     if (url) window.location.href = url
   } catch {
     isProcessing.value  = false
-    activeTier.value    = null
     checkoutError.value = 'Payment service unavailable. Please try again.'
-    trackEvent('checkout_failed', { tier, error: 'api_error' })
+    trackEvent('checkout_failed', { error: 'api_error' })
   }
 }
 
 // ── onMounted: routing branches ───────────────────────────────────────────────
+
 onMounted(async () => {
   await nextTick() // ensure route query is fully settled after navigation
 
@@ -928,6 +944,37 @@ onMounted(async () => {
       if (!store.partnerDob && meta.partnerDob)   store.setPartnerData({ name: store.partnerName, dob: meta.partnerDob, city: meta.partnerCity || store.partnerCity })
       if (!store.tempId)       store.setTempId(meta.tempId || '')
       if (!store.languageManualOverride && meta.language) store.setLanguage(meta.language)
+      if (!store.archetype && meta.archetype) store.archetype = meta.archetype
+
+      // ── New quiz answer hydration ─────────────────────────────────────
+      const newQuizKeys: (keyof CompatibilityQuizAnswers)[] = [
+        'q1_intent', 'q2_feeling', 'q3_duration', 'q4_approach',
+        'q5_communication', 'q6_closeness', 'q7_conflict',
+        'q8_intimacy', 'q9_value', 'q14_descriptor', 'q15_chapter',
+        'q16_season', 'q17_pattern', 'q18_trust_texture',
+        'q19_curiosity', 'q23_time_of_day', 'q24_helpfulness',
+        'q25_agency',
+      ]
+      for (const key of newQuizKeys) {
+        if (!store.compatibilityQuizAnswers[key] && meta[key]) {
+          store.setCompatibilityQuizAnswer(key, meta[key] as any)
+        }
+      }
+
+      // ── Partner lat/lng hydration ────────────────────────────────
+      if (store.partnerCityLat == null && meta.partnerCityLat) {
+        store.partnerCityLat = parseFloat(meta.partnerCityLat)
+      }
+      if (store.partnerCityLng == null && meta.partnerCityLng) {
+        store.partnerCityLng = parseFloat(meta.partnerCityLng)
+      }
+
+      // ── timeOfBirth hydration ────────────────────────────────────
+      if (!store.timeOfBirth && meta.timeOfBirth) {
+        store.timeOfBirth = meta.timeOfBirth
+      }
+      // partnerTimeOfBirth is NOT in the store — passed directly to generation call below
+      const metaPartnerTimeOfBirth = meta.partnerTimeOfBirth || undefined
 
       const { compatibility: data } = await $fetch<{
         success: boolean
@@ -937,15 +984,22 @@ onMounted(async () => {
         body: {
           firstName:      store.firstName,
           dateOfBirth:    store.dateOfBirth || meta.dateOfBirth || '',
-          archetype:      store.archetype   || undefined,
-          element:        store.report?.element        || undefined,
-          lifePathNumber: store.lifePathNumber          || undefined,
+          archetype:      store.archetype   || meta.archetype   || undefined,
+          element:        store.report?.element        || meta.element        || undefined,
+          lifePathNumber: store.lifePathNumber          || (meta.lifePathNumber ? Number(meta.lifePathNumber) : undefined) || undefined,
           powerTraits:    store.report?.powerTraits     || undefined,
           partnerName:    store.partnerName,
-          partnerDob:     store.partnerDob,
-          partnerCity:    store.partnerCity,
-          language:       store.language,
-          previewMode:    false,
+          partnerDob:          store.partnerDob,
+          partnerCity:         store.partnerCity,
+          language:            store.language,
+          previewMode:         false,
+          quizAnswers:         store.compatibilityQuizAnswers,
+          timeOfBirth:         store.timeOfBirth || meta.timeOfBirth || undefined,
+          partnerTimeOfBirth:  metaPartnerTimeOfBirth,
+          cityLat:             store.cityLat              ?? (meta.cityLat        ? parseFloat(meta.cityLat)        : undefined),
+          cityLng:             store.cityLng              ?? (meta.cityLng        ? parseFloat(meta.cityLng)        : undefined),
+          partnerCityLat:      store.partnerCityLat       ?? (meta.partnerCityLat ? parseFloat(meta.partnerCityLat) : undefined),
+          partnerCityLng:      store.partnerCityLng       ?? (meta.partnerCityLng ? parseFloat(meta.partnerCityLng) : undefined),
         },
       })
 
@@ -1040,11 +1094,11 @@ onMounted(async () => {
         const pixelKey = `omenora_purchase_tracked_${sessionId}`
         if (!sessionStorage.getItem(pixelKey)) {
           sessionStorage.setItem(pixelKey, '1')
-          const purchaseValue = paymentData.amountTotal ?? 9.99
+          const purchaseValue = paymentData.amountTotal ?? 4.99
           $trackPurchase?.({
             value: purchaseValue,
             currency: 'USD',
-            content_name: meta.tier === 'with_charts' ? 'Compatibility Reading + Birth Charts' : 'Compatibility Reading',
+            content_name: 'Compatibility Reading',
           })
         }
       } catch { /* never block UI */ }
@@ -1074,220 +1128,355 @@ onMounted(async () => {
     return
   }
 
-  // CASE D — no recognised param → redirect
-  await navigateTo('/report')
+  // CASE D — no recognised param → redirect to quiz funnel
+  await navigateTo('/compatibility-quiz')
 })
 
 </script>
 
 <style scoped>
-/* ── Centered state pages (loading / error / expired) ── */
-.compat-state-page {
-  min-height: 100vh;
-  background: var(--color-bone);
+/* ════════════════════════════════════════════════════════════════
+   ATMOSPHERIC PAGE ROOT
+   Shared canvas for all states: loading, error, preview, full report.
+   Pattern mirrors compatibility-quiz.vue exactly.
+   ════════════════════════════════════════════════════════════════ */
+.compat-page {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--omn-bg-page);
+  color: var(--omn-text-primary);
+  overflow: hidden;
+}
+
+/* Bronze diagonal seam glow — identical geometry to compatibility-quiz */
+.compat-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(168, 125, 78, 0.08) 48%,
+    rgba(168, 125, 78, 0.15) 52%,
+    rgba(168, 125, 78, 0.08) 56%,
+    transparent 64%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+}
+
+/* Atmospheric background image — fixed, diagonal mask */
+.compat-page__bg-image {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url('/images/hero/Nebula-void.webp');
+  background-size: cover;
+  background-position: center 55%;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  filter: saturate(0.85) contrast(1.05);
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+/* Dark overlay — vignette for text legibility */
+.compat-page__bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(18, 18, 20, 0.92) 0%,
+      rgba(18, 18, 20, 0.55) 25%,
+      rgba(18, 18, 20, 0.10) 50%,
+      rgba(18, 18, 20, 0.50) 80%,
+      rgba(18, 18, 20, 0.90) 100%),
+    linear-gradient(168deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(168, 125, 78, 0.05) 50%,
+      transparent 60%,
+      transparent 100%);
+}
+
+/* Page grain texture — mirrors home/founding/quiz pages */
+.page-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: pageGrainShift 8s steps(1) infinite;
+}
+
+@keyframes pageGrainShift {
+  0%   { background-position:   0px   0px; }
+  12%  { background-position: -40px -20px; }
+  24%  { background-position:  20px -40px; }
+  36%  { background-position: -60px  10px; }
+  48%  { background-position:  30px  40px; }
+  60%  { background-position: -20px -50px; }
+  72%  { background-position:  50px  20px; }
+  84%  { background-position: -30px  60px; }
+  100% { background-position:   0px   0px; }
+}
+
+/* ── Centered state layer (error / session expired) ── */
+.compat-state-layer {
+  position: relative;
+  z-index: 3;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: var(--space-edge);
 }
 
-.compat-state-inner {
+.compat-state-card {
+  width: 100%;
+  max-width: 28rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-5);
   text-align: center;
-  padding: 0 clamp(20px, 5vw, 48px);
 }
 
 .compat-state-brand {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
+}
+
+/* ── Paywall card (SectionPaywallCard scoping) ── */
+.compat-paywall-card {
+  max-width: 480px;
+  margin-bottom: var(--space-4);
+}
+
+/* ── Step fade transition (matches quiz) ── */
+.step-fade-enter-active,
+.step-fade-leave-active {
+  transition:
+    opacity var(--omn-duration-base) var(--omn-ease),
+    transform var(--omn-duration-base) var(--omn-ease);
+}
+.step-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.step-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 .compat-state-msg {
-  color: var(--color-ink-faint);
-  max-width: 300px;
-  line-height: 1.6;
+  color: var(--omn-text-secondary);
+  max-width: 280px;
+  line-height: var(--leading-base);
 }
 
 /* ── Full report page ── */
 .compat-full-page {
-  min-height: 100vh;
-  background: var(--color-bone);
+  position: relative;
+  z-index: 3;
+  min-height: 100dvh;
 }
 
 .compat-full-page__badge {
-  color: var(--color-ink-faint);
-  font-size: 10px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
 }
 
 /* ── Preview page ── */
 .compat-preview-page {
-  min-height: 100vh;
-  background: var(--color-bone);
+  position: relative;
+  z-index: 3;
+  min-height: 100dvh;
 }
 
 .compat-preview__badge {
-  color: var(--color-ink-faint);
-  font-size: 10px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
 }
 
 /* ── Canceled banner ── */
 .compat-canceled {
-  border-top: 1px solid var(--color-ink-ghost);
-  padding: 14px clamp(20px, 5vw, 48px);
+  border-top: 1px solid var(--omn-border-subtle);
+  padding: var(--space-4) var(--space-edge);
   text-align: center;
-}
-
-.compat-canceled .annotation {
-  color: var(--color-ink-faint);
-  font-style: italic;
 }
 
 /* ── Masthead ── */
 .compat-masthead {
-  padding: clamp(48px, 8vw, 80px) clamp(20px, 5vw, 80px) clamp(40px, 6vw, 64px);
-  max-width: 1400px;
+  padding: var(--space-block) var(--space-edge) var(--space-content);
+  max-width: var(--width-bleed);
   margin: 0 auto;
 }
 
 .compat-masthead__kicker {
-  color: var(--color-ink-faint);
-  margin-bottom: 20px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-5);
 }
 
 .compat-masthead__names {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(36px, 8vw, 72px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  color: var(--color-ink);
-  margin: 0 0 24px;
+  font-size: clamp(var(--text-3xl), 8vw, var(--text-6xl));
+  line-height: var(--leading-3xl);
+  letter-spacing: var(--tracking-tight);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-6);
 }
 
 .compat-masthead__score {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(72px, 16vw, 120px);
-  font-weight: 300;
-  line-height: 1;
-  margin: 0 0 24px;
-  letter-spacing: -0.04em;
+  font-family: var(--omn-font-display);
+  font-size: clamp(var(--text-5xl), 16vw, var(--text-7xl));
+  font-weight: var(--weight-light);
+  line-height: var(--leading-7xl);
+  margin: 0 0 var(--space-6);
+  letter-spacing: var(--tracking-tight);
 }
 
 .editorial-rule {
-  width: 48px;
+  width: var(--space-12);
   height: 1px;
-  background: var(--color-ink-mid);
-  margin-bottom: 24px;
+  background: var(--omn-text-secondary);
+  margin-bottom: var(--space-6);
 }
 
 .compat-masthead__title {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(18px, 3vw, 24px);
-  line-height: 1.4;
-  color: var(--color-ink-mid);
+  font-size: clamp(var(--text-md), 3vw, var(--text-xl));
+  line-height: var(--leading-xl);
+  color: var(--omn-text-secondary);
   margin: 0;
 }
 
 /* ── Report body ── */
 .report-body {
-  max-width: 1400px;
-  padding: 0 clamp(20px, 5vw, 80px);
+  max-width: var(--width-bleed);
+  padding: 0 var(--space-edge);
   margin: 0 auto;
 }
 
 /* ── Report sections ── */
 .report-section {
-  padding: clamp(36px, 6vw, 56px) 0;
-  border-top: 1px solid var(--color-ink-ghost);
+  padding: var(--space-content) 0;
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .report-section--last {
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--omn-border-subtle);
 }
 
 .report-section__header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .report-section__num {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   flex-shrink: 0;
 }
 
 .report-section__rule {
   flex: 1;
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--omn-border-subtle);
 }
 
 .report-section__kicker {
-  color: var(--color-ink-faint);
-  margin-bottom: 16px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-4);
 }
 
 .report-section__heading {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(22px, 4vw, 32px);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: var(--color-ink);
-  margin: 0 0 24px;
+  font-size: clamp(var(--text-xl), 4vw, var(--text-2xl));
+  line-height: var(--leading-2xl);
+  letter-spacing: var(--tracking-snug);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-6);
 }
 
 .report-section__body {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(17px, 2.5vw, 20px);
-  font-weight: 300;
+  font-family: var(--omn-font-body);
+  font-size: clamp(var(--text-md), 2.5vw, var(--text-lg));
+  font-weight: var(--weight-light);
   line-height: 1.8;
-  color: var(--color-ink-mid);
+  color: var(--omn-text-secondary);
   margin: 0;
 }
 
 /* ── Advice block ── */
 .advice-block {
-  border-left: 2px solid var(--color-ink-mid);
-  padding-left: 24px;
+  border-left: 2px solid var(--omn-text-secondary);
+  padding-left: var(--space-6);
 }
 
 /* ── Challenge section (free preview hook) ── */
 .report-section--challenge {
-  border-top: 2px solid var(--color-ink);
+  border-top: 2px solid var(--omn-text-primary);
 }
 
 /* ── Locked strip ── */
 .locked-strip {
-  max-width: 1400px;
-  padding: clamp(28px, 4vw, 40px) clamp(20px, 5vw, 80px);
-  border-top: 1px solid var(--color-ink-ghost);
+  max-width: var(--width-bleed);
+  padding: var(--space-content) var(--space-edge);
+  border-top: 1px solid var(--omn-border-subtle);
   margin: 0 auto;
 }
 
 .locked-strip__header {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .locked-strip__label {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
 }
 
 .locked-strip__cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .locked-card {
-  padding: 16px 0;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--omn-border-subtle);
 }
 
 .locked-card:last-child {
@@ -1297,17 +1486,17 @@ onMounted(async () => {
 .locked-card__header {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .locked-card__icon {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   flex-shrink: 0;
 }
 
 .locked-card__title {
-  color: var(--color-ink-mid);
+  color: var(--omn-text-secondary);
   font-style: italic;
 }
 
@@ -1318,86 +1507,86 @@ onMounted(async () => {
   user-select: none;
   overflow: hidden;
   max-height: 48px;
-  color: var(--color-ink-mid);
+  color: var(--omn-text-secondary);
   margin: 0;
-  line-height: 1.6;
+  line-height: var(--leading-base);
 }
 
 /* ── Calculation receipt ── */
 .calc-receipt {
-  max-width: 1400px;
-  padding: clamp(20px, 3vw, 32px) clamp(20px, 5vw, 80px);
-  border-top: 1px solid var(--color-ink-ghost);
+  max-width: var(--width-bleed);
+  padding: var(--space-gap) var(--space-edge);
+  border-top: 1px solid var(--omn-border-subtle);
   opacity: 0.7;
   margin: 0 auto;
 }
 
 .calc-receipt--full {
   opacity: 1;
-  border-top: 1px solid var(--color-ink-ghost);
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--omn-border-subtle);
+  border-bottom: 1px solid var(--omn-border-subtle);
   margin-bottom: 0;
 }
 
 .calc-receipt__header {
-  color: var(--color-ink-faint);
-  margin-bottom: 16px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-4);
 }
 
 .calc-receipt__rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .calc-receipt__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: var(--space-2) var(--space-4);
   align-items: baseline;
 }
 
 .calc-receipt__row--note {
-  padding-top: 6px;
-  border-top: 1px solid var(--color-ink-ghost);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .calc-receipt__person {
-  color: var(--color-ink-mid);
-  font-weight: 500;
+  color: var(--omn-text-secondary);
+  font-weight: var(--weight-medium);
   flex-shrink: 0;
   min-width: 72px;
 }
 
 .calc-receipt__detail {
-  color: var(--color-ink-faint);
-  line-height: 1.6;
+  color: var(--omn-text-tertiary);
+  line-height: var(--leading-base);
 }
 
 .calc-receipt__body {
-  color: var(--color-ink-faint);
-  line-height: 1.6;
-  margin: 0 0 4px;
+  color: var(--omn-text-tertiary);
+  line-height: var(--leading-base);
+  margin: 0 0 var(--space-1);
 }
 
 .calc-receipt__meta {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   margin: 0;
   opacity: 0.7;
 }
 
 /* ── Trustpilot block ── */
 .compat-tp-block {
-  max-width: 1400px;
-  padding: clamp(16px, 2.5vw, 24px) clamp(20px, 5vw, 80px);
+  max-width: var(--width-bleed);
+  padding: var(--space-gap) var(--space-edge);
   margin: 0 auto;
 }
 
 .compat-tp-label {
-  color: var(--color-ink-faint);
-  margin-bottom: 8px;
-  letter-spacing: 0.15em;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-2);
+  letter-spacing: var(--tracking-label);
 }
 
 .compat-tp-widget {
@@ -1406,18 +1595,18 @@ onMounted(async () => {
 
 /* ── Trust line ── */
 .compat-trust {
-  max-width: 1400px;
-  padding: 0 clamp(20px, 5vw, 80px) clamp(24px, 4vw, 36px);
-  color: var(--color-ink-faint);
+  max-width: var(--width-bleed);
+  padding: 0 var(--space-edge) var(--space-content);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  line-height: 1.6;
+  line-height: var(--leading-base);
   margin: 0 auto;
 }
 
 /* ── Promo code (compatibility) ── */
 .compat-promo {
-  max-width: 1400px;
-  padding: 0 clamp(20px, 5vw, 80px) clamp(20px, 3vw, 28px);
+  max-width: var(--width-bleed);
+  padding: 0 var(--space-edge) var(--space-gap);
   margin: 0 auto;
 }
 
@@ -1425,7 +1614,7 @@ onMounted(async () => {
   background: none;
   border: none;
   padding: 0;
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   font-style: italic;
   cursor: pointer;
   text-decoration: underline;
@@ -1435,7 +1624,7 @@ onMounted(async () => {
 .compat-promo__row {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .compat-promo__input {
@@ -1446,15 +1635,15 @@ onMounted(async () => {
 .compat-promo__apply {
   background: none;
   border: none;
-  padding: 0 0 12px;
-  color: var(--color-ink-mid);
+  padding: 0 0 var(--space-3);
+  color: var(--omn-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  transition: color 0.2s;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
 
 .compat-promo__apply:hover:not(:disabled) {
-  color: var(--color-ink);
+  color: var(--omn-text-primary);
 }
 
 .compat-promo__apply:disabled {
@@ -1463,17 +1652,17 @@ onMounted(async () => {
 }
 
 .compat-promo__msg {
-  margin: 10px 0 0;
-  line-height: 1.5;
+  margin: var(--space-2) 0 0;
+  line-height: var(--leading-sm);
 }
 
 .compat-promo__msg--error {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   font-style: italic;
 }
 
 .compat-promo__msg--success {
-  color: var(--color-ink-mid);
+  color: var(--omn-text-secondary);
   font-style: italic;
 }
 
@@ -1484,173 +1673,137 @@ onMounted(async () => {
 
 /* ── Paywall ── */
 .paywall {
-  max-width: 1400px;
-  padding: clamp(36px, 6vw, 56px) clamp(20px, 5vw, 80px) clamp(48px, 8vw, 72px);
-  border-top: 1px solid var(--color-ink-ghost);
+  max-width: var(--width-bleed);
+  padding: var(--space-content) var(--space-edge) var(--space-block);
+  border-top: 1px solid var(--omn-border-subtle);
   margin: 0 auto;
 }
 
 .paywall__heading {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(28px, 6vw, 48px);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  color: var(--color-ink);
-  margin: 0 0 16px;
+  font-size: clamp(var(--text-2xl), 6vw, var(--text-4xl));
+  line-height: var(--leading-4xl);
+  letter-spacing: var(--tracking-tight);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-4);
 }
 
 .paywall__sub {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  line-height: 1.6;
-  margin: 0 0 32px;
+  line-height: var(--leading-base);
+  margin: 0 0 var(--space-8);
   max-width: 520px;
 }
 
 /* ── Paywall urgency line ── */
 .paywall__urgency {
-  color: var(--color-ink-mid);
+  color: var(--omn-text-secondary);
   font-style: italic;
-  line-height: 1.6;
-  margin: 0 0 20px;
+  line-height: var(--leading-base);
+  margin: 0 0 var(--space-5);
 }
 
 /* ── Capture block ── */
 .capture-block {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .capture-block__label {
   display: block;
-  color: var(--color-ink-faint);
-  margin-bottom: 10px;
+  color: var(--omn-text-tertiary);
+  margin-bottom: var(--space-2);
 }
 
 .capture-block__label--spaced {
-  margin-top: 24px;
+  margin-top: var(--space-6);
 }
 
 .editorial-input {
   width: 100%;
   max-width: 480px;
-  padding: 12px 0;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 300;
-  color: var(--color-ink);
+  padding: var(--space-3) 0;
+  font-family: var(--omn-font-body);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  color: var(--omn-text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
+  border-bottom: 1px solid rgba(250, 250, 250, 0.15);
   outline: none;
   border-radius: 0;
-  transition: border-color 0.2s;
+  transition: border-color var(--omn-duration-micro) var(--omn-ease);
   display: block;
 }
 
 .editorial-input:focus {
-  border-bottom-color: var(--color-ink);
+  border-bottom-color: var(--omn-text-primary);
 }
 
 .editorial-input::placeholder {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   font-style: italic;
 }
 
 /* ── Prompts / errors ── */
 .compat-email-prompt {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  border: 1px solid var(--color-ink-ghost);
-  padding: 10px 14px;
-  margin-bottom: 12px;
-  line-height: 1.5;
+  border: 1px solid var(--omn-border-subtle);
+  padding: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+  line-height: var(--leading-sm);
 }
 
 .compat-checkout-error {
-  color: var(--color-ink-faint);
-  border: 1px solid var(--color-ink-ghost);
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  line-height: 1.55;
+  color: var(--omn-text-tertiary);
+  border: 1px solid var(--omn-border-subtle);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  line-height: var(--leading-md);
 }
 
 /* ── Pay cards ── */
 .pay-card {
-  padding: 24px;
-  margin-bottom: 16px;
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
   position: relative;
 }
 
-.pay-card--primary {
-  border: 1px solid var(--color-ink-mid);
-  border-left: 2px solid var(--color-ink);
-  padding-top: 36px;
-}
-
-.pay-card--secondary {
-  border: 1px solid var(--color-ink-ghost);
-}
-
-.pay-card__badge {
-  position: absolute;
-  top: -1px;
-  left: 24px;
-  color: var(--color-ink);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  background: var(--color-bone);
-  padding: 0 8px;
-  transform: translateY(-50%);
-}
-
-.pay-card__name {
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-ink);
-  margin: 0 0 8px;
-  letter-spacing: 0.02em;
-}
-
-.pay-card--secondary .pay-card__name {
-  color: var(--color-ink-mid);
-  font-weight: 500;
+.pay-card--single {
+  border: 1px solid var(--omn-text-secondary);
+  border-left: 2px solid var(--omn-text-primary);
 }
 
 .pay-card__price {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(32px, 6vw, 44px);
-  font-weight: 300;
-  color: var(--color-ink);
-  margin: 0 0 16px;
+  font-family: var(--omn-font-display);
+  font-size: clamp(var(--text-2xl), 6vw, var(--text-4xl));
+  font-weight: var(--weight-light);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-4);
   line-height: 1;
 }
 
-.pay-card--secondary .pay-card__price {
-  font-size: clamp(26px, 5vw, 36px);
-  color: var(--color-ink-mid);
-}
-
 .pay-card__freq {
-  font-size: 14px;
-  color: var(--color-ink-faint);
+  font-size: var(--text-sm);
+  color: var(--omn-text-tertiary);
 }
 
 .pay-card__bullets {
   list-style: none;
   padding: 0;
-  margin: 0 0 20px;
+  margin: 0 0 var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .pay-card__bullets li {
-  color: var(--color-ink-mid);
-  line-height: 1.5;
-  padding-left: 16px;
+  color: var(--omn-text-secondary);
+  line-height: var(--leading-sm);
+  padding-left: var(--space-4);
   position: relative;
 }
 
@@ -1658,14 +1811,14 @@ onMounted(async () => {
   content: '—';
   position: absolute;
   left: 0;
-  color: var(--color-ink-faint);
-  font-size: 10px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
   top: 3px;
 }
 
 .pay-card__btn {
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .pay-card__btn--processing {
@@ -1673,39 +1826,24 @@ onMounted(async () => {
   pointer-events: none;
 }
 
-.pay-card__btn--secondary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 48px;
-  padding: 14px 24px;
-  background: transparent;
-  border: 1px solid var(--color-ink-ghost);
-  color: var(--color-ink-mid);
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-  margin-bottom: 8px;
+.paywall__premium-link {
+  display: block;
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-5);
+  color: var(--omn-text-tertiary);
+  text-decoration: none;
+  font-style: italic;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
 
-.pay-card__btn--secondary:hover:not(:disabled) {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
-}
-
-.pay-card__btn--secondary:disabled {
-  opacity: 0.35;
-  pointer-events: none;
+.paywall__premium-link:hover {
+  color: var(--omn-text-secondary);
 }
 
 .pay-card__footnote {
-  color: var(--color-ink-faint);
-  margin: 4px 0 0;
-  line-height: 1.5;
+  color: var(--omn-text-tertiary);
+  margin: var(--space-1) 0 0;
+  line-height: var(--leading-sm);
 }
 
 .pay-card__footnote--muted {
@@ -1714,91 +1852,91 @@ onMounted(async () => {
 
 /* ── Guarantee ── */
 .guarantee {
-  margin-top: 24px;
-  padding: 16px 20px;
-  border: 1px solid var(--color-ink-ghost);
+  margin-top: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--omn-border-subtle);
 }
 
 .guarantee__text {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  line-height: 1.6;
+  line-height: var(--leading-base);
   margin: 0;
 }
 
 .compat-trust-secure {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   text-align: center;
-  margin-top: 14px;
+  margin-top: var(--space-4);
   opacity: 0.7;
 }
 
 /* ── Share section (full report) ── */
 .compat-share {
-  max-width: 1400px;
-  padding: clamp(40px, 6vw, 60px) clamp(20px, 5vw, 80px);
-  border-top: 1px solid var(--color-ink-ghost);
+  max-width: var(--width-bleed);
+  padding: var(--space-block) var(--space-edge);
+  border-top: 1px solid var(--omn-border-subtle);
   text-align: center;
   margin: 0 auto;
 }
 
 .compat-share__heading {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-size: clamp(22px, 4vw, 32px);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: var(--color-ink);
-  margin: 0 0 10px;
+  font-size: clamp(var(--text-xl), 4vw, var(--text-2xl));
+  line-height: var(--leading-2xl);
+  letter-spacing: var(--tracking-snug);
+  color: var(--omn-text-primary);
+  margin: 0 0 var(--space-2);
 }
 
 .compat-share__sub {
-  color: var(--color-ink-faint);
-  margin: 0 0 28px;
+  color: var(--omn-text-tertiary);
+  margin: 0 0 var(--space-7);
 }
 
 .compat-share-card {
   width: min(300px, 100%);
-  border: 1px solid var(--color-ink-ghost);
-  margin: 0 auto 24px;
-  padding: 24px 20px;
+  border: 1px solid var(--omn-border-subtle);
+  margin: 0 auto var(--space-6);
+  padding: var(--space-6) var(--space-5);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .compat-share-card__kicker {
-  color: var(--color-ink-faint);
-  margin: 0 0 8px;
+  color: var(--omn-text-tertiary);
+  margin: 0 0 var(--space-2);
 }
 
 .compat-share-card__names {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 18px;
-  font-weight: 300;
-  color: var(--color-ink);
+  font-family: var(--omn-font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-light);
+  color: var(--omn-text-primary);
   margin: 0;
 }
 
 .compat-share-card__score {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 48px;
-  font-weight: 300;
+  font-family: var(--omn-font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-light);
   line-height: 1;
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 
 .compat-share-card__title {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-style: italic;
-  color: var(--color-ink-mid);
-  margin: 4px 0 8px;
+  color: var(--omn-text-secondary);
+  margin: var(--space-1) 0 var(--space-2);
 }
 
 .compat-share-card__domain {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   margin: 0;
   opacity: 0.7;
 }
@@ -1808,9 +1946,9 @@ onMounted(async () => {
 }
 
 .compat-download-error {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   text-align: center;
-  margin-top: 8px;
+  margin-top: var(--space-2);
   font-style: italic;
 }
 
@@ -1819,108 +1957,113 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(24px, 4vw, 40px) clamp(20px, 5vw, 48px);
-  border-top: 1px solid var(--color-ink-ghost);
+  padding: var(--space-content) var(--space-edge);
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .compat-footer nav {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .footer-link {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
 
 .footer-link:hover {
-  color: var(--color-ink-mid);
+  color: var(--omn-text-secondary);
 }
 
 .footer-sep {
-  color: var(--color-ink-ghost);
+  color: var(--omn-border-subtle);
 }
 
 /* ── Birth Chart Sections (T2 with_charts tier) ── */
 .compat-bc-body {
-  max-width: 1400px;
-  padding: 0 clamp(20px, 5vw, 80px);
+  max-width: var(--width-bleed);
+  padding: 0 var(--space-edge);
   margin: 0 auto;
 }
 
 .compat-bc-section {
-  padding: clamp(36px, 6vw, 56px) 0;
-  border-top: 1px solid var(--color-ink-ghost);
+  padding: var(--space-content) 0;
+  border-top: 1px solid var(--omn-border-subtle);
 }
 
 .compat-bc-section__person {
-  color: var(--color-ink-faint);
-  margin: 0 0 12px;
-  letter-spacing: 0.1em;
+  color: var(--omn-text-tertiary);
+  margin: 0 0 var(--space-3);
+  letter-spacing: var(--tracking-mid);
 }
 
 .birth-chart-signs-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 1px;
-  margin-bottom: 24px;
-  background: var(--color-ink-ghost);
+  margin-bottom: var(--space-6);
+  background: var(--omn-border-subtle);
 }
 
 .bc-sign-cell {
   flex: 1;
   min-width: 80px;
-  padding: 12px 14px;
-  background: var(--color-bone);
+  padding: var(--space-3) var(--space-4);
+  background: var(--omn-bg-page);
 }
 
 .bc-sign-cell__label {
-  margin: 0 0 4px;
-  color: var(--color-ink-faint);
+  margin: 0 0 var(--space-1);
+  color: var(--omn-text-tertiary);
 }
 
 .bc-sign-cell__value {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 15px;
-  font-weight: 300;
-  color: var(--color-ink);
+  font-family: var(--omn-font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-light);
+  color: var(--omn-text-primary);
   margin: 0;
 }
 
 .bc-forecast-box {
-  padding: 14px 16px;
-  border-left: 2px solid var(--color-ink-mid);
-  margin-top: 20px;
+  padding: var(--space-4);
+  border-left: 2px solid var(--omn-text-secondary);
+  margin-top: var(--space-5);
 }
 
 .bc-forecast-box__label {
-  margin: 0 0 6px;
-  color: var(--color-ink-faint);
+  margin: 0 0 var(--space-1);
+  color: var(--omn-text-tertiary);
 }
 
 .bc-forecast-box__text {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--omn-font-body);
   font-style: italic;
-  font-size: clamp(16px, 2.2vw, 18px);
-  font-weight: 300;
-  color: var(--color-ink-mid);
+  font-size: clamp(var(--text-base), 2.2vw, var(--text-md));
+  font-weight: var(--weight-light);
+  color: var(--omn-text-secondary);
   margin: 0;
   line-height: 1.7;
 }
 
 .compat-bc-noon-note {
-  margin-top: 14px;
-  color: var(--color-ink-faint);
+  margin-top: var(--space-4);
+  color: var(--omn-text-tertiary);
   font-style: italic;
-  line-height: 1.5;
+  line-height: var(--leading-sm);
   opacity: 0.7;
 }
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
-  .compat-masthead__score { font-size: clamp(60px, 18vw, 90px); }
-  .pay-card__price { font-size: clamp(28px, 8vw, 36px); }
+  .compat-masthead__score { font-size: clamp(var(--text-5xl), 18vw, var(--text-6xl)); }
+  .pay-card__price { font-size: clamp(var(--text-2xl), 8vw, var(--text-3xl)); }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .page-grain { animation: none; }
 }
 </style>

@@ -1,11 +1,241 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
-import { CompatibilitySchema, type CompatibilityType, PreviewCompatibilitySchema, type CompatibilityReceiptType } from '~~/server/utils/ai-schemas'
+import { CompatibilitySectionsSchema, PreviewCompatibilitySchema, type CompatibilityReceiptType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
 import { getSunSign, getLifePathNumber } from '~~/server/utils/quick-signs'
 import { getPlanetaryTransits } from '~~/server/utils/planetaryTransits'
 import { getLanguageInstruction } from '~~/server/utils/language-instructions'
 import { calculateNatalChart, assignArchetypeFromChart } from '~~/app/utils/natalChart'
+
+// ── Inline quiz answers type (mirrors CompatibilityQuizAnswers in analysisStore) ──
+// Declared inline rather than imported from app/stores to avoid pulling Pinia
+// (a client-only plugin) into the server bundle.
+
+interface QuizAnswers {
+  q1_intent?:         'specific_person' | 'new_curiosity' | 'pattern' | 'exploring'
+  q2_feeling?:        'curiosity' | 'hope' | 'confusion' | 'longing' | 'unnamed'
+  q3_duration?:       'recent' | 'weeks' | 'months' | 'long'
+  q4_approach?:       'lead_feelings' | 'observe_first' | 'match_energy' | 'take_time'
+  q5_communication?:  'direct' | 'show_through_action' | 'wait_to_notice' | 'write_first'
+  q6_closeness?:      'crave' | 'need_space' | 'on_my_terms' | 'figuring_out'
+  q7_conflict?:       'head_on' | 'give_air' | 'middle_ground' | 'wait_pass'
+  q8_intimacy?:       'known' | 'understood' | 'both' | 'neither'
+  q9_value?:          'trust' | 'excitement' | 'steadiness' | 'mutual_growth' | 'being_seen'
+  q14_descriptor?:    'magnetic' | 'confusing' | 'intense' | 'easy' | 'healing' | 'challenging' | 'distant' | 'activating'
+  q15_chapter?:       'new_unfolding' | 'first_test' | 'long_steady' | 'confusing_between' | 'ending_shifting'
+  q16_season?:        'spring' | 'summer' | 'autumn' | 'winter'
+  q17_pattern?:       'close_pull_back' | 'fast_slow' | 'misunderstand' | 'sync_stuck' | 'no_pattern'
+  q18_trust_texture?: 'stone' | 'water' | 'glass' | 'silk'
+  q19_curiosity?:     'why_feels' | 'what_become' | 'whether_invest' | 'not_seeing'
+  q23_time_of_day?:   'dawn' | 'noon' | 'dusk' | 'night'
+  q24_helpfulness?:   'clarity' | 'self_insight' | 'possibility' | 'reflection'
+  q25_agency?:        'happen_to_me' | 'i_make' | 'through_me' | 'depends'
+}
+
+// ── Thematic block builders ──────────────────────────────────────────────────
+// Each function returns a formatted block string or '' when no data is present.
+// Empty blocks are omitted from the prompt via template-literal interpolation.
+
+function buildBlock1(q: QuizAnswers): string {
+  const Q1: Record<string, string> = {
+    specific_person: 'seeking to understand a specific person',
+    new_curiosity:   'curious about a new connection',
+    pattern:         'noticing a pattern across relationships',
+    exploring:       'just exploring',
+  }
+  const Q19: Record<string, string> = {
+    why_feels:      'wants to understand why it feels the way it does',
+    what_become:    'wants to understand what it could become',
+    whether_invest: 'wants to understand whether to keep investing',
+    not_seeing:     'wants to understand what they\'re not seeing',
+  }
+  const Q24: Record<string, string> = {
+    clarity:      'most needs clarity about the connection',
+    self_insight: 'most needs insight about themselves in it',
+    possibility:  'most needs a sense of what\'s possible',
+    reflection:   'most needs to be reflected back',
+  }
+  const lines: string[] = []
+  if (q.q1_intent  && Q1[q.q1_intent])   lines.push(`User is ${Q1[q.q1_intent]}.`)
+  if (q.q19_curiosity && Q19[q.q19_curiosity]) lines.push(`They ${Q19[q.q19_curiosity]}.`)
+  if (q.q24_helpfulness && Q24[q.q24_helpfulness]) lines.push(`They ${Q24[q.q24_helpfulness]}.`)
+  if (lines.length === 0) return ''
+  return `WHY THEY'RE HERE:\n${lines.join('\n')}`
+}
+
+function buildBlock2(q: QuizAnswers): string {
+  const Q2: Record<string, string> = {
+    curiosity: 'first feeling: curiosity',
+    hope:      'first feeling: hope',
+    confusion: 'first feeling: confusion',
+    longing:   'first feeling: longing',
+    unnamed:   'first feeling: something unnamed',
+  }
+  const Q16: Record<string, string> = {
+    spring: 'spring',
+    summer: 'summer',
+    autumn: 'autumn',
+    winter: 'winter',
+  }
+  const Q18: Record<string, string> = {
+    stone: 'stone (solid, weathered)',
+    water: 'water (fluid, finding its level)',
+    glass: 'glass (clear but fragile)',
+    silk:  'silk (soft, present)',
+  }
+  const Q23: Record<string, string> = {
+    dawn:  'dawn (something just beginning)',
+    noon:  'noon (clear, present, visible)',
+    dusk:  'dusk (warm, ending, golden)',
+    night: 'night (quiet, hidden, deep)',
+  }
+  const lines: string[] = []
+  if (q.q2_feeling     && Q2[q.q2_feeling])                       lines.push(`${Q2[q.q2_feeling]}.`)
+  if (q.q14_descriptor)                                           lines.push(`in one word: ${q.q14_descriptor}.`)
+  if (q.q16_season     && Q16[q.q16_season])                      lines.push(`feels like the season of ${Q16[q.q16_season]}.`)
+  if (q.q18_trust_texture && Q18[q.q18_trust_texture])            lines.push(`trust has the texture of ${Q18[q.q18_trust_texture]}.`)
+  if (q.q23_time_of_day   && Q23[q.q23_time_of_day])              lines.push(`feels like the time of ${Q23[q.q23_time_of_day]}.`)
+  if (lines.length === 0) return ''
+  return `HOW THE CONNECTION FEELS (METAPHORICAL):\n${lines.join('\n')}\nUSE THESE METAPHORS in section copy — weave the imagery naturally; do not list them.`
+}
+
+function buildBlock3(q: QuizAnswers): string {
+  const Q4: Record<string, string> = {
+    lead_feelings:  'leads with their feelings',
+    observe_first:  'observes first, then opens up',
+    match_energy:   'matches the other person\'s energy',
+    take_time:      'is careful — takes their time',
+  }
+  const Q5: Record<string, string> = {
+    direct:               'expresses what matters by saying it directly',
+    show_through_action:  'expresses what matters by showing it through action',
+    wait_to_notice:       'expresses what matters by waiting for the other to notice',
+    write_first:          'expresses what matters by writing before speaking',
+  }
+  const Q6: Record<string, string> = {
+    crave:        'wants a lot of closeness',
+    need_space:   'needs space to recharge',
+    on_my_terms:  'wants closeness on their own terms',
+    figuring_out: 'is still figuring out how they like to feel close',
+  }
+  const Q7: Record<string, string> = {
+    head_on:       'addresses tension head-on',
+    give_air:      'gives tension some air before addressing',
+    middle_ground: 'finds the middle ground in tension',
+    wait_pass:     'waits to see if tension passes',
+  }
+  const Q8: Record<string, string> = {
+    known:      'wants to be deeply known',
+    understood: 'wants to be deeply understood',
+    both:       'wants to be both known and understood, equally',
+    neither:    'doesn\'t strongly want either to be known or understood',
+  }
+  const lines: string[] = []
+  if (q.q4_approach     && Q4[q.q4_approach])     lines.push(`${Q4[q.q4_approach]}.`)
+  if (q.q5_communication && Q5[q.q5_communication]) lines.push(`${Q5[q.q5_communication]}.`)
+  if (q.q6_closeness    && Q6[q.q6_closeness])    lines.push(`${Q6[q.q6_closeness]}.`)
+  if (q.q7_conflict     && Q7[q.q7_conflict])     lines.push(`${Q7[q.q7_conflict]}.`)
+  if (q.q8_intimacy     && Q8[q.q8_intimacy])     lines.push(`${Q8[q.q8_intimacy]}.`)
+  if (lines.length === 0) return ''
+  return `HOW PERSON 1 SHOWS UP IN CONNECTION:\n${lines.join('\n')}`
+}
+
+function buildBlock4(q: QuizAnswers): string {
+  const Q3: Record<string, string> = {
+    recent: 'person has only recently been on their mind',
+    weeks:  'person has been on their mind a few weeks',
+    months: 'person has been on their mind for months',
+    long:   'person has been on their mind longer than they\'ll admit',
+  }
+  const Q15: Record<string, string> = {
+    new_unfolding:     'currently in a new, unfolding chapter',
+    first_test:        'currently in the first real test of the connection',
+    long_steady:       'currently in a long, steady season',
+    confusing_between: 'currently in a confusing in-between',
+    ending_shifting:   'currently ending or shifting',
+  }
+  const lines: string[] = []
+  if (q.q3_duration && Q3[q.q3_duration])   lines.push(`${Q3[q.q3_duration]}.`)
+  if (q.q15_chapter && Q15[q.q15_chapter])  lines.push(`${Q15[q.q15_chapter]}.`)
+  if (lines.length === 0) return ''
+  return `WHERE THE CONNECTION IS:\n${lines.join('\n')}`
+}
+
+function buildBlock5(q: QuizAnswers): string {
+  const Q9: Record<string, string> = {
+    trust:         'most values trust',
+    excitement:    'most values excitement',
+    steadiness:    'most values steadiness',
+    mutual_growth: 'most values mutual growth',
+    being_seen:    'most values being seen',
+  }
+  const Q17: Record<string, string> = {
+    close_pull_back: 'pattern: they come close, then pull back',
+    fast_slow:       'pattern: they move fast, then slow',
+    misunderstand:   'pattern: they misunderstand each other often',
+    sync_stuck:      'pattern: they\'re in sync but stuck',
+    no_pattern:      'no clear pattern yet',
+  }
+  const Q25: Record<string, string> = {
+    happen_to_me: 'currently feels: things happen to me',
+    i_make:       'currently feels: I make things happen',
+    through_me:   'currently feels: things happen through me',
+    depends:      'currently feels: depends on the day',
+  }
+  const lines: string[] = []
+  if (q.q9_value    && Q9[q.q9_value])    lines.push(`${Q9[q.q9_value]}.`)
+  if (q.q17_pattern && Q17[q.q17_pattern]) lines.push(`${Q17[q.q17_pattern]}.`)
+  if (q.q25_agency  && Q25[q.q25_agency]) lines.push(`${Q25[q.q25_agency]}.`)
+  if (lines.length === 0) return ''
+  return `WHAT THEY'RE WORKING WITH:\n${lines.join('\n')}`
+}
+
+// ── Ascendant helper ─────────────────────────────────────────────────────────
+// Returns "- Rising sign (ascendant): [SignName]" or '' when not computable.
+// Silent degradation: no fallback text when birth time or coords are missing.
+
+function computeAscendantLine(
+  dob: string,
+  timeOfBirth: string | undefined,
+  lat: number | null | undefined,
+  lng: number | null | undefined,
+): string {
+  if (!timeOfBirth || !lat || !lng || !dob) return ''
+  try {
+    const chart = calculateNatalChart({
+      dateOfBirth:       dob,
+      timeOfBirth:       timeOfBirth,
+      utcOffsetMinutes:  0,
+      city:              '',
+      lat:               lat,
+      lon:               lng,
+    })
+    if (!chart.ascendant) return ''
+    return `- Rising sign (ascendant): ${chart.ascendant.sign}`
+  } catch {
+    return ''
+  }
+}
+
+// ── Rarity block builder ─────────────────────────────────────────────────────
+// Returns a RARITY: block string when both elements are known, else ''.
+
+function buildRarityBlock(elementA: string, elementB: string): string {
+  if (!elementA || !elementB || elementA === 'Unknown' || elementB === 'Unknown') return ''
+  const qualifier = elementA === elementB
+    ? 'Same-element pairings carry a doubling quality — strengths and shadows both amplify.'
+    : 'Cross-element pairings carry a tension-and-translation quality — energies don\'t automatically speak the same language.'
+  return `RARITY:\nThis ${elementA} + ${elementB} pairing is one of 16 possible element combinations (each ~6.25%). ${qualifier}`
+}
+
+// ── Thematic block assembly ───────────────────────────────────────────────────
+// Joins non-empty blocks with double newlines for clean prompt formatting.
+
+function joinBlocks(...blocks: string[]): string {
+  const present = blocks.filter(b => b.length > 0)
+  if (present.length === 0) return ''
+  return '\n\n' + present.join('\n\n')
+}
 
 // ── Deterministic compatibility score ────────────────────────────────────────
 // Combines life-path harmony and elemental synastry into a 0-100 score.
@@ -68,6 +298,15 @@ export default defineEventHandler(async (event) => {
   const partnerCity    = sanitizeString(body.partnerCity, 100)
   const language       = sanitizeString(body.language || 'en', 5)
   const previewMode    = body.previewMode === true
+
+  // New optional quiz personalisation fields (Build 4 expansion)
+  const quizAnswers:         QuizAnswers       = (body.quizAnswers && typeof body.quizAnswers === 'object') ? body.quizAnswers as QuizAnswers : {}
+  const timeOfBirth:         string | undefined = typeof body.timeOfBirth === 'string' && body.timeOfBirth ? body.timeOfBirth : undefined
+  const partnerTimeOfBirth:  string | undefined = typeof body.partnerTimeOfBirth === 'string' && body.partnerTimeOfBirth ? body.partnerTimeOfBirth : undefined
+  const userCityLat:         number | null      = typeof body.cityLat === 'number' ? body.cityLat : null
+  const userCityLng:         number | null      = typeof body.cityLng === 'number' ? body.cityLng : null
+  const partnerCityLatRaw:   number | null      = typeof body.partnerCityLat === 'number' ? body.partnerCityLat : null
+  const partnerCityLngRaw:   number | null      = typeof body.partnerCityLng === 'number' ? body.partnerCityLng : null
 
   // Optional archetype-reading fields (CASE 1) vs. standalone fields (CASE 2)
   const rawArchetype      = body.archetype  != null ? sanitizeString(body.archetype, 30)  : null
@@ -203,22 +442,35 @@ export default defineEventHandler(async (event) => {
 
   // ── Shared context strings (used by both preview and full prompts) ─────────
 
+  const p1AscendantLine = computeAscendantLine(person1Dob, timeOfBirth, userCityLat, userCityLng)
+  const p2AscendantLine = computeAscendantLine(partnerDob, partnerTimeOfBirth, partnerCityLatRaw, partnerCityLngRaw)
+
+  const rarityBlock  = buildRarityBlock(element || 'Unknown', partnerElement)
+
+  const block1 = buildBlock1(quizAnswers)
+  const block2 = buildBlock2(quizAnswers)
+  const block3 = buildBlock3(quizAnswers)
+  const block4 = buildBlock4(quizAnswers)
+  const block5 = buildBlock5(quizAnswers)
+
+  const thematicBlocks = joinBlocks(block1, block2, block3, block4, block5)
+
   const personContext = `Person 1 (the user):
 - Archetype: ${archetype}
 - Element: ${element}
-- Life Path: ${lifePathNumber}
+- Life Path: ${lifePathNumber}${p1AscendantLine ? '\n' + p1AscendantLine : ''}
 
 Person 2 (their person):
 - Born: ${partnerSeason} season
 - Element: ${partnerElement}
 - Life Path: ${partnerLifePath}
-- Sun sign: ${partnerSunSign.name}
+- Sun sign: ${partnerSunSign.name}${p2AscendantLine ? '\n' + p2AscendantLine : ''}
 
 ELEMENTAL SYNASTRY:
-${elementNote}
+${elementNote}${rarityBlock ? '\n\n' + rarityBlock : ''}
 
 NUMEROLOGY:
-${lifePathNote}`
+${lifePathNote}${thematicBlocks}`
 
   // ── PREVIEW PATH ──────────────────────────────────────────────────────────
   // Generate ONLY the challenge (tension) section.
@@ -237,8 +489,7 @@ Never be generic.
 
 ${personContext}
 
-Generate ONLY the challenge section: the core friction between their elemental and archetypal energies.
-Be honest, not softened. 2-3 sentences.
+Generate ONLY the challenge section: the core friction between their elemental and archetypal energies, taking into account WHAT THEY'RE WORKING WITH (pattern, value, agency) when available. Be honest, not softened. 2-3 sentences.
 
 Return ONLY valid JSON, no markdown:
 {
@@ -323,6 +574,11 @@ Return ONLY valid JSON, no markdown:
 
   // ── FULL PATH (post-payment) ───────────────────────────────────────────────
   // Generates all 7 sections. Only reached when previewMode === false.
+  // Score and title are computed deterministically (same functions as preview path)
+  // so users see identical values before and after payment.
+
+  const compatibilityScore = computeCompatibilityScore(lifePathNumber, partnerLifePath, element || 'Unknown', partnerElement)
+  const compatibilityTitle = computeCompatibilityTitle(archetype, partnerSunSign.name, element || 'Unknown', partnerElement)
 
   const todayDate  = new Date().toISOString().split('T')[0]!
   const sevenDaysFromNow = new Date()
@@ -366,20 +622,23 @@ CURRENT PLANETARY WINDOW (${todayDate} – ${forecastEndDate}):
 - Venus: ${currentTransits.venus.sign} ${currentTransits.venus.degree}° → ${forecastTransits.venus.sign} ${forecastTransits.venus.degree}°
 - Mars: ${currentTransits.mars.sign} ${currentTransits.mars.degree}° → ${forecastTransits.mars.sign} ${forecastTransits.mars.degree}°
 
+PRE-COMPUTED VALUES (do not change these — write sections that match this framing):
+- Compatibility Score: ${compatibilityScore}
+- Compatibility Title: ${compatibilityTitle}
+
 Generate exactly 7 sections. Each section MUST be specific to this exact pairing — never a generic template.
+The title above frames the dynamic — write sections that are tonally consistent with it.
 
 Return ONLY valid JSON, no markdown:
 {
-  "compatibilityScore": 85,
-  "compatibilityTitle": "The Alchemist meets The Storm — transformation through tension",
   "sections": {
     "bond": {
       "title": "The Bond That Holds You Together",
-      "content": "[3-4 sentences: why these two connect at a fundamental level — specific to their archetypes and elements]"
+      "content": "[3-4 sentences: SENTENCE 1 = why these two connect at a fundamental level — specific to their archetypes and elements. SENTENCE 2 = naturally weave in the rarity framing (translate the rarity context into editorial language — do NOT use the exact phrase 'one of 16 possible combinations'; say something like 'their pairing is uncommon in its specific texture' or similar). REMAINING SENTENCES = continue the bond narrative grounded in their actual chart data.]"
     },
     "strength": {
       "title": "Your Greatest Strength Together",
-      "content": "[2-3 sentences: the specific advantage this pairing creates that neither person has alone]"
+      "content": "[2-3 sentences: the specific advantage this pairing creates that neither person has alone. Ground the strength specifically in HOW PERSON 1 SHOWS UP IN CONNECTION and WHAT THEY'RE WORKING WITH when those blocks are present. Do not list quiz answers; weave them naturally.]"
     },
     "challenge": {
       "title": "The Tension You Must Navigate",
@@ -387,7 +646,7 @@ Return ONLY valid JSON, no markdown:
     },
     "communication": {
       "title": "The Communication Pattern",
-      "content": "[3 sentences: how these two people talk, process conflict, and repair — what works, what breaks down, what heals it. Ground in Mercury position and their elements.]"
+      "content": "[3 sentences: how these two people talk, process conflict, and repair — what works, what breaks down, what heals it. Ground in Mercury position and their elements. Reference HOW PERSON 1 SHOWS UP IN CONNECTION (Person 1's communication and conflict style) when available. If that block is absent, fall back to archetype + element + Mercury position only.]"
     },
     "powerDynamic": {
       "title": "The Power Dynamic",
@@ -399,7 +658,7 @@ Return ONLY valid JSON, no markdown:
     },
     "advice": {
       "title": "The One Move That Changes Everything",
-      "content": "[1-2 sentences: one concrete, specific action rooted in both charts that shifts the dynamic more than any other single thing]"
+      "content": "[1-2 sentences: one concrete, specific action that fits Person 1's stated need (WHY THEY'RE HERE — what would help them most) and respects their stated agency frame (WHAT THEY'RE WORKING WITH — how they currently feel about agency). The action must be rooted in both charts AND match their stated need. Do NOT give generic relationship advice. If the WHY THEY'RE HERE block is absent, fall back to a chart-grounded action without reference to stated need.]"
     }
   }
 }`
@@ -407,8 +666,6 @@ Return ONLY valid JSON, no markdown:
   const compatibilityJsonSchema = {
     type: 'object',
     properties: {
-      compatibilityScore: { type: 'number' },
-      compatibilityTitle: { type: 'string' },
       sections: {
         type: 'object',
         properties: {
@@ -423,7 +680,7 @@ Return ONLY valid JSON, no markdown:
         required: ['bond', 'strength', 'challenge', 'communication', 'powerDynamic', 'forecast', 'advice'],
       },
     },
-    required: ['compatibilityScore', 'compatibilityTitle', 'sections'],
+    required: ['sections'],
   } as const
 
   const message = await withAiRetry('generate-compatibility', () =>
@@ -452,7 +709,7 @@ Return ONLY valid JSON, no markdown:
     throw createError({ statusCode: 500, message: 'Failed to parse compatibility report' })
   }
 
-  const zodResult = CompatibilitySchema.safeParse(rawParsed)
+  const zodResult = CompatibilitySectionsSchema.safeParse(rawParsed)
   if (!zodResult.success) {
     console.error('[generate-compatibility] Schema validation failed after structured output', {
       endpoint: 'generate-compatibility',
@@ -465,7 +722,7 @@ Return ONLY valid JSON, no markdown:
     throw createError({ statusCode: 500, message: 'Failed to parse compatibility report' })
   }
 
-  const compatibilityData: CompatibilityType = zodResult.data
+  const sectionsData = zodResult.data.sections
 
   // ── Calculation receipt ───────────────────────────────────────────────────
 
@@ -503,9 +760,9 @@ Return ONLY valid JSON, no markdown:
   return {
     success: true,
     compatibility: {
-      compatibilityScore: compatibilityData.compatibilityScore,
-      compatibilityTitle: compatibilityData.compatibilityTitle,
-      sections:           compatibilityData.sections,
+      compatibilityScore,
+      compatibilityTitle,
+      sections: sectionsData,
       calculationReceipt,
     },
   }

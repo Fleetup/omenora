@@ -1,43 +1,47 @@
+<!--
+  AppHeader
+  ─────────
+  Sticky editorial header — sandbox §01 visual pattern, dark translucent
+  background with backdrop blur. Three-column grid:
+
+    [wordmark]   [primary nav links (≥900px)]   [CTA pill + burger]
+
+  Burger opens a right-side slide-in drawer with the full nav list +
+  language switcher + account link. The drawer is the mobile menu;
+  on desktop the inline nav covers the same routes so the burger is
+  still useful (account, language) but the page is navigable without it.
+
+  Public API (preserved from the pre-redesign version):
+    - default slot `action` — overrides the right-side action area
+    - prop `dark?: boolean` — currently informational (theme already dark)
+-->
+
 <template>
   <header class="app-header">
     <div class="app-header__inner">
 
-      <!-- Left: meta -->
-      <span class="app-header__meta label-caps">
-        Vol. I · {{ currentYear }}
-      </span>
-
-      <!-- Center: wordmark -->
-      <NuxtLink to="/" class="app-header__logo">
-        <span class="app-header__wordmark">Omenora</span>
+      <!-- Left: wordmark -->
+      <NuxtLink to="/" class="app-header__wordmark" aria-label="OMENORA home">
+        OMENORA
       </NuxtLink>
+
+      <!-- Center: primary nav links — desktop only -->
+      <nav class="app-header__links" aria-label="Primary">
+        <NuxtLink to="/#method"     class="app-header__link">Method</NuxtLink>
+        <NuxtLink to="/#traditions" class="app-header__link">Traditions</NuxtLink>
+        <NuxtLink to="/#paywall"    class="app-header__link">Founding</NuxtLink>
+        <NuxtLink to="/daily"       class="app-header__link">Daily</NuxtLink>
+        <NuxtLink to="/compatibility-quiz" class="app-header__link">Compatibility</NuxtLink>
+      </nav>
 
       <!-- Right: action slot + burger -->
       <div class="app-header__right">
         <slot name="action">
-          <NuxtLink
-            to="/daily"
-            class="app-header__pill label-caps"
-          >
-            ◑ Daily
-          </NuxtLink>
-          <NuxtLink
-            v-if="isAuthenticated"
-            to="/account"
-            class="app-header__pill label-caps"
-          >
-            My Account
-          </NuxtLink>
-          <NuxtLink
-            v-else
-            to="/account"
-            class="app-header__pill app-header__pill--ghost label-caps"
-          >
-            Sign in
+          <NuxtLink to="/founding" class="app-header__cta">
+            Begin Reading
           </NuxtLink>
         </slot>
 
-        <!-- Burger — always visible -->
         <button
           class="app-header__burger"
           :class="{ 'app-header__burger--open': menuOpen }"
@@ -53,8 +57,8 @@
 
     </div>
 
-    <!-- Running rule -->
-    <div class="editorial-rule" />
+    <!-- Backdrop + drawer teleported to body to escape sticky+backdrop-filter stacking context -->
+    <Teleport to="body">
 
     <!-- Backdrop -->
     <Transition name="backdrop-fade">
@@ -75,11 +79,11 @@
         aria-modal="true"
         aria-label="Site navigation"
       >
-        <!-- Drawer header -->
+        <!-- Drawer head -->
         <div class="nav-drawer__head">
-          <span class="nav-drawer__wordmark label-caps">Menu</span>
+          <span class="nav-drawer__eyebrow">Menu</span>
           <button
-            class="nav-drawer__close label-caps"
+            class="nav-drawer__close"
             aria-label="Close menu"
             @click="menuOpen = false"
           >
@@ -90,29 +94,27 @@
         <div class="nav-drawer__rule" />
 
         <!-- Nav links -->
-        <nav class="nav-drawer__links">
-          <NuxtLink to="/" class="drawer-link" @click="menuOpen = false">
-            Home
-          </NuxtLink>
-          <NuxtLink to="/daily" class="drawer-link" @click="menuOpen = false">
-            Daily Horoscope
-          </NuxtLink>
-          <NuxtLink to="/compatibility-quiz" class="drawer-link" @click="menuOpen = false">
-            Compatibility
-          </NuxtLink>
-          <NuxtLink to="/analysis" class="drawer-link" @click="menuOpen = false">
-            Begin Reading
+        <nav class="nav-drawer__links" aria-label="Drawer navigation">
+          <NuxtLink to="/"                    class="drawer-link" @click="menuOpen = false">Home</NuxtLink>
+          <NuxtLink to="/#method"             class="drawer-link" @click="menuOpen = false">Method</NuxtLink>
+          <NuxtLink to="/#traditions"         class="drawer-link" @click="menuOpen = false">Traditions</NuxtLink>
+          <NuxtLink to="/#paywall"            class="drawer-link" @click="menuOpen = false">Founding</NuxtLink>
+          <NuxtLink to="/daily"               class="drawer-link" @click="menuOpen = false">Daily Horoscope</NuxtLink>
+          <NuxtLink to="/compatibility-quiz"  class="drawer-link" @click="menuOpen = false">Compatibility</NuxtLink>
+          <NuxtLink to="/analysis"            class="drawer-link" @click="menuOpen = false">Begin a Reading</NuxtLink>
+          <NuxtLink to="/founding"            class="drawer-link drawer-link--accent" @click="menuOpen = false">
+            Founding Member · $20
           </NuxtLink>
         </nav>
 
         <!-- Language switcher -->
         <div class="nav-drawer__lang">
-          <p class="label-caps nav-drawer__lang-label">Language</p>
+          <p class="nav-drawer__lang-label">Language</p>
           <div class="nav-drawer__lang-pills">
             <button
               v-for="lang in LANGUAGES"
               :key="lang.code"
-              class="lang-pill label-caps"
+              class="lang-pill"
               :class="{ 'lang-pill--active': currentLang === lang.code }"
               :aria-label="lang.name"
               @click="selectLanguage(lang.code)"
@@ -123,13 +125,13 @@
           </div>
         </div>
 
-        <!-- Drawer footer -->
-        <div class="nav-drawer__footer">
+        <!-- Drawer foot -->
+        <div class="nav-drawer__foot">
           <div class="nav-drawer__rule" />
           <NuxtLink
             v-if="isAuthenticated"
             to="/account"
-            class="label-caps nav-drawer__account"
+            class="nav-drawer__account"
             @click="menuOpen = false"
           >
             My Account →
@@ -137,14 +139,17 @@
           <NuxtLink
             v-else
             to="/account"
-            class="label-caps nav-drawer__account"
+            class="nav-drawer__account"
             @click="menuOpen = false"
           >
             Sign in →
           </NuxtLink>
+          <p class="nav-drawer__meta">Vol. 001 · MMXXVI</p>
         </div>
       </div>
     </Transition>
+
+    </Teleport>
 
   </header>
 </template>
@@ -159,7 +164,6 @@ defineProps<{
   dark?: boolean
 }>()
 
-const currentYear = new Date().getFullYear()
 const { isAuthenticated } = useAuth()
 const store = useAnalysisStore()
 
@@ -176,11 +180,21 @@ watch(() => route.path, () => {
   menuOpen.value = false
 })
 
+// Lock body scroll when drawer open. SSR-safe via import.meta.client guard.
 watch(menuOpen, (val) => {
   if (import.meta.client) {
     document.body.style.overflow = val ? 'hidden' : ''
   }
 })
+
+// Esc-to-close
+if (import.meta.client) {
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && menuOpen.value) menuOpen.value = false
+  }
+  window.addEventListener('keydown', onKey)
+  onUnmounted(() => window.removeEventListener('keydown', onKey))
+}
 
 onUnmounted(() => {
   if (import.meta.client) {
@@ -190,108 +204,141 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ── Header shell ── */
+/* ── Header shell ──
+   Translucent dark bg + backdrop blur — sandbox §01.
+   Sticky; z-index sits above all page content but below grain (200)
+   and scroll-progress (100), and well below the drawer (300+). */
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 200;
-  background: var(--color-bone);
-  padding: 0 clamp(16px, 4vw, 48px);
+  z-index: 50;
+  background: rgba(18, 18, 20, 0.78);
+  backdrop-filter: saturate(140%) blur(14px);
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  border-bottom: 1px solid var(--omn-border-subtle);
 }
 
 .app-header__inner {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  height: 52px;
-  max-width: 1400px;
+  gap: var(--space-8);
+  height: 64px;
+  max-width: var(--width-bleed);
   margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 64px);
 }
 
-.app-header__meta {
-  color: var(--color-ink-faint);
-  font-size: 10px;
+/* Mobile — tighten gap + padding so wordmark + CTA + burger fit on
+   narrow viewports. Without this the empty 1fr center column makes the
+   header look hollow at phone widths. */
+@media (max-width: 899px) {
+  .app-header__inner {
+    gap: var(--space-3);
+    padding: 0 16px;
+    height: 56px;
+  }
 }
 
-.app-header__logo {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-decoration: none;
-  transition: opacity 0.15s;
-}
-
-.app-header__logo:hover { opacity: 0.65; }
-
+/* ── Wordmark ── */
 .app-header__wordmark {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 18px;
-  font-weight: 400;
-  letter-spacing: 0.12em;
-  color: var(--color-ink);
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wordmark);   /* 0.34em — sandbox exact */
+  color: var(--omn-text-primary);
+  text-decoration: none;
+  transition: opacity var(--omn-duration-micro) var(--omn-ease);
 }
+.app-header__wordmark:hover { opacity: 0.7; }
 
+/* ── Primary nav links — center column, desktop only ── */
+.app-header__links {
+  display: none;
+  gap: 28px;
+  justify-content: center;
+  font-size: 14px;
+  letter-spacing: var(--tracking-body);
+}
+@media (min-width: 900px) {
+  .app-header__links { display: flex; }
+}
+.app-header__link {
+  color: var(--omn-text-secondary);
+  text-decoration: none;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
+  white-space: nowrap;
+}
+.app-header__link:hover,
+.app-header__link.router-link-active { color: var(--omn-text-primary); }
+
+/* ── Right column ── */
 .app-header__right {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-3);
 }
 
-/* ── Pills ── */
-.app-header__pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border: 1px solid var(--color-ink-ghost);
-  border-radius: 999px;
-  color: var(--color-ink);
+/* ── CTA pill — sandbox .nav__cta ── */
+.app-header__cta {
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-body);
+  padding: 10px 18px;
+  border: 1px solid var(--omn-border-primary);
+  color: var(--omn-text-primary);
   text-decoration: none;
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  transition: border-color 0.2s, background 0.2s;
   white-space: nowrap;
+  transition:
+    background var(--omn-duration-micro) var(--omn-ease),
+    border-color var(--omn-duration-micro) var(--omn-ease);
+}
+.app-header__cta:hover {
+  background: var(--omn-bg-interactive);
+  border-color: var(--omn-border-emphasis);
+}
+/* Mobile — compact CTA pill so it sits comfortably next to the burger
+   on phones. Keeps the call-to-action visible at virtually all viewports;
+   the drawer still mirrors it. */
+@media (max-width: 899px) {
+  .app-header__cta {
+    padding: 8px 12px;
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+}
+/* On very narrow widths (small Androids, ≤360px) drop the pill to keep
+   the wordmark and burger from cramping. */
+@media (max-width: 360px) {
+  .app-header__cta { display: none; }
 }
 
-.app-header__pill:hover {
-  border-color: var(--color-ink-mid);
-  background: rgba(26, 22, 18, 0.04);
-}
-
-.app-header__pill--ghost {
-  border-color: var(--color-ink-ghost);
-  color: var(--color-ink-faint);
-}
-
-.app-header__pill--ghost:hover {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
-}
-
-/* ── Burger — always visible ── */
+/* ── Burger ── */
 .app-header__burger {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-end;
   gap: 5px;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 6px;
+  padding: 8px;
   flex-shrink: 0;
 }
-
 .app-header__burger-bar {
   display: block;
   height: 1px;
-  background: var(--color-ink);
-  transition: width 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
+  background: var(--omn-text-primary);
+  transition:
+    width var(--omn-duration-card) var(--omn-ease),
+    transform var(--omn-duration-card) var(--omn-ease),
+    opacity var(--omn-duration-card) var(--omn-ease);
 }
-
 .app-header__burger-bar:nth-child(1) { width: 22px; }
 .app-header__burger-bar:nth-child(2) { width: 16px; }
 .app-header__burger-bar:nth-child(3) { width: 22px; }
@@ -309,14 +356,23 @@ onUnmounted(() => {
   transform: translateY(-6px) rotate(-45deg);
 }
 
+/* ── Reduced motion (header-scoped part) ── */
+@media (prefers-reduced-motion: reduce) {
+  .app-header__burger-bar { transition: none; }
+}
+</style>
+
+<!-- Drawer + backdrop are Teleported to <body>; scoped styles don't follow.
+     This second unscoped block is intentional and necessary. -->
+<style>
 /* ── Backdrop ── */
 .nav-backdrop {
   position: fixed;
   inset: 0;
   z-index: 299;
-  background: rgba(26, 22, 18, 0.35);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 /* ── Drawer ── */
@@ -326,196 +382,172 @@ onUnmounted(() => {
   right: 0;
   bottom: 0;
   z-index: 300;
-  width: min(420px, 100vw);
-  background: var(--color-bone);
+  width: min(440px, 100vw);
+  background: var(--omn-bg-primary);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   padding: 0 clamp(24px, 6vw, 48px) calc(48px + env(safe-area-inset-bottom, 0px));
-  box-shadow: -1px 0 0 rgba(26, 22, 18, 0.08), -24px 0 80px rgba(26, 22, 18, 0.12);
+  border-left: 1px solid var(--omn-border-primary);
+  box-shadow: -24px 0 64px rgba(0, 0, 0, 0.4);
 }
 
-/* ── Drawer head ── */
+/* Drawer head — match header bar height for visual continuity */
 .nav-drawer__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 52px;
+  height: 64px;
   flex-shrink: 0;
 }
-
-.nav-drawer__wordmark {
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  color: var(--color-ink-faint);
+.nav-drawer__eyebrow,
+.nav-drawer__close {
+  font-family: var(--omn-font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--omn-text-tertiary);
 }
-
 .nav-drawer__close {
   background: none;
   border: none;
   cursor: pointer;
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--color-ink-faint);
   padding: 0;
-  transition: color 0.2s;
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
-
-.nav-drawer__close:hover {
-  color: var(--color-ink);
-}
+.nav-drawer__close:hover { color: var(--omn-text-primary); }
 
 .nav-drawer__rule {
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--omn-border-subtle);
   flex-shrink: 0;
 }
 
-/* ── Nav links ── */
+/* ── Drawer nav links ── */
 .nav-drawer__links {
   display: flex;
   flex-direction: column;
-  margin-top: 40px;
+  margin-top: var(--space-10);
   flex: 1;
 }
-
 .drawer-link {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 6vw, 44px);
-  font-weight: 300;
-  font-style: italic;
-  color: var(--color-ink);
+  font-family: var(--omn-font-display);
+  font-size: clamp(24px, 5.5vw, 38px);
+  font-weight: var(--weight-light);
+  color: var(--omn-text-primary);
   text-decoration: none;
-  line-height: 1.25;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   padding: 14px 0;
-  border-bottom: 1px solid var(--color-ink-ghost);
-  transition: opacity 0.2s;
+  border-bottom: 1px solid var(--omn-border-subtle);
+  transition: color var(--omn-duration-micro) var(--omn-ease);
 }
-
 .drawer-link:first-child {
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--omn-border-subtle);
 }
-
-.drawer-link:hover {
-  opacity: 0.55;
-}
+.drawer-link:hover { color: var(--omn-accent); }
+.drawer-link--accent { color: var(--omn-accent); }
+.drawer-link--accent:hover { color: var(--omn-cta-hover); }
 
 /* ── Language switcher ── */
 .nav-drawer__lang {
-  margin-top: 36px;
-  padding-top: 28px;
-  border-top: 1px solid var(--color-ink-ghost);
+  margin-top: var(--space-10);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--omn-border-subtle);
 }
-
 .nav-drawer__lang-label {
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  color: var(--color-ink-faint);
-  margin-bottom: 16px;
+  font-family: var(--omn-font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--omn-text-tertiary);
+  margin: 0 0 var(--space-4);
 }
-
 .nav-drawer__lang-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
-
 .lang-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
   background: none;
-  border: 1px solid var(--color-ink-ghost);
-  border-radius: 999px;
+  border: 1px solid var(--omn-border-primary);
   cursor: pointer;
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  color: var(--color-ink-faint);
+  font-family: var(--omn-font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--omn-text-tertiary);
   padding: 7px 14px;
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  transition:
+    border-color var(--omn-duration-micro) var(--omn-ease),
+    color var(--omn-duration-micro) var(--omn-ease),
+    background var(--omn-duration-micro) var(--omn-ease);
 }
-
 .lang-pill:hover {
-  border-color: var(--color-ink-mid);
-  color: var(--color-ink);
+  border-color: var(--omn-border-emphasis);
+  color: var(--omn-text-primary);
 }
-
 .lang-pill--active {
-  border-color: var(--color-ink);
-  color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.04);
+  border-color: var(--omn-accent);
+  color: var(--omn-text-primary);
+  background: var(--omn-bg-interactive);
 }
-
 .lang-pill__flag {
   font-size: 14px;
   line-height: 1;
 }
 
-/* ── Drawer footer ── */
-.nav-drawer__footer {
+/* ── Drawer foot ── */
+.nav-drawer__foot {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding-top: 32px;
+  gap: var(--space-5);
+  padding-top: var(--space-8);
 }
-
 .nav-drawer__account {
-  color: var(--color-ink-faint);
+  font-family: var(--omn-font-display);
+  font-weight: var(--weight-medium);
+  color: var(--omn-text-secondary);
   text-decoration: none;
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  transition: color 0.2s;
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-body);
+  transition: color var(--omn-duration-micro) var(--omn-ease);
+}
+.nav-drawer__account:hover { color: var(--omn-text-primary); }
+.nav-drawer__meta {
+  margin: 0;
+  font-family: var(--omn-font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--omn-text-tertiary);
 }
 
-.nav-drawer__account:hover {
-  color: var(--color-ink);
-}
-
-/* ── Mobile adjustments ── */
-@media (max-width: 640px) {
-  .app-header__meta {
-    display: none;
-  }
-  .app-header__inner {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .app-header__logo {
-    justify-content: flex-start;
-  }
-  .app-header__right {
-    flex-shrink: 0;
-  }
-  /* Hide default slot pills on mobile — burger opens drawer with all links */
-  .app-header__pill {
-    display: none;
-  }
-}
-
-/* ── Backdrop transition ── */
+/* ── Transitions ── */
 .backdrop-fade-enter-active,
 .backdrop-fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s var(--omn-ease);
 }
-
 .backdrop-fade-enter-from,
-.backdrop-fade-leave-to {
-  opacity: 0;
-}
+.backdrop-fade-leave-to { opacity: 0; }
 
-/* ── Drawer slide transition ── */
 .drawer-slide-enter-active,
 .drawer-slide-leave-active {
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .drawer-slide-enter-from,
-.drawer-slide-leave-to {
-  transform: translateX(100%);
+.drawer-slide-leave-to { transform: translateX(100%); }
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .backdrop-fade-enter-active,
+  .backdrop-fade-leave-active,
+  .drawer-slide-enter-active,
+  .drawer-slide-leave-active {
+    transition: none;
+  }
 }
 </style>

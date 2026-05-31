@@ -3,13 +3,13 @@
     <AppHeader />
 
     <div class="error-inner">
-      <p class="label-caps error-code">
+      <AppEyebrow class="error-code">
         Error {{ error?.statusCode || '500' }}
-      </p>
+      </AppEyebrow>
 
-      <h1 class="font-display-italic error-headline">
+      <AppHeadline variant="italic" as="h1" class="error-headline">
         {{ error?.statusCode === 404 ? 'Page not found.' : 'Something went wrong.' }}
-      </h1>
+      </AppHeadline>
 
       <div class="error-rule" />
 
@@ -18,12 +18,12 @@
       </p>
 
       <div class="error-actions">
-        <CTAButton @click="handleAction" :arrow="true">
+        <AppButton variant="primary" @click="handleAction" :arrow="true">
           {{ error?.statusCode === 404 ? 'Back to Omenora' : 'Try again' }}
-        </CTAButton>
-        <CTAButton v-if="error?.statusCode !== 404" to="/" variant="outline">
+        </AppButton>
+        <AppButton variant="secondary" v-if="error?.statusCode !== 404" to="/">
           Back to Omenora
-        </CTAButton>
+        </AppButton>
       </div>
 
       <p v-if="error?.statusCode !== 404" class="error-support">
@@ -65,7 +65,7 @@ router.beforeEach(() => {
 <style scoped>
 .error-page {
   min-height: 100vh;
-  background: var(--color-bone);
+  background: var(--surface-base);
   display: flex;
   flex-direction: column;
 }
@@ -80,32 +80,32 @@ router.beforeEach(() => {
 }
 
 .error-code {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 20px;
 }
 
 .error-headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(40px, 9vw, 80px);
   line-height: 1.0;
   letter-spacing: -0.03em;
   margin: 0 0 32px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .error-rule {
   width: 48px;
   height: 1px;
-  background: var(--color-ink-mid);
+  background: var(--text-secondary);
   margin-bottom: 28px;
 }
 
 .error-message {
-  font-size: var(--text-body);
+  font-size: var(--text-base);
   line-height: 1.7;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   max-width: 44ch;
   margin-bottom: 36px;
 }
@@ -119,12 +119,12 @@ router.beforeEach(() => {
 
 .error-support {
   font-size: 12px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   letter-spacing: 0.01em;
 }
 
 .error-support__link {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   text-decoration: underline;
   text-underline-offset: 3px;
 }

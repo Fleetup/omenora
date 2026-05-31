@@ -1,41 +1,33 @@
 <template>
   <!-- ── Loading state ── -->
-  <div v-if="isLoadingReport" class="report-loading-page">
-    <div class="report-loading-content">
-      <p class="rload-eyebrow label-caps">Omenora</p>
-      <p class="rload-msg font-serif-italic">{{ t('craftingReport') }}</p>
-      <div class="rload-track">
-        <div class="rload-fill" />
-      </div>
-    </div>
-
-  </div>
+  <LoaderBar v-if="isLoadingReport" :active="isLoadingReport" :messages="[t('craftingReport')]" />
 
   <!-- ── Error state ── -->
   <div v-else-if="hasError" class="report-state-page">
     <div class="report-state-inner">
-      <p class="label-caps report-state__eyebrow">Something went wrong</p>
-      <h2 class="report-state__heading font-display-italic">{{ t('reportErrorMsg') }}</h2>
-      <p class="annotation report-state__sub">{{ t('reportErrorEmail') }}</p>
+      <AppEyebrow class="report-state__eyebrow">Something went wrong</AppEyebrow>
+      <AppHeadline as="h2" class="report-state__heading">{{ t('reportErrorMsg') }}</AppHeadline>
+      <AppCaption as="p" class="report-state__sub">{{ t('reportErrorEmail') }}</AppCaption>
       <div class="report-state__actions">
         <button class="report-state-btn" @click="reloadPage">{{ t('tryAgain') }}</button>
-        <p class="annotation">
+        <AppCaption as="p">
           {{ t('needHelp') }}
           <a href="mailto:support@omenora.com" class="report-state-link">support@omenora.com</a>
-        </p>
+        </AppCaption>
       </div>
     </div>
   </div>
 
   <!-- ── No report recovered ── -->
-  <div v-else-if="!store.report" class="report-state-page">
-    <div class="report-state-inner">
-      <PhoenixLoader :size="88" class="report-state__phoenix" />
-      <p class="label-caps report-state__eyebrow">Forecast complete</p>
-      <h2 class="report-state__heading font-display-italic">{{ t('reportReady') }}</h2>
-      <p class="annotation report-state__sub">{{ t('checkEmail') }}</p>
-    </div>
-  </div>
+  <ErrorState
+    v-else-if="!store.report"
+    title="We couldn't find your reading"
+    message="This can happen if your link expired or the page was opened without an active session. If you've purchased a reading, it's safe — check the email from your purchase for your link, or contact us and we'll help you get back to it."
+    primary-label="Return home"
+    primary-href="/"
+    secondary-label="Contact support"
+    secondary-href="mailto:support@omenora.com"
+  />
 
   <!-- ── Full report ── -->
   <div v-else class="report-page">
@@ -43,9 +35,9 @@
     <!-- Payment confirmation banner -->
     <Transition name="banner-fade">
       <div v-if="showPaymentBanner" class="payment-banner">
-        <span class="payment-banner__text annotation">
+        <AppCaption class="payment-banner__text">
           ❆ Your complete forecast has been sent to {{ store.email }}
-        </span>
+        </AppCaption>
         <button class="payment-banner__dismiss" aria-label="Dismiss" @click="showPaymentBanner = false">×</button>
       </div>
     </Transition>
@@ -71,13 +63,13 @@
     <section class="report-masthead">
       <div class="report-masthead__inner">
 
-        <p class="label-caps report-masthead__eyebrow">
+        <AppEyebrow class="report-masthead__eyebrow">
           Complete Natal Forecast · {{ store.firstName }}
-        </p>
+        </AppEyebrow>
 
-        <h1 class="report-masthead__name font-display-italic">
+        <AppHeadline as="h1" class="report-masthead__name">
           {{ store.report.archetypeName }}
-        </h1>
+        </AppHeadline>
 
         <div v-if="archetypeFile" class="report-masthead__symbol">
           <img
@@ -91,8 +83,8 @@
         <div class="report-masthead__planets">
           <div v-for="p in keyPlanets" :key="p.label" class="planet-cell">
             <img :src="`/symbols/${p.sign}.svg`" :alt="p.sign" class="planet-cell__zodiac" aria-hidden="true" />
-            <span class="planet-cell__sign annotation">{{ p.sign }}</span>
-            <span class="planet-cell__label annotation">{{ p.label }}</span>
+            <AppCaption class="planet-cell__sign">{{ p.sign }}</AppCaption>
+            <AppCaption class="planet-cell__label">{{ p.label }}</AppCaption>
           </div>
         </div>
 
@@ -100,13 +92,13 @@
 
         <!-- Meta strip -->
         <div class="report-masthead__meta">
-          <span class="annotation">{{ store.dateOfBirth }}</span>
-          <span class="annotation" style="opacity:0.3">·</span>
-          <span class="annotation">{{ store.city }}</span>
-          <span class="annotation" style="opacity:0.3">·</span>
-          <span class="annotation">Life Path {{ store.lifePathNumber }}</span>
-          <span class="annotation" style="opacity:0.3">·</span>
-          <span class="annotation">{{ store.report.element }}</span>
+          <AppCaption>{{ store.dateOfBirth }}</AppCaption>
+          <AppCaption style="opacity:0.3">·</AppCaption>
+          <AppCaption>{{ store.city }}</AppCaption>
+          <AppCaption style="opacity:0.3">·</AppCaption>
+          <AppCaption>Life Path {{ store.lifePathNumber }}</AppCaption>
+          <AppCaption style="opacity:0.3">·</AppCaption>
+          <AppCaption>{{ store.report.element }}</AppCaption>
         </div>
 
         <!-- Power traits -->
@@ -123,12 +115,12 @@
     <div v-if="store.bundlePurchased || store.oraclePurchased" class="unlock-notice">
       <span class="unlock-notice__icon">✦</span>
       <div>
-        <p class="label-caps unlock-notice__title">
+        <AppEyebrow class="unlock-notice__title">
           {{ store.oraclePurchased ? t('oracleUnlocked') : t('bundleUnlocked') }}
-        </p>
-        <p class="annotation unlock-notice__desc">
+        </AppEyebrow>
+        <AppCaption as="p" class="unlock-notice__desc">
           {{ store.oraclePurchased ? t('oracleDesc') : t('bundleDesc') }}
-        </p>
+        </AppCaption>
       </div>
     </div>
 
@@ -136,40 +128,40 @@
     <!-- Generated data display -->
     <section v-if="store.birthChartData" class="report-section birth-chart-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">✦</span>
+        <AppCaption class="report-section__num">✦</AppCaption>
         <div>
-          <p class="label-caps report-section__tradition">{{ t('fullBirthChart') }}</p>
-          <h2 class="report-section__heading font-serif">{{ store.birthChartData.chartTitle }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('fullBirthChart') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ store.birthChartData.chartTitle }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="birth-chart-signs-grid">
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">{{ t('risingLabel') }}</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.risingSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">{{ t('risingLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.risingSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">{{ t('sunLabel') }}</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.sunSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">{{ t('sunLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.sunSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">{{ t('moonLabel') }}</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.moonSign }}</p>
+            <AppEyebrow class="bc-sign-cell__label">{{ t('moonLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.moonSign }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">{{ t('planetLabel') }}</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.dominantPlanet }}</p>
+            <AppEyebrow class="bc-sign-cell__label">{{ t('planetLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.dominantPlanet }}</AppSubhead>
           </div>
           <div class="bc-sign-cell">
-            <p class="label-caps bc-sign-cell__label">Power House</p>
-            <p class="bc-sign-cell__value font-serif">{{ store.birthChartData.powerHouse }}</p>
+            <AppEyebrow class="bc-sign-cell__label">Power House</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="bc-sign-cell__value">{{ store.birthChartData.powerHouse }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__para">{{ store.birthChartData.reading }}</p>
         <div class="bc-forecast-box">
-          <p class="label-caps bc-forecast-box__label">{{ t('planetaryForecast') }}</p>
-          <p class="bc-forecast-box__text font-serif-italic">{{ store.birthChartData.forecast2026 }}</p>
+          <AppEyebrow class="bc-forecast-box__label">{{ t('planetaryForecast') }}</AppEyebrow>
+          <AppSubhead as="p" class="bc-forecast-box__text">{{ store.birthChartData.forecast2026 }}</AppSubhead>
         </div>
       </div>
     </section>
@@ -177,35 +169,14 @@
     <!-- Birth chart: oracle/purchased — generate button -->
     <div v-else-if="(store.oraclePurchased || store.birthChartPurchased) && store.timeOfBirth" class="upsell-inline upsell-inline--active">
       <div class="upsell-inline__info">
-        <p class="label-caps upsell-inline__title">✦ {{ store.oraclePurchased ? t('birthChartIncluded') : t('birthChartUnlockedLabel') }}</p>
-        <p class="annotation upsell-inline__desc">{{ store.oraclePurchased ? t('birthChartPositionsIncluded') : t('birthChartPositionsUnlocked') }}</p>
+        <AppEyebrow class="upsell-inline__title">✦ {{ store.oraclePurchased ? t('birthChartIncluded') : t('birthChartUnlockedLabel') }}</AppEyebrow>
+        <AppCaption as="p" class="upsell-inline__desc">{{ store.oraclePurchased ? t('birthChartPositionsIncluded') : t('birthChartPositionsUnlocked') }}</AppCaption>
       </div>
       <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
         {{ isLoadingBirthChart ? t('generatingBirthChart') : t('generateBirthChart') }}
       </button>
     </div>
 
-    <!-- Birth chart: has time of birth, not yet purchased -->
-    <div v-else-if="store.timeOfBirth" class="upsell-inline upsell-inline--active">
-      <div class="upsell-inline__info">
-        <p class="label-caps upsell-inline__title">{{ t('birthChartReady') }}</p>
-        <p class="annotation upsell-inline__desc">{{ t('birthChartPrice') }}</p>
-      </div>
-      <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
-        {{ isLoadingBirthChart ? t('loadingBirthChart') : t('unlockBirthChart') }}
-      </button>
-    </div>
-
-    <!-- Birth chart: no time of birth -->
-    <div v-else class="upsell-inline upsell-inline--active">
-      <div class="upsell-inline__info">
-        <p class="label-caps upsell-inline__title">{{ t('birthChartUnlockedLabel') }}</p>
-        <p class="annotation upsell-inline__desc">{{ t('birthChartRequiresTime') }}</p>
-      </div>
-      <button class="upsell-inline__btn" :disabled="isLoadingBirthChart" @click="buyBirthChart">
-        {{ isLoadingBirthChart ? t('loadingBirthChart') : '$4.99 — Unlock' }}
-      </button>
-    </div>
 
     <!-- ── CORE REPORT SECTIONS ── -->
     <div class="report-body">
@@ -215,48 +186,26 @@
           :id="`section-${key}`"
         >
           <div class="report-section__header">
-            <span class="annotation report-section__num">{{ String(idx + 1).padStart(2, '0') }}</span>
+            <AppCaption class="report-section__num">{{ String(idx + 1).padStart(2, '0') }}</AppCaption>
             <div>
-              <p class="label-caps report-section__tradition">
+              <AppEyebrow class="report-section__tradition">
                 {{ sectionTraditionLabel(key) }}
-              </p>
-              <h2 class="report-section__heading font-serif">
+              </AppEyebrow>
+              <AppSubhead as="h2" variant="strong" class="report-section__heading">
                 {{ store.report.sections[key].title }}
-              </h2>
+              </AppSubhead>
             </div>
           </div>
           <div class="editorial-rule" />
           <div class="report-section__body">
             <div v-if="key === 'affirmation'" class="affirmation-block">
-              <p class="affirmation-block__text font-serif-italic">
+              <AppSubhead as="p" class="affirmation-block__text">
                 {{ store.report.sections[key].content }}
-              </p>
+              </AppSubhead>
             </div>
             <p v-else class="report-section__para">{{ store.report.sections[key].content }}</p>
           </div>
         </article>
-
-        <!-- Mid-content subscription upsell — inline after forecast section -->
-        <section
-          v-if="key === 'forecast' && store.report && !store.subscriptionActive && !store.oraclePurchased"
-          class="upsell-section upsell-section--sub upsell-section--inline"
-        >
-          <div class="editorial-rule" />
-          <div class="upsell-section__inner">
-            <p class="label-caps upsell-section__eyebrow">What's next</p>
-            <h3 class="upsell-section__heading font-serif-italic">
-              Continue tomorrow, {{ store.firstName || store.report.archetypeName }}
-            </h3>
-            <p class="annotation upsell-section__sub">
-              Your forecast just covered the months ahead. See what tomorrow holds for the {{ store.report.archetypeName.replace('The ', '') }} in you, every morning.
-            </p>
-            <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription('mid_content')">
-              {{ isStartingSub ? 'Loading...' : 'Start my 7-day free trial' }}
-            </button>
-            <p class="annotation upsell-section__note">Free 7 days · Cancel anytime</p>
-          </div>
-          <div class="editorial-rule" />
-        </section>
       </template>
     </div>
 
@@ -267,29 +216,29 @@
       <div class="report-section__header">
         <img src="/symbols/Life Path Number copy.svg" alt="" class="report-section__tradition-symbol" aria-hidden="true" />
         <div>
-          <p class="label-caps report-section__tradition">{{ t('vedicReadingLabel') }}</p>
-          <h2 class="report-section__heading font-serif">{{ vedicData.vedicTitle }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('vedicReadingLabel') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ vedicData.vedicTitle }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="regional-pills">
           <div class="regional-pill">
-            <p class="label-caps regional-pill__label">{{ t('nakshatraLabel') }}</p>
-            <p class="regional-pill__value font-serif">{{ vedicData.nakshatraName }}</p>
+            <AppEyebrow class="regional-pill__label">{{ t('nakshatraLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="regional-pill__value">{{ vedicData.nakshatraName }}</AppSubhead>
           </div>
           <div class="regional-pill">
-            <p class="label-caps regional-pill__label">{{ t('rulingPlanetLabel') }}</p>
-            <p class="regional-pill__value font-serif">{{ vedicData.rulingPlanet }}</p>
+            <AppEyebrow class="regional-pill__label">{{ t('rulingPlanetLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="regional-pill__value">{{ vedicData.rulingPlanet }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__para">{{ vedicData.reading }}</p>
         <div class="regional-highlight">
-          <p class="label-caps regional-highlight__label">{{ t('karmicMissionLabel') }}</p>
-          <p class="regional-highlight__text font-serif-italic">{{ vedicData.karmicMission }}</p>
+          <AppEyebrow class="regional-highlight__label">{{ t('karmicMissionLabel') }}</AppEyebrow>
+          <AppSubhead as="p" class="regional-highlight__text">{{ vedicData.karmicMission }}</AppSubhead>
         </div>
         <div class="regional-tags">
-          <span class="annotation regional-tags__label">{{ t('practice2026') }}</span>
+          <AppCaption class="regional-tags__label">{{ t('practice2026') }}</AppCaption>
           <span class="regional-tag">{{ vedicData.remedy }}</span>
         </div>
       </div>
@@ -300,29 +249,29 @@
       <div class="report-section__header">
         <img src="/symbols/Destiny Forecast copy.svg" alt="" class="report-section__tradition-symbol" aria-hidden="true" />
         <div>
-          <p class="label-caps report-section__tradition">{{ t('baziReadingLabel') }}</p>
-          <h2 class="report-section__heading font-serif">{{ baziData.baziTitle }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('baziReadingLabel') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ baziData.baziTitle }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="regional-pills">
           <div class="regional-pill">
-            <p class="label-caps regional-pill__label">{{ t('dayMasterLabel') }}</p>
-            <p class="regional-pill__value font-serif">{{ baziData.dayMaster }}</p>
+            <AppEyebrow class="regional-pill__label">{{ t('dayMasterLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="regional-pill__value">{{ baziData.dayMaster }}</AppSubhead>
           </div>
           <div class="regional-pill">
-            <p class="label-caps regional-pill__label">{{ t('dominantElementLabel') }}</p>
-            <p class="regional-pill__value font-serif">{{ baziData.dominantElement }}</p>
+            <AppEyebrow class="regional-pill__label">{{ t('dominantElementLabel') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="regional-pill__value">{{ baziData.dominantElement }}</AppSubhead>
           </div>
         </div>
         <p class="report-section__para">{{ baziData.reading }}</p>
         <div class="regional-highlight">
-          <p class="label-caps regional-highlight__label">{{ t('wealthLuck2026') }}</p>
-          <p class="regional-highlight__text font-serif-italic">{{ baziData.wealthLuck2026 }}</p>
+          <AppEyebrow class="regional-highlight__label">{{ t('wealthLuck2026') }}</AppEyebrow>
+          <AppSubhead as="p" class="regional-highlight__text">{{ baziData.wealthLuck2026 }}</AppSubhead>
         </div>
         <div class="regional-tags">
-          <span class="annotation regional-tags__label">{{ t('luckyDirections') }}</span>
+          <AppCaption class="regional-tags__label">{{ t('luckyDirections') }}</AppCaption>
           <span v-for="dir in baziData.luckyDirections" :key="dir" class="regional-tag">{{ dir }}</span>
         </div>
       </div>
@@ -333,26 +282,26 @@
       <div class="report-section__header">
         <img src="/symbols/Love & Relationship Patterns copy.svg" alt="" class="report-section__tradition-symbol" aria-hidden="true" />
         <div>
-          <p class="label-caps report-section__tradition">{{ t('tarotReadingLabel') }}</p>
-          <h2 class="report-section__heading font-serif">{{ tarotData.soulCard }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('tarotReadingLabel') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ tarotData.soulCard }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="regional-highlight regional-highlight--center">
-          <p class="regional-highlight__text font-serif-italic">{{ tarotData.soulCardMeaning }}</p>
+          <AppSubhead as="p" class="regional-highlight__text">{{ tarotData.soulCardMeaning }}</AppSubhead>
         </div>
         <p class="report-section__para">{{ tarotData.reading }}</p>
         <div class="regional-highlight">
-          <p class="label-caps regional-highlight__label">{{ t('loveDstiny') }}</p>
-          <p class="regional-highlight__text font-serif-italic">{{ tarotData.loveMessage }}</p>
+          <AppEyebrow class="regional-highlight__label">{{ t('loveDstiny') }}</AppEyebrow>
+          <AppSubhead as="p" class="regional-highlight__text">{{ tarotData.loveMessage }}</AppSubhead>
         </div>
         <div class="regional-highlight regional-highlight--center">
-          <p class="label-caps regional-highlight__label">{{ t('blessingLabel') }}</p>
-          <p class="regional-highlight__text font-serif-italic">{{ tarotData.blessing }}</p>
+          <AppEyebrow class="regional-highlight__label">{{ t('blessingLabel') }}</AppEyebrow>
+          <AppSubhead as="p" class="regional-highlight__text">{{ tarotData.blessing }}</AppSubhead>
         </div>
         <div class="regional-tags">
-          <span class="annotation regional-tags__label">{{ t('protectiveCharm') }}</span>
+          <AppCaption class="regional-tags__label">{{ t('protectiveCharm') }}</AppCaption>
           <span class="regional-tag">{{ tarotData.luckyCharm }}</span>
         </div>
       </div>
@@ -360,18 +309,18 @@
 
     <!-- Regional loading -->
     <div v-if="isLoadingRegional" class="regional-loading">
-      <p class="annotation regional-loading__text">
+      <AppCaption as="p" class="regional-loading__text">
         {{ store.region === 'india' ? t('loadingVedic') : store.region === 'china' ? t('loadingBazi') : t('loadingSpiritual') }}
-      </p>
+      </AppCaption>
     </div>
 
     <!-- ── TRADITION SWITCHER ── -->
     <section v-if="store.report && !isSwitchingTradition && !isSwitchComplete" class="tradition-switcher">
       <div class="tradition-switcher__header">
-        <p class="label-caps tradition-switcher__label">{{ t('traditionSwitcherLabel') }}</p>
-        <p class="annotation tradition-switcher__sub">
-          {{ store.oraclePurchased ? t('traditionSwitcherSubOracle') : t('traditionSwitcherSubPaid') }}
-        </p>
+        <AppEyebrow class="tradition-switcher__label">{{ t('traditionSwitcherLabel') }}</AppEyebrow>
+        <AppCaption as="p" class="tradition-switcher__sub">
+          {{ t('traditionSwitcherSubOracle') }}
+        </AppCaption>
       </div>
       <div class="tradition-options">
         <button
@@ -393,7 +342,7 @@
           </span>
           <span v-if="store.region === opt.value" class="tradition-opt-tag tradition-opt-tag--active label-caps">{{ t('currentLabel') }}</span>
           <span v-else-if="store.oraclePurchased || isTraditionUnlocked(opt.value)" class="tradition-opt-tag tradition-opt-tag--free label-caps">{{ t('freeLabel') }}</span>
-          <span v-else class="tradition-opt-tag tradition-opt-tag--paid label-caps">$2.99</span>
+          <span v-else class="tradition-opt-tag tradition-opt-tag--free label-caps">{{ t('freeLabel') }}</span>
         </button>
       </div>
     </section>
@@ -401,56 +350,56 @@
     <!-- Tradition switching state -->
     <div v-if="isSwitchingTradition" class="tradition-loading">
       <div class="tradition-loading__ring" />
-      <p class="annotation tradition-loading__text">{{ t('traditionGenerating').replace('{tradition}', switchingTraditionLabel) }}</p>
+      <AppCaption as="p" class="tradition-loading__text">{{ t('traditionGenerating').replace('{tradition}', switchingTraditionLabel) }}</AppCaption>
     </div>
 
     <!-- Tradition switch success -->
     <div v-if="isSwitchComplete" class="tradition-success">
       <span class="tradition-success__icon">✦</span>
-      <p class="label-caps tradition-success__text">{{ t('traditionUnlocked').replace('{tradition}', switchedTraditionLabel) }}</p>
+      <AppEyebrow class="tradition-success__text">{{ t('traditionUnlocked').replace('{tradition}', switchedTraditionLabel) }}</AppEyebrow>
     </div>
 
     <!-- ── DESTINY CALENDAR (bundle/oracle) ── -->
     <section v-if="(store.bundlePurchased || store.oraclePurchased) && store.calendarData" class="report-section calendar-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">◈</span>
+        <AppCaption class="report-section__num">◈</AppCaption>
         <div>
-          <p class="label-caps report-section__tradition">YOUR 2026 DESTINY CALENDAR</p>
-          <h2 class="report-section__heading font-serif">{{ store.calendarData.overallTheme }}</h2>
+          <AppEyebrow class="report-section__tradition">YOUR 2026 DESTINY CALENDAR</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ store.calendarData.overallTheme }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
         <div class="calendar-peaks">
-          <span v-for="m in store.calendarData.peakMonths" :key="m" class="cal-peak-chip label-caps">{{ m }} ★</span>
-          <span v-for="m in store.calendarData.cautionMonths" :key="m" class="cal-caution-chip label-caps">{{ m }} ⚠</span>
+          <AppEyebrow as="span" v-for="m in store.calendarData.peakMonths" :key="m" class="cal-peak-chip">{{ m }} ★</AppEyebrow>
+          <AppEyebrow as="span" v-for="m in store.calendarData.cautionMonths" :key="m" class="cal-caution-chip">{{ m }} ⚠</AppEyebrow>
         </div>
         <div class="calendar-months">
           <div
             v-for="month in visibleCalendarMonths"
             :key="month.month"
             class="month-card"
-            :style="{ borderLeftColor: month.color || 'var(--color-gold)' }"
+            :style="{ borderLeftColor: month.color || 'var(--accent-gold)' }"
           >
             <div class="month-card__header">
               <div>
                 <p class="month-card__name">{{ month.month }}</p>
-                <p class="annotation month-card__theme">{{ month.theme }}</p>
+                <AppCaption as="p" class="month-card__theme">{{ month.theme }}</AppCaption>
               </div>
               <div class="month-card__energy">
-                <span class="annotation month-card__energy-label">Energy</span>
+                <AppCaption class="month-card__energy-label">Energy</AppCaption>
                 <div class="month-card__energy-track">
-                  <div class="month-card__energy-fill" :style="{ width: month.energyLevel + '%', background: month.color || 'var(--color-gold)' }" />
+                  <div class="month-card__energy-fill" :style="{ width: month.energyLevel + '%', background: month.color || 'var(--accent-gold)' }" />
                 </div>
               </div>
             </div>
             <div class="month-card__insights">
-              <p class="month-card__insight annotation"><HoroscopeSymbol type="love" :size="14" class="month-card__icon" /> {{ month.love }}</p>
-              <p class="month-card__insight annotation"><HoroscopeSymbol type="work" :size="14" class="month-card__icon" /> {{ month.money }}</p>
-              <p class="month-card__insight annotation"><HoroscopeSymbol type="health" :size="14" class="month-card__icon" /> {{ month.career }}</p>
-              <p v-if="month.warning" class="month-card__warning annotation">⚠ {{ month.warning }}</p>
+              <AppCaption as="p" class="month-card__insight"><HoroscopeSymbol type="love" :size="14" class="month-card__icon" /> {{ month.love }}</AppCaption>
+              <AppCaption as="p" class="month-card__insight"><HoroscopeSymbol type="work" :size="14" class="month-card__icon" /> {{ month.money }}</AppCaption>
+              <AppCaption as="p" class="month-card__insight"><HoroscopeSymbol type="health" :size="14" class="month-card__icon" /> {{ month.career }}</AppCaption>
+              <AppCaption as="p" v-if="month.warning" class="month-card__warning">⚠ {{ month.warning }}</AppCaption>
             </div>
-            <p class="annotation month-card__lucky">{{ t('luckyDays') }} {{ month.luckyDays?.join(', ') }}</p>
+            <AppCaption as="p" class="month-card__lucky">{{ t('luckyDays') }} {{ month.luckyDays?.join(', ') }}</AppCaption>
           </div>
         </div>
       </div>
@@ -458,31 +407,31 @@
 
     <!-- Calendar generating -->
     <div v-if="(store.bundlePurchased || store.oraclePurchased) && !store.calendarData && isGeneratingCalendar" class="regional-loading">
-      <p class="annotation regional-loading__text">{{ t('generatingCalendar') }}</p>
+      <AppCaption as="p" class="regional-loading__text">{{ t('generatingCalendar') }}</AppCaption>
     </div>
 
     <!-- ── COMPATIBILITY (bundle/oracle) ── -->
     <section v-if="store.bundlePurchased || store.oraclePurchased" class="report-section compat-free-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">◎</span>
+        <AppCaption class="report-section__num">◎</AppCaption>
         <div>
-          <p class="label-caps report-section__tradition">{{ t('compatReadingLabel') }}</p>
-          <h2 class="report-section__heading font-serif">{{ t('compatIncluded') }}</h2>
+          <AppEyebrow class="report-section__tradition">{{ t('compatReadingLabel') }}</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ t('compatIncluded') }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
-        <p class="annotation report-section__para">{{ t('compatEnterDetails') }}</p>
+        <AppCaption as="p" class="report-section__para">{{ t('compatEnterDetails') }}</AppCaption>
 
         <!-- Result -->
         <div v-if="bundleCompatibilityResult" class="compat-result">
           <div class="compat-result__score-block">
-            <p class="label-caps compat-result__score-label">{{ t('compatScore') }}</p>
-            <p class="compat-result__score font-serif">{{ bundleCompatibilityResult.compatibilityScore }}%</p>
-            <p class="annotation compat-result__title">{{ bundleCompatibilityResult.compatibilityTitle }}</p>
+            <AppEyebrow class="compat-result__score-label">{{ t('compatScore') }}</AppEyebrow>
+            <AppSubhead as="p" variant="strong" class="compat-result__score">{{ bundleCompatibilityResult.compatibilityScore }}%</AppSubhead>
+            <AppCaption as="p" class="compat-result__title">{{ bundleCompatibilityResult.compatibilityTitle }}</AppCaption>
           </div>
           <div v-for="(section, key) in bundleCompatibilityResult.sections" :key="key" class="compat-result__section">
-            <p class="label-caps compat-result__section-title">{{ section.title }}</p>
+            <AppEyebrow class="compat-result__section-title">{{ section.title }}</AppEyebrow>
             <p class="report-section__para">{{ section.content }}</p>
           </div>
         </div>
@@ -503,127 +452,28 @@
       </div>
     </section>
 
-    <!-- ── UPSELLS (basic report buyers only) ── -->
-
-    <!-- Bundle upsell -->
-    <section v-if="!store.bundlePurchased && !store.oraclePurchased" class="upsell-section">
-      <div class="editorial-rule" />
-      <div class="upsell-section__inner">
-        <p class="label-caps upsell-section__eyebrow">Bundle</p>
-        <h3 class="upsell-section__heading font-serif-italic">{{ t('bundleHeadline') }}</h3>
-        <p class="annotation upsell-section__sub">{{ t('bundleDescription') }}</p>
-        <div class="upsell-items">
-          <div class="upsell-item">
-            <div class="upsell-item__info">
-              <p class="upsell-item__name">{{ t('bundleIncludes1') }}</p>
-            </div>
-            <span class="upsell-item__check">✓</span>
-          </div>
-          <div class="upsell-item">
-            <div class="upsell-item__info">
-              <p class="upsell-item__name">{{ t('bundleIncludes2') }}</p>
-            </div>
-            <span class="upsell-item__check">✓</span>
-          </div>
-        </div>
-        <div class="upsell-section__price-row">
-          <span class="upsell-section__price font-serif">$9.99</span>
-        </div>
-        <button class="upsell-cta-btn" :disabled="isLoadingBundle" @click="buyBundle">
-          {{ isLoadingBundle ? 'Loading...' : t('unlockBundle') }}
-        </button>
-        <p class="annotation upsell-section__note">{{ t('oneTimePurchase') }}</p>
-      </div>
-      <div class="editorial-rule" />
-    </section>
-
-    <!-- Calendar upsell -->
-    <section v-if="!store.calendarPurchased && !store.bundlePurchased && !store.oraclePurchased" class="upsell-section">
-      <div class="upsell-section__inner">
-        <div class="upsell-section__header-row">
-          <div>
-            <p class="label-caps upsell-section__eyebrow">Timing</p>
-            <h3 class="upsell-section__heading font-serif-italic">Your 2026 Lucky Timing Calendar</h3>
-            <p class="annotation upsell-section__sub">Month-by-month destiny forecast</p>
-          </div>
-          <span class="upsell-section__price font-serif">$4.99</span>
-        </div>
-        <div class="upsell-features">
-          <p class="annotation upsell-feature">Peak months for love &amp; money</p>
-          <p class="annotation upsell-feature">Monthly lucky days highlighted</p>
-          <p class="annotation upsell-feature">Career &amp; purpose windows</p>
-          <p class="annotation upsell-feature">Caution periods to navigate</p>
-        </div>
-        <div class="cal-preview">
-          <div class="cal-bar-row">
-            <span class="annotation cal-bar-label">January</span>
-            <div class="cal-bar-track"><div class="cal-bar-fill" style="width:65%" /></div>
-          </div>
-          <div class="cal-bar-row">
-            <span class="annotation cal-bar-label">April</span>
-            <div class="cal-bar-track"><div class="cal-bar-fill" style="width:90%;opacity:0.9" /></div>
-          </div>
-          <div class="cal-bar-row">
-            <span class="annotation cal-bar-label">July</span>
-            <div class="cal-bar-track"><div class="cal-bar-fill" style="width:45%;opacity:0.5" /></div>
-          </div>
-        </div>
-        <button class="upsell-cta-btn" :disabled="isLoadingCalendar" @click="buyCalendar">
-          {{ isLoadingCalendar ? 'Processing...' : 'Unlock My 2026 Calendar →' }}
-        </button>
-        <p class="annotation upsell-section__note">One-time purchase · Instant access</p>
-      </div>
-    </section>
-
-    <!-- Subscription upsell — end of content -->
-    <section v-if="store.report && !store.subscriptionActive && !store.oraclePurchased" class="upsell-section upsell-section--sub">
-      <div class="editorial-rule" />
-      <div class="upsell-section__inner">
-        <div class="upsell-section__header-row">
-          <div>
-            <p class="label-caps upsell-section__eyebrow">Daily forecast</p>
-            <h3 class="upsell-section__heading font-serif-italic">Tomorrow, for {{ store.report.archetypeName }}</h3>
-            <p class="annotation upsell-section__sub">Your natal chart, read every morning at 6am</p>
-          </div>
-          <div class="upsell-section__price-block">
-            <p class="annotation upsell-section__trial-label">Free 7 days, then</p>
-            <span class="upsell-section__price font-serif">$6.99<span class="upsell-section__price-period">/mo</span></span>
-          </div>
-        </div>
-        <div class="upsell-features">
-          <p class="annotation upsell-feature">✦ Tailored to your {{ store.report.archetypeName }} archetype</p>
-          <p class="annotation upsell-feature">✦ Delivered each morning, written by your stars</p>
-          <p class="annotation upsell-feature">✦ Cancel anytime — keep your reading</p>
-        </div>
-        <button class="upsell-cta-btn" :disabled="isStartingSub" @click="startSubscription('end_content')">
-          {{ isStartingSub ? 'Loading...' : 'Start my 7-day free trial' }}
-        </button>
-        <p class="annotation upsell-section__note">Cancel anytime · No charge until day 8 · Your card stays secure with Stripe</p>
-      </div>
-      <div class="editorial-rule" />
-    </section>
 
 
     <!-- ── SHARE & EXPORT ── -->
     <section class="report-section share-section">
       <div class="report-section__header">
-        <span class="annotation report-section__num">◇</span>
+        <AppCaption class="report-section__num">◇</AppCaption>
         <div>
-          <p class="label-caps report-section__tradition">Export</p>
-          <h2 class="report-section__heading font-serif">{{ t('shareDestiny') }}</h2>
+          <AppEyebrow class="report-section__tradition">Export</AppEyebrow>
+          <AppSubhead as="h2" variant="strong" class="report-section__heading">{{ t('shareDestiny') }}</AppSubhead>
         </div>
       </div>
       <div class="editorial-rule" />
       <div class="report-section__body">
-        <p class="annotation report-section__para">{{ t('shareDesc') }}</p>
+        <AppCaption as="p" class="report-section__para">{{ t('shareDesc') }}</AppCaption>
 
         <!-- Share card preview -->
         <div class="share-card">
-          <p class="label-caps share-card__archetype">{{ store.report.archetypeName }}</p>
+          <AppEyebrow class="share-card__archetype">{{ store.report.archetypeName }}</AppEyebrow>
           <div class="share-card__traits">
-            <span v-for="trait in store.report.powerTraits" :key="trait" class="share-card__trait annotation">{{ trait }}</span>
+            <AppCaption v-for="trait in store.report.powerTraits" :key="trait" class="share-card__trait">{{ trait }}</AppCaption>
           </div>
-          <p class="annotation share-card__domain">omenora.com</p>
+          <AppCaption as="p" class="share-card__domain">omenora.com</AppCaption>
         </div>
 
         <div class="share-actions">
@@ -634,7 +484,7 @@
             {{ isDownloadingPDF ? 'Generating...' : t('downloadPDF') }}
           </button>
         </div>
-        <p v-if="cardDownloadError" class="share-error annotation">{{ cardDownloadError }}</p>
+        <AppCaption as="p" v-if="cardDownloadError" class="share-error">{{ cardDownloadError }}</AppCaption>
 
         <div v-if="store.email" class="share-email-row">
           <button
@@ -654,9 +504,9 @@
     <section class="report-footer-cta">
       <div class="editorial-rule" />
       <div class="report-footer-cta__inner">
-        <h2 class="font-display-italic report-footer-cta__headline">
+        <AppHeadline as="h2" class="report-footer-cta__headline">
           Your forecast is complete.
-        </h2>
+        </AppHeadline>
         <p class="report-footer-cta__body">
           Return tomorrow for your daily forecast,
           tailored to your {{ store.report.archetypeName }} archetype.
@@ -679,7 +529,7 @@
       <span class="report-footer-sep" aria-hidden="true">·</span>
       <NuxtLink to="/terms" class="report-footer-link">Terms of Service</NuxtLink>
     </nav>
-    <p class="report-footer-crisis annotation">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</p>
+    <AppCaption as="p" class="report-footer-crisis">If you are in emotional distress, contact the Crisis Text Line: text HOME to 741741</AppCaption>
   </footer>
 </template>
 
@@ -696,7 +546,7 @@ const store = useAnalysisStore()
 const route = useRoute()
 const { provisionUser } = useAuth()
 const { t } = useLanguage()
-const { $trackPurchase, $trackReportViewed, $trackUpsellViewed, $trackUpsellAccepted, $trackShareCardOpened, $trackShareCardDownloaded } = useNuxtApp() as any
+const { $trackPurchase, $trackReportViewed, $trackShareCardOpened, $trackShareCardDownloaded } = useNuxtApp() as any
 
 useSeoMeta({
   title: () => store.firstName ? `${store.firstName}'s Personality Reading — OMENORA` : 'Your Personality Reading — OMENORA',
@@ -967,14 +817,6 @@ onMounted(async () => {
   }
 
   isLoadingReport.value = true
-
-
-  if (sessionId && _isTraditionSwitch) {
-    // Tradition-switch return: the dedicated onMounted below handles everything.
-    // Skip normal session-based report loading to avoid clobbering store state.
-    isLoadingReport.value = false
-    return
-  }
 
   if (sessionId) {
     try {
@@ -1270,8 +1112,8 @@ function trackPurchasePixel(sessionId: string, meta: Record<string, string>) {
 
   const purchaseAmount = meta.oracle === 'true' ? 24.99
     : meta.bundle === 'true' ? 9.99
-    : meta.birth_chart === 'true' ? 2.99
-    : 2.99
+    : meta.birth_chart === 'true' ? 4.99
+    : 4.99
 
   const contentName = meta.oracle === 'true' ? 'Oracle Bundle'
     : meta.bundle === 'true' ? 'Most Popular Bundle'
@@ -1285,39 +1127,6 @@ function trackPurchasePixel(sessionId: string, meta: Record<string, string>) {
   })
 }
 
-const isLoadingBundle = ref(false)
-
-async function buyBundle() {
-  if (isLoadingBundle.value) return
-  $trackUpsellViewed({ type: 'bundle', archetype: store.archetype, language: store.language })
-  isLoadingBundle.value = true
-  try {
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-      '/api/create-bundle-payment',
-      {
-        method: 'POST',
-        body: {
-          email: store.email,
-          firstName: store.firstName,
-          archetype: store.archetype,
-          lifePathNumber: store.lifePathNumber,
-          dateOfBirth: store.dateOfBirth,
-          tempId: store.tempId,
-          region: store.region,
-          language: store.language,
-          origin: window.location.origin,
-        },
-      }
-    )
-    if (url) {
-      $trackUpsellAccepted({ type: 'bundle', price: 9.99, archetype: store.archetype, language: store.language })
-      window.location.href = url
-    }
-  } catch {
-    console.error('Bundle purchase failed')
-    isLoadingBundle.value = false
-  }
-}
 
 
 const isDownloading = ref(false)
@@ -1368,35 +1177,6 @@ const partnerName = ref('')
 const partnerDob = ref('')
 const partnerCity = ref('')
 
-const isLoadingCalendar = ref(false)
-
-async function buyCalendar() {
-  if (isLoadingCalendar.value) return
-  $trackUpsellViewed({ type: 'calendar', archetype: store.archetype, language: store.language })
-  isLoadingCalendar.value = true
-  try {
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-      '/api/create-calendar-payment',
-      {
-        method: 'POST',
-        body: {
-          email: store.email,
-          firstName: store.firstName,
-          tempId: store.tempId,
-          language: store.language,
-          origin: window.location.origin,
-        },
-      }
-    )
-    if (url) {
-      $trackUpsellAccepted({ type: 'calendar', price: 4.99, archetype: store.archetype, language: store.language })
-      window.location.href = url
-    }
-  } catch {
-    console.error('Calendar purchase failed')
-    isLoadingCalendar.value = false
-  }
-}
 
 const isLoadingBirthChart = ref(false)
 
@@ -1441,74 +1221,10 @@ async function buyBirthChart() {
     await generateBirthChartAuto()
     return
   }
-  $trackUpsellViewed({ type: 'birthChart', archetype: store.archetype, language: store.language })
-  isLoadingBirthChart.value = true
-  try {
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-      '/api/create-birth-chart-payment',
-      {
-        method: 'POST',
-        body: {
-          email: store.email,
-          firstName: store.firstName,
-          tempId: store.tempId,
-          timeOfBirth: store.timeOfBirth,
-          dateOfBirth: store.dateOfBirth,
-          language: store.language,
-          origin: window.location.origin,
-        },
-      }
-    )
-    if (url) {
-      $trackUpsellAccepted({ type: 'birthChart', price: 4.99, archetype: store.archetype, language: store.language })
-      window.location.href = url
-    }
-  } catch {
-    console.error('Birth chart purchase failed')
-  } finally {
-    isLoadingBirthChart.value = false
-  }
+  navigateTo('/subscribe')
 }
 
-const isStartingSub = ref(false)
 
-async function startSubscription(placement: 'mid_content' | 'end_content' = 'end_content') {
-  if (isStartingSub.value) return
-  isStartingSub.value = true
-  $trackUpsellAccepted({ type: 'subscription', placement, price: 6.99, archetype: store.archetype, language: store.language })
-  try {
-    const { url } = await $fetch<{ sessionId: string; url: string | null }>('/api/create-subscription', {
-      method: 'POST',
-      body: {
-        email: store.email,
-        firstName: store.firstName,
-        archetype: store.archetype,
-        lifePathNumber: store.lifePathNumber,
-        origin: window.location.origin,
-      },
-    })
-    if (url) window.location.href = url
-  } catch {
-    console.error('Subscription start failed')
-    isStartingSub.value = false
-  }
-}
-
-watch(isLoadingReport, (loading) => {
-  if (loading) return
-  if (!store.report || store.subscriptionActive || store.oraclePurchased) return
-  const sessionKey = store.reportSessionId || store.tempId || 'anon'
-  const midKey = `omenora_sub_viewed_mid_${sessionKey}`
-  if (!sessionStorage.getItem(midKey)) {
-    sessionStorage.setItem(midKey, '1')
-    $trackUpsellViewed({ type: 'subscription', placement: 'mid_content', archetype: store.archetype, language: store.language })
-  }
-  const endKey = `omenora_sub_viewed_end_${sessionKey}`
-  if (!sessionStorage.getItem(endKey)) {
-    sessionStorage.setItem(endKey, '1')
-    $trackUpsellViewed({ type: 'subscription', placement: 'end_content', archetype: store.archetype, language: store.language })
-  }
-})
 
 // ── Tradition Switcher ────────────────────────────────────────────────────
 
@@ -1569,122 +1285,10 @@ async function handleTraditionSwitch(newTradition: string) {
       isSwitchingTradition.value = false
     }
   } else {
-    // Paid switch: redirect to Stripe
-    isSwitchingTradition.value = true
-    try {
-      const { url } = await $fetch<{ sessionId: string; url: string | null }>(
-        '/api/create-tradition-payment',
-        {
-          method: 'POST',
-          body: {
-            firstName:      store.firstName,
-            email:          store.email,
-            reportId:       store.tempId || store.reportSessionId,
-            newTradition,
-            archetype:      store.archetype,
-            lifePathNumber: store.lifePathNumber,
-            language:       store.language,
-            origin:         window.location.origin,
-          },
-        },
-      )
-      if (url) window.location.href = url
-    } catch {
-      console.error('Tradition payment creation failed')
-      isSwitchingTradition.value = false
-    }
+    navigateTo('/subscribe')
   }
 }
 
-// Handle returning from a tradition_switch Stripe payment
-const _traditionSwitchSessionId = route.query.session_id as string | undefined
-const _isTraditionSwitch = route.query.tradition_switch === 'true'
-
-if (_isTraditionSwitch && _traditionSwitchSessionId) {
-  onMounted(async () => {
-    try {
-      const paymentData = await $fetch<{
-        paid: boolean
-        metadata: Record<string, string> | null
-      }>('/api/verify-payment', {
-        method: 'POST',
-        body: { sessionId: _traditionSwitchSessionId },
-      })
-
-      if (!paymentData.paid) {
-        navigateTo('/preview')
-        return
-      }
-
-      const meta = paymentData.metadata ?? {}
-      if (meta.type !== 'tradition_switch' || !meta.newTradition || !meta.reportId) {
-        navigateTo('/')
-        return
-      }
-
-      // Restore store state from Stripe metadata (lost on page reload after redirect)
-      if (!store.firstName && meta.firstName)      store.firstName = meta.firstName
-      if (!store.archetype && meta.archetype)      store.setArchetype(meta.archetype)
-      if (!store.language && meta.language)        store.setLanguage(meta.language)
-      if (meta.lifePathNumber && !store.lifePathNumber) store.lifePathNumber = Number.parseInt(meta.lifePathNumber)
-
-      // Pre-load existing report from DB so the page has content while the switch runs
-      if (!store.report) {
-        try {
-          const existsData = await $fetch<{
-            exists: boolean
-            report?: { report_data: any; first_name: string; archetype: string; life_path_number: number; region?: string }
-          }>('/api/check-report-exists', {
-            method: 'POST',
-            body: { sessionId: meta.reportId },
-          })
-          if (existsData.exists && existsData.report) {
-            store.setReport(existsData.report.report_data)
-            if (!store.firstName)      store.firstName      = existsData.report.first_name
-            if (!store.archetype)      store.setArchetype(existsData.report.archetype)
-            if (!store.lifePathNumber) store.lifePathNumber = existsData.report.life_path_number
-            if (!store.region && existsData.report.region) store.setRegion(existsData.report.region, store.country)
-          }
-        } catch {
-          // Non-fatal: switch-tradition will still work without the pre-loaded report
-        }
-      }
-
-      store.setReportSessionId(meta.reportId)
-      isLoadingReport.value = false
-
-      const newTradition = meta.newTradition
-      isSwitchingTradition.value = true
-      const opt = TRADITION_OPTIONS.value.find((o: { value: string }) => o.value === newTradition)
-      switchingTraditionLabel.value = opt?.label ?? newTradition
-
-      const result = await $fetch<{ success: boolean; report: any; tradition: string }>(
-        '/api/switch-tradition',
-        {
-          method: 'POST',
-          body: {
-            sessionId:    _traditionSwitchSessionId,
-            reportId:     meta.reportId,
-            newTradition,
-            freeSwitch:   false,
-          },
-        },
-      )
-      store.setReport(result.report)
-      store.setRegion(newTradition, store.country)
-      unlockedTraditions.value = [...new Set([...unlockedTraditions.value, newTradition])]
-      await loadRegionalSection()
-      switchedTraditionLabel.value = opt?.label ?? newTradition
-      isSwitchComplete.value = true
-      setTimeout(() => { isSwitchComplete.value = false }, 4000)
-    } catch {
-      console.error('Tradition switch post-payment failed')
-      isLoadingReport.value = false
-    } finally {
-      isSwitchingTradition.value = false
-    }
-  })
-}
 
 const _currentMonthNumber = new Date().getMonth() + 1
 const visibleCalendarMonths = computed(() => {
@@ -1741,126 +1345,21 @@ async function downloadReportPDF() {
    REPORT PAGE — EDITORIAL DESIGN SYSTEM
    ───────────────────────────────────────────── */
 
-/* ── Report-local design tokens — editorial bone/ink ── */
-.report-page,
-.report-loading-page {
-  --color-paper:      var(--color-bone, #F2EBDD);
-  --color-text:       var(--color-ink-mid, #3D3530);
-  --color-text-dim:   var(--color-ink-faint, rgba(26,22,18,0.45));
-  --color-gold:       #C9A84C;
-  --color-gold-dim:   rgba(201,168,76,0.5);
-  --font-display:     'Fraunces', 'Cormorant Garamond', serif;
-  --font-serif:       'Cormorant Garamond', Georgia, serif;
-  --font-sans:        'Hanken Grotesk', 'Inter', system-ui, sans-serif;
-}
-
-/* ── report-state-page uses global Editorial (bone) tokens ── */
-.report-state-page {
-  --font-display:     'Fraunces', 'Cormorant Garamond', serif;
-  --font-serif:       'Cormorant Garamond', Georgia, serif;
-  --font-sans:        'Inter', system-ui, sans-serif;
-}
-
-/* ── Type helpers ── */
-.label-caps {
-  font-family: var(--font-sans);
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-ink-faint);
-}
-
-.annotation {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  color: var(--color-text-dim);
-  line-height: 1.5;
-}
-
-.font-serif {
-  font-family: var(--font-serif);
-  font-weight: 400;
-}
-
-.font-serif-italic {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 300;
-}
-
-.font-display-italic {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-}
 
 /* ── Editorial rule ── */
 .editorial-rule {
   width: 100%;
   height: 1px;
-  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
+  background: var(--border-subtle);
   margin: 20px 0;
 }
 
 /* ─────────────────────────────────────────────
-   LOADING / STATE PAGES
+   STATE PAGES
    ───────────────────────────────────────────── */
 
-.report-loading-page {
-  background: var(--color-bone, #F2EBDD);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
-  box-sizing: border-box;
-  gap: 40px;
-}
-
-.report-loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.rload-eyebrow {
-  margin: 0;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
-}
-
-.rload-msg {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 16px;
-  font-weight: 300;
-  color: var(--color-ink-mid, #3D3530);
-  margin: 0;
-  text-align: center;
-}
-
-.rload-track {
-  width: 120px;
-  height: 1px;
-  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
-  overflow: hidden;
-}
-
-@keyframes fillProgress {
-  from { width: 0 }
-  to   { width: 90% }
-}
-
-.rload-fill {
-  height: 100%;
-  background: linear-gradient(90deg, rgba(201,168,76,0.4), rgba(201,168,76,0.8));
-  animation: fillProgress 8s ease-out forwards;
-}
-
 .report-state-page {
-  background: var(--color-bone, #F2EBDD);
+  background: var(--surface-base);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -1878,29 +1377,26 @@ async function downloadReportPDF() {
   max-width: 360px;
 }
 
-.report-state__phoenix {
-  margin-bottom: 8px;
-}
 
 .report-state__eyebrow {
   margin: 0;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
 }
 
 .report-state__heading {
   margin: 0;
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: clamp(28px, 6vw, 44px);
   font-weight: 300;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
 .report-state__sub {
   margin: 0;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
 }
 
 .report-state__actions {
@@ -1912,12 +1408,12 @@ async function downloadReportPDF() {
 }
 
 .report-state-btn {
-  background: var(--color-ink, #1A1612);
+  background: var(--text-primary);
   border: none;
-  color: var(--color-bone, #F2EBDD);
+  color: var(--surface-base);
   padding: 12px 28px;
   font-size: 11px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -1930,7 +1426,7 @@ async function downloadReportPDF() {
 }
 
 .report-state-link {
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -1952,12 +1448,12 @@ async function downloadReportPDF() {
 }
 
 .addon-badge {
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 9px;
 }
 
 .addon-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 18px;
   font-weight: 300;
@@ -1982,7 +1478,7 @@ async function downloadReportPDF() {
 }
 
 .addon-price {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 26px;
   font-weight: 300;
   color: rgba(200,180,255,0.95);
@@ -2055,7 +1551,7 @@ async function downloadReportPDF() {
 .payment-banner__dismiss {
   background: none;
   border: none;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
   font-size: 18px;
   cursor: pointer;
   padding: 0;
@@ -2078,9 +1574,9 @@ async function downloadReportPDF() {
    ───────────────────────────────────────────── */
 
 .report-page {
-  background: var(--color-bone, #F2EBDD);
+  background: var(--surface-base);
   min-height: 100vh;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   font-family: var(--font-sans);
 }
 
@@ -2092,19 +1588,19 @@ async function downloadReportPDF() {
 }
 
 .report-account-link {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .report-account-link:hover {
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
 }
 
 .report-export-btn {
   background: none;
-  border: 1px solid var(--color-gold-dim);
-  color: var(--color-gold);
+  border: 1px solid var(--accent-gold-dim);
+  color: var(--accent-gold);
   font-family: var(--font-sans);
   font-size: 9px;
   letter-spacing: 0.16em;
@@ -2139,16 +1635,16 @@ async function downloadReportPDF() {
 
 .report-masthead__eyebrow {
   margin: 0 0 20px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 .report-masthead__name {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 48px;
   font-weight: 400;
   line-height: 1.1;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0 0 24px;
 }
 
@@ -2179,7 +1675,7 @@ async function downloadReportPDF() {
   align-items: center;
   gap: 3px;
   padding: 10px 14px;
-  border-right: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border-right: 1px solid var(--border-subtle);
 }
 
 .planet-cell:last-child {
@@ -2195,13 +1691,13 @@ async function downloadReportPDF() {
 
 .planet-cell__sign {
   font-size: 11px;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
 }
 
 .planet-cell__label {
   font-size: 8px;
   letter-spacing: 0.14em;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
   text-transform: uppercase;
 }
 
@@ -2272,7 +1768,7 @@ async function downloadReportPDF() {
   margin: 0 auto 24px;
   padding: 14px 20px;
   background: transparent;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -2291,11 +1787,11 @@ async function downloadReportPDF() {
 
 .upsell-inline__title {
   margin: 0 0 3px;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
 }
 
 .upsell-inline__title--dim {
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
 }
 
 .upsell-inline__desc {
@@ -2326,10 +1822,10 @@ async function downloadReportPDF() {
 }
 
 .upsell-inline__locked-badge {
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
   padding: 4px 10px;
   border-radius: 1px;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
   flex-shrink: 0;
 }
 
@@ -2374,19 +1870,19 @@ async function downloadReportPDF() {
   margin-top: 2px;
   flex-shrink: 0;
   min-width: 20px;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
 }
 
 .report-section__tradition {
   margin: 0 0 4px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 .report-section__heading {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 400;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.2;
 }
@@ -2398,7 +1894,7 @@ async function downloadReportPDF() {
 .report-section__para {
   font-size: 15px;
   line-height: 1.85;
-  color: var(--color-text);
+  color: var(--text-secondary);
   font-weight: 300;
   margin: 0 0 16px;
 }
@@ -2410,16 +1906,16 @@ async function downloadReportPDF() {
 /* ── Affirmation block ── */
 .affirmation-block {
   padding: 20px 0;
-  border-top: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
-  border-bottom: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .affirmation-block__text {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 18px;
   font-weight: 300;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
   text-align: center;
   line-height: 1.6;
   margin: 0;
@@ -2438,45 +1934,45 @@ async function downloadReportPDF() {
   flex-wrap: wrap;
   gap: 1px;
   margin-bottom: 20px;
-  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
+  background: var(--border-subtle);
 }
 
 .bc-sign-cell {
   flex: 1;
   min-width: 80px;
   padding: 12px 14px;
-  background: var(--color-bone, #F2EBDD);
+  background: var(--surface-base);
 }
 
 .bc-sign-cell__label {
   margin: 0 0 4px;
-  color: var(--color-gold-dim);
+  color: var(--accent-gold-dim);
 }
 
 .bc-sign-cell__value {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 14px;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .bc-forecast-box {
   padding: 14px 16px;
   background: rgba(201,168,76,0.04);
-  border-left: 2px solid var(--color-gold-dim);
+  border-left: 2px solid var(--accent-gold-dim);
   margin-top: 16px;
 }
 
 .bc-forecast-box__label {
   margin: 0 0 6px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 .bc-forecast-box__text {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 14px;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.7;
 }
@@ -2501,44 +1997,44 @@ async function downloadReportPDF() {
   min-width: 100px;
   padding: 10px 14px;
   background: transparent;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
 }
 
 .regional-pill__label {
   margin: 0 0 4px;
-  color: var(--color-gold-dim);
+  color: var(--accent-gold-dim);
 }
 
 .regional-pill__value {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 14px;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .regional-highlight {
   padding: 12px 16px;
   background: rgba(201,168,76,0.04);
-  border-left: 2px solid var(--color-gold-dim);
+  border-left: 2px solid var(--accent-gold-dim);
   margin: 16px 0;
 }
 
 .regional-highlight--center {
   text-align: center;
   border-left: none;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
 }
 
 .regional-highlight__label {
   margin: 0 0 6px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 .regional-highlight__text {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 14px;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.7;
 }
@@ -2553,7 +2049,7 @@ async function downloadReportPDF() {
 
 .regional-tags__label {
   margin: 0;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
 }
 
 .regional-tag {
@@ -2571,7 +2067,7 @@ async function downloadReportPDF() {
   margin: 0 auto 24px;
   padding: 20px 24px;
   text-align: center;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
 }
 
 .regional-loading__text {
@@ -2594,7 +2090,7 @@ async function downloadReportPDF() {
 
 .tradition-switcher__label {
   margin: 0 0 4px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 .tradition-switcher__sub {
@@ -2613,10 +2109,10 @@ async function downloadReportPDF() {
   gap: 14px;
   padding: 14px 16px;
   background: transparent;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   text-align: left;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
   font-family: var(--font-sans);
   transition: background 0.2s, border-color 0.2s;
   border-radius: 0;
@@ -2625,7 +2121,7 @@ async function downloadReportPDF() {
 
 .tradition-opt-num {
   min-width: 24px;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
   flex-shrink: 0;
 }
 
@@ -2673,7 +2169,7 @@ async function downloadReportPDF() {
 
 .tradition-opt-name {
   font-size: 14px;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
@@ -2700,8 +2196,8 @@ async function downloadReportPDF() {
 }
 
 .tradition-opt-tag--paid {
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-subtle);
 }
 
 .tradition-loading {
@@ -2794,8 +2290,8 @@ async function downloadReportPDF() {
 .month-card {
   padding: 16px 16px 12px;
   background: transparent;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
-  border-left: 2px solid var(--color-gold);
+  border: 1px solid var(--border-subtle);
+  border-left: 2px solid var(--accent-gold);
 }
 
 .month-card__header {
@@ -2807,9 +2303,9 @@ async function downloadReportPDF() {
 }
 
 .month-card__name {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 15px;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0 0 2px;
 }
 
@@ -2832,12 +2328,12 @@ async function downloadReportPDF() {
 .month-card__energy-track {
   width: 90px;
   height: 2px;
-  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
+  background: var(--border-subtle);
 }
 
 .month-card__energy-fill {
   height: 100%;
-  background: var(--color-gold);
+  background: var(--accent-gold);
   transition: width 0.5s ease;
 }
 
@@ -2866,7 +2362,7 @@ async function downloadReportPDF() {
 
 .month-card__lucky {
   margin: 0;
-  border-top: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border-top: 1px solid var(--border-subtle);
   padding-top: 8px;
 }
 
@@ -2892,27 +2388,27 @@ async function downloadReportPDF() {
 }
 
 .compat-result__score {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 36px;
   font-weight: 400;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .compat-result__title {
   margin: 4px 0 0;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
 }
 
 .compat-result__section {
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .compat-result__section-title {
   margin: 0 0 8px;
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 /* Compat forms (shared) */
@@ -2951,20 +2447,26 @@ async function downloadReportPDF() {
 
 .upsell-section__eyebrow {
   margin: 0;
-  color: var(--color-gold);
+  color: var(--accent-gold);
 }
 
 .upsell-section__heading {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 22px;
   font-weight: 300;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .upsell-section__sub {
   margin: 0;
+}
+
+.upsell-section__founding-sub {
+  color: var(--text-tertiary);
+  margin-top: -4px;
+  margin-bottom: 12px;
 }
 
 .upsell-section__header-row {
@@ -2975,30 +2477,30 @@ async function downloadReportPDF() {
 }
 
 .upsell-section__hook {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 14px;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
   line-height: 1.7;
   margin: 0;
 }
 
 .upsell-section__price {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 28px;
   font-weight: 400;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
 .upsell-section__price-period {
   font-size: 14px;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
 }
 
 .upsell-section__rule {
   height: 1px;
-  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
+  background: var(--border-subtle);
 }
 
 .upsell-section__total-row,
@@ -3010,7 +2512,7 @@ async function downloadReportPDF() {
 
 .upsell-section__strike {
   text-decoration: line-through;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
 }
 
 .upsell-section__note {
@@ -3028,7 +2530,7 @@ async function downloadReportPDF() {
 
 .upsell-section__trial-label {
   margin: 0;
-  color: var(--color-gold);
+  color: var(--accent-gold);
   font-size: 9px;
   letter-spacing: 0.1em;
 }
@@ -3045,7 +2547,7 @@ async function downloadReportPDF() {
   display: flex;
   flex-direction: column;
   gap: 0;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
 }
 
 .upsell-item {
@@ -3053,7 +2555,7 @@ async function downloadReportPDF() {
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .upsell-item:last-child {
@@ -3066,7 +2568,7 @@ async function downloadReportPDF() {
 
 .upsell-item__name {
   font-size: 13px;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0 0 2px;
 }
 
@@ -3075,9 +2577,9 @@ async function downloadReportPDF() {
 }
 
 .upsell-item__price {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 16px;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -3122,14 +2624,20 @@ async function downloadReportPDF() {
 
 .upsell-cta-btn--secondary {
   background: transparent;
-  border-color: var(--color-ink-ghost, rgba(26,22,18,0.1));
-  color: var(--color-ink-mid, #3D3530);
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
 }
 
 .upsell-cta-btn--ghost {
   background: none;
-  border-color: var(--color-ink-ghost, rgba(26,22,18,0.08));
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  border-color: var(--border-subtle);
+  color: var(--text-tertiary);
+}
+
+.upsell-cta-btn--link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
 }
 
 /* ── Calendar bar preview ── */
@@ -3154,7 +2662,7 @@ async function downloadReportPDF() {
 .cal-bar-track {
   flex: 1;
   height: 2px;
-  background: var(--color-ink-ghost, rgba(26,22,18,0.08));
+  background: var(--border-subtle);
 }
 
 .cal-bar-fill {
@@ -3172,9 +2680,9 @@ async function downloadReportPDF() {
 .compat-tag {
   margin: 0;
   padding: 4px 10px;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
   border-radius: 1px;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
 }
 
 /* ── Compat input ── */
@@ -3184,9 +2692,9 @@ async function downloadReportPDF() {
   box-sizing: border-box;
   padding: 10px 14px;
   background: transparent;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.12));
+  border: 1px solid var(--border-default);
   border-radius: 1px;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   font-size: 13px;
   font-family: var(--font-sans);
   outline: none;
@@ -3236,16 +2744,16 @@ async function downloadReportPDF() {
 .share-card {
   padding: 20px;
   background: transparent;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
   text-align: center;
   margin: 16px 0;
 }
 
 .share-card__archetype {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 16px;
   font-style: normal;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0 0 10px;
 }
 
@@ -3260,12 +2768,12 @@ async function downloadReportPDF() {
 .share-card__trait {
   margin: 0;
   padding: 3px 8px;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border: 1px solid var(--border-subtle);
 }
 
 .share-card__domain {
   margin: 0;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
 }
 
 .share-actions {
@@ -3277,8 +2785,8 @@ async function downloadReportPDF() {
   flex: 1;
   padding: 10px;
   background: transparent;
-  border: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.1));
-  color: var(--color-ink-mid, #3D3530);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 0.06em;
@@ -3337,17 +2845,17 @@ async function downloadReportPDF() {
 }
 
 .report-footer-cta__headline {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-style: italic;
   font-size: 32px;
   font-weight: 400;
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
   margin: 0 0 12px;
 }
 
 .report-footer-cta__body {
   font-size: 13px;
-  color: var(--color-ink-mid, #3D3530);
+  color: var(--text-secondary);
   line-height: 1.7;
   margin: 0 0 24px;
 }
@@ -3381,7 +2889,7 @@ async function downloadReportPDF() {
 .report-footer {
   padding: 20px 24px calc(16px + env(safe-area-inset-bottom, 0px));
   text-align: center;
-  border-top: 1px solid var(--color-ink-ghost, rgba(26,22,18,0.08));
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3391,24 +2899,24 @@ async function downloadReportPDF() {
 .report-footer-link {
   font-family: var(--font-sans);
   font-size: 10px;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
   text-decoration: none;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .report-footer-link:hover {
-  color: var(--color-ink, #1A1612);
+  color: var(--text-primary);
 }
 
 .report-footer-sep {
   margin: 0 8px;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
 }
 
 .report-footer-crisis {
   margin: 0;
-  color: var(--color-ink-faint, rgba(26,22,18,0.45));
+  color: var(--text-tertiary);
   font-size: 10px;
 }
 
@@ -3435,7 +2943,6 @@ async function downloadReportPDF() {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rload-fill,
   .tradition-loading__ring {
     animation: none;
   }

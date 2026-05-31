@@ -14,11 +14,26 @@ export default defineEventHandler(async (event) => {
   const city           = sanitizeString(body.city ?? '', 100)
   const element        = sanitizeString(body.element ?? '', 20)
   const region         = sanitizeString(body.region ?? '', 20)
+  const plan           = sanitizeString(body.plan ?? 'monthly', 10)
+
+  const utmSource   = sanitizeString(body.utm_source   ?? '', 200)
+  const utmCampaign = sanitizeString(body.utm_campaign  ?? '', 200)
+  const utmAdset    = sanitizeString(body.utm_adset     ?? '', 200)
+  const utmCreative = sanitizeString(body.utm_creative  ?? '', 200)
+  const utmMedium   = sanitizeString(body.utm_medium    ?? '', 200)
+  const utmContent  = sanitizeString(body.utm_content   ?? '', 200)
 
   assertInput(isValidEmail(email), 'Valid email is required')
   assertInput(isValidRedirectOrigin(originRaw), 'Invalid origin')
+  assertInput(plan === 'monthly' || plan === 'yearly', 'Invalid plan')
 
   const base = safeOrigin(originRaw)
+
+  const priceId = plan === 'yearly'
+    ? config.stripePremiumYearlyPriceId
+    : config.stripePremiumMonthlyPriceId
+
+  assertInput(!!priceId, 'Premium price not configured — contact support')
 
   const stripe = new Stripe(config.stripeSecretKey, {
     apiVersion: '2026-03-25.dahlia' as any,
@@ -54,11 +69,10 @@ export default defineEventHandler(async (event) => {
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
       payment_method_types: ['card'],
-      line_items: [{ price: config.stripeDailyPriceId, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      subscription_data: { trial_period_days: 7 },
       success_url: `${base}/subscription?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${base}/report`,
+      cancel_url:  `${base}/subscribe`,
       metadata: {
         firstName,
         archetype,
@@ -66,11 +80,18 @@ export default defineEventHandler(async (event) => {
         email,
         customerId: customer.id,
         type: 'subscription',
+        plan,
         dateOfBirth,
         timeOfBirth,
         city,
         element,
         region,
+        ...(utmSource   && { utm_source:   utmSource }),
+        ...(utmCampaign && { utm_campaign:  utmCampaign }),
+        ...(utmAdset    && { utm_adset:     utmAdset }),
+        ...(utmCreative && { utm_creative:  utmCreative }),
+        ...(utmMedium   && { utm_medium:    utmMedium }),
+        ...(utmContent  && { utm_content:   utmContent }),
       },
     })
 
@@ -87,7 +108,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 503, message: 'Payment service temporarily unavailable.' })
     }
     if (stripeCode === 'resource_missing') {
-      console.error('[create-subscription] Invalid Stripe price ID:', config.stripeDailyPriceId)
+      console.error('[create-subscription] Invalid Stripe price ID:', priceId)
       throw createError({ statusCode: 503, message: 'Subscription product not configured. Please contact support.' })
     }
     if (status >= 500 || err?.type === 'StripeConnectionError' || err?.type === 'StripeAPIError') {

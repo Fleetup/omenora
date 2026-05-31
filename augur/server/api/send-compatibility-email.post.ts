@@ -1,6 +1,18 @@
 import { Resend } from 'resend'
 import { CompatibilitySchema, BirthChartSchema, type BirthChartType } from '~~/server/utils/ai-schemas'
 import { he } from '~~/server/utils/report-email-builder'
+import { EMAIL_BRAND_LINE, EMAIL_ADDRESS_LINE, EMAIL_FOOTER_TEXT_MAILTO } from '~~/server/utils/email-footer'
+import {
+  E_BG_PAGE, E_BG_PRIMARY, E_BORDER_SUBTLE, E_BORDER_FAINT,
+  E_TEXT_PRIMARY, E_TEXT_SECONDARY, E_TEXT_TERTIARY,
+  E_ACCENT,
+  E_FONT_DISPLAY, E_FONT_UI,
+  E_TEXT_XS, E_TEXT_SM, E_TEXT_BASE, E_TEXT_MD, E_TEXT_LG,
+  E_TRACKING_CAPS, E_TRACKING_WIDE,
+  E_SPACE_1, E_SPACE_2, E_SPACE_3, E_SPACE_4, E_SPACE_6, E_SPACE_8, E_SPACE_10,
+  E_RADIUS_SM, E_RADIUS_LG,
+  emailScoreColor,
+} from '~~/server/utils/email-design-tokens'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -53,79 +65,43 @@ export default defineEventHandler(async (event) => {
   type SectionKey = keyof typeof sections
   const sectionOrder: SectionKey[] = ['bond', 'strength', 'challenge', 'communication', 'powerDynamic', 'forecast', 'advice']
 
-  const scoreColor = score >= 80
-    ? '#8c6eff'
-    : score >= 60
-      ? '#c89632'
-      : '#b45050'
+  const scoreColor = emailScoreColor(score)
 
   const renderBirthChartBlock = (name: string, chart: BirthChartType, noonFallback: boolean): string => `
-    <div style="margin: 32px 0; padding: 24px;
-      background: rgba(80,120,255,0.05);
-      border: 1px solid rgba(100,140,255,0.15);
-      border-radius: 12px;">
-      <p style="font-size: 10px; font-weight: 500;
-        color: rgba(140,170,255,0.7);
-        text-transform: uppercase;
-        letter-spacing: 0.1em; margin: 0 0 4px;">
-        &#10022; ${he(name)}'s Birth Chart
-      </p>
-      <p style="font-size: 16px; font-weight: 500;
-        color: white; margin: 0 0 16px;">${he(chart.chartTitle)}</p>
-      <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
-        <div style="padding: 8px 14px; background: rgba(100,140,255,0.08);
-          border: 1px solid rgba(100,140,255,0.2); border-radius: 8px; text-align: center;">
-          <p style="font-size: 9px; color: rgba(160,190,255,0.5);
-            text-transform: uppercase; margin: 0 0 2px;">Rising</p>
-          <p style="font-size: 13px; font-weight: 500;
-            color: rgba(180,210,255,0.9); margin: 0;">${he(chart.risingSign)}</p>
-        </div>
-        <div style="padding: 8px 14px; background: rgba(100,140,255,0.08);
-          border: 1px solid rgba(100,140,255,0.2); border-radius: 8px; text-align: center;">
-          <p style="font-size: 9px; color: rgba(160,190,255,0.5);
-            text-transform: uppercase; margin: 0 0 2px;">Sun</p>
-          <p style="font-size: 13px; font-weight: 500;
-            color: rgba(180,210,255,0.9); margin: 0;">${he(chart.sunSign)}</p>
-        </div>
-        <div style="padding: 8px 14px; background: rgba(100,140,255,0.08);
-          border: 1px solid rgba(100,140,255,0.2); border-radius: 8px; text-align: center;">
-          <p style="font-size: 9px; color: rgba(160,190,255,0.5);
-            text-transform: uppercase; margin: 0 0 2px;">Moon</p>
-          <p style="font-size: 13px; font-weight: 500;
-            color: rgba(180,210,255,0.9); margin: 0;">${he(chart.moonSign)}</p>
-        </div>
-        <div style="padding: 8px 14px; background: rgba(100,140,255,0.08);
-          border: 1px solid rgba(100,140,255,0.2); border-radius: 8px; text-align: center;">
-          <p style="font-size: 9px; color: rgba(160,190,255,0.5);
-            text-transform: uppercase; margin: 0 0 2px;">Dominant</p>
-          <p style="font-size: 13px; font-weight: 500;
-            color: rgba(180,210,255,0.9); margin: 0;">${he(chart.dominantPlanet)}</p>
-        </div>
-      </div>
+    <div style="margin:${E_SPACE_8} 0;padding:${E_SPACE_6};background:${E_BG_PRIMARY};border:1px solid ${E_BORDER_SUBTLE};border-radius:${E_RADIUS_LG};">
+      <p style="font-size:${E_TEXT_XS};font-weight:500;font-family:${E_FONT_UI};color:rgba(140,170,255,0.85);text-transform:uppercase;letter-spacing:${E_TRACKING_CAPS};margin:0 0 ${E_SPACE_1};">${he(name)}'s Birth Chart</p>
+      <p style="font-size:${E_TEXT_MD};font-weight:500;font-family:${E_FONT_DISPLAY};color:${E_TEXT_PRIMARY};margin:0 0 ${E_SPACE_4};">${he(chart.chartTitle)}</p>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:${E_SPACE_4};">
+        <tr>
+          <td style="padding:${E_SPACE_2} ${E_SPACE_3};background:${E_BG_PRIMARY};border:1px solid ${E_BORDER_SUBTLE};border-radius:${E_RADIUS_SM};text-align:center;padding-right:${E_SPACE_4};">
+            <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};text-transform:uppercase;margin:0 0 2px;">Rising</p>
+            <p style="font-size:${E_TEXT_SM};font-weight:500;font-family:${E_FONT_DISPLAY};color:${E_TEXT_SECONDARY};margin:0;">${he(chart.risingSign)}</p>
+          </td>
+          <td style="padding:${E_SPACE_2} ${E_SPACE_3};background:${E_BG_PRIMARY};border:1px solid ${E_BORDER_SUBTLE};border-radius:${E_RADIUS_SM};text-align:center;padding-right:${E_SPACE_4};">
+            <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};text-transform:uppercase;margin:0 0 2px;">Sun</p>
+            <p style="font-size:${E_TEXT_SM};font-weight:500;font-family:${E_FONT_DISPLAY};color:${E_TEXT_SECONDARY};margin:0;">${he(chart.sunSign)}</p>
+          </td>
+          <td style="padding:${E_SPACE_2} ${E_SPACE_3};background:${E_BG_PRIMARY};border:1px solid ${E_BORDER_SUBTLE};border-radius:${E_RADIUS_SM};text-align:center;padding-right:${E_SPACE_4};">
+            <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};text-transform:uppercase;margin:0 0 2px;">Moon</p>
+            <p style="font-size:${E_TEXT_SM};font-weight:500;font-family:${E_FONT_DISPLAY};color:${E_TEXT_SECONDARY};margin:0;">${he(chart.moonSign)}</p>
+          </td>
+          <td style="padding:${E_SPACE_2} ${E_SPACE_3};background:${E_BG_PRIMARY};border:1px solid ${E_BORDER_SUBTLE};border-radius:${E_RADIUS_SM};text-align:center;">
+            <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};text-transform:uppercase;margin:0 0 2px;">Dominant</p>
+            <p style="font-size:${E_TEXT_SM};font-weight:500;font-family:${E_FONT_DISPLAY};color:${E_TEXT_SECONDARY};margin:0;">${he(chart.dominantPlanet)}</p>
+          </td>
+        </tr>
+      </table>
       ${chart.powerHouse ? `
-      <p style="font-size: 11px; color: rgba(160,190,255,0.5);
-        text-transform: uppercase; letter-spacing: 0.08em;
-        margin: 0 0 6px;">Power House</p>
-      <p style="font-size: 13px; font-weight: 500;
-        color: rgba(180,210,255,0.8); margin: 0 0 16px;">
-        ${he(chart.powerHouse)}
-      </p>` : ''}
-      <p style="font-size: 14px; color: rgba(255,255,255,0.6);
-        line-height: 1.8; margin: 0 0 16px;">${he(chart.reading)}</p>
+      <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};text-transform:uppercase;letter-spacing:${E_TRACKING_CAPS};margin:0 0 ${E_SPACE_2};">Power House</p>
+      <p style="font-size:${E_TEXT_SM};font-weight:500;font-family:${E_FONT_DISPLAY};color:${E_TEXT_SECONDARY};margin:0 0 ${E_SPACE_4};">${he(chart.powerHouse)}</p>` : ''}
+      <p style="font-size:${E_TEXT_BASE};font-family:${E_FONT_DISPLAY};color:${E_TEXT_SECONDARY};line-height:1.8;margin:0 0 ${E_SPACE_4};">${he(chart.reading)}</p>
       ${chart.forecast2026 ? `
-      <div style="padding: 12px 16px; background: rgba(100,140,255,0.06);
-        border-left: 2px solid rgba(140,170,255,0.4);
-        border-radius: 0 8px 8px 0;">
-        <p style="font-size: 9px; color: rgba(160,190,255,0.5);
-          text-transform: uppercase; margin: 0 0 4px;">2026 Planetary Forecast</p>
-        <p style="font-size: 13px; color: rgba(180,210,255,0.8);
-          font-style: italic; margin: 0;">${he(chart.forecast2026)}</p>
+      <div style="padding:${E_SPACE_3} ${E_SPACE_4};background:${E_BG_PAGE};border-left:2px solid ${E_ACCENT};border-radius:0 ${E_RADIUS_SM} ${E_RADIUS_SM} 0;">
+        <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};text-transform:uppercase;letter-spacing:${E_TRACKING_CAPS};margin:0 0 ${E_SPACE_1};">2026 Planetary Forecast</p>
+        <p style="font-size:${E_TEXT_SM};font-family:${E_FONT_DISPLAY};color:${E_TEXT_SECONDARY};font-style:italic;margin:0;">${he(chart.forecast2026)}</p>
       </div>` : ''}
       ${noonFallback ? `
-      <p style="font-size: 11px; color: rgba(160,190,255,0.35);
-        font-style: italic; margin: 16px 0 0;">
-        Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.
-      </p>` : ''}
+      <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_DISPLAY};color:${E_TEXT_TERTIARY};font-style:italic;margin:${E_SPACE_4} 0 0;">Houses calculated using 12:00 PM as birth time — for precise placements, please contact support.</p>` : ''}
     </div>
   `
 
@@ -142,36 +118,17 @@ export default defineEventHandler(async (event) => {
 
     if (isAdvice) {
       return `
-        <div style="margin-bottom: 32px; padding: 24px;
-          background: rgba(140,110,255,0.08);
-          border: 1px solid rgba(140,110,255,0.2);
-          border-radius: 12px; text-align: center;">
-          <p style="font-size: 11px; font-weight: 500;
-            color: #8c6eff; text-transform: uppercase;
-            letter-spacing: 0.1em; margin: 0 0 12px;">
-            ${he(section.title)}
-          </p>
-          <p style="font-size: 17px; color: #c8b4ff;
-            font-style: italic; line-height: 1.7; margin: 0;">
-            &ldquo;${he(section.content)}&rdquo;
-          </p>
+        <div style="margin-bottom:${E_SPACE_8};padding:${E_SPACE_6};background:${E_BG_PRIMARY};border:1px solid ${E_BORDER_SUBTLE};border-radius:${E_RADIUS_LG};text-align:center;">
+          <p style="font-size:${E_TEXT_XS};font-weight:500;font-family:${E_FONT_UI};color:${E_ACCENT};text-transform:uppercase;letter-spacing:${E_TRACKING_CAPS};margin:0 0 ${E_SPACE_3};">${he(section.title)}</p>
+          <p style="font-size:${E_TEXT_MD};font-family:${E_FONT_DISPLAY};color:${E_TEXT_SECONDARY};font-style:italic;line-height:1.7;margin:0;">&ldquo;${he(section.content)}&rdquo;</p>
         </div>
       `
     }
 
     return `
-      <div style="margin-bottom: 32px;
-        padding-bottom: 32px;
-        border-bottom: 1px solid rgba(255,255,255,0.06);">
-        <p style="font-size: 11px; font-weight: 500;
-          color: #8c6eff; text-transform: uppercase;
-          letter-spacing: 0.1em; margin: 0 0 10px;">
-          ${he(section.title)}
-        </p>
-        <p style="font-size: 15px; color: #c0bfbf;
-          line-height: 1.8; margin: 0;">
-          ${he(section.content)}
-        </p>
+      <div style="margin-bottom:${E_SPACE_8};padding-bottom:${E_SPACE_8};border-bottom:1px solid ${E_BORDER_FAINT};">
+        <p style="font-size:${E_TEXT_XS};font-weight:500;font-family:${E_FONT_UI};color:${E_ACCENT};text-transform:uppercase;letter-spacing:${E_TRACKING_CAPS};margin:0 0 ${E_SPACE_3};">${he(section.title)}</p>
+        <p style="font-size:${E_TEXT_BASE};font-family:${E_FONT_DISPLAY};color:${E_TEXT_SECONDARY};line-height:1.8;margin:0;">${he(section.content)}</p>
       </div>
     `
   }).join('')
@@ -184,83 +141,43 @@ export default defineEventHandler(async (event) => {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Your OMENORA Compatibility Reading</title>
 </head>
-<body style="margin: 0; padding: 0;
-  background-color: #0a0a0f;
-  font-family: system-ui, -apple-system, sans-serif;">
+<body style="margin:0;padding:0;background-color:${E_BG_PAGE};font-family:${E_FONT_DISPLAY};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${E_BG_PAGE};">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;padding:${E_SPACE_10} ${E_SPACE_6};">
 
-  <div style="max-width: 600px; margin: 0 auto;
-    padding: 40px 24px;">
+        <!-- HEADER -->
+        <tr><td style="text-align:center;padding-bottom:${E_SPACE_10};border-bottom:1px solid ${E_BORDER_FAINT};">
+          <p style="font-size:${E_TEXT_XS};font-weight:500;font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};letter-spacing:${E_TRACKING_WIDE};margin:0 0 ${E_SPACE_6};text-transform:uppercase;">OMENORA</p>
+          <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_ACCENT};text-transform:uppercase;letter-spacing:${E_TRACKING_CAPS};margin:0 0 ${E_SPACE_4};">Compatibility Reading</p>
+          <p style="font-size:56px;font-weight:500;font-family:${E_FONT_DISPLAY};color:${scoreColor};margin:0 0 ${E_SPACE_2};line-height:1;">${he(String(score))}%</p>
+          <h1 style="font-size:${E_TEXT_LG};font-weight:400;font-family:${E_FONT_DISPLAY};color:${E_TEXT_PRIMARY};margin:0 0 ${E_SPACE_2};line-height:1.4;font-style:italic;">${he(compatTitle)}</h1>
+          <p style="font-size:${E_TEXT_SM};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};margin:${E_SPACE_4} 0 0;">${he(firstName)} &amp; ${he(partnerName)}</p>
+        </td></tr>
 
-    <!-- HEADER -->
-    <div style="text-align: center; margin-bottom: 40px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <!-- SECTIONS -->
+        <tr><td style="padding-top:${E_SPACE_8};">${sectionsHtml}</td></tr>
 
-      <p style="font-size: 13px; font-weight: 500;
-        color: rgba(255,255,255,0.25);
-        letter-spacing: 0.15em; margin: 0 0 24px;">
-        OMENORA
-      </p>
+        <!-- BIRTH CHARTS (T2 tier only) -->
+        ${birthChartsHtml ? `<tr><td>${birthChartsHtml}</td></tr>` : ''}
 
-      <p style="font-size: 11px; color: #8c6eff;
-        text-transform: uppercase; letter-spacing: 0.1em;
-        margin: 0 0 16px;">
-        Compatibility Reading
-      </p>
+        <!-- FOOTER -->
+        <tr><td style="text-align:center;padding-top:${E_SPACE_8};border-top:1px solid ${E_BORDER_FAINT};">
+          <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};margin:0 0 ${E_SPACE_2};">omenora.com &mdash; Destiny Compatibility Reading</p>
+          <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};margin:0 0 ${E_SPACE_2};">This reading was generated for ${he(email)}</p>
+          <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};margin:0 0 ${E_SPACE_1};">${EMAIL_BRAND_LINE}</p>
+          <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};margin:0 0 ${E_SPACE_2};">${EMAIL_ADDRESS_LINE}</p>
+          <p style="font-size:${E_TEXT_XS};font-family:${E_FONT_UI};color:${E_TEXT_TERTIARY};margin:0;">
+            ${tier === 'subscription'
+              ? `<a href="https://omenora.com/account" style="color:${E_ACCENT};text-decoration:underline;margin-right:12px;">Manage your subscription</a><br><span style="font-size:${E_TEXT_XS};color:${E_TEXT_TERTIARY};">To cancel: click &ldquo;Manage your subscription&rdquo; above &rarr; Cancel plan.</span>`
+              : ''}
+            <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe" style="color:${E_TEXT_TERTIARY};text-decoration:underline;">Unsubscribe</a>
+          </p>
+        </td></tr>
 
-      <p style="font-size: 72px; font-weight: 500;
-        color: ${scoreColor}; margin: 0 0 8px;
-        line-height: 1;">
-        ${he(String(score))}%
-      </p>
-
-      <h1 style="font-size: 20px; font-weight: 500;
-        color: rgba(230,220,255,0.85);
-        margin: 0 0 8px; line-height: 1.4;
-        font-style: italic;">
-        ${he(compatTitle)}
-      </h1>
-
-      <p style="font-size: 14px;
-        color: rgba(255,255,255,0.3); margin: 16px 0 0;">
-        ${he(firstName)} &amp; ${he(partnerName)}
-      </p>
-    </div>
-
-    <!-- SECTIONS -->
-    ${sectionsHtml}
-
-    <!-- BIRTH CHARTS (T2 tier only) -->
-    ${birthChartsHtml}
-
-    <!-- FOOTER -->
-    <div style="text-align: center; margin-top: 40px;
-      padding-top: 24px;
-      border-top: 1px solid rgba(255,255,255,0.04);">
-
-      <p style="font-size: 12px;
-        color: rgba(255,255,255,0.15);
-        margin: 0 0 8px;">
-        omenora.com &mdash; Destiny Compatibility Reading
-      </p>
-
-      <p style="font-size: 11px;
-        color: rgba(255,255,255,0.1); margin: 0 0 8px;">
-        This reading was generated for ${he(email)}
-      </p>
-
-      <p style="font-size: 10px; color: rgba(255,255,255,0.07); margin: 0;">
-        OMENORA &middot; 1309 Coffeen Ave STE 1200, Sheridan, WY 82801
-      </p>
-      <p style="font-size: 10px; color: rgba(255,255,255,0.10); margin: 6px 0 0;">
-        ${tier === 'subscription'
-          ? `<a href="https://omenora.com/account" style="color: rgba(200,180,255,0.4); text-decoration: underline; margin-right: 12px;">Manage your subscription</a><br><span style="font-size: 10px; color: rgba(255,255,255,0.12);">To cancel: click &ldquo;Manage your subscription&rdquo; above &rarr; Cancel plan. Takes 10 seconds.</span>`
-          : ''}
-        <a href="mailto:unsubscribe@omenora.com?subject=unsubscribe" style="color: rgba(255,255,255,0.15); text-decoration: underline;">Unsubscribe</a>
-      </p>
-    </div>
-
-  </div>
+      </table>
+    </td></tr>
+  </table>
 </body>
 </html>
   `
@@ -317,10 +234,8 @@ export default defineEventHandler(async (event) => {
       ...(partnerBirthChartNoonFallback ? [`Note: Houses calculated using 12:00 PM as birth time.`] : []),
     ] : []),
     ``,
-    `---`,
-    `OMENORA · omenora.com`,
-    ...(tier === 'subscription' ? [`Manage your subscription: https://omenora.com/account`, `To cancel: visit the link above → Cancel plan. Takes 10 seconds.`] : []),
-    `To unsubscribe, email unsubscribe@omenora.com`,
+    ...(tier === 'subscription' ? [`---`, `Manage your subscription: https://omenora.com/account`, `To cancel: visit the link above → Cancel plan. Takes 10 seconds.`] : []),
+    EMAIL_FOOTER_TEXT_MAILTO,
   ].filter(s => s !== '').join('\n\n')
 
   const { error } = await resend.emails.send({

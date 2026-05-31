@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   const element              = sanitizeString(body.element, 20)
   const region               = isValidRegion(body.region) ? body.region : 'western'
   const rawPlanType          = sanitizeString(body.planType || '', 30)
-  const planType             = rawPlanType === 'compatibility_plus' ? 'compatibility_plus' : 'daily_horoscope'
+  const planType             = rawPlanType === 'premium' ? 'premium' : 'daily_horoscope'
 
   assertInput(/^cus_\w{10,200}$/.test(stripeCustomerId), 'Invalid stripeCustomerId')
   assertInput(/^sub_\w{10,200}$/.test(stripeSubscriptionId), 'Invalid stripeSubscriptionId')

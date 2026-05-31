@@ -36,6 +36,8 @@
           <NuxtLink to="/privacy" class="annotation footer-link">Privacy</NuxtLink>
           <span class="annotation" style="opacity:0.3">·</span>
           <NuxtLink to="/terms" class="annotation footer-link">Terms</NuxtLink>
+          <span class="annotation" style="opacity:0.3">·</span>
+          <NuxtLink to="/refund-policy" class="annotation footer-link">Refunds</NuxtLink>
         </nav>
 
         <span class="annotation">All rights reserved</span>
@@ -60,7 +62,7 @@ const { isAuthenticated } = useAuth()
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--color-bone);
+  background: var(--surface-base);
 }
 
 .app-shell__main {
@@ -91,11 +93,11 @@ const { isAuthenticated } = useAuth()
 
 .footer-link {
   text-decoration: none;
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   transition: color 0.2s;
 }
 
 .footer-link:hover {
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 </style>

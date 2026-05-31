@@ -6,8 +6,6 @@ import { resendBouncedHandler, resendComplainedHandler } from '~~/inngest/resend
 import { zodiacCacheOrchestrator, zodiacCacheWorker } from '~~/inngest/zodiac-cache'
 import { archetypeCacheOrchestrator, archetypeCacheWorker } from '~~/inngest/archetype-cache'
 import { dailyInsightOrchestrator, dailyInsightWorker } from '~~/inngest/daily-insight-delivery'
-import { weeklyTransitOrchestrator, weeklyTransitWorker } from '~~/inngest/weekly-transit-delivery'
-
 /**
  * POST/GET/PUT /api/inngest
  *
@@ -35,8 +33,6 @@ export default defineEventHandler(
       archetypeCacheWorker,
       dailyInsightOrchestrator,
       dailyInsightWorker,
-      weeklyTransitOrchestrator,
-      weeklyTransitWorker,
     ],
   }),
 )

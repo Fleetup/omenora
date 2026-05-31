@@ -3,10 +3,10 @@ import { Resend } from 'resend'
 import Anthropic from '@anthropic-ai/sdk'
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema'
 import { sendReportEmail } from '~~/server/utils/report-email-builder'
-import { buildTestimonialRequestEmail } from '~~/server/utils/email-templates'
+import { buildTestimonialRequestEmail, buildFoundingMemberEmail, sendPremiumWelcomeEmail } from '~~/server/utils/email-templates'
 import { ReportSchema, CalendarSchema, type ReportType, type CalendarType } from '~~/server/utils/ai-schemas'
 import { withAiRetry } from '~~/server/utils/ai-retry'
-import { getLanguageInstruction } from '~~/server/utils/language-instructions'
+import { findOrCreateAuthUserByEmail } from '~~/server/utils/auth-bridge'
 import { inngest, subscriberWelcomeSend, stripeCheckoutCompleted } from '~~/inngest/client'
 import type { createSupabaseAdmin as _createSupabaseAdmin } from '~~/server/utils/auth'
 
@@ -18,6 +18,67 @@ interface WebhookRuntimeConfig {
   anthropicApiKey: string
   emailJobSecret: string
   stripeWebhookSecret: string
+}
+
+/**
+ * Map Stripe Subscription.status (8 possible values) to the 5 values
+ * accepted by public.subscriptions.status:
+ *   active|expired|cancelled|billing_issue|in_grace_period
+ *
+ * Mirrors the deriveStatus pattern in server/api/revenuecat/webhook.post.ts
+ * for cross-source consistency.
+ */
+function deriveStripeStatus(stripeStatus: string): string {
+  switch (stripeStatus) {
+    case 'active':
+    case 'trialing':
+      return 'active'
+    case 'past_due':
+    case 'unpaid':
+      return 'billing_issue'
+    case 'canceled':
+      return 'cancelled'
+    case 'incomplete':
+    case 'incomplete_expired':
+      return 'expired'
+    case 'paused':
+      return 'in_grace_period'
+    default:
+      console.warn('[stripe-webhook] unknown Stripe subscription status — defaulting to active:', stripeStatus)
+      return 'active'
+  }
+}
+
+/**
+ * Resolve a Stripe customer ID to its email. Returns null if customer
+ * is deleted, missing, or has no email on record. Used by subscription
+ * cancellation/update handlers which receive stripeSubscription.customer
+ * (a string ID) rather than an email.
+ */
+async function getEmailFromStripeCustomer(
+  stripe: Stripe,
+  customerId: string,
+): Promise<string | null> {
+  try {
+    const customer = await stripe.customers.retrieve(customerId)
+    if (customer.deleted) return null
+    return (customer as Stripe.Customer).email || null
+  } catch (err) {
+    console.error('[stripe-webhook] customers.retrieve failed:', err instanceof Error ? err.message : String(err), { customerId })
+    return null
+  }
+}
+
+/**
+ * Map of metadata.type values to credit grant configurations.
+ * Mirrors CONSUMABLE_PRODUCTS in server/api/revenuecat/webhook.post.ts so
+ * web Stripe and mobile RC purchases credit the same balance via the same RPC.
+ */
+const STRIPE_CREDIT_PRODUCTS: Record<string, { creditType: 'counsel' | 'compat'; delta: number }> = {
+  compat_credit:         { creditType: 'compat',  delta: 1  },
+  counsel_boost_spark:   { creditType: 'counsel', delta: 5  },
+  counsel_boost_insight: { creditType: 'counsel', delta: 15 },
+  counsel_boost_ascend:  { creditType: 'counsel', delta: 35 },
 }
 
 /**
@@ -110,6 +171,74 @@ export default defineEventHandler(async (event) => {
         console.info('[stripe-webhook] Subscriber deactivated on payment failure:', customerId)
       }
     }
+    // ── Mirror billing issue to public.subscriptions ──
+    try {
+      const invoice = stripeEvent.data.object as Stripe.Invoice
+      const invCustId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+      if (invCustId) {
+        const invEmail = await getEmailFromStripeCustomer(stripe, invCustId)
+        if (invEmail) {
+          const { userId } = await findOrCreateAuthUserByEmail(invEmail)
+          const supabaseInvSubs = createSupabaseAdmin()
+          const { error: invSubsErr } = await supabaseInvSubs
+            .from('subscriptions')
+            .update({
+              status:                     'billing_issue',
+              billing_issues_detected_at: new Date().toISOString(),
+              rc_event_id:                stripeEvent.id,
+              updated_at:                 new Date().toISOString(),
+            })
+            .eq('user_id', userId)
+            .eq('entitlement_id', 'premium')
+          if (invSubsErr) {
+            console.error('[stripe-webhook] subscriptions billing_issue update failed (non-blocking):', invSubsErr.message, { eventId: stripeEvent.id, userId })
+          } else {
+            console.info('[stripe-webhook] subscription marked billing_issue:', { userId })
+          }
+        }
+      }
+    } catch (invMirrorErr: unknown) {
+      console.error('[stripe-webhook] payment_failed mirror failed (non-blocking):', invMirrorErr instanceof Error ? invMirrorErr.message : String(invMirrorErr), { eventId: stripeEvent.id })
+    }
+    return { received: true }
+  }
+
+  if (stripeEvent.type === 'customer.subscription.updated') {
+    try {
+      const subUpd = stripeEvent.data.object as Stripe.Subscription
+      const custId = typeof subUpd.customer === 'string' ? subUpd.customer : subUpd.customer?.id
+      if (custId) {
+        const updEmail = await getEmailFromStripeCustomer(stripe, custId)
+        if (updEmail) {
+          const { userId } = await findOrCreateAuthUserByEmail(updEmail)
+          const supabaseUpd = createSupabaseAdmin()
+          const newStatus  = deriveStripeStatus(subUpd.status)
+          const isTrialing = subUpd.status === 'trialing'
+          const itemPeriodEnd = subUpd.items.data[0]?.current_period_end ?? null
+          const expiresAt = itemPeriodEnd
+            ? new Date(itemPeriodEnd * 1000).toISOString()
+            : null
+          const { error: updErr } = await supabaseUpd
+            .from('subscriptions')
+            .update({
+              status:             newStatus,
+              is_in_trial_period: isTrialing,
+              expires_at:         expiresAt,
+              rc_event_id:        stripeEvent.id,
+              updated_at:         new Date().toISOString(),
+            })
+            .eq('user_id', userId)
+            .eq('entitlement_id', 'premium')
+          if (updErr) {
+            console.error('[stripe-webhook] subscriptions status update failed (non-blocking):', updErr.message, { eventId: stripeEvent.id, userId })
+          } else {
+            console.info('[stripe-webhook] subscription updated:', { userId, status: newStatus, isTrialing })
+          }
+        }
+      }
+    } catch (updErr: unknown) {
+      console.error('[stripe-webhook] subscription update handler failed (non-blocking):', updErr instanceof Error ? updErr.message : String(updErr), { eventId: stripeEvent.id })
+    }
     return { received: true }
   }
 
@@ -128,23 +257,59 @@ export default defineEventHandler(async (event) => {
         console.info('[stripe-webhook] Subscriber deactivated on subscription deletion:', customerId)
       }
     }
+    // ── Mirror cancellation to public.subscriptions ──
+    try {
+      const subDel = stripeEvent.data.object as Stripe.Subscription
+      const custId = typeof subDel.customer === 'string' ? subDel.customer : subDel.customer?.id
+      if (custId) {
+        const delEmail = await getEmailFromStripeCustomer(stripe, custId)
+        if (delEmail) {
+          const { userId } = await findOrCreateAuthUserByEmail(delEmail)
+          const supabaseDel = createSupabaseAdmin()
+          const { error: delErr } = await supabaseDel
+            .from('subscriptions')
+            .update({
+              status:                  'cancelled',
+              cancelled_at:            new Date().toISOString(),
+              unsubscribe_detected_at: new Date().toISOString(),
+              rc_event_id:             stripeEvent.id,
+              updated_at:              new Date().toISOString(),
+            })
+            .eq('user_id', userId)
+            .eq('entitlement_id', 'premium')
+          if (delErr) {
+            console.error('[stripe-webhook] subscriptions cancel update failed (non-blocking):', delErr.message, { eventId: stripeEvent.id, userId })
+          } else {
+            console.info('[stripe-webhook] subscription cancelled:', { userId, subId: subDel.id })
+          }
+        }
+      }
+    } catch (cancelErr: unknown) {
+      console.error('[stripe-webhook] cancellation mirror failed (non-blocking):', cancelErr instanceof Error ? cancelErr.message : String(cancelErr), { eventId: stripeEvent.id })
+    }
     return { received: true }
   }
 
   // ── B-4: Chargeback logging ────────────────────────────────────────────────
   if (stripeEvent.type === 'charge.dispute.created') {
-    try {
-      const dispute = stripeEvent.data.object as Stripe.Dispute
-      const chargeId = typeof dispute.charge === 'string' ? dispute.charge : dispute.charge?.id
+    const disputeObj = stripeEvent.data.object as Stripe.Dispute
+    const disputeChargeId = typeof disputeObj.charge === 'string' ? disputeObj.charge : disputeObj.charge?.id
 
+    // Hoist PI extraction so it is accessible to the founding row update below
+    let disputePi: string | null = null
+    try {
+      const disputeCharge = await stripe.charges.retrieve(disputeChargeId ?? '', { expand: ['payment_intent'] })
+      const disputePiObj = disputeCharge.payment_intent as Stripe.PaymentIntent | null
+      disputePi = disputePiObj?.id ?? null
+    } catch { /* best effort */ }
+
+    try {
       // Look up the original charge to get payment_intent, then find our report metadata
       let reportMeta: Record<string, string> = {}
-      if (chargeId) {
+      if (disputeChargeId) {
         try {
-          const charge = await stripe.charges.retrieve(chargeId, { expand: ['payment_intent'] })
-          const pi = charge.payment_intent as Stripe.PaymentIntent | null
-          const checkoutSessions = pi?.id
-            ? await stripe.checkout.sessions.list({ payment_intent: pi.id, limit: 1 })
+          const checkoutSessions = disputePi
+            ? await stripe.checkout.sessions.list({ payment_intent: disputePi, limit: 1 })
             : null
           reportMeta = checkoutSessions?.data?.[0]?.metadata ?? {}
         } catch { /* best effort — log what we have */ }
@@ -164,12 +329,12 @@ export default defineEventHandler(async (event) => {
 
       console.warn('[B-4] chargeback', {
         event: 'charge.dispute.created',
-        dispute_id: dispute.id,
-        charge_id: chargeId,
-        amount_cents: dispute.amount,
-        currency: dispute.currency,
-        reason: dispute.reason,
-        status: dispute.status,
+        dispute_id: disputeObj.id,
+        charge_id: disputeChargeId,
+        amount_cents: disputeObj.amount,
+        currency: disputeObj.currency,
+        reason: disputeObj.reason,
+        status: disputeObj.status,
         archetype: dbRow?.archetype ?? reportMeta.archetype ?? 'unknown',
         region: dbRow?.region ?? reportMeta.region ?? 'unknown',
         language: reportMeta.language ?? 'unknown',
@@ -179,19 +344,53 @@ export default defineEventHandler(async (event) => {
     } catch (err: unknown) {
       console.error('[B-4] chargeback logging failed (non-blocking):', err instanceof Error ? err.message : String(err))
     }
+
+    // ── Founding-member dispute row update (non-blocking) ─────────────────────
+    if (disputePi) {
+      try {
+        const disputeSupabase = createSupabaseAdmin()
+        const { data: foundingDisputeRow } = await disputeSupabase
+          .from('founding_members')
+          .select('id')
+          .eq('stripe_payment_intent_id', disputePi)
+          .maybeSingle()
+
+        if (foundingDisputeRow) {
+          const { error: disputeUpdateErr } = await disputeSupabase
+            .from('founding_members')
+            .update({ status: 'disputed' })
+            .eq('stripe_payment_intent_id', disputePi)
+
+          if (disputeUpdateErr) {
+            console.error('[stripe-webhook] founding_member dispute update failed:', { pi: disputePi, error: disputeUpdateErr.message })
+          } else {
+            console.info('[stripe-webhook] founding_member marked disputed:', { pi: disputePi })
+          }
+        }
+        // If no founding row found, dispute belongs to a different product — no action needed.
+      } catch (foundingDisputeEx: unknown) {
+        console.error('[stripe-webhook] founding_member dispute row update exception (non-blocking):', {
+          pi: disputePi,
+          error: foundingDisputeEx instanceof Error ? foundingDisputeEx.message : String(foundingDisputeEx),
+        })
+      }
+    }
+
     return { received: true }
   }
 
   // ── B-4: Refund logging ──────────────────────────────────────────────────────
   if (stripeEvent.type === 'charge.refunded') {
-    try {
-      const charge = stripeEvent.data.object as Stripe.Charge
-      const pi = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id
+    const refundCharge = stripeEvent.data.object as Stripe.Charge
+    const refundPi = typeof refundCharge.payment_intent === 'string'
+      ? refundCharge.payment_intent
+      : refundCharge.payment_intent?.id
 
+    try {
       let reportMeta: Record<string, string> = {}
-      if (pi) {
+      if (refundPi) {
         try {
-          const sessions = await stripe.checkout.sessions.list({ payment_intent: pi, limit: 1 })
+          const sessions = await stripe.checkout.sessions.list({ payment_intent: refundPi, limit: 1 })
           reportMeta = sessions.data?.[0]?.metadata ?? {}
         } catch { /* best effort */ }
       }
@@ -207,13 +406,13 @@ export default defineEventHandler(async (event) => {
         dbRow = data
       }
 
-      const refundAmountCents = charge.amount_refunded
+      const refundAmountCents = refundCharge.amount_refunded
       console.warn('[B-4] refund', {
         event: 'charge.refunded',
-        charge_id: charge.id,
-        payment_intent: pi,
+        charge_id: refundCharge.id,
+        payment_intent: refundPi,
         refund_amount_cents: refundAmountCents,
-        currency: charge.currency,
+        currency: refundCharge.currency,
         archetype: dbRow?.archetype ?? reportMeta.archetype ?? 'unknown',
         region: dbRow?.region ?? reportMeta.region ?? 'unknown',
         language: reportMeta.language ?? 'unknown',
@@ -223,6 +422,85 @@ export default defineEventHandler(async (event) => {
     } catch (err: unknown) {
       console.error('[B-4] refund logging failed (non-blocking):', err instanceof Error ? err.message : String(err))
     }
+
+    // ── Founding-member refund row update (non-blocking) ──────────────────────
+    if (refundPi) {
+      try {
+        const refundSupabase = createSupabaseAdmin()
+        const { data: foundingRefundRow } = await refundSupabase
+          .from('founding_members')
+          .select('id')
+          .eq('stripe_payment_intent_id', refundPi)
+          .maybeSingle()
+
+        if (foundingRefundRow) {
+          const { error: refundUpdateErr } = await refundSupabase
+            .from('founding_members')
+            .update({ status: 'refunded', refunded_at: new Date().toISOString() })
+            .eq('stripe_payment_intent_id', refundPi)
+
+          if (refundUpdateErr) {
+            console.error('[stripe-webhook] founding_member refund update failed:', { pi: refundPi, error: refundUpdateErr.message })
+          } else {
+            console.info('[stripe-webhook] founding_member marked refunded:', { pi: refundPi })
+          }
+        }
+        // If no founding row found, refund belongs to a different product — no action needed.
+      } catch (foundingRefundEx: unknown) {
+        console.error('[stripe-webhook] founding_member refund row update exception (non-blocking):', {
+          pi: refundPi,
+          error: foundingRefundEx instanceof Error ? foundingRefundEx.message : String(foundingRefundEx),
+        })
+      }
+    }
+
+    // ── Credit clawback for refunded IAP charges ──
+    // charge.metadata.type carries the original metadata.type from checkout.
+    // If it matches a STRIPE_CREDIT_PRODUCTS key, clawback the same delta.
+    try {
+      const charge = stripeEvent.data.object as Stripe.Charge
+      const chargeMetaType = charge.metadata?.type
+
+      if (chargeMetaType && chargeMetaType in STRIPE_CREDIT_PRODUCTS) {
+        const { creditType, delta } = STRIPE_CREDIT_PRODUCTS[chargeMetaType]!
+        const refundEmail = charge.billing_details?.email || charge.receipt_email || null
+        if (refundEmail && isValidEmail(refundEmail)) {
+          const { userId } = await findOrCreateAuthUserByEmail(refundEmail)
+          const productId = charge.metadata?.product_id || chargeMetaType
+          const newBalance = await clawbackCredits(userId, creditType, delta, stripeEvent.id, productId)
+          console.info(`[stripe-webhook] refund clawback ${chargeMetaType}:`, { userId, creditType, delta, newBalance })
+        } else {
+          console.warn('[stripe-webhook] refunded charge has no resolvable email — skipping clawback', { eventId: stripeEvent.id, chargeId: charge.id })
+        }
+      }
+
+      // ── Calendar refund: mark subscriptions row expired ──
+      if (chargeMetaType === 'calendar_2026') {
+        const refundEmail = charge.billing_details?.email || charge.receipt_email || null
+        if (refundEmail && isValidEmail(refundEmail)) {
+          const { userId } = await findOrCreateAuthUserByEmail(refundEmail)
+          const supabaseCalRef = createSupabaseAdmin()
+          const { error: calRefErr } = await supabaseCalRef
+            .from('subscriptions')
+            .update({
+              status:      'expired',
+              expires_at:  new Date().toISOString(),
+              rc_event_id: stripeEvent.id,
+              updated_at:  new Date().toISOString(),
+            })
+            .eq('user_id', userId)
+            .eq('entitlement_id', 'calendar_2026')
+          if (calRefErr) {
+            console.error('[stripe-webhook] calendar refund mark-expired failed:', calRefErr.message, { eventId: stripeEvent.id, userId })
+          } else {
+            console.info('[stripe-webhook] calendar_2026 expired via refund:', { userId })
+          }
+        }
+      }
+    } catch (refundErr: unknown) {
+      console.error('[stripe-webhook] charge.refunded clawback/expire failed (non-blocking):', refundErr instanceof Error ? refundErr.message : String(refundErr), { eventId: stripeEvent.id })
+    }
+
     return { received: true }
   }
 
@@ -277,7 +555,7 @@ export default defineEventHandler(async (event) => {
     const subCustomer  = session.customer as string
     const subId        = session.subscription as string
 
-    const planType = 'daily_horoscope'
+    const planType = 'premium'
 
     try {
       await $fetch('/api/save-subscriber', {
@@ -298,6 +576,100 @@ export default defineEventHandler(async (event) => {
       console.info('[stripe-webhook] Subscriber saved:', { subId, subCustomer })
     } catch (err: unknown) {
       console.error('[stripe-webhook] save-subscriber failed (non-blocking):', err instanceof Error ? err.message : String(err))
+    }
+
+    // ── Write premium entitlement to public.subscriptions (cross-platform bridge) ──
+    // Resolves the Stripe customer email to a Supabase auth.users UUID via
+    // findOrCreateAuthUserByEmail, then upserts a 'premium' row into
+    // public.subscriptions. This is the same table the mobile RC webhook writes
+    // to, enabling the entitlement guard in entitlements.ts to work for both
+    // web-Stripe and mobile-RevenueCat subscribers.
+    //
+    // rc_event_id column stores the Stripe event ID here (column name is RC-era;
+    // the schema accepts any webhook event ID as an idempotency aid).
+    //
+    // Failure handling: the block is non-throwing. save-subscriber and the
+    // Inngest welcome event have already succeeded (or failed independently).
+    // Log with context and fall through so Stripe gets 200 and does not retry
+    // the entire webhook (which would re-fire save-subscriber and Inngest).
+    if (isValidEmail(subEmail) && subId) {
+      try {
+        const stripeSub = await stripe.subscriptions.retrieve(subId, {
+          expand: ['items.data.price'],
+        })
+
+        const priceId       = stripeSub.items.data[0]?.price?.id ?? null
+        const subStatus     = deriveStripeStatus(stripeSub.status)
+        const isTrialing    = stripeSub.status === 'trialing'
+        const purchasedAt   = new Date(stripeSub.created * 1000).toISOString()
+        // expires_at = end of current billing period (when access lapses if not renewed).
+        // For trial subs this is the trial_end; for paid subs it's the next billing cycle.
+        // current_period_end lives on SubscriptionItem in Stripe SDK v2026-03-25.dahlia.
+        const itemPeriodEnd = stripeSub.items.data[0]?.current_period_end ?? null
+        const expiresAt     = itemPeriodEnd
+          ? new Date(itemPeriodEnd * 1000).toISOString()
+          : null
+
+        const { userId, isNew } = await findOrCreateAuthUserByEmail(subEmail)
+
+        const supabaseSubs = createSupabaseAdmin()
+        const { error: subsErr } = await supabaseSubs
+          .from('subscriptions')
+          .upsert(
+            {
+              user_id:            userId,
+              entitlement_id:     'premium',
+              product_id:         priceId,
+              store:              'web_billing',
+              status:             subStatus,
+              is_in_trial_period: isTrialing,
+              is_sandbox:         !stripeEvent.livemode,
+              purchased_at:       purchasedAt,
+              expires_at:         expiresAt,
+              rc_event_id:        stripeEvent.id,
+            },
+            { onConflict: 'user_id,entitlement_id' },
+          )
+
+        if (subsErr) {
+          console.error('[stripe-webhook] subscriptions upsert failed (non-blocking):', subsErr.message, { eventId: stripeEvent.id, subEmail, subId })
+        } else {
+          console.info('[stripe-webhook] premium entitlement written to subscriptions:', { userId, subId, priceId })
+        }
+
+        // ── Send Premium welcome email with magic-link (new users only) ──
+        // Only fires for brand-new auth users (isNew=true from findOrCreateAuthUserByEmail).
+        // Returning users (isNew=false) already have an account — skip to avoid duplicate emails.
+        // The Inngest subscriber/welcome.send event fires unconditionally below (insight email).
+        if (isNew) {
+          try {
+            const resendKey = config.resendApiKey as string | undefined
+            if (resendKey) {
+              const supabaseForLink = createSupabaseAdmin()
+              const { data: linkData, error: linkErr } = await supabaseForLink.auth.admin.generateLink({
+                type:  'magiclink',
+                email: subEmail,
+              })
+              if (linkErr || !linkData?.properties?.hashed_token) {
+                console.error('[stripe-webhook] generateLink failed (non-blocking):', linkErr?.message, { eventId: stripeEvent.id, subEmail })
+              } else {
+                await sendPremiumWelcomeEmail(
+                  subEmail,
+                  subFirstName,
+                  linkData.properties.hashed_token,
+                  resendKey,
+                )
+              }
+            } else {
+              console.warn('[stripe-webhook] NUXT_RESEND_API_KEY not set — premium welcome email skipped', { subEmail })
+            }
+          } catch (welcomeErr: unknown) {
+            console.error('[stripe-webhook] premium welcome email failed (non-blocking):', welcomeErr instanceof Error ? welcomeErr.message : String(welcomeErr), { eventId: stripeEvent.id, subEmail })
+          }
+        }
+      } catch (bridgeErr: unknown) {
+        console.error('[stripe-webhook] auth-bridge or subscriptions write failed (non-blocking):', bridgeErr instanceof Error ? bridgeErr.message : String(bridgeErr), { eventId: stripeEvent.id, subEmail, subId })
+      }
     }
 
     // ── Fire subscriber/welcome.send Inngest event (replaces inline Claude + Resend) ──
@@ -325,6 +697,70 @@ export default defineEventHandler(async (event) => {
         // (the idempotency row is already written), so we log for manual recovery.
         console.error('[stripe-webhook] inngest.send failed — welcome insight not queued for:', subEmail, inngestErr instanceof Error ? inngestErr.message : String(inngestErr))
       }
+    }
+
+    return { received: true }
+  }
+
+  // ── Handle calendar_2026 checkout — permanent unlock ─────────────────────────
+  if (meta.type === 'calendar_2026') {
+    const calEmail = session.customer_email || meta.email || ''
+    if (!isValidEmail(calEmail)) {
+      console.warn('[stripe-webhook] calendar_2026 missing valid email', { eventId: stripeEvent.id })
+      return { received: true }
+    }
+
+    try {
+      const { userId } = await findOrCreateAuthUserByEmail(calEmail)
+      const supabaseCal = createSupabaseAdmin()
+      const { error: calErr } = await supabaseCal
+        .from('subscriptions')
+        .upsert(
+          {
+            user_id:            userId,
+            entitlement_id:     'calendar_2026',
+            product_id:         session.metadata?.product_id || null,
+            store:              'web_billing',
+            status:             'active',
+            is_in_trial_period: false,
+            is_sandbox:         !stripeEvent.livemode,
+            purchased_at:       new Date().toISOString(),
+            expires_at:         null,
+            rc_event_id:        stripeEvent.id,
+          },
+          { onConflict: 'user_id,entitlement_id' },
+        )
+
+      if (calErr) {
+        console.error('[stripe-webhook] calendar_2026 subscriptions upsert failed:', calErr.message, { eventId: stripeEvent.id, calEmail })
+      } else {
+        console.info('[stripe-webhook] calendar_2026 entitlement written:', { userId })
+      }
+    } catch (bridgeErr: unknown) {
+      console.error('[stripe-webhook] calendar_2026 auth-bridge failed:', bridgeErr instanceof Error ? bridgeErr.message : String(bridgeErr), { eventId: stripeEvent.id, calEmail })
+    }
+
+    return { received: true }
+  }
+
+  // ── Handle credit-grant IAP products ─────────────────────────────────────────
+  // compat_credit | counsel_boost_spark | counsel_boost_insight | counsel_boost_ascend
+  if (meta.type && meta.type in STRIPE_CREDIT_PRODUCTS) {
+    const creditEmail = session.customer_email || meta.email || ''
+    if (!isValidEmail(creditEmail)) {
+      console.warn(`[stripe-webhook] ${meta.type} missing valid email`, { eventId: stripeEvent.id })
+      return { received: true }
+    }
+
+    const { creditType, delta } = STRIPE_CREDIT_PRODUCTS[meta.type]!
+
+    try {
+      const { userId } = await findOrCreateAuthUserByEmail(creditEmail)
+      const productId = session.metadata?.product_id || meta.type
+      const newBalance = await grantCredits(userId, creditType, delta, stripeEvent.id, productId)
+      console.info(`[stripe-webhook] ${meta.type} granted:`, { userId, creditType, delta, newBalance })
+    } catch (bridgeErr: unknown) {
+      console.error(`[stripe-webhook] ${meta.type} credit grant failed:`, bridgeErr instanceof Error ? bridgeErr.message : String(bridgeErr), { eventId: stripeEvent.id, creditEmail })
     }
 
     return { received: true }
@@ -430,6 +866,116 @@ export default defineEventHandler(async (event) => {
     }
 
     return { received: true, processed: 'compatibility', sessionId }
+  }
+
+  // ── Handle founding-member checkout ─────────────────────────────────────────
+  if (meta.type === 'founding_member') {
+    const foundingEmail = (session.customer_details?.email || '').toLowerCase().trim()
+    const paymentIntent = typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : (session.payment_intent as Stripe.PaymentIntent | null)?.id ?? null
+    const customerId = typeof session.customer === 'string' ? session.customer : null
+
+    // Retrieve the charge id from the PaymentIntent if available (best-effort)
+    let chargeIdForFounding: string | null = null
+    if (paymentIntent) {
+      try {
+        const pi = await stripe.paymentIntents.retrieve(paymentIntent, { expand: ['latest_charge'] })
+        const latestCharge = pi.latest_charge
+        chargeIdForFounding = typeof latestCharge === 'string'
+          ? latestCharge
+          : (latestCharge as Stripe.Charge | null)?.id ?? null
+      } catch { /* best-effort */ }
+    }
+
+    // Locate the pending row — must exist or this was not our session
+    const foundingSupabase = createSupabaseAdmin()
+    const { data: foundingRow, error: foundingLookupErr } = await foundingSupabase
+      .from('founding_members')
+      .select('id, status')
+      .eq('stripe_checkout_session_id', sessionId)
+      .maybeSingle()
+
+    if (foundingLookupErr) {
+      console.error('[stripe-webhook] founding_members lookup error:', { sessionId, error: foundingLookupErr.message })
+    }
+
+    if (!foundingRow) {
+      // No row — our system never created this session. Log and ack to Stripe.
+      console.error('[stripe-webhook] founding_member — no row for session, possible external session:', { sessionId })
+      return { received: true, warning: 'founding_no_row', sessionId }
+    }
+
+    // Application-level idempotency — second line of defense after stripe_webhook_events
+    if (foundingRow.status === 'paid') {
+      console.info('[stripe-webhook] founding_member — already paid, ack duplicate:', { sessionId })
+      return { received: true, skipped: 'founding_already_paid', sessionId }
+    }
+
+    // Update row to paid in a single statement
+    const { error: foundingUpdateErr } = await foundingSupabase
+      .from('founding_members')
+      .update({
+        status:                    'paid',
+        paid_at:                   new Date().toISOString(),
+        stripe_payment_intent_id:  paymentIntent,
+        stripe_charge_id:          chargeIdForFounding,
+        stripe_customer_id:        customerId,
+        email:                     foundingEmail || null,
+      })
+      .eq('stripe_checkout_session_id', sessionId)
+
+    if (foundingUpdateErr) {
+      console.error('[stripe-webhook] founding_members update failed:', { sessionId, error: foundingUpdateErr.message })
+      // Return 200 — Stripe must not retry; we have the event recorded in stripe_webhook_events.
+      // Manual reconciliation required.
+      return { received: true, warning: 'founding_update_failed', sessionId }
+    }
+
+    console.info('[stripe-webhook] founding_member paid:', { sessionId, paymentIntent, customerId })
+
+    // Send confirmation email if we have a valid address
+    if (isValidEmail(foundingEmail)) {
+      const resendKey = config.resendApiKey as string | undefined
+      if (resendKey) {
+        try {
+          const confirmEmail = buildFoundingMemberEmail({ email: foundingEmail })
+          const resendClient = new Resend(resendKey)
+          const { error: emailErr } = await resendClient.emails.send({
+            from:    'OMENORA <reading@omenora.com>',
+            replyTo: 'support@omenora.com',
+            to:      foundingEmail,
+            subject: confirmEmail.subject,
+            html:    confirmEmail.html,
+            text:    confirmEmail.text,
+            headers: { 'Idempotency-Key': `founding-confirm-${sessionId}` },
+          })
+
+          if (emailErr) {
+            console.error('[stripe-webhook] founding_member confirmation email failed (non-blocking):', { sessionId, error: emailErr })
+          } else {
+            // Stamp confirmation_email_sent_at — best-effort, never re-raises
+            await foundingSupabase
+              .from('founding_members')
+              .update({ confirmation_email_sent_at: new Date().toISOString() })
+              .eq('stripe_checkout_session_id', sessionId)
+
+            console.info('[stripe-webhook] founding_member confirmation email sent:', { sessionId, to: foundingEmail })
+          }
+        } catch (emailEx: unknown) {
+          console.error('[stripe-webhook] founding_member email exception (non-blocking):', {
+            sessionId,
+            error: emailEx instanceof Error ? emailEx.message : String(emailEx),
+          })
+        }
+      } else {
+        console.warn('[stripe-webhook] founding_member — NUXT_RESEND_API_KEY not set, email skipped:', { sessionId })
+      }
+    } else {
+      console.warn('[stripe-webhook] founding_member — no valid email, confirmation skipped:', { sessionId })
+    }
+
+    return { received: true, processed: 'founding_member', sessionId }
   }
 
   // ── Check idempotency: skip if report already saved & email sent ───────────
@@ -718,7 +1264,15 @@ async function generateReport(opts: {
 
   const archetypeDesc = archetypeDescriptions[opts.archetype] || opts.archetype
 
-  const langInstruction = getLanguageInstruction(opts.language)
+  const languageInstructions: Record<string, string> = {
+    en: 'Respond entirely in English.',
+    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
+    pt: 'Responda completamente em português brasileiro.',
+    hi: 'पूरी तरह से हिंदी में जवाब दें।',
+    ko: '전체적으로 한국어로 답변해 주세요.',
+    zh: '完全用简体中文回答。',
+  }
+  const langInstruction = languageInstructions[opts.language] ?? languageInstructions['en'] ?? ''
 
   const prompt = `${langInstruction}
 
@@ -990,7 +1544,15 @@ async function generateCalendar(opts: {
 }): Promise<CalendarType> {
   const client = new Anthropic({ apiKey: opts.config.anthropicApiKey as string })
 
-  const langInstruction = getLanguageInstruction(opts.language)
+  const languageInstructions: Record<string, string> = {
+    en: 'Respond entirely in English.',
+    es: 'Responde completamente en español. Usa un tono cálido, poético y personal.',
+    pt: 'Responda completamente em português brasileiro. Use tom caloroso e pessoal.',
+    hi: 'पूरी तरह से हिंदी में जवाब दें।',
+    ko: '전체적으로 한국어로 답변해 주세요.',
+    zh: '完全用简体中文回答。',
+  }
+  const langInstruction = languageInstructions[opts.language] ?? languageInstructions['en'] ?? ''
 
   const birthMonth = new Date(opts.dateOfBirth).toLocaleString('default', { month: 'long' })
   const birthMonthNum = new Date(opts.dateOfBirth).getMonth()

@@ -139,7 +139,7 @@ export default defineNuxtPlugin(() => {
 
   // ─── B-3: UTM + context helpers ─────────────────────────────────────────────
   const UTM_SESSION_KEY = 'omenora_utms'
-  const UTM_KEYS = ['utm_source', 'utm_campaign', 'utm_adset', 'utm_creative', 'utm_medium', 'utm_content'] as const
+  const UTM_KEYS = ['utm_source', 'utm_campaign', 'utm_adset', 'utm_creative', 'utm_medium', 'utm_content', 'ttclid', 'fbclid'] as const
 
   function getUtmParams(): Record<string, string> {
     try {
@@ -336,11 +336,22 @@ export default defineNuxtPlugin(() => {
               content_type: 'product',
               content_name: 'Compatibility Reading',
               content_id: 'compatibility_reading',
-              value: 9.99,
+              value: 4.99,
               currency: 'USD',
             })
           }
         } catch (err) { console.warn('[B-3] trackCompatibilityPaywallView TikTok error:', err) }
+        try {
+          if (metaPixelId && (window as any).fbq) {
+            ;(window as any).fbq('track', 'AddToCart', {
+              value: 4.99,
+              currency: 'USD',
+              content_name: 'Compatibility Reading',
+              content_type: 'product',
+              content_ids: ['compatibility_reading'],
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackCompatibilityPaywallView Meta error:', err) }
         safeTrack('compatibility_paywall_view', {
           score: params.score,
           device_type: getDeviceType(),
@@ -349,6 +360,24 @@ export default defineNuxtPlugin(() => {
       },
 
       trackAnalysisStart: () => {
+        try {
+          if (tiktokPixelId && (window as any).ttq) {
+            ;(window as any).ttq.track('ViewContent', {
+              content_type: 'product',
+              content_name: 'Archetype Reading',
+              content_id: 'archetype_reading',
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackAnalysisStart TikTok error:', err) }
+        try {
+          if (metaPixelId && (window as any).fbq) {
+            ;(window as any).fbq('track', 'ViewContent', {
+              content_name: 'Archetype Reading',
+              content_type: 'product',
+              content_ids: ['archetype_reading'],
+            })
+          }
+        } catch (err) { console.warn('[B-3] trackAnalysisStart Meta error:', err) }
         safeTrack('analysis_start', {
           device_type: getDeviceType(),
           ...getUtmParams(),

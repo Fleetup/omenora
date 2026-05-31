@@ -65,7 +65,6 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     businessPartners: 'Business partners',
     dailyInsights: 'Your chart changes every day. So does your insight.',
     personalizedArchetype: 'A daily reading tied to your archetype, life path, and the current moon phase — delivered every morning.',
-    subscribeCta: 'Start daily insights — $6.99/month',
     craftingReport: 'Generating your personalized forecast...',
     processingPayment: 'Processing...',
     reportReady: 'Your report is ready',
@@ -86,8 +85,8 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     p3opt3: "Curiosity about what's ahead",
     p3opt4: 'Someone recommended it',
     traditionSwitcherLabel: 'READING TRADITION',
-    traditionSwitcherSubOracle: 'Switch your reading tradition — included in Oracle',
-    traditionSwitcherSubPaid: 'Explore another tradition — $2.99 each',
+    traditionSwitcherSubOracle: 'Switch your reading tradition — included in Premium',
+    traditionSwitcherSubPaid: 'Explore other traditions — included in Premium',
     traditionGenerating: 'Generating your {tradition} reading...',
     traditionUnlocked: '{tradition} reading unlocked',
     analyzingCompat: 'Analyzing your compatibility...',
@@ -124,7 +123,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     moonLabel: 'MOON SIGN — your emotional world',
     planetLabel: 'DOMINANT PLANET — your strongest force',
     planetaryForecast: '2026 PLANETARY FORECAST',
-    birthChartIncluded: 'Full Birth Chart — included in Oracle',
+    birthChartIncluded: 'Full Birth Chart — included in Premium',
     birthChartUnlockedLabel: 'Full Birth Chart',
     birthChartPositions: 'Rising sign · Houses · Planetary positions',
     birthChartPositionsIncluded: 'Rising sign · Houses · Planetary positions — included',
@@ -132,10 +131,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     generatingBirthChart: 'Generating...',
     generateBirthChart: 'Generate Birth Chart',
     birthChartReady: '⚡ Your Full Birth Chart is ready',
-    birthChartPrice: 'Rising sign · Houses · Planetary positions · $4.99',
+    birthChartPrice: 'Rising sign · Houses · Planetary positions · included in Premium',
     loadingBirthChart: 'Loading...',
-    unlockBirthChart: 'Unlock Birth Chart — $4.99',
-    birthChartRequiresTime: 'Add your time of birth to unlock · $4.99',
+    unlockBirthChart: 'Unlock Birth Chart with Premium →',
+    birthChartRequiresTime: 'Add your time of birth to unlock — included in Premium',
     requiresTimeOfBirth: 'Requires time of birth',
     oracleUnlocked: 'Full Oracle unlocked',
     bundleUnlocked: 'Bundle unlocked',
@@ -237,12 +236,12 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatTheirNamePlaceholder: 'Their first name',
     compatEmailLabel: 'Where should we send your reading?',
     compatSingleName: 'Just this forecast',
-    compatSinglePrice: '$9.99',
+    compatSinglePrice: '$4.99',
     compatSingleFreq: 'one-time',
     compatSingleBullet1: 'Full compatibility analysis for this pairing only',
     compatSingleBullet2: 'All 7 sections unlocked — bond, strength, challenge, communication, power dynamic, forecast & advice',
     compatSingleBullet3: 'Shareable forecast card included',
-    compatSingleCta: 'Get this forecast — $9.99',
+    compatSingleCta: 'Get this forecast — $4.99',
     compatWithChartsName: 'Reading + Both Birth Charts',
     compatWithChartsPrice: '$14.99',
     compatWithChartsFreq: 'one-time',
@@ -253,13 +252,47 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatWithChartsBullet4: 'Everything delivered to your inbox',
     compatWithChartsCta: 'Get reading + charts — $14.99',
     compatProcessing: 'Processing…',
-    compatGuarantee: '✦ If it doesn\'t feel like it was written for you, full refund within 24 hours. No form to fill.',
+    compatGuarantee: '✦ If it doesn\'t feel like it was written for you, contact us within 14 days for a full refund. No form to fill.',
     compatSecurePayment: 'Secure payment by Stripe',
     compatShareCardKicker: 'Destiny Compatibility',
     compatDownloadGenerating: 'Generating…',
     compatDownloadCta: 'Download your compatibility card',
     compatPrivacy: 'Privacy Policy',
     compatTerms: 'Terms of Service',
+
+    subscribeRefundClause: '14-day refund window. Contact support@omenora.com.',
+    preparingCheckout: 'Preparing checkout…',
+
+    paywallHeading: 'Your reading is ready',
+    paywallSubtitle: 'Get your full reading and lock in lifetime 50% off OMENORA when the app launches',
+    paywallTrustSubscription: 'One-time payment. 14-day refund window.',
+
+    compatIAPPrice: '$4.99',
+    compatIAPLabel: 'one-time',
+    compatIAPCta: 'Unlock this forecast — $4.99',
+    compatIAPBullet1: 'Full 7-section compatibility analysis',
+    compatIAPBullet2: 'Bond, strength, challenge, communication, power dynamic, forecast & advice',
+    compatIAPBullet3: 'Shareable forecast card included',
+    compatOrPremium: 'Or get unlimited readings with Premium →',
+
+    calIAPPrice: '$4.99',
+    calIAPCta: 'Unlock your 2026 calendar — $4.99',
+    calIAPLabel: 'one-time · yours forever',
+
+    counselBoostTitle: 'Counsel Boost Packs',
+    counselBoostPack1: 'Starter · $1.99 · 5 Counsel sessions',
+    counselBoostPack2: 'Standard · $4.99 · 15 Counsel sessions',
+    counselBoostPack3: 'Deep · $9.99 · 35 Counsel sessions',
+    counselBoostDisclosure: 'Boost packs are in-app purchases available on iOS and Android.',
+
+    androidWaitlistHeading: 'Android is coming',
+    androidWaitlistBody: "Join the waitlist and we'll email you the day it launches.",
+    androidWaitlistCta: 'Join the waitlist',
+    androidWaitlistSuccess: "You're on the list. We'll be in touch.",
+
+    foundingCtaPreview: 'Become a Founding Member — $20',
+    foundingCtaReport: 'Become a Founding Member',
+    foundingCtaSubtitle: 'One-time $20 · Lifetime 50% off Premium · Early access to the app',
   },
 
   es: {
@@ -318,8 +351,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     bestFriends: 'Mejores amigos',
     businessPartners: 'Socios de negocios',
     dailyInsights: 'Recibe una perspectiva diaria en tu bandeja de entrada',
-    personalizedArchetype: 'Personalizado para tu arquetipo · $6.99/mes',
-    subscribeCta: 'Suscribirse — $6.99/mes',
+    personalizedArchetype: 'Personalizado para tu arquetipo — entregado cada mañana',
     craftingReport: 'Generando tu lectura personalizada...',
     processingPayment: 'Procesando...',
     reportReady: 'Tu informe está listo',
@@ -340,8 +372,8 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     p3opt3: 'Curiosidad sobre lo que viene',
     p3opt4: 'Alguien me lo recomendó',
     traditionSwitcherLabel: 'TRADICIÓN DE LECTURA',
-    traditionSwitcherSubOracle: 'Cambia tu tradición de lectura — incluido en Oracle',
-    traditionSwitcherSubPaid: 'Explora otra tradición — $2.99 cada una',
+    traditionSwitcherSubOracle: 'Cambia tu tradición de lectura — incluido en Premium',
+    traditionSwitcherSubPaid: 'Explora otras tradiciones — incluido en Premium',
     traditionGenerating: 'Generando tu lectura {tradition}...',
     traditionUnlocked: 'Lectura {tradition} desbloqueada',
     analyzingCompat: 'Analizando tu compatibilidad...',
@@ -378,7 +410,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     moonLabel: 'LUNA',
     planetLabel: 'PLANETA',
     planetaryForecast: 'PRONÓSTICO PLANETARIO 2026',
-    birthChartIncluded: 'Carta Natal Completa — incluida en Oracle',
+    birthChartIncluded: 'Carta Natal Completa — incluida en Premium',
     birthChartUnlockedLabel: 'Carta Natal Completa',
     birthChartPositions: 'Ascendente · Casas · Posiciones planetarias',
     birthChartPositionsIncluded: 'Ascendente · Casas · Posiciones planetarias — incluidas',
@@ -386,10 +418,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     generatingBirthChart: 'Generando...',
     generateBirthChart: 'Generar Carta Natal',
     birthChartReady: '⚡ Tu Carta Natal Completa está lista',
-    birthChartPrice: 'Ascendente · Casas · Posiciones planetarias · $4.99',
+    birthChartPrice: 'Ascendente · Casas · Posiciones planetarias · incluido en Premium',
     loadingBirthChart: 'Cargando...',
-    unlockBirthChart: 'Desbloquear Carta Natal — $4.99',
-    birthChartRequiresTime: 'Añade tu hora de nacimiento para desbloquear · $4.99',
+    unlockBirthChart: 'Desbloquear Carta Natal con Premium →',
+    birthChartRequiresTime: 'Añade tu hora de nacimiento para desbloquear — incluido en Premium',
     requiresTimeOfBirth: 'Requiere hora de nacimiento',
     oracleUnlocked: 'Oráculo Completo desbloqueado',
     bundleUnlocked: 'Paquete desbloqueado',
@@ -491,12 +523,12 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatTheirNamePlaceholder: 'Su nombre',
     compatEmailLabel: '¿Dónde enviamos tu lectura?',
     compatSingleName: 'Solo este pronóstico',
-    compatSinglePrice: '$9.99',
+    compatSinglePrice: '$4.99',
     compatSingleFreq: 'pago único',
     compatSingleBullet1: 'Análisis completo de compatibilidad solo para esta pareja',
     compatSingleBullet2: 'Las 7 secciones desbloqueadas — vínculo, fortaleza, tensión, comunicación, dinámica de poder, pronóstico y consejo',
     compatSingleBullet3: 'Tarjeta de pronóstico compartible incluida',
-    compatSingleCta: 'Obtener este pronóstico — $9.99',
+    compatSingleCta: 'Obtener este pronóstico — $4.99',
     compatWithChartsName: 'Lectura + Ambas Cartas Natales',
     compatWithChartsPrice: '$14.99',
     compatWithChartsFreq: 'pago único',
@@ -507,13 +539,47 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatWithChartsBullet4: 'Todo enviado a tu correo',
     compatWithChartsCta: 'Obtener lectura + cartas — $14.99',
     compatProcessing: 'Procesando…',
-    compatGuarantee: '✦ Si no sientes que fue escrito para ti, reembolso completo dentro de 24 horas. Sin formulario.',
+    compatGuarantee: '✦ Si no sientes que fue escrito para ti, contáctanos dentro de 14 días para un reembolso completo. Sin formulario.',
     compatSecurePayment: 'Pago seguro con Stripe',
     compatShareCardKicker: 'Compatibilidad de Destino',
     compatDownloadGenerating: 'Generando…',
     compatDownloadCta: 'Descargar tu tarjeta de compatibilidad',
     compatPrivacy: 'Política de Privacidad',
     compatTerms: 'Términos de Servicio',
+
+    subscribeRefundClause: 'Ventana de reembolso de 14 días. Contacta a support@omenora.com.',
+    preparingCheckout: 'Preparando pago…',
+
+    paywallHeading: 'Tu lectura está lista',
+    paywallSubtitle: 'Obtén tu lectura completa y asegura 50% de descuento de por vida en OMENORA cuando se lance la app',
+    paywallTrustSubscription: 'Pago único. Ventana de reembolso de 14 días.',
+
+    compatIAPPrice: '$4.99',
+    compatIAPLabel: 'pago único',
+    compatIAPCta: 'Desbloquear este pronóstico — $4.99',
+    compatIAPBullet1: 'Análisis completo de compatibilidad de 7 secciones',
+    compatIAPBullet2: 'Vínculo, fortaleza, desafío, comunicación, dinámica de poder, pronóstico y consejo',
+    compatIAPBullet3: 'Tarjeta de pronóstico compartible incluida',
+    compatOrPremium: 'O consigue lecturas ilimitadas con Premium →',
+
+    calIAPPrice: '$4.99',
+    calIAPCta: 'Desbloquea tu calendario 2026 — $4.99',
+    calIAPLabel: 'pago único · tuyo para siempre',
+
+    counselBoostTitle: 'Paquetes Counsel Boost',
+    counselBoostPack1: 'Inicial · $1.99 · 5 sesiones de Counsel',
+    counselBoostPack2: 'Estándar · $4.99 · 15 sesiones de Counsel',
+    counselBoostPack3: 'Profundo · $9.99 · 35 sesiones de Counsel',
+    counselBoostDisclosure: 'Los paquetes Boost son compras dentro de la aplicación disponibles en iOS y Android.',
+
+    androidWaitlistHeading: 'Android está en camino',
+    androidWaitlistBody: 'Únete a la lista de espera y te avisaremos el día del lanzamiento.',
+    androidWaitlistCta: 'Únete a la lista de espera',
+    androidWaitlistSuccess: 'Estás en la lista. Estaremos en contacto.',
+
+    foundingCtaPreview: 'Conviértete en Miembro Fundador — $20',
+    foundingCtaReport: 'Conviértete en Miembro Fundador',
+    foundingCtaSubtitle: 'Pago único $20 · 50% de descuento de por vida en Premium · Acceso anticipado a la app',
   },
 
   pt: {
@@ -572,8 +638,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     bestFriends: 'Melhores amigos',
     businessPartners: 'Parceiros de negócios',
     dailyInsights: 'Receba uma perspectiva diária na sua caixa de entrada',
-    personalizedArchetype: 'Personalizado para seu arquétipo · $6.99/mês',
-    subscribeCta: 'Assinar — $6.99/mês',
+    personalizedArchetype: 'Personalizado para seu arquétipo — entregue todas as manhãs',
     craftingReport: 'Gerando sua leitura personalizada...',
     processingPayment: 'Processando...',
     reportReady: 'Seu relatório está pronto',
@@ -594,8 +659,8 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     p3opt3: 'Curiosidade sobre o que está por vir',
     p3opt4: 'Alguém me recomendou',
     traditionSwitcherLabel: 'TRADIÇÃO DE LEITURA',
-    traditionSwitcherSubOracle: 'Mude sua tradição de leitura — incluído no Oracle',
-    traditionSwitcherSubPaid: 'Explore outra tradição — $2.99 cada',
+    traditionSwitcherSubOracle: 'Mude sua tradição de leitura — incluído no Premium',
+    traditionSwitcherSubPaid: 'Explore outras tradições — incluído no Premium',
     traditionGenerating: 'Gerando sua leitura {tradition}...',
     traditionUnlocked: 'Leitura {tradition} desbloqueada',
     analyzingCompat: 'Analisando sua compatibilidade...',
@@ -632,7 +697,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     moonLabel: 'LUA',
     planetLabel: 'PLANETA',
     planetaryForecast: 'PREVISÃO PLANETÁRIA 2026',
-    birthChartIncluded: 'Mapa Natal Completo — incluído no Oracle',
+    birthChartIncluded: 'Mapa Natal Completo — incluído no Premium',
     birthChartUnlockedLabel: 'Mapa Natal Completo',
     birthChartPositions: 'Ascendente · Casas · Posições planetárias',
     birthChartPositionsIncluded: 'Ascendente · Casas · Posições planetárias — incluídas',
@@ -640,10 +705,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     generatingBirthChart: 'Gerando...',
     generateBirthChart: 'Gerar Mapa Natal',
     birthChartReady: '⚡ Seu Mapa Natal Completo está pronto',
-    birthChartPrice: 'Ascendente · Casas · Posições planetárias · $4.99',
+    birthChartPrice: 'Ascendente · Casas · Posições planetárias · incluído no Premium',
     loadingBirthChart: 'Carregando...',
-    unlockBirthChart: 'Desbloquear Mapa Natal — $4.99',
-    birthChartRequiresTime: 'Adicione sua hora de nascimento para desbloquear · $4.99',
+    unlockBirthChart: 'Desbloquear Mapa Natal com Premium →',
+    birthChartRequiresTime: 'Adicione sua hora de nascimento para desbloquear — incluído no Premium',
     requiresTimeOfBirth: 'Requer hora de nascimento',
     oracleUnlocked: 'Oráculo Completo desbloqueado',
     bundleUnlocked: 'Pacote desbloqueado',
@@ -745,12 +810,12 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatTheirNamePlaceholder: 'Nome dele/a',
     compatEmailLabel: 'Onde enviamos sua leitura?',
     compatSingleName: 'Só este pronóstico',
-    compatSinglePrice: '$9.99',
+    compatSinglePrice: '$4.99',
     compatSingleFreq: 'pagamento único',
     compatSingleBullet1: 'Análise completa de compatibilidade apenas para este casal',
     compatSingleBullet2: 'Todas as 7 seções desbloqueadas — vínculo, força, tensão, comunicação, dinâmica de poder, previsão e conselho',
     compatSingleBullet3: 'Cartão de pronóstico compartilhável incluído',
-    compatSingleCta: 'Obter este pronóstico — $9.99',
+    compatSingleCta: 'Obter este pronóstico — $4.99',
     compatWithChartsName: 'Leitura + Ambos os Mapas Natais',
     compatWithChartsPrice: '$14.99',
     compatWithChartsFreq: 'pagamento único',
@@ -761,13 +826,47 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatWithChartsBullet4: 'Tudo entregue no seu e-mail',
     compatWithChartsCta: 'Obter leitura + mapas — $14.99',
     compatProcessing: 'Processando…',
-    compatGuarantee: '✦ Se não sentir que foi escrito para você, reembolso completo em 24 horas. Sem formulário.',
+    compatGuarantee: '✦ Se não sentir que foi escrito para você, contate-nos em 14 dias para um reembolso completo. Sem formulário.',
     compatSecurePayment: 'Pagamento seguro por Stripe',
     compatShareCardKicker: 'Compatibilidade de Destino',
     compatDownloadGenerating: 'Gerando…',
     compatDownloadCta: 'Baixar seu cartão de compatibilidade',
     compatPrivacy: 'Política de Privacidade',
     compatTerms: 'Termos de Serviço',
+
+    subscribeRefundClause: 'Janela de reembolso de 14 dias. Contate support@omenora.com.',
+    preparingCheckout: 'Preparando checkout…',
+
+    paywallHeading: 'Sua leitura está pronta',
+    paywallSubtitle: 'Obtenha sua leitura completa e garanta 50% de desconto vitalício no OMENORA quando o app for lançado',
+    paywallTrustSubscription: 'Pagamento único. Janela de reembolso de 14 dias.',
+
+    compatIAPPrice: '$4.99',
+    compatIAPLabel: 'pagamento único',
+    compatIAPCta: 'Desbloquear este pronóstico — $4.99',
+    compatIAPBullet1: 'Análise completa de compatibilidade em 7 seções',
+    compatIAPBullet2: 'Vínculo, força, desafio, comunicação, dinâmica de poder, previsão e conselho',
+    compatIAPBullet3: 'Cartão de pronóstico compartilhável incluído',
+    compatOrPremium: 'Ou obtenha leituras ilimitadas com Premium →',
+
+    calIAPPrice: '$4.99',
+    calIAPCta: 'Desbloqueie seu calendário 2026 — $4.99',
+    calIAPLabel: 'pagamento único · seu para sempre',
+
+    counselBoostTitle: 'Pacotes Counsel Boost',
+    counselBoostPack1: 'Inicial · $1.99 · 5 sessões de Counsel',
+    counselBoostPack2: 'Padrão · $4.99 · 15 sessões de Counsel',
+    counselBoostPack3: 'Profundo · $9.99 · 35 sessões de Counsel',
+    counselBoostDisclosure: 'Os pacotes Boost são compras no app disponíveis em iOS e Android.',
+
+    androidWaitlistHeading: 'Android está chegando',
+    androidWaitlistBody: 'Entre na lista de espera e te avisaremos no dia do lançamento.',
+    androidWaitlistCta: 'Entre na lista de espera',
+    androidWaitlistSuccess: 'Você está na lista. Entraremos em contato.',
+
+    foundingCtaPreview: 'Torne-se Membro Fundador — $20',
+    foundingCtaReport: 'Torne-se Membro Fundador',
+    foundingCtaSubtitle: 'Pagamento único $20 · 50% de desconto vitalício no Premium · Acesso antecipado ao app',
   },
 
   hi: {
@@ -826,8 +925,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     bestFriends: 'सबसे अच्छे दोस्त',
     businessPartners: 'व्यावसायिक साझेदार',
     dailyInsights: 'अपने इनबॉक्स में दैनिक अंतर्दृष्टि पाएं',
-    personalizedArchetype: 'आपके पुरातत्व के अनुसार · $6.99/माह',
-    subscribeCta: 'सदस्यता लें — $6.99/माह',
+    personalizedArchetype: 'आपके पुरातत्व के अनुसार — हर सुबह डिलीवर',
     craftingReport: 'आपकी व्यक्तिगत रीडिंग तैयार हो रही है...',
     processingPayment: 'प्रोसेसिंग...',
     reportReady: 'आपकी रिपोर्ट तैयार है',
@@ -848,8 +946,8 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     p3opt3: 'आगे क्या है इसकी जिज्ञासा', // REVIEW
     p3opt4: 'किसी ने सुझाया था', // REVIEW
     traditionSwitcherLabel: 'रीडिंग परंपरा',
-    traditionSwitcherSubOracle: 'अपनी रीडिंग परंपरा बदलें — Oracle में शामिल',
-    traditionSwitcherSubPaid: 'दूसरी परंपरा आज़माएं — $2.99 प्रत्येक',
+    traditionSwitcherSubOracle: 'अपनी रीडिंग परंपरा बदलें — Premium में शामिल',
+    traditionSwitcherSubPaid: 'अन्य परंपराएं देखें — Premium में शामिल',
     traditionGenerating: 'आपकी {tradition} रीडिंग तैयार हो रही है...',
     traditionUnlocked: '{tradition} रीडिंग अनलॉक हुई',
     analyzingCompat: 'आपकी अनुकूलता का विश्लेषण हो रहा है...',
@@ -886,7 +984,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     moonLabel: 'चंद्र',
     planetLabel: 'ग्रह',
     planetaryForecast: '2026 ग्रहीय भविष्यवाणी',
-    birthChartIncluded: 'पूर्ण जन्म कुंडली — Oracle में शामिल',
+    birthChartIncluded: 'पूर्ण जन्म कुंडली — Premium में शामिल',
     birthChartUnlockedLabel: 'पूर्ण जन्म कुंडली',
     birthChartPositions: 'उदयराशि · भाव · ग्रह स्थिति',
     birthChartPositionsIncluded: 'उदयराशि · भाव · ग्रह स्थिति — शामिल',
@@ -894,10 +992,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     generatingBirthChart: 'तैयार हो रहा है...',
     generateBirthChart: 'जन्म कुंडली बनाएं',
     birthChartReady: '⚡ आपकी पूर्ण जन्म कुंडली तैयार है',
-    birthChartPrice: 'उदयराशि · भाव · ग्रह स्थिति · $4.99',
+    birthChartPrice: 'उदयराशि · भाव · ग्रह स्थिति · Premium में शामिल',
     loadingBirthChart: 'लोड हो रहा है...',
-    unlockBirthChart: 'जन्म कुंडली अनलॉक करें — $4.99',
-    birthChartRequiresTime: 'अनलॉक के लिए जन्म समय जोड़ें · $4.99',
+    unlockBirthChart: 'Premium के साथ जन्म कुंडली अनलॉक करें →',
+    birthChartRequiresTime: 'अनलॉक के लिए जन्म समय जोड़ें — Premium में शामिल',
     requiresTimeOfBirth: 'जन्म समय आवश्यक है',
     oracleUnlocked: 'पूर्ण ओरेकल अनलॉक',
     bundleUnlocked: 'बंडल अनलॉक',
@@ -953,6 +1051,101 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     traditionChineseSub: 'चीनी BaZi ज्योतिष — जन्म के चार स्तंभों से आपके तात्विक स्वभाव और जीवन चक्रों को मापता है',
     traditionTarotName: 'आत्मा और अंतर्ज्ञान',
     traditionTarotSub: 'टैरो आधारित आध्यात्मिक पाठन — आपकी जन्म ऊर्जा से जुड़े प्रतीकात्मक आर्काना से आत्मा का मार्ग प्रकट करता है',
+    compatGuarantee: '✦ अगर लगे यह आपके लिए नहीं लिखा गया, तो 14 दिनों के भीतर संपर्क करें — पूरा रिफंड। कोई फॉर्म नहीं।',
+
+    subscribeRefundClause: '14-दिन रिफंड विंडो। support@omenora.com पर संपर्क करें।',
+    preparingCheckout: 'चेकआउट तैयार हो रहा है…', // REVIEW
+
+    paywallHeading: 'आपकी रीडिंग तैयार है',
+    paywallSubtitle: 'अपनी पूरी रीडिंग पाएं और OMENORA ऐप लॉन्च होने पर आजीवन 50% छूट सुनिश्चित करें',
+    paywallTrustSubscription: 'एकमुश्त भुगतान। 14-दिन रिफंड विंडो।',
+
+    compatIAPPrice: '$4.99',
+    compatIAPLabel: 'एकमुश्त',
+    compatIAPCta: 'यह पूर्वानुमान अनलॉक करें — $4.99',
+    compatIAPBullet1: 'पूर्ण 7-खंड अनुकूलता विश्लेषण',
+    compatIAPBullet2: 'बंधन, ताकत, चुनौती, संचार, शक्ति गतिकी, पूर्वानुमान और सलाह',
+    compatIAPBullet3: 'शेयर करने योग्य पूर्वानुमान कार्ड शामिल',
+    compatOrPremium: 'या Premium के साथ असीमित रीडिंग पाएं →',
+
+    calIAPPrice: '$4.99',
+    calIAPCta: 'अपना 2026 कैलेंडर अनलॉक करें — $4.99',
+    calIAPLabel: 'एकमुश्त · हमेशा के लिए आपका',
+
+    counselBoostTitle: 'Counsel Boost पैक',
+    counselBoostPack1: 'स्टार्टर · $1.99 · 5 Counsel सत्र',
+    counselBoostPack2: 'स्टैंडर्ड · $4.99 · 15 Counsel सत्र',
+    counselBoostPack3: 'डीप · $9.99 · 35 Counsel सत्र',
+    counselBoostDisclosure: 'Boost पैक iOS और Android पर इन-ऐप खरीदारी के रूप में उपलब्ध हैं।',
+
+    androidWaitlistHeading: 'Android आ रहा है',
+    androidWaitlistBody: 'वेटलिस्ट में शामिल हों और लॉन्च के दिन हम आपको ईमेल करेंगे।',
+    androidWaitlistCta: 'वेटलिस्ट में शामिल हों',
+    androidWaitlistSuccess: 'आप सूची में हैं। हम संपर्क में रहेंगे।',
+
+    quizStep1Headline: 'अपनी जन्म तिथि बताएं', // REVIEW
+    quizStep2Headline: 'अब उनकी बारी', // REVIEW
+    quizStep3Headline: 'अंतिम विवरण', // REVIEW
+    quizMyBirthDate: 'मेरी जन्म तिथि', // REVIEW
+    quizMyBirthCity: 'मेरा जन्म शहर', // REVIEW
+    quizTheirBirthDate: 'उनकी जन्म तिथि', // REVIEW
+    quizTheirBirthCity: 'उनका जन्म शहर', // REVIEW
+    quizBirthTime: 'जन्म समय', // REVIEW
+    quizBirthTimeHint: 'वैकल्पिक · सटीकता बढ़ाता है', // REVIEW
+    quizSkip: 'छोड़ें', // REVIEW
+    quizYouLabel: 'आप', // REVIEW
+    quizThemLabel: 'वे', // REVIEW
+    quizLifePath: 'जीवन पथ', // REVIEW
+    quizSynastryHint: 'दोनों चार्ट तुलना के लिए तैयार', // REVIEW
+    quizCalculate: 'गणना करें', // REVIEW
+    quizContinue: 'जारी रखें', // REVIEW
+    quizBack: 'वापस', // REVIEW
+    quizLoadingMsg1: 'आपकी अनुकूलता का विश्लेषण हो रहा है...', // REVIEW
+    quizLoadingMsg2: 'दोनों जन्म चार्ट की तुलना...', // REVIEW
+    quizLoadingMsg3: 'आपका व्यक्तिगत पूर्वानुमान तैयार किया जा रहा है...', // REVIEW
+    quizErrorMsg: 'कुछ गलत हुआ। कृपया पुनः प्रयास करें।', // REVIEW
+    quizRetry: 'पुनः प्रयास करें', // REVIEW
+    quizTrustFooter: 'सुरक्षित · निजी · केवल आपके लिए', // REVIEW
+    quizCityPlaceholder: 'जैसे मुंबई, भारत', // REVIEW
+
+    compatSessionExpired: 'आपका सत्र समाप्त हो गया', // REVIEW
+    compatRestartQuiz: 'क्विज़ फिर से शुरू करें', // REVIEW
+    compatFreeBadge: 'मुफ़्त पूर्वावलोकन', // REVIEW
+    compatCanceled: 'भुगतान रद्द किया गया', // REVIEW
+    compatDestinyLabel: 'नियति अनुकूलता', // REVIEW
+    compatChallengeKicker: 'आपकी सबसे बड़ी चुनौती', // REVIEW
+    compatLockedLabel: 'अनलॉक करने के लिए जारी रखें', // REVIEW
+    compatHowCalculated: 'इसकी गणना कैसे हुई', // REVIEW
+    compatBornPrefix: 'जन्म', // REVIEW
+    compatBornIn: 'में', // REVIEW
+    compatCalcSource: 'वास्तविक जन्म चार्ट तुलना · AI नहीं', // REVIEW
+    compatLifePathLabel: 'जीवन पथ संख्या', // REVIEW
+    compatTrustLine: '$1 की सोलमेट स्केच नहीं। मानसिक चैट नहीं। बस वास्तविक जन्म चार्ट की तुलना।', // REVIEW
+    compatUnlockHeading: 'अपना पूरा पूर्वानुमान अनलॉक करें', // REVIEW
+    compatUnlockSub: 'सात खंडों में आपकी जोड़ी का गहन विश्लेषण', // REVIEW
+    compatYourName: 'आपका नाम', // REVIEW
+    compatYourNamePlaceholder: 'आपका पहला नाम', // REVIEW
+    compatTheirName: 'उनका नाम', // REVIEW
+    compatTheirNamePlaceholder: 'उनका पहला नाम', // REVIEW
+    compatEmailLabel: 'हम आपकी रीडिंग कहां भेजें?', // REVIEW
+    compatSingleName: 'बस यह पूर्वानुमान', // REVIEW
+    compatSinglePrice: '$4.99', // REVIEW
+    compatSingleFreq: 'एकमुश्त', // REVIEW
+    compatSingleBullet1: 'इस जोड़ी के लिए पूर्ण अनुकूलता विश्लेषण', // REVIEW
+    compatSingleBullet2: 'सभी 7 खंड अनलॉक — बंधन, ताकत, चुनौती, संचार, शक्ति गतिकी, पूर्वानुमान और सलाह', // REVIEW
+    compatSingleBullet3: 'शेयर करने योग्य पूर्वानुमान कार्ड शामिल', // REVIEW
+    compatSingleCta: 'यह पूर्वानुमान प्राप्त करें — $4.99', // REVIEW
+    compatProcessing: 'प्रोसेसिंग…', // REVIEW
+    compatSecurePayment: 'Stripe द्वारा सुरक्षित भुगतान', // REVIEW
+    compatShareCardKicker: 'नियति अनुकूलता', // REVIEW
+    compatDownloadGenerating: 'जेनरेट हो रहा है…', // REVIEW
+    compatDownloadCta: 'अपना कार्ड डाउनलोड करें', // REVIEW
+    compatPrivacy: 'गोपनीयता', // REVIEW
+    compatTerms: 'शर्तें', // REVIEW
+
+    foundingCtaPreview: 'फाउंडिंग मेंबर बनें — $20', // REVIEW
+    foundingCtaReport: 'फाउंडिंग मेंबर बनें', // REVIEW
+    foundingCtaSubtitle: 'एकमुश्त $20 · Premium पर आजीवन 50% छूट · ऐप तक प्रारंभिक एक्सेस', // REVIEW
   },
 
   ko: {
@@ -1011,8 +1204,8 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     bestFriends: '절친한 친구',
     businessPartners: '사업 파트너',
     dailyInsights: '받은 편지함으로 매일 인사이트 받기',
-    personalizedArchetype: '나의 원형에 맞게 개인화 · $6.99/월',
-    subscribeCta: '구독하기 — $6.99/월',
+    personalizedArchetype: '나의 원형에 맞게 개인화 — 매일 아침 배달',
+    subscribeCta: '무료 체험 시작 — $14.99/월',
     craftingReport: '나만의 리딩을 생성하는 중...',
     processingPayment: '처리 중...',
     reportReady: '보고서가 준비되었습니다',
@@ -1033,8 +1226,8 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     p3opt3: '앞으로 무슨 일이 있을지 궁금해서', // REVIEW
     p3opt4: '누군가 추천해줘서', // REVIEW
     traditionSwitcherLabel: '리딩 전통',
-    traditionSwitcherSubOracle: '리딩 전통 바꾸기 — Oracle에 포함',
-    traditionSwitcherSubPaid: '다른 전통 탐색 — 각 $2.99',
+    traditionSwitcherSubOracle: '리딩 전통 바꾸기 — Premium에 포함',
+    traditionSwitcherSubPaid: '다른 전통 탐색 — Premium에 포함',
     traditionGenerating: '{tradition} 리딩 생성 중...',
     traditionUnlocked: '{tradition} 리딩 해제됨',
     analyzingCompat: '궁합 분석 중...',
@@ -1071,7 +1264,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     moonLabel: '달',
     planetLabel: '행성',
     planetaryForecast: '2026 행성 예보',
-    birthChartIncluded: '완전한 출생 차트 — Oracle에 포함',
+    birthChartIncluded: '완전한 출생 차트 — Premium에 포함',
     birthChartUnlockedLabel: '완전한 출생 차트',
     birthChartPositions: '상승궁 · 하우스 · 행성 위치',
     birthChartPositionsIncluded: '상승궁 · 하우스 · 행성 위치 — 포함',
@@ -1079,10 +1272,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     generatingBirthChart: '생성 중...',
     generateBirthChart: '출생 차트 생성',
     birthChartReady: '⚡ 완전한 출생 차트가 준비되었습니다',
-    birthChartPrice: '상승궁 · 하우스 · 행성 위치 · $4.99',
+    birthChartPrice: '상승궁 · 하우스 · 행성 위치 · Premium에 포함',
     loadingBirthChart: '로딩 중...',
-    unlockBirthChart: '출생 차트 잠금 해제 — $4.99',
-    birthChartRequiresTime: '잠금 해제를 위해 출생 시간 추가 · $4.99',
+    unlockBirthChart: 'Premium으로 출생 차트 잠금 해제 →',
+    birthChartRequiresTime: '잠금 해제를 위해 출생 시간 추가 — Premium에 포함',
     requiresTimeOfBirth: '출생 시간 필요',
     oracleUnlocked: '풀 오라클 잠금 해제',
     bundleUnlocked: '번들 잠금 해제',
@@ -1187,7 +1380,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatSingleBullet1: '이 커플만을 위한 완전한 궁합 분석',
     compatSingleBullet2: '7개 섹션 모두 잊글림 — 유대, 강점, 긴장, 소통, 파워 다이나믹, 예측 및 조언',
     compatSingleBullet3: '공유 가능한 포레스트 카드 포함',
-    compatSingleCta: '이 포레스트 얻기 — $9.99',
+    compatSingleCta: '이 예측 받기 — $4.99',
     compatWithChartsName: '리딩 + 두 출생 차트',
     compatWithChartsPrice: '$14.99',
     compatWithChartsFreq: '일회성',
@@ -1198,13 +1391,47 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatWithChartsBullet4: '모두 이메일로 전달',
     compatWithChartsCta: '리딩 + 차트 얻기 — $14.99',
     compatProcessing: '처리 중…',
-    compatGuarantee: '✦ 당신을 위해 쓰인 것이 아니라고 느꺼지면, 24시간 이내 전액 환불. 양식 불필요.',
+    compatGuarantee: '✦ 당신을 위해 쓰인 것이 아니라고 느껴지면, 14일 이내에 연락주시면 전액 환불해 드립니다. 양식 불필요.',
     compatSecurePayment: 'Stripe 보안 결제',
     compatShareCardKicker: '운명 궁합',
     compatDownloadGenerating: '생성 중…',
     compatDownloadCta: '호환 카드 다운로드',
     compatPrivacy: '개인정보 보호정솵',
     compatTerms: '서비스 이용약관',
+
+    subscribeRefundClause: '14일 환불 기간. support@omenora.com 으로 문의.',
+    preparingCheckout: '결제 준비 중…',
+
+    paywallHeading: '리딩이 준비되었습니다',
+    paywallSubtitle: '전체 리딩을 받고 OMENORA 앱 출시 시 평생 50% 할인을 확보하세요',
+    paywallTrustSubscription: '일회성 결제. 14일 환불 기간.',
+
+    compatIAPPrice: '$4.99',
+    compatIAPLabel: '일회성',
+    compatIAPCta: '이 예측 잠금 해제 — $4.99',
+    compatIAPBullet1: '전체 7개 섹션 궁합 분석',
+    compatIAPBullet2: '유대, 강점, 도전, 소통, 파워 다이나믹, 예측 및 조언',
+    compatIAPBullet3: '공유 가능한 예측 카드 포함',
+    compatOrPremium: '또는 Premium으로 무제한 리딩 받기 →',
+
+    calIAPPrice: '$4.99',
+    calIAPCta: '2026 캘린더 잠금 해제 — $4.99',
+    calIAPLabel: '일회성 · 영구 소유',
+
+    counselBoostTitle: 'Counsel Boost 팩',
+    counselBoostPack1: '스타터 · $1.99 · 5 Counsel 세션',
+    counselBoostPack2: '스탠다드 · $4.99 · 15 Counsel 세션',
+    counselBoostPack3: '딥 · $9.99 · 35 Counsel 세션',
+    counselBoostDisclosure: 'Boost 팩은 iOS 및 Android에서 사용 가능한 인앱 구매입니다.',
+
+    androidWaitlistHeading: 'Android가 곧 출시됩니다',
+    androidWaitlistBody: '대기자 명단에 등록하시면 출시일에 이메일로 알려드립니다.',
+    androidWaitlistCta: '대기자 명단 등록',
+    androidWaitlistSuccess: '명단에 등록되었습니다. 곧 연락드리겠습니다.',
+
+    foundingCtaPreview: '파운딩 멤버 되기 — $20', // REVIEW
+    foundingCtaReport: '파운딩 멤버 되기', // REVIEW
+    foundingCtaSubtitle: '일회성 $20 · Premium 평생 50% 할인 · 앱 조기 액세스', // REVIEW
   },
 
   zh: {
@@ -1263,8 +1490,8 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     bestFriends: '最好的朋友',
     businessPartners: '商业伙伴',
     dailyInsights: '每天在收件箱收到个人洞见',
-    personalizedArchetype: '根据你的原型个性化 · $6.99/月',
-    subscribeCta: '订阅 — $6.99/月',
+    personalizedArchetype: '根据你的原型个性化 — 每天早上送达',
+    subscribeCta: '开始免费试用 — $14.99/月',
     craftingReport: '正在生成你的个性化解读...',
     processingPayment: '处理中...',
     reportReady: '你的报告已准备好',
@@ -1285,8 +1512,8 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     p3opt3: '对未来的好奇', // REVIEW
     p3opt4: '有人推荐给我', // REVIEW
     traditionSwitcherLabel: '解读传统',
-    traditionSwitcherSubOracle: '切换解读传统 — Oracle已包含',
-    traditionSwitcherSubPaid: '探索其他传统 — 每个 $2.99',
+    traditionSwitcherSubOracle: '切换解读传统 — Premium 已包含',
+    traditionSwitcherSubPaid: '探索其他传统 — Premium 已包含',
     traditionGenerating: '正在生成{tradition}解读...',
     traditionUnlocked: '{tradition}解读已解锁',
     analyzingCompat: '正在分析你的合盘...',
@@ -1323,7 +1550,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     moonLabel: '月亮',
     planetLabel: '行星',
     planetaryForecast: '2026行星预报',
-    birthChartIncluded: '完整星盘 — Oracle已包含',
+    birthChartIncluded: '完整星盘 — Premium 已包含',
     birthChartUnlockedLabel: '完整星盘',
     birthChartPositions: '上升 · 宫位 · 行星位置',
     birthChartPositionsIncluded: '上升 · 宫位 · 行星位置 — 已包含',
@@ -1331,10 +1558,10 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     generatingBirthChart: '生成中...',
     generateBirthChart: '生成星盘',
     birthChartReady: '⚡ 你的完整星盘已准备好',
-    birthChartPrice: '上升 · 宫位 · 行星位置 · $4.99',
+    birthChartPrice: '上升 · 宫位 · 行星位置 · Premium 已包含',
     loadingBirthChart: '加载中...',
-    unlockBirthChart: '解锁星盘 — $4.99',
-    birthChartRequiresTime: '添加出生时间以解锁 · $4.99',
+    unlockBirthChart: '使用 Premium 解锁星盘 →',
+    birthChartRequiresTime: '添加出生时间以解锁 — Premium 已包含',
     requiresTimeOfBirth: '需要出生时间',
     oracleUnlocked: '全面神谕已解锁',
     bundleUnlocked: '套餐已解锁',
@@ -1439,7 +1666,7 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatSingleBullet1: '仅针对此对的完整分析',
     compatSingleBullet2: '全部 7 个章节解锁 — 纣带、强项、张力、沟通、权力动态、预测和建议',
     compatSingleBullet3: '包含可分享预测卡片',
-    compatSingleCta: '获得此预测 — $9.99',
+    compatSingleCta: '获得此预测 — $4.99',
     compatWithChartsName: '解读 + 两份星盘',
     compatWithChartsPrice: '$14.99',
     compatWithChartsFreq: '一次性',
@@ -1450,13 +1677,47 @@ export const UI_STRINGS: Record<string, Record<string, string>> = {
     compatWithChartsBullet4: '全部发送至您的邮箱',
     compatWithChartsCta: '获得解读 + 星盘 — $14.99',
     compatProcessing: '处理中…',
-    compatGuarantee: '✦ 如果感觉不是为你写的，24小时内全额退款。无需填写表格。',
+    compatGuarantee: '✦ 如果感觉不是为你写的，14天内联系我们即可全额退款。无需填写表格。',
     compatSecurePayment: 'Stripe 安全支付',
     compatShareCardKicker: '命运相容性',
     compatDownloadGenerating: '生成中…',
     compatDownloadCta: '下载相容性卡片',
     compatPrivacy: '隐私政策',
     compatTerms: '服务条款',
+
+    subscribeRefundClause: '14天退款窗口。联系 support@omenora.com。',
+    preparingCheckout: '准备结账…',
+
+    paywallHeading: '你的解读已准备好',
+    paywallSubtitle: '获取完整解读，并在 OMENORA 应用上线时锁定终身 50% 折扣',
+    paywallTrustSubscription: '一次性付款。14天退款窗口。',
+
+    compatIAPPrice: '$4.99',
+    compatIAPLabel: '一次性',
+    compatIAPCta: '解锁此预测 — $4.99',
+    compatIAPBullet1: '完整 7 章节合盘分析',
+    compatIAPBullet2: '纽带、强项、挑战、沟通、权力动态、预测和建议',
+    compatIAPBullet3: '包含可分享预测卡片',
+    compatOrPremium: '或使用 Premium 获得无限解读 →',
+
+    calIAPPrice: '$4.99',
+    calIAPCta: '解锁你的 2026 日历 — $4.99',
+    calIAPLabel: '一次性 · 永久拥有',
+
+    counselBoostTitle: 'Counsel Boost 套餐',
+    counselBoostPack1: '入门 · $1.99 · 5 个 Counsel 会话',
+    counselBoostPack2: '标准 · $4.99 · 15 个 Counsel 会话',
+    counselBoostPack3: '深度 · $9.99 · 35 个 Counsel 会话',
+    counselBoostDisclosure: 'Boost 套餐是在 iOS 和 Android 上可用的应用内购买。',
+
+    androidWaitlistHeading: 'Android 即将推出',
+    androidWaitlistBody: '加入等候名单，我们将在发布当天通过邮件通知您。',
+    androidWaitlistCta: '加入等候名单',
+    androidWaitlistSuccess: '您已加入名单。我们会联系您。',
+
+    foundingCtaPreview: '成为创始会员 — $20',
+    foundingCtaReport: '成为创始会员',
+    foundingCtaSubtitle: '一次性 $20 · Premium 终身 50% 折扣 · 应用提前访问',
   },
 }
 

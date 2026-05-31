@@ -1,86 +1,328 @@
 :root {
-  /* Palette */
-  --color-bone:       #F2EBDD;
-  --color-bone-dim:   #EAE2CF;
-  --color-ink:        #1A1612;
-  --color-ink-mid:    #3D3530;
-  --color-ink-faint:  rgba(26, 22, 18, 0.45);
-  --color-ink-ghost:  rgba(26, 22, 18, 0.18);
-  --color-gold:       #C9A961;
-  --color-gold-dim:   rgba(201, 169, 97, 0.55);
 
-  /* Typography scale */
-  --text-display:  clamp(64px, 16vw, 160px);
-  --text-headline: clamp(36px, 8vw, 72px);
-  --text-title:    clamp(24px, 5vw, 40px);
-  --text-pull:     clamp(20px, 4vw, 28px);
-  --text-body:     17px;
-  --text-caption:  13px;
-  --text-label:    11px;
+  /* ═══════════════════════════════════════════════════════════════
+     PHASE B — OMENORA DESIGN SYSTEM TOKENS
+     Source of truth: OMENORA_DESIGN_SYSTEM.md
+     Locked: May 23, 2026 (B1.2)
+     ═══════════════════════════════════════════════════════════════ */
 
-  /* Spacing rhythm */
-  --space-section: clamp(64px, 10vw, 120px);
-  --space-block:   clamp(32px, 5vw, 56px);
+  /* ── NEW: --omn-* canonical tokens (SD1) ── */
+
+  /* Surfaces */
+  --omn-bg-page:        #121214;
+  --omn-bg-primary:     #252528;
+  --omn-bg-elevated:    #2F2F33;
+  --omn-bg-interactive: #3A3A3F;
 
   /* Borders */
-  --rule-ink:  1px solid rgba(26, 22, 18, 0.2);
-  --rule-gold: 1px solid rgba(201, 169, 97, 0.5);
+  --omn-border-subtle:   #2F2F33;
+  --omn-border-primary:  #3A3A3F;
+  --omn-border-emphasis: #4A4A50;
+
+  /* Text */
+  --omn-text-primary:   #F2EDE5;
+  --omn-text-secondary: #A8A19A;
+  --omn-text-tertiary:  #6B655E;
+
+  /* Accent */
+  --omn-accent:       #A87D4E;
+  --omn-accent-quiet: #6E5536;
+
+  /* CTA */
+  --omn-cta:      #E8763A;
+  --omn-cta-hover: #FF8856;
+  --omn-cta-text: #121214;
+
+  /* Functional */
+  --omn-success: #7B9472;
+  --omn-error:   #D14B3D;
+
+  /* Fonts */
+  --omn-font-display: 'Onest', system-ui, -apple-system, sans-serif;
+  --omn-font-body:    'Onest', system-ui, -apple-system, sans-serif;
+  --omn-font-mono:    'Geist Mono', 'JetBrains Mono', 'SF Mono', monospace;
+
+  /* Motion (design system §7) */
+  --omn-ease:           cubic-bezier(0.2, 0, 0, 1);
+  --omn-duration-fast:  150ms;
+  --omn-duration-base:  300ms;
+  --omn-duration-slow:  600ms;
+
+  /* ──────────────────────────────────────────────────────────
+     Extended motion scale — durations, easings, and stagger
+     values that repeat 3+ times in the sandbox. Single-use
+     motion values stay inline at the consumer.
+     (Sourced from sandbox motion system)
+     ────────────────────────────────────────────────────────── */
+  --omn-duration-micro:  200ms;  /* micro-interactions: nav links, button bg/border */
+  --omn-duration-card:   250ms;  /* component hover: cards, panels */
+  --omn-duration-reveal: 400ms;  /* cursor follower, mobile CTA, ticker fade */
+  --omn-duration-draw:   700ms;  /* section hairline draw, underline reveal */
+  /* stagger ladder — used via --reveal-delay inline style on v-reveal children */
+  --omn-stagger-1:  40ms;
+  --omn-stagger-2:  80ms;
+  --omn-stagger-3: 120ms;
+  --omn-stagger-4: 160ms;
+  --omn-stagger-5: 240ms;
+
+  /* ── TYPE SCALE (Major Third 1.25, SD2) ── */
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 15px;
+  --text-md:   17px;
+  --text-lg:   19px;
+  --text-xl:   24px;
+  --text-2xl:  30px;
+  --text-3xl:  38px;
+  --text-4xl:  48px;
+  --text-5xl:  60px;
+  --text-6xl:  76px;
+  --text-7xl:  96px;
+
+  /* ── PER-STEP LINE HEIGHT (SD2) ── */
+  --leading-xs:   1.4;
+  --leading-sm:   1.5;
+  --leading-base: 1.6;
+  --leading-md:   1.6;
+  --leading-lg:   1.55;
+  --leading-xl:   1.4;
+  --leading-2xl:  1.25;
+  --leading-3xl:  1.15;
+  --leading-4xl:  1.08;
+  --leading-5xl:  1.05;
+  --leading-6xl:  1.0;
+  --leading-7xl:  0.96;
+
+  /* ── LEGACY LEADING (SD5 — kept; atoms still consume) ── */
+  --leading-tight:   1.1;
+  --leading-snug:    1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+
+  /* ── LETTER SPACING (SD3) ── */
+  --tracking-tight:    -0.035em;
+  --tracking-snug:     -0.025em;
+  --tracking-normal:   -0.012em;
+  --tracking-body:     -0.005em;
+  --tracking-wide:      0.02em;
+  --tracking-mono:      0.02em;
+  --tracking-caps:      0.18em;
+  --tracking-wordmark:  0.34em;
+  --tracking-widest:   var(--tracking-caps);
+
+  /* ── FONT WEIGHT ── */
+  --weight-light:    300;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+
+  /* ──────────────────────────────────────────────────────────
+     Fluid typography scale — clamp-based sizes for editorial
+     headlines and display moments. Atoms use the fixed
+     --text-N scale above for predictable internal sizing.
+     (Sourced from sandbox typography system)
+     ────────────────────────────────────────────────────────── */
+  /* Extended letter-spacing — values used 3+ times in sandbox
+     that fall between existing named tracking tokens */
+  --tracking-prose: 0.04em;   /* subhead, KV labels, wide-mono eyebrows */
+  --tracking-label: 0.14em;   /* paywall keys, counter labels, section labels */
+  --tracking-mid:   0.12em;   /* quote ctx, KV list spans, FAQ eyebrows */
+
+  /* ── SPACING (4px base unit, SD4) ── */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-7:  28px;
+  --space-8:  32px;
+  --space-9:  36px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+  --space-40: 160px;
+
+  /* ──────────────────────────────────────────────────────────
+     Fluid spacing scale — section-level rhythm, used by
+     molecules and pages. Atoms continue to use the fixed
+     --space-N scale above for internal spacing.
+     (Sourced from sandbox spacing system)
+     ────────────────────────────────────────────────────────── */
+  --space-section: clamp(96px, 12vw, 192px);  /* between major bands */
+  --space-block:   clamp(56px, 7vw, 96px);    /* between content blocks within a section */
+  --space-content: clamp(32px, 4vw, 56px);    /* between paragraphs / atoms */
+  --space-gap:     clamp(20px, 2.4vw, 32px);  /* grid gutters / card gaps */
+  --space-edge:    clamp(20px, 5vw, 64px);    /* container outer padding */
+
+  /* ──────────────────────────────────────────────────────────
+     Container widths — max-width scale for content columns.
+     ────────────────────────────────────────────────────────── */
+  --width-prose:    640px;   /* long-form reading (natal reading body) */
+  --width-content:  880px;   /* headlines, hero copy, paywall */
+  --width-section: 1192px;   /* standard content sections (12 col) */
+  --width-bleed:   1320px;   /* hero, full-width imagery */
+  --width-edge:     100vw;   /* page-bleed atmospheric sections (rare) */
+
+  /* ── ALIASES — legacy tokens → --omn-* (SD6) ── */
+  --surface-base:     var(--omn-bg-page);
+  --surface-raised:   var(--omn-bg-primary);
+  --surface-elevated: var(--omn-bg-elevated);
+  --text-primary:     var(--omn-text-primary);
+  --text-secondary:   var(--omn-text-secondary);
+  --text-tertiary:    var(--omn-text-tertiary);
+  --accent-gold:      var(--omn-accent);
+  --font-sans:        var(--omn-font-body);
+  --text-display:     var(--text-7xl);
+
+  /* ── ACCENT DERIVATIVES (SD7 — recomputed for new bronze #A87D4E) ── */
+  --accent-gold-dim:  rgba(168, 125, 78, 0.55);
+  --accent-gold-glow: rgba(168, 125, 78, 0.18);
+
+  /* ──────────────────────────────────────────────────────────
+     Accent alpha variants — sourced from sandbox overlay system
+     (see COLOR_TOKEN_AUDIT.md §6.7)
+     ────────────────────────────────────────────────────────── */
+  --omn-accent-a05: rgba(168, 125, 78, 0.05);
+  --omn-accent-a06: rgba(168, 125, 78, 0.06);
+  --omn-accent-a08: rgba(168, 125, 78, 0.08);
+  --omn-accent-a10: rgba(168, 125, 78, 0.10);
+  --omn-accent-a18: rgba(168, 125, 78, 0.18);
+
+  /* ──────────────────────────────────────────────────────────
+     Legacy aliases — point old token names at canonical --omn-*
+     tokens. To be removed in P7 cleanup after consumer files
+     are migrated to canonical names.
+     ────────────────────────────────────────────────────────── */
+  --color-ink:       var(--omn-text-primary);
+  --color-ink-mid:   var(--omn-text-secondary);
+  --color-ink-faint: var(--omn-text-tertiary);
+  --color-ink-ghost: var(--omn-border-subtle);
+  --color-gold:      var(--omn-accent);
+  --color-gold-dim:  var(--omn-accent-quiet);
+  --color-gold-glow: var(--omn-accent-a18);
+
+  /* ── BUG FIX: --accent-dim alias (SD8) ──
+     daily.vue, calendar.vue, subscribe.vue reference this token with no
+     definition — currently rendering nothing. Aliases to --omn-accent-quiet.
+     Short-lived: removed in B1.4 / B1.6 rename waves. ── */
+  --accent-dim: var(--omn-accent-quiet);
+
+  /* ── CTA (SD9 — aliased to --omn-cta system per B1.2.11; names
+     retained until P7 consumer-migration cleanup) ── */
+  --cta-primary: var(--omn-cta);
+  --cta-hover:   var(--omn-cta-hover);
+  --cta-glow:    rgba(217, 70, 104, 0.32);
+
+  /* ── BORDER (SD10 — legacy rgba-on-dark; per-page decisions in B1.4–B1.6) ── */
+  --border-faint:   rgba(250, 250, 250, 0.06);
+  --border-subtle:  rgba(250, 250, 250, 0.10);
+  --border-default: rgba(250, 250, 250, 0.15);
+  --border-strong:  rgba(250, 250, 250, 0.25);
+
+  /* ── MOTION (SD11 — kept at current values; reconciled in B1.3 / B3) ── */
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── RADIUS (SD11 — kept at current values) ── */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-full:   9999px;  /* pill / capsule buttons */
+  --radius-circle:   50%;   /* perfect circle on equal-dimension dot/avatar elements */
+
+  /* ── VESTIGIAL (SD12 — D.2 cutover removal) ──
+     Used by index.vue hero and CTAButton.vue keyframe.
+     Do not add new references. Remove when index.vue hero is rebuilt. ── */
+  --text-hero-headline: clamp(34px, 9vw, 52px);
+  --text-subhead:       clamp(19px, 4.5vw, 24px);
+  --text-pricing-meta:  12px;
+  --ease-out-expo:      var(--omn-ease);
+
 }
 
 /* ── Typography utilities ── */
 .font-display {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
+  font-family: var(--font-sans);
+  font-weight: var(--weight-light);
+  font-size: var(--text-5xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
 }
 
 .font-display-italic {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
+  font-family: var(--font-sans);
+  font-weight: var(--weight-light);
   font-style: italic;
+  font-size: var(--text-5xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
 }
 
 .font-serif {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
+  font-weight: var(--weight-light);
+  font-style: italic;
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+  letter-spacing: var(--tracking-normal);
+  color: var(--text-secondary);
 }
 
 .font-sans {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
+  color: var(--text-primary);
 }
 
 .label-caps {
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: var(--text-label);
-  font-weight: 600;
-  letter-spacing: 0.3em;
+  font-family: var(--font-sans);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-xs);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-widest);
   text-transform: uppercase;
+  color: var(--text-secondary);
 }
 
 .pull-quote {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: var(--text-pull);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-light);
   font-style: italic;
-  font-weight: 300;
-  line-height: 1.35;
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
 }
 
 .annotation {
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-size: var(--text-label);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--color-ink-faint);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
+  color: var(--text-secondary);
 }
 
 /* ── Editorial rule ── */
 .editorial-rule {
   width: 100%;
   height: 1px;
-  background: var(--color-ink-ghost);
+  background: var(--border-subtle);
 }
 
-/* ── Archetype symbol on light bg ── */
+/* ── Archetype symbol ── */
 .symbol-editorial {
-  filter: brightness(0) saturate(100%);
   opacity: 0.85;
 }
 
@@ -110,10 +352,264 @@
   margin: 0 auto;
 }
 
-@media (min-width: 1280px) {
-  :root {
-    --section-h-pad: 80px;
+/* ── Section marker hairline utility ──
+   Shared bronze hairline ::before pattern. Applied to any section
+   root that carries a section marker (§ NN). The hairline draws
+   left-to-right when the parent receives the `is-revealed` class
+   (added by useReveal on intersection).
+
+   Usage: add `is-marked` to the section root class binding when
+   a marker prop is provided. The `is-revealed` class is added by
+   useReveal — no additional logic needed in the consumer.
+
+   Extracted from SectionLede, SectionThreeCardGrid,
+   SectionCenteredStatement, SectionSideBySide (was verbatim-
+   duplicated in all 4). */
+.is-marked {
+  position: relative;
+}
+.is-marked::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--omn-accent-quiet) 0%,
+    var(--omn-accent)       30%,
+    var(--omn-accent-quiet) 70%,
+    transparent             100%
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1100ms var(--omn-ease) 100ms;
+  z-index: 3;
+}
+.is-marked.is-revealed::before {
+  transform: scaleX(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-marked::before {
+    transition: none;
   }
+  .is-marked.is-revealed::before {
+    transform: scaleX(1);
+  }
+}
+
+/* ── Diagonal-background band utility ──
+   Sandbox-equivalent of .band--diag. Any section root can opt in by
+   adding the `diag-band` class and rendering two pointer-event-free
+   children: `.diag-band__image` (the photo) and `.diag-band__overlay`
+   (gradient vignette + bronze seam). The image layer reads its url +
+   position from CSS custom properties --section-img / --section-img-pos
+   / --section-img-pos-mobile set inline on the section root.
+
+   Scale-in reveal is gated on the parent `.is-revealed` class added by
+   useReveal — same trigger used by every section molecule. The bronze
+   diagonal seam (::after) is layered above the image so it survives
+   image saturation drops.
+
+   Mobile: softer diagonal mask (176°) with earlier image fade so the
+   text-band on the top half stays clean while the image saturates fully
+   over the bottom half. Per-section --section-img-pos-mobile lets each
+   section anchor the subject correctly at narrow widths. */
+.diag-band {
+  position: relative;
+  overflow: hidden;
+  /* No min-height — let content drive the section size. The image fills
+     whatever the section ends up being via absolute positioning, and the
+     extra padding-bottom below gives the diagonal seam room to breathe.
+     (Sandbox used 88vh min-height because its Begin band contained BOTH
+     the centered text AND the paywall card; production splits those across
+     two sibling components so the min-height made short sections gappy.) */
+  padding-bottom: calc(var(--space-section) + 64px);
+}
+.diag-band > .diag-band__image,
+.diag-band > .diag-band__overlay {
+  pointer-events: none;
+}
+.diag-band__image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--section-img);
+  background-size: cover;
+  background-position: var(--section-img-pos, center 62%);
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.18) 42%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 64%,
+    #000 78%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.18) 42%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 64%,
+    #000 78%,
+    #000 100%
+  );
+  filter: saturate(0.85) contrast(1.05);
+  opacity: 0.85;
+  transform: scale(1.02);
+  transition: transform 1400ms var(--omn-ease);
+  will-change: transform;
+}
+.diag-band.is-revealed .diag-band__image { transform: scale(1); }
+
+.diag-band__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg,
+      var(--omn-bg-page) 0%,
+      rgba(18, 18, 20, 0.78) 28%,
+      rgba(18, 18, 20, 0.0)  46%,
+      rgba(18, 18, 20, 0.40) 78%,
+      rgba(18, 18, 20, 0.85) 100%),
+    linear-gradient(168deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(168, 125, 78, 0.06) 50%,
+      transparent 60%,
+      transparent 100%);
+}
+/* When the diag-band sits over a band--primary tone, swap the dark-stop
+   colors so the gradient blends with the elevated background instead of
+   the page base. */
+.diag-band.diag-band--primary .diag-band__overlay {
+  background:
+    linear-gradient(180deg,
+      var(--omn-bg-primary) 0%,
+      rgba(37, 37, 40, 0.78) 28%,
+      rgba(37, 37, 40, 0.0)  46%,
+      rgba(18, 18, 20, 0.40) 78%,
+      rgba(18, 18, 20, 0.85) 100%),
+    linear-gradient(168deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(168, 125, 78, 0.06) 50%,
+      transparent 60%,
+      transparent 100%);
+}
+
+/* Bronze diagonal seam glow — sits above image + overlay, mix-blend
+   screen so it reads as light, not paint. Revealed with the section. */
+.diag-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(168deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(168, 125, 78, 0.10) 48%,
+    rgba(168, 125, 78, 0.18) 52%,
+    rgba(168, 125, 78, 0.10) 56%,
+    transparent 64%,
+    transparent 100%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 1100ms var(--omn-ease) 300ms;
+}
+.diag-band.is-revealed::after { opacity: 1; }
+
+/* Mobile — softer diagonal + heavier overlay so text stays readable. */
+@media (max-width: 767px) {
+  .diag-band {
+    min-height: 0;
+    padding-bottom: clamp(160px, 36vw, 280px);
+  }
+  .diag-band__image {
+    -webkit-mask-image: linear-gradient(
+      176deg,
+      transparent 0%,
+      transparent 14%,
+      rgba(0, 0, 0, 0.22) 24%,
+      rgba(0, 0, 0, 0.60) 36%,
+      rgba(0, 0, 0, 0.90) 46%,
+      #000 54%,
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      176deg,
+      transparent 0%,
+      transparent 14%,
+      rgba(0, 0, 0, 0.22) 24%,
+      rgba(0, 0, 0, 0.60) 36%,
+      rgba(0, 0, 0, 0.90) 46%,
+      #000 54%,
+      #000 100%
+    );
+    opacity: 0.95;
+    background-position: var(--section-img-pos-mobile, var(--section-img-pos, center 70%));
+  }
+  .diag-band .diag-band__overlay {
+    background:
+      linear-gradient(180deg,
+        var(--omn-bg-page) 0%,
+        rgba(18, 18, 20, 0.92) 24%,
+        rgba(18, 18, 20, 0.55) 42%,
+        rgba(18, 18, 20, 0.18) 64%,
+        transparent 100%),
+      linear-gradient(168deg,
+        transparent 0%,
+        transparent 40%,
+        rgba(168, 125, 78, 0.05) 50%,
+        transparent 60%,
+        transparent 100%);
+  }
+  .diag-band.diag-band--primary .diag-band__overlay {
+    background:
+      linear-gradient(180deg,
+        var(--omn-bg-primary) 0%,
+        rgba(37, 37, 40, 0.92) 24%,
+        rgba(37, 37, 40, 0.55) 42%,
+        rgba(37, 37, 40, 0.18) 64%,
+        transparent 100%),
+      linear-gradient(168deg,
+        transparent 0%,
+        transparent 40%,
+        rgba(168, 125, 78, 0.05) 50%,
+        transparent 60%,
+        transparent 100%);
+  }
+  .diag-band::after {
+    background: linear-gradient(176deg,
+      transparent 0%,
+      transparent 38%,
+      rgba(168, 125, 78, 0.08) 46%,
+      rgba(168, 125, 78, 0.14) 50%,
+      rgba(168, 125, 78, 0.08) 54%,
+      transparent 62%,
+      transparent 100%);
+  }
+}
+
+/* Reduced motion — keep the final state, drop the scale-in. */
+@media (prefers-reduced-motion: reduce) {
+  .diag-band .diag-band__image { transform: none !important; transition: none; }
+  .diag-band::after { opacity: 1 !important; transition: none; }
+}
+
+/* Section container above the diag layers — sections that opt into
+   .diag-band should also stamp this on their inner container so the
+   content sits above z-index 2 (the bronze seam). */
+.diag-band__content {
+  position: relative;
+  z-index: 3;
 }
 
 /* ── Autofill override (all inputs) ── */
@@ -127,9 +623,9 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #F2EBDD inset !important;
-  box-shadow: 0 0 0 1000px #F2EBDD inset !important;
-  -webkit-text-fill-color: #1A1612 !important;
-  caret-color: #1A1612;
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-base) inset !important;
+  box-shadow: 0 0 0 1000px var(--surface-base) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  caret-color: var(--text-primary);
   transition: background-color 9999s ease-in-out 0s;
 }

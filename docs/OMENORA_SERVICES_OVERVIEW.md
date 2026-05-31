@@ -333,3 +333,17 @@ All AI generation endpoints accept a `language` parameter and instruct Claude to
 | `middleeast` | Middle East | Fate/destiny language, sacred purpose framing |
 
 The user selects a tradition at the start of the funnel. The same tradition is used as the primary lens for every generated service.
+
+---
+
+## 10. Open strategic questions
+
+The following questions remain unresolved at the strategic level and are tracked here so they cannot be re-litigated in tactical conversations. They will be resolved through dedicated strategy decisions, not through implementation-time assumptions:
+
+- Felt-personalization vs actual-personalization: does the 25-question quiz data flow into the generation prompt, or is some portion of it psychological theater? Decision required before the `/discover` funnel ships at production scale.
+- Funnel content for the Nebula expansion funnels beyond `/discover` and `/compatibility-quiz`: which hooks ship next, in what order.
+- Mobile App Store launch timing and the corresponding Phase 2 web informational redesign trigger criteria.
+
+---
+
+*This document is the master strategy. It does not change without an explicit strategic decision documented in the master journal.*

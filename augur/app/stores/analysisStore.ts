@@ -17,6 +17,27 @@ export interface NatalChart {
   ascendant: PlanetPosition | null
 }
 
+export interface CompatibilityQuizAnswers {
+  q1_intent?: 'specific_person' | 'new_curiosity' | 'pattern' | 'exploring'
+  q2_feeling?: 'curiosity' | 'hope' | 'confusion' | 'longing' | 'unnamed'
+  q3_duration?: 'recent' | 'weeks' | 'months' | 'long'
+  q4_approach?: 'lead_feelings' | 'observe_first' | 'match_energy' | 'take_time'
+  q5_communication?: 'direct' | 'show_through_action' | 'wait_to_notice' | 'write_first'
+  q6_closeness?: 'crave' | 'need_space' | 'on_my_terms' | 'figuring_out'
+  q7_conflict?: 'head_on' | 'give_air' | 'middle_ground' | 'wait_pass'
+  q8_intimacy?: 'known' | 'understood' | 'both' | 'neither'
+  q9_value?: 'trust' | 'excitement' | 'steadiness' | 'mutual_growth' | 'being_seen'
+  q14_descriptor?: 'magnetic' | 'confusing' | 'intense' | 'easy' | 'healing' | 'challenging' | 'distant' | 'activating'
+  q15_chapter?: 'new_unfolding' | 'first_test' | 'long_steady' | 'confusing_between' | 'ending_shifting'
+  q16_season?: 'spring' | 'summer' | 'autumn' | 'winter'
+  q17_pattern?: 'close_pull_back' | 'fast_slow' | 'misunderstand' | 'sync_stuck' | 'no_pattern'
+  q18_trust_texture?: 'stone' | 'water' | 'glass' | 'silk'
+  q19_curiosity?: 'why_feels' | 'what_become' | 'whether_invest' | 'not_seeing'
+  q23_time_of_day?: 'dawn' | 'noon' | 'dusk' | 'night'
+  q24_helpfulness?: 'clarity' | 'self_insight' | 'possibility' | 'reflection'
+  q25_agency?: 'happen_to_me' | 'i_make' | 'through_me' | 'depends'
+}
+
 export const useAnalysisStore = defineStore('analysis', {
   state: () => ({
     firstName: '',
@@ -60,6 +81,7 @@ export const useAnalysisStore = defineStore('analysis', {
     birthChartPurchased: false as boolean,
     compatibilityData: null as any,
     compatibilityTier: 'single' as string,
+    compatibilityQuizAnswers: {} as CompatibilityQuizAnswers,
     userBirthChartData: null as any,
     partnerBirthChartData: null as any,
     userBirthChartNoonFallback: false as boolean,
@@ -68,6 +90,13 @@ export const useAnalysisStore = defineStore('analysis', {
     languageManualOverride: false as boolean,
     clarityFocus: '' as string,
   }),
+  getters: {
+    compatibilityQuizAnswersCount(state): number {
+      return Object.values(state.compatibilityQuizAnswers).filter(
+        (v) => v !== undefined
+      ).length
+    },
+  },
   actions: {
     setPersonalInfo(firstName: string, dob: string, city: string) {
       this.firstName = firstName
@@ -149,6 +178,12 @@ export const useAnalysisStore = defineStore('analysis', {
     },
     setCompatibilityTier(tier: string) {
       this.compatibilityTier = tier
+    },
+    setCompatibilityQuizAnswer<K extends keyof CompatibilityQuizAnswers>(key: K, value: CompatibilityQuizAnswers[K]) {
+      this.compatibilityQuizAnswers[key] = value
+    },
+    resetCompatibilityQuizAnswers() {
+      this.compatibilityQuizAnswers = {}
     },
     setUserBirthChartData(data: any) {
       this.userBirthChartData = data

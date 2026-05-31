@@ -3,9 +3,9 @@
     <AppHeader />
 
     <div class="legal-masthead">
-      <p class="label-caps legal-masthead__eyebrow">Omenora</p>
-      <h1 class="legal-masthead__headline font-display-italic">Terms of Service</h1>
-      <p class="annotation legal-masthead__date">Last Updated: April 20, 2026 · Effective Date: April 20, 2026</p>
+      <AppEyebrow class="legal-masthead__eyebrow">Omenora</AppEyebrow>
+      <AppHeadline variant="italic" as="h1" class="legal-masthead__headline">Terms of Service</AppHeadline>
+      <AppCaption variant="fine" as="p" class="legal-masthead__date">Last Updated: May 30, 2026 · Effective Date: April 20, 2026</AppCaption>
       <div class="editorial-rule" />
     </div>
 
@@ -15,7 +15,7 @@
       </div>
 
       <div class="toc">
-        <p class="label-caps toc-label">Contents</p>
+        <AppEyebrow class="toc-label">Contents</AppEyebrow>
         <ol class="toc-list">
           <li><a href="#t1" class="toc-link">Acceptance of Terms</a></li>
           <li><a href="#t2" class="toc-link">Description of Service</a></li>
@@ -54,9 +54,9 @@
         <p>OMENORA provides AI-powered astrology, numerology, and destiny analysis services. Our Services include:</p>
         <ul>
           <li>Free initial destiny analysis based on your birth data (name, date of birth, time of birth, city of birth)</li>
-          <li>Paid comprehensive destiny reports delivered by email</li>
-          <li>Paid supplementary content including personal forecast calendars, love compatibility readings, and extended forecasts</li>
-          <li>Optional daily subscription services providing ongoing personalized insights</li>
+          <li>A Founding Member deposit that reserves access to the OMENORA product at launch and confers a lifetime discount on the Premium subscription</li>
+          <li>A single compatibility reading available as a one-time purchase</li>
+          <li>The OMENORA Premium subscription (available at mobile app launch), providing access to personalized natal-chart readings across multiple interpretive traditions, daily content, and the Counsel feature within the mobile app</li>
         </ul>
         <p>All Services are provided for <strong>personal, non-commercial use only</strong> unless otherwise agreed in writing with OMENORA.</p>
         </div>
@@ -142,7 +142,7 @@
         <h2 class="legal-section__heading">7. Subscriptions &amp; Auto-Renewal</h2>
         <div class="legal-section__content">
         <div class="highlight-box">
-          <p><strong>Auto-Renewal Disclosure:</strong> If you purchase a subscription (such as our Daily Cosmic Insights plan), your subscription will automatically renew at the end of each billing period at the then-current price unless you cancel before the renewal date.</p>
+          <p><strong>Auto-Renewal Disclosure:</strong> If you purchase a subscription (such as our Premium subscription), your subscription will automatically renew at the end of each billing period at the then-current price unless you cancel before the renewal date.</p>
         </div>
 
         <h3 class="legal-section__subheading">7.1 How Subscriptions Work</h3>
@@ -157,9 +157,6 @@
 
         <h3 class="legal-section__subheading">7.3 Price Changes for Subscriptions</h3>
         <p>We will provide at least <strong>14 days' advance notice</strong> of any price change to your subscription by email. If you do not cancel before the new price takes effect, you will be deemed to have accepted the new price.</p>
-
-        <h3 class="legal-section__subheading">7.4 Free Trials</h3>
-        <p>If we offer a free trial period, we will clearly state the trial duration and the price that will apply upon conversion. Your payment method will be charged the stated price automatically at the end of the free trial unless you cancel before the trial expires.</p>
         </div>
       </section>
 
@@ -179,7 +176,7 @@
         <p>Subscription fees are non-refundable for any portion of a billing period already charged. There are no prorated refunds for early cancellation. If you cancel a subscription, you will retain access until the end of the paid period.</p>
 
         <h3 class="legal-section__subheading">8.3 Dispute Resolution</h3>
-        <p>To request a refund or report a billing issue, contact us at <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a> within <strong>7 days</strong> of the charge. We will investigate and respond within 5 business days.</p>
+        <p>To request a refund or report a billing issue, contact us at <a href="mailto:support@omenora.com" class="contact-link">support@omenora.com</a> within <strong>14 days</strong> of the charge. We will investigate and respond within 5 business days.</p>
         <p>Initiating a chargeback with your payment provider without first contacting us is a violation of these Terms and may result in suspension of your access and/or referral to collections.</p>
         </div>
       </section>
@@ -403,7 +400,7 @@ useHead({
 
 <style scoped>
 .legal-page {
-  background: var(--color-bone);
+  background: var(--surface-base);
   min-height: 100vh;
 }
 
@@ -414,23 +411,23 @@ useHead({
 }
 
 .legal-masthead__eyebrow {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
 .legal-masthead__headline {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-sans);
   font-weight: 300;
   font-style: italic;
   font-size: clamp(40px, 9vw, 72px);
   line-height: 1.0;
   letter-spacing: -0.03em;
   margin: 0 0 16px;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 .legal-masthead__date {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin-bottom: 32px;
 }
 
@@ -442,28 +439,28 @@ useHead({
 
 /* ── Notice box ── */
 .notice-box {
-  border-left: 3px solid var(--color-ink-mid);
+  border-left: 3px solid var(--text-secondary);
   padding: 14px 18px;
   margin-bottom: 32px;
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--border-faint);
 }
 
 .notice-box p {
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 /* ── TOC ── */
 .toc {
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   padding: 24px 28px;
   margin-bottom: 48px;
 }
 
 .toc-label {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   margin: 0 0 12px;
 }
 
@@ -475,13 +472,13 @@ useHead({
 .toc-list li { margin-bottom: 6px; }
 
 .toc-link {
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
   text-decoration: none;
   font-size: 13px;
   transition: color 0.15s;
 }
 
-.toc-link:hover { color: var(--color-ink); }
+.toc-link:hover { color: var(--text-primary); }
 
 /* ── Sections ── */
 .legal-section {
@@ -490,22 +487,22 @@ useHead({
 }
 
 .legal-section__heading {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-sans);
   font-size: clamp(20px, 4vw, 28px);
   font-weight: 400;
   letter-spacing: -0.01em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 0 0 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--color-ink-ghost);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .legal-section__subheading {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: var(--color-ink);
+  color: var(--text-primary);
   margin: 24px 0 10px;
   text-transform: uppercase;
 }
@@ -513,7 +510,7 @@ useHead({
 .legal-section__content {
   font-size: 15px;
   line-height: 1.75;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 .legal-section__content p { margin-bottom: 16px; }
@@ -527,34 +524,34 @@ useHead({
 .legal-section__content li { margin-bottom: 8px; }
 
 .legal-section__content a {
-  color: var(--color-ink);
+  color: var(--text-primary);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .legal-section__content strong {
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* ── Highlight box (callouts within sections) ── */
 .highlight-box {
-  border-left: 3px solid var(--color-ink-mid);
+  border-left: 3px solid var(--text-secondary);
   padding: 14px 18px;
   margin: 16px 0;
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--border-faint);
 }
 
 .highlight-box p {
   margin: 0;
   font-size: 14px;
   line-height: 1.65;
-  color: var(--color-ink-mid);
+  color: var(--text-secondary);
 }
 
 /* ── Contact block ── */
 .contact-block {
-  border: 1px solid var(--color-ink-ghost);
+  border: 1px solid var(--border-subtle);
   padding: 20px 24px;
   margin-top: 16px;
 }
@@ -569,7 +566,7 @@ useHead({
 .external-link,
 .contact-link,
 .inline-link {
-  color: var(--color-ink);
+  color: var(--text-primary);
   text-underline-offset: 3px;
 }
 
@@ -577,21 +574,21 @@ useHead({
 .legal-footer {
   margin-top: 64px;
   padding-top: 24px;
-  border-top: 1px solid var(--color-ink-ghost);
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
 .footer-legal-link {
-  color: var(--color-ink-faint);
+  color: var(--text-tertiary);
   text-decoration: none;
   transition: color 0.15s;
 }
 
-.footer-legal-link:hover { color: var(--color-ink); }
+.footer-legal-link:hover { color: var(--text-primary); }
 
-.footer-sep { color: var(--color-ink-ghost); }
+.footer-sep { color: var(--border-subtle); }
 
 @media (max-width: 640px) {
   .data-table {

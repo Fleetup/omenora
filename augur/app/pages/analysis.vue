@@ -1,35 +1,50 @@
 <template>
-  <div class="analysis-page">
+  <div class="aq" :style="bgStyle">
 
-    <AppHeader>
-      <template #action>
-        <span class="label-caps analysis-header__step">
-          {{ currentStep + 1 }} / {{ totalSteps }}
-        </span>
-      </template>
-    </AppHeader>
+    <!-- ── Atmospheric background layers ──────────────────────────────────── -->
+    <div class="aq__bg-image" aria-hidden="true" />
+    <div class="aq__bg-overlay" aria-hidden="true" />
 
-    <!-- Progress bar -->
-    <div class="progress-track">
-      <div class="progress-fill" :style="{ width: progressPct + '%' }" />
+    <!-- ── Page grain texture ──────────────────────────────────────────────── -->
+    <div class="page-grain" aria-hidden="true" />
+
+    <!-- ── Sticky header ───────────────────────────────────────────────────── -->
+    <AppHeader />
+
+    <main>
+
+    <!-- ── Progress bar ────────────────────────────────────────────────────── -->
+    <div class="aq__progress">
+      <QuizProgressBar :current="currentStep + 1" :total="totalSteps" />
     </div>
 
-    <!-- Step container -->
-    <div class="analysis-steps">
-      <Transition :name="transitionDir" mode="out-in">
-        <div :key="currentStep" class="analysis-step">
+    <!-- ── Step content ────────────────────────────────────────────────────── -->
+    <Transition name="step-fade" mode="out-in">
+      <div
+        :key="currentStep"
+        class="aq__step"
+        :class="{ 'aq__step--sticky-cta': currentStep !== 0 && currentStep !== 5 && currentStep !== 6 }"
+      >
 
-          <p class="label-caps analysis-step__label">
+        <!-- Back button -->
+        <div v-if="currentStep > 0" class="aq__back">
+          <AppButton variant="ghost" size="sm" @click="back">
+            ← Back
+          </AppButton>
+        </div>
+
+        <!-- AppCard glass variant — transparent frosted surface over atmospheric image -->
+        <AppCard variant="glass" :hoverable="false" class="aq__card">
+
+          <AppEyebrow class="aq-step__eyebrow">
             Step {{ currentStep + 1 }}
-          </p>
+          </AppEyebrow>
 
-          <h1 class="analysis-step__headline font-display-italic">
+          <AppHeadline variant="lg" as="h1" class="aq-step__headline">
             {{ stepConfig[currentStep]?.headline }}
-          </h1>
+          </AppHeadline>
 
-          <div class="analysis-step__rule" />
-
-          <div class="analysis-step__content">
+          <div class="aq-step__content">
 
             <!-- Step 0: Clarity focus -->
             <template v-if="currentStep === 0">
@@ -77,7 +92,7 @@
                 autocomplete="bday"
                 required
               />
-              <p class="field-hint annotation">Used only to calculate your planetary positions.</p>
+              <AppCaption variant="default" as="p" class="field-hint">Used only to calculate your planetary positions.</AppCaption>
             </template>
 
             <!-- Step 3: City -->
@@ -94,7 +109,7 @@
 
             <!-- Step 4: Birth time -->
             <template v-else-if="currentStep === 4">
-              <p class="field-hint annotation" style="margin-bottom: 24px;">Birth time improves your Rising sign accuracy.</p>
+              <AppCaption variant="default" as="p" class="field-hint field-hint--top">Birth time improves your Rising sign accuracy.</AppCaption>
               <div class="birth-time-row">
                 <label class="field-label label-caps" for="birth-time">Birth time</label>
                 <button type="button" class="skip-time-btn label-caps" @click="skipBirthTime">Skip</button>
@@ -105,14 +120,14 @@
                 type="time"
                 class="editorial-input"
               />
-              <p class="field-hint annotation">Leave blank if unknown — Rising sign won't be available without it.</p>
+              <AppCaption variant="default" as="p" class="field-hint">Leave blank if unknown — Rising sign won't be available without it.</AppCaption>
             </template>
 
             <!-- Step 5: Quiz p1 -->
             <template v-else-if="currentStep === 5">
               <div class="quiz-question">
-                <span class="quiz-question__num annotation">01</span>
-                <p class="quiz-question__text font-serif">{{ questions[0]!.text }}</p>
+                <AppCaption variant="default" class="quiz-question__num">01</AppCaption>
+                <AppSubhead variant="default" as="p" class="quiz-question__text">{{ questions[0]!.text }}</AppSubhead>
               </div>
               <div class="quiz-options">
                 <button
@@ -133,8 +148,8 @@
             <!-- Step 6: Quiz p2 -->
             <template v-else-if="currentStep === 6">
               <div class="quiz-question">
-                <span class="quiz-question__num annotation">02</span>
-                <p class="quiz-question__text font-serif">{{ questions[1]!.text }}</p>
+                <AppCaption variant="default" class="quiz-question__num">02</AppCaption>
+                <AppSubhead variant="default" as="p" class="quiz-question__text">{{ questions[1]!.text }}</AppSubhead>
               </div>
               <div class="quiz-options">
                 <button
@@ -155,8 +170,8 @@
             <!-- Step 7: Quiz p3 — manual submit -->
             <template v-else-if="currentStep === 7">
               <div class="quiz-question">
-                <span class="quiz-question__num annotation">03</span>
-                <p class="quiz-question__text font-serif">{{ questions[2]!.text }}</p>
+                <AppCaption variant="default" class="quiz-question__num">03</AppCaption>
+                <AppSubhead variant="default" as="p" class="quiz-question__text">{{ questions[2]!.text }}</AppSubhead>
               </div>
               <div class="quiz-options">
                 <button
@@ -172,70 +187,90 @@
                   <span class="quiz-option__text">{{ option.label }}</span>
                 </button>
               </div>
-              <p v-if="submitError" class="step-error annotation">{{ submitError }}</p>
+              <AppCaption v-if="submitError" variant="default" as="p" class="step-error">{{ submitError }}</AppCaption>
             </template>
 
           </div>
 
           <!-- Navigation -->
-          <div class="analysis-step__nav">
-            <button
-              v-if="currentStep > 0"
-              class="back-link label-caps"
-              @click="back"
-            >
-              ← Back
-            </button>
-
-            <!-- Step 7: submit button instead of CTAButton -->
+          <div class="aq-step__nav">
+            <!-- Step 7: submit -->
             <template v-if="currentStep === 7">
-              <CTAButton
+              <AppButton
                 v-if="(store.answers as Record<string,string>)['p3']"
+                variant="primary"
                 :arrow="true"
                 :disabled="isCalculating"
-                class="advance-btn"
                 @click="handleSubmit"
               >
                 {{ isCalculating ? 'Calculating…' : t('revealDestiny') }}
-              </CTAButton>
+              </AppButton>
             </template>
 
-            <!-- Step 0: no nav button — selection auto-advances -->
-            <template v-else-if="currentStep !== 0 && !(currentStep === 5 || currentStep === 6)">
-              <CTAButton
+            <!-- Steps 1–4: Continue -->
+            <template v-else-if="currentStep !== 0 && currentStep !== 5 && currentStep !== 6">
+              <AppButton
+                variant="primary"
                 :arrow="true"
                 :disabled="!canAdvance"
-                class="advance-btn"
                 @click="advance"
               >
                 Continue
-              </CTAButton>
+              </AppButton>
             </template>
           </div>
 
-        </div>
-      </Transition>
-    </div>
+        </AppCard>
 
-    <!-- Trust footer -->
-    <p class="trust-footer annotation">🔒 Your birth data is used only to generate your reading. Never sold.</p>
+      </div>
+    </Transition>
+
+    <!-- ── Trust footer ──────────────────────────────────────────────────────── -->
+    <AppCaption variant="default" as="p" class="aq__trust">
+      Your birth data is used only to generate your reading. Never sold.
+    </AppCaption>
+
+    </main>
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useAnalysisStore, type NatalChart } from '~/stores/analysisStore'
 import { LANGUAGES } from '~/utils/translations'
 import { useLanguage } from '~/composables/useLanguage'
 
-const { $trackStep1Complete, $trackQuestionAnswered, $trackAnalysisSubmit } = useNuxtApp() as any
+const { $trackStep1Complete, $trackQuestionAnswered, $trackAnalysisSubmit, $trackAnalysisStart } = useNuxtApp() as any
 
 useSeoMeta({ title: 'Your Free Personality & Astrology Reading', robots: 'noindex, nofollow' })
+useHead({ link: [{ rel: 'canonical', href: 'https://omenora.com/analysis' }] })
+
+onMounted(() => {
+  $trackAnalysisStart?.()
+})
 
 const store = useAnalysisStore()
 const { t } = useLanguage()
 const currentStep = ref(0)
+
+// ── Background phase map ───────────────────────────────────────────────────────
+// Steps 0–2 = emotional/personal context, 3–5 = birth data, 6–7 = personality quiz
+const PHASE_IMAGES: Record<'A' | 'B' | 'C', string> = {
+  A: '/images/hero/Distant-horizon-emergence.webp',
+  B: '/images/hero/Nebula-void.webp',
+  C: '/images/hero/Cosmic-gold-ascension.webp',
+}
+
+function getPhase(idx: number): 'A' | 'B' | 'C' {
+  if (idx <= 2) return 'A'
+  if (idx <= 5) return 'B'
+  return 'C'
+}
+
+const bgStyle = computed(() => ({
+  '--aq-bg-image': `url('${PHASE_IMAGES[getPhase(currentStep.value)]}')`,
+}))
 const isCalculating = ref(false)
 const submitError   = ref<string | null>(null)
 
@@ -255,7 +290,6 @@ const stepConfig = [
 ]
 
 const totalSteps = stepConfig.length
-const progressPct = computed(() => ((currentStep.value + 1) / totalSteps) * 100)
 
 // ── Clarity options ───────────────────────────────────────────────────────────
 const clarityOptions = [
@@ -483,76 +517,201 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-/* ── Page shell ── */
-.analysis-page {
-  min-height: 100vh;
+/* ── Page root ──
+   Full-bleed atmospheric canvas. position: relative contains the
+   absolutely-positioned background layers. */
+.aq {
+  position: relative;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--color-bone);
+  background: var(--omn-bg-page);
+  color: var(--omn-text-primary);
+  overflow: hidden;
 }
 
-/* ── Progress bar ── */
-.progress-track {
-  height: 2px;
-  background: var(--color-ink-ghost);
-  flex-shrink: 0;
+/* ── Bronze diagonal seam glow (::after) ──
+   Identical geometry to compatibility-quiz and SectionHero. */
+.aq::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(168, 125, 78, 0.08) 48%,
+    rgba(168, 125, 78, 0.15) 52%,
+    rgba(168, 125, 78, 0.08) 56%,
+    transparent 64%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
 }
 
-.progress-fill {
-  height: 100%;
-  background: var(--color-ink);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* ── Atmospheric background image ──
+   Driven by --aq-bg-image CSS variable from bgStyle computed.
+   168° diagonal mask mirrors compatibility-quiz pattern. */
+.aq__bg-image {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--aq-bg-image);
+  background-size: cover;
+  background-position: center 55%;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    168deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.15) 38%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.88) 68%,
+    rgb(0, 0, 0) 80%,
+    rgb(0, 0, 0) 100%
+  );
+  filter: saturate(0.85) contrast(1.05);
+  opacity: 0.82;
+  pointer-events: none;
 }
 
-/* ── Step container ── */
-.analysis-steps {
+/* ── Dark overlay ──
+   Two-gradient composite: top-to-bottom vignette + diagonal bronze warmth. */
+.aq__bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(18, 18, 20, 0.92) 0%,
+      rgba(18, 18, 20, 0.55) 25%,
+      rgba(18, 18, 20, 0.10) 50%,
+      rgba(18, 18, 20, 0.50) 80%,
+      rgba(18, 18, 20, 0.90) 100%),
+    linear-gradient(168deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(168, 125, 78, 0.05) 50%,
+      transparent 60%,
+      transparent 100%);
+}
+
+/* ── Page grain texture ──
+   Fixed, pointer-events: none. z-index 200 sits above all content. */
+.page-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: pageGrainShift 8s steps(1) infinite;
+}
+
+@keyframes pageGrainShift {
+  0%   { background-position:   0px   0px; }
+  12%  { background-position: -40px -20px; }
+  24%  { background-position:  20px -40px; }
+  36%  { background-position: -60px  10px; }
+  48%  { background-position:  30px  40px; }
+  60%  { background-position: -20px -50px; }
+  72%  { background-position:  50px  20px; }
+  84%  { background-position: -30px  60px; }
+  100% { background-position:   0px   0px; }
+}
+
+/* ── Progress bar wrapper ── */
+.aq__progress {
+  position: relative;
+  z-index: 3;
+}
+
+/* ── Step outer container ──
+   Flex column, vertically and horizontally centered.
+   z-index 3 brings it above all background layers. */
+.aq__step {
   flex: 1;
   display: flex;
-  align-items: flex-start;
-  padding: clamp(48px, 10vw, 96px) clamp(20px, 5vw, 80px) 80px;
-  max-width: 1400px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-12);
+  position: relative;
+  z-index: 3;
+}
+@media (min-width: 768px) {
+  .aq__step {
+    padding: var(--space-12) var(--space-8) var(--space-16);
+  }
 }
 
-.analysis-step {
+/* ── Back button row ── */
+.aq__back {
   width: 100%;
+  max-width: 36rem;
+  margin-bottom: var(--space-3);
 }
 
-/* ── Step label ── */
-.analysis-step__label {
-  color: var(--color-ink-faint);
-  margin-bottom: 20px;
+/* ── AppCard quiz overrides ──
+   glass variant handles background, backdrop-filter, and border.
+   Override: max-width for editorial column + mobile edge-to-edge. */
+.aq__card {
+  width: 100%;
+  max-width: 36rem;
+}
+@media (max-width: 767px) {
+  .aq__card {
+    max-width: 100%;
+    border-left: none !important;
+    border-right: none !important;
+  }
 }
 
-/* ── Step headline ── */
-.analysis-step__headline {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
-  font-style: italic;
-  font-size: clamp(36px, 8vw, 64px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  margin: 0 0 32px;
-  color: var(--color-ink);
+/* ── Step eyebrow ── */
+.aq-step__eyebrow {
+  margin-bottom: var(--space-3);
+  color: var(--omn-text-tertiary);
 }
 
-/* ── Decorative rule ── */
-.analysis-step__rule {
-  width: 48px;
-  height: 1px;
-  background: var(--color-ink-mid);
-  margin-bottom: 36px;
+/* ── Step headline ──
+   AppHeadline variant="lg" handles sizing; only override is bottom margin. */
+.aq-step__headline {
+  margin-bottom: var(--space-6);
 }
 
-.analysis-step__content {
-  margin-bottom: 40px;
+/* ── Step content ── */
+.aq-step__content {
+  margin-bottom: var(--space-6);
+}
+
+/* ── Nav row ── */
+.aq-step__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
 }
 
 /* ── Field label ── */
 .field-label {
   display: block;
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   margin-bottom: 12px;
 }
 
@@ -560,27 +719,28 @@ async function handleSubmit() {
 .editorial-input {
   width: 100%;
   max-width: 480px;
-  padding: 14px 0;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 300;
-  color: var(--color-ink);
+  padding: var(--space-4) 0;
+  font-family: var(--omn-font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  letter-spacing: var(--tracking-snug);
+  color: var(--omn-text-primary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.3);
+  border-bottom: 1px solid var(--omn-border-primary);
   outline: none;
   border-radius: 0;
-  transition: border-color 0.2s;
+  transition: border-color var(--omn-duration-fast) var(--omn-ease);
   display: block;
   margin-bottom: 28px;
 }
 
 .editorial-input:focus {
-  border-bottom-color: var(--color-ink);
+  border-bottom-color: var(--omn-accent);
 }
 
 .editorial-input::placeholder {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   font-style: italic;
 }
 
@@ -588,86 +748,95 @@ input[type="date"],
 input[type="time"] {
   -webkit-appearance: none;
   appearance: none;
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 /* ── Field hint ── */
 .field-hint {
   margin-top: 10px;
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
+}
+.field-hint--top {
+  margin-top: 0;
+  margin-bottom: 24px;
 }
 
 /* ── Quiz options ── */
 .quiz-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-width: 540px;
-}
-
-.quiz-options--two {
-  max-width: 380px;
+  gap: var(--space-3);
 }
 
 .quiz-option {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: transparent;
-  border: 1px solid var(--color-ink-ghost);
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--omn-bg-primary);
+  border: 1px solid var(--omn-border-subtle);
+  border-radius: 0;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s, background 0.15s;
   font-family: inherit;
+  transition:
+    background var(--omn-duration-fast) var(--omn-ease),
+    border-color var(--omn-duration-fast) var(--omn-ease),
+    transform var(--omn-duration-fast) var(--omn-ease);
 }
 
 .quiz-option:hover {
-  border-color: rgba(26, 22, 18, 0.35);
-  background: rgba(26, 22, 18, 0.03);
+  background: var(--omn-bg-elevated);
+  border-color: var(--omn-border-emphasis);
 }
+.quiz-option:active { transform: translateY(1px); }
 
 .quiz-option--selected {
-  border-color: var(--color-ink);
-  background: rgba(26, 22, 18, 0.06);
+  background: var(--omn-bg-elevated);
+  border-color: var(--omn-accent);
+}
+
+.quiz-option:focus-visible {
+  outline: 2px solid var(--omn-accent);
+  outline-offset: 3px;
 }
 
 .quiz-option__letter {
-  color: var(--color-ink-faint);
-  font-size: 10px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
   flex-shrink: 0;
   width: 16px;
 }
 
 .quiz-option__text {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 18px;
-  font-weight: 400;
-  color: var(--color-ink);
+  font-family: var(--omn-font-body);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-regular);
+  color: var(--omn-text-primary);
   line-height: 1.3;
+  letter-spacing: var(--tracking-body);
 }
 
 /* ── Quiz question header ── */
 .quiz-question {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: var(--space-4);
   margin-bottom: 28px;
-  max-width: 540px;
 }
 
 .quiz-question__num {
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   flex-shrink: 0;
   padding-top: 4px;
 }
 
 .quiz-question__text {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 400;
+  font-family: var(--omn-font-body);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-regular);
   line-height: 1.4;
-  color: var(--color-ink);
+  color: var(--omn-text-primary);
   margin: 0;
 }
 
@@ -687,101 +856,75 @@ input[type="time"] {
 .skip-time-btn {
   background: none;
   border: none;
-  color: var(--color-ink-faint);
-  font-size: 9px;
+  color: var(--omn-text-tertiary);
+  font-size: var(--text-xs);
   cursor: pointer;
   padding: 0;
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  transition: color 0.15s;
-}
-
-.skip-time-btn:hover { color: var(--color-ink); }
-
-/* ── Navigation ── */
-.analysis-step__nav {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.back-link {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-ink-faint);
-  font-size: 10px;
-  letter-spacing: 0.3em;
+  font-family: var(--omn-font-mono);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-mid);
   text-transform: uppercase;
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-weight: 600;
-  padding: 0;
-  transition: color 0.2s;
+  transition: color var(--omn-duration-fast) var(--omn-ease);
 }
 
-.back-link:hover { color: var(--color-ink); }
+.skip-time-btn:hover { color: var(--omn-text-primary); }
 
 /* ── Error ── */
 .step-error {
-  margin-top: 16px;
-  color: #8B4513;
+  margin-top: var(--space-4);
+  color: var(--omn-error);
 }
 
 /* ── Trust footer ── */
-.trust-footer {
+.aq__trust {
   text-align: center;
-  color: var(--color-ink-faint);
+  color: var(--omn-text-tertiary);
   padding: 20px clamp(20px, 5vw, 80px) clamp(32px, 6vw, 48px);
-  max-width: 1400px;
-  margin: 0 auto;
+  position: relative;
+  z-index: 3;
 }
 
-/* ── Header step counter ── */
-.analysis-header__step {
-  color: var(--color-ink-faint);
-  font-size: 10px;
+/* ── Sticky Continue CTA on mobile ──
+   Mirrors compatibility-quiz pattern for non-select steps. */
+@media (max-width: 767px) {
+  .aq__step--sticky-cta :deep(.app-button--primary) {
+    position: sticky;
+    bottom: env(safe-area-inset-bottom, 0px);
+    z-index: 10;
+    width: 100%;
+    align-self: stretch;
+  }
 }
 
-/* ── Step transitions ── */
-.slide-left-enter-active,
-.slide-left-leave-active,
-.slide-right-enter-active,
-.slide-right-leave-active {
-  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+/* ── Step transition ── */
+.step-fade-enter-active,
+.step-fade-leave-active {
+  transition:
+    opacity var(--omn-duration-base) var(--omn-ease),
+    transform var(--omn-duration-base) var(--omn-ease);
 }
 
-.slide-left-enter-from  { opacity: 0; transform: translateX(32px); }
-.slide-left-leave-to    { opacity: 0; transform: translateX(-32px); }
-.slide-right-enter-from { opacity: 0; transform: translateX(-32px); }
-.slide-right-leave-to   { opacity: 0; transform: translateX(32px); }
+.step-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
 
-/* ── CTAButton disabled opacity ── */
-.advance-btn:disabled,
-.advance-btn[disabled] {
-  opacity: 0.35;
-  pointer-events: none;
+.step-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
-  .analysis-step__headline { font-size: clamp(30px, 9vw, 42px); }
-  .quiz-option__text { font-size: 16px; }
-  .quiz-question__text { font-size: 19px; }
-  .editorial-input { font-size: 20px; }
+  .quiz-option__text  { font-size: var(--text-md); }
+  .quiz-question__text { font-size: var(--text-lg); }
+  .editorial-input    { font-size: var(--text-lg); }
 }
 
+/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .slide-left-enter-active,
-  .slide-left-leave-active,
-  .slide-right-enter-active,
-  .slide-right-leave-active {
-    transition: opacity 0.15s;
-  }
-  .slide-left-enter-from,
-  .slide-right-enter-from { transform: none; }
-  .slide-left-leave-to,
-  .slide-right-leave-to   { transform: none; }
+  .step-fade-enter-active,
+  .step-fade-leave-active { transition: none; }
+  .page-grain { animation: none; }
 }
 </style>

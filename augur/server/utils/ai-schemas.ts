@@ -137,20 +137,25 @@ export type CalendarType = z.infer<typeof CalendarSchema>
 // ── CompatibilitySchema ─────────────────────────────────────────────────────
 // Used by: generate-compatibility.post.ts
 //
-// Expected Claude output shape (7 sections):
+// CompatibilitySectionsSchema — validates Claude's full-path response.
+// Claude returns ONLY the 7 sections. Score and title are computed
+// server-side (deterministic) in both preview and full paths.
+//
+// Claude full-path output shape:
 // {
-//   compatibilityScore: 85,
-//   compatibilityTitle: "...",
 //   sections: {
 //     bond:          { title, content },  — The Bond That Holds You Together
 //     strength:      { title, content },  — Your Greatest Strength Together
-//     challenge:     { title, content },  — The Tension You Must Navigate (free preview)
+//     challenge:     { title, content },  — The Tension You Must Navigate
 //     communication: { title, content },  — The Communication Pattern
 //     powerDynamic:  { title, content },  — The Power Dynamic
 //     forecast:      { title, content },  — The Timing Forecast (7-day transit window)
 //     advice:        { title, content },  — The Advice
 //   }
 // }
+//
+// CompatibilitySchema — retained for downstream consumers and typing.
+// Represents the full API response shape (score + title assembled server-side).
 //
 // API response also includes (assembled server-side, not from Claude):
 //   previewMode:        boolean (optional, true when sections are partially locked)
@@ -161,18 +166,28 @@ const CompatibilitySectionSchema = z.object({
   content: z.string().min(1),
 })
 
+const CompatibilitySectionsBodySchema = z.object({
+  bond:          CompatibilitySectionSchema,
+  strength:      CompatibilitySectionSchema,
+  challenge:     CompatibilitySectionSchema,
+  communication: CompatibilitySectionSchema,
+  powerDynamic:  CompatibilitySectionSchema,
+  forecast:      CompatibilitySectionSchema,
+  advice:        CompatibilitySectionSchema,
+})
+
+// Validates Claude's response for the full path (sections only — no score/title).
+export const CompatibilitySectionsSchema = z.object({
+  sections: CompatibilitySectionsBodySchema,
+})
+
+export type CompatibilitySectionsType = z.infer<typeof CompatibilitySectionsSchema>
+
+// Retained for downstream consumers (full API response shape, score+title included).
 export const CompatibilitySchema = z.object({
   compatibilityScore: z.number().int().min(0).max(100),
   compatibilityTitle: z.string().min(1),
-  sections: z.object({
-    bond:          CompatibilitySectionSchema,
-    strength:      CompatibilitySectionSchema,
-    challenge:     CompatibilitySectionSchema,
-    communication: CompatibilitySectionSchema,
-    powerDynamic:  CompatibilitySectionSchema,
-    forecast:      CompatibilitySectionSchema,
-    advice:        CompatibilitySectionSchema,
-  }),
+  sections: CompatibilitySectionsBodySchema,
 })
 
 export type CompatibilityType = z.infer<typeof CompatibilitySchema>

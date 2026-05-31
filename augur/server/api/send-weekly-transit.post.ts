@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { he } from '~~/server/utils/report-email-builder'
 import { unsubscribeToken } from '~~/server/api/unsubscribe.get'
+import { EMAIL_BRAND_LINE, EMAIL_ADDRESS_LINE, emailFooterText } from '~~/server/utils/email-footer'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -136,6 +137,12 @@ export default defineEventHandler(async (event) => {
               <p style="font-size: 11px; color: #b0a89a; line-height: 1.7; margin: 16px 0 12px; font-family: sans-serif;">
                 OMENORA Relationship Weather is for self-reflection and personal exploration only. It is not a substitute for professional advice, therapy, or relationship counselling.
               </p>
+              <p style="font-size: 10px; color: #c0b8ac; margin: 0 0 4px; font-family: sans-serif;">
+                ${EMAIL_BRAND_LINE}
+              </p>
+              <p style="font-size: 10px; color: #c0b8ac; margin: 0 0 8px; font-family: sans-serif;">
+                ${EMAIL_ADDRESS_LINE}
+              </p>
               <p style="font-size: 11px; color: #c0b8ac; margin: 0; font-family: sans-serif;">
                 <a href="${unsubUrl}" style="color: #9e9285; text-decoration: underline;">Unsubscribe</a>
                 &nbsp;&middot;&nbsp; omenora.com
@@ -177,8 +184,7 @@ export default defineEventHandler(async (event) => {
       `---`,
       compatibilityTitle ? `Based on your ${compatibilityTitle} reading · Compatibility Plus` : 'Compatibility Plus',
       ``,
-      `OMENORA · omenora.com`,
-      `To unsubscribe: ${unsubUrl}`,
+      emailFooterText(unsubUrl),
     ].join('\n'),
   })
 

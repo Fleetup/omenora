@@ -1,10 +1,23 @@
+import { Resend } from 'resend'
 import { unsubscribeToken } from '~~/server/api/unsubscribe.get'
+import { EMAIL_ADDRESS_LINE, emailFooterText, emailFooterHtml, emailFooterHtmlMinimal } from '~~/server/utils/email-footer'
+import {
+  E_BG_PAGE, E_BORDER_FAINT, E_TEXT_PRIMARY, E_TEXT_SECONDARY, E_TEXT_TERTIARY,
+  E_ACCENT, E_CTA, E_CTA_URGENT, E_CTA_TEXT,
+  E_FONT_DISPLAY, E_FONT_UI,
+  E_TEXT_XS, E_TEXT_BASE, E_TEXT_XL,
+  E_TRACKING_CAPS, E_TRACKING_WIDE,
+  E_SPACE_3, E_SPACE_4, E_SPACE_6, E_SPACE_8, E_SPACE_10,
+  E_RADIUS_SM,
+  emailSymbolImg,
+} from '~~/server/utils/email-design-tokens'
 
 export interface EmailPersonalization {
   email: string
   firstName: string
   archetypeName: string
-  archetypeEmoji: string
+  archetypeEmoji: string   // legacy: kept for DB rows that pre-date archetypeSymbol
+  archetypeSymbol?: string // preferred: Unicode char e.g. '◆' → resolves to hosted PNG
   archetypeElement: string
   lifePath: string
   readingTradition: string
@@ -26,7 +39,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}, your ${data.archetypeName} reading is still here`,
         preview: `We held it for you. It won't be here forever.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}, your reading is still here.`,
@@ -46,7 +59,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `What the ${data.archetypeName} never finds out about themselves`,
         preview: `This is in your locked sections.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `What's locked in your reading.`,
@@ -72,7 +85,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName} — your reading expires tomorrow`,
         preview: `After that, your reading will no longer be accessible.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Your reading expires in 23 hours.`,
@@ -93,7 +106,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `Last chance. Your ${data.archetypeName} reading deletes tonight.`,
         preview: `This is the last email we'll send.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `This is the last email.`,
@@ -114,7 +127,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}, tu lectura de ${data.archetypeName} sigue aquí`,
         preview: `La guardamos para ti. No estará aquí para siempre.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}, tu lectura sigue aquí.`,
@@ -134,7 +147,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `Lo que el ${data.archetypeName} nunca descubre sobre sí mismo`,
         preview: `Esto está en tus secciones bloqueadas.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Lo que hay en tu lectura bloqueada.`,
@@ -158,7 +171,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName} — tu lectura expira mañana`,
         preview: `Después de eso, tu análisis se elimina.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Tu lectura expira en 23 horas.`,
@@ -177,7 +190,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `Última oportunidad. Tu lectura de ${data.archetypeName} se elimina esta noche.`,
         preview: `Este es el último correo que enviaremos.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Este es el último correo.`,
@@ -197,7 +210,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}, sua leitura de ${data.archetypeName} ainda está aqui`,
         preview: `Guardamos para você. Não vai durar para sempre.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}, sua leitura ainda está aqui.`,
@@ -217,7 +230,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `O que o ${data.archetypeName} nunca descobre sobre si mesmo`,
         preview: `Isso está nas suas seções bloqueadas.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `O que está na sua leitura bloqueada.`,
@@ -239,7 +252,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName} — sua leitura expira amanhã`,
         preview: `Depois disso, sua análise é deletada.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Sua leitura expira em 23 horas.`,
@@ -257,7 +270,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `Última chance. Sua leitura de ${data.archetypeName} é deletada hoje à noite.`,
         preview: `Este é o último e-mail que enviaremos.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `Este é o último e-mail.`,
@@ -274,7 +287,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}님, 당신의 ${data.archetypeName} 리딩이 아직 여기 있습니다`,
         preview: `저희가 보관하고 있습니다. 영원히 있지는 않습니다.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}님, 리딩이 아직 여기 있습니다.`,
@@ -292,7 +305,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.archetypeName}이 자신에 대해 결코 알지 못하는 것`,
         preview: `이것은 잠긴 섹션에 있습니다.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `잠긴 리딩에 있는 내용.`,
@@ -314,7 +327,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}님 — 리딩이 내일 만료됩니다`,
         preview: `이후에는 분석이 삭제됩니다.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `리딩이 23시간 후에 만료됩니다.`,
@@ -329,7 +342,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `마지막 기회. ${data.archetypeName} 리딩이 오늘 밤 삭제됩니다.`,
         preview: `이것이 마지막 이메일입니다.`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `이것이 마지막 이메일입니다.`,
@@ -346,7 +359,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}，您的${data.archetypeName}解读仍在这里`,
         preview: `我们为您保留了它，但不会永远保留。`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}，您的解读仍在这里。`,
@@ -364,7 +377,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.archetypeName}从未发现的关于自己的事`,
         preview: `这在您的锁定部分中。`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `您锁定解读中的内容。`,
@@ -386,7 +399,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}——您的解读明天过期`,
         preview: `之后，您的分析将被删除。`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `您的解读将在23小时后过期。`,
@@ -401,7 +414,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `最后机会。您的${data.archetypeName}解读今晚删除。`,
         preview: `这是我们发送的最后一封邮件。`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `这是最后一封邮件。`,
@@ -418,7 +431,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName}, आपकी ${data.archetypeName} रीडिंग अभी भी यहाँ है`,
         preview: `हमने इसे आपके लिए रखा है। यह हमेशा नहीं रहेगी।`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `${data.firstName}, आपकी रीडिंग अभी भी यहाँ है।`,
@@ -436,7 +449,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `वह जो ${data.archetypeName} खुद के बारे में कभी नहीं जान पाता`,
         preview: `यह आपके बंद अनुभागों में है।`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `आपकी बंद रीडिंग में क्या है।`,
@@ -458,7 +471,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `${data.firstName} — आपकी रीडिंग कल समाप्त होती है`,
         preview: `उसके बाद, आपका विश्लेषण हटा दिया जाएगा।`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `आपकी रीडिंग 23 घंटों में समाप्त होती है।`,
@@ -473,7 +486,7 @@ export function getEmailTemplate(step: 1 | 2 | 3 | 4, data: EmailPersonalization
         subject: `अंतिम मौका। आपकी ${data.archetypeName} रीडिंग आज रात हटा दी जाएगी।`,
         preview: `यह अंतिम ईमेल है जो हम भेजेंगे।`,
         ...buildHtmlEmail({
-          emoji: data.archetypeEmoji,
+          symbol: data.archetypeSymbol ?? data.archetypeEmoji,
           secret,
           ctaUrl,
           title: `यह अंतिम ईमेल है।`,
@@ -527,14 +540,211 @@ export function buildTestimonialRequestEmail(personalization: {
 <body style="margin:0;padding:40px 20px;background:#ffffff;font-family:Georgia,serif;font-size:16px;color:#333;line-height:1.7;">
 ${bodyText.split('\n\n').map(p => `<p style="margin:0 0 16px 0;">${p.replace(/\n/g, '<br>')}</p>`).join('\n')}
 <p style="margin:24px 0 0 0;font-size:12px;color:#aaa;">OMENORA</p>
+${emailFooterHtmlMinimal(`https://omenora.com/api/unsubscribe?token=invalid&e=`)}
 </body>
 </html>`
 
   return { subject, html }
 }
 
+// ── Founding Member Confirmation Email ────────────────────────────────────────
+
+export interface FoundingMemberEmailData {
+  email: string
+}
+
+/**
+ * Builds the transactional confirmation email for a founding-member purchase.
+ * Follows the same dark-theme visual identity as the abandonment-sequence emails.
+ * No CTA button — this is a confirmation, not a conversion email.
+ * Returns both html and text built from the same content source.
+ */
+export function buildFoundingMemberEmail(data: FoundingMemberEmailData): {
+  subject: string
+  html: string
+  text: string
+} {
+  const subject = `You're in. Welcome to OMENORA, Founding Member.`
+
+  const benefits = [
+    { label: 'Your complete natal reading at launch', detail: 'Delivered the moment OMENORA opens — computed across Western, Vedic, BaZi, and Tarot.' },
+    { label: 'Lifetime 50% off OMENORA Premium', detail: 'When Premium launches, you pay half. $2.99/week, $7.50/month, or $49.99/year — forever.' },
+    { label: 'Early access to Compatibility & Counsel', detail: 'First to use features before public release.' },
+    { label: 'Founder badge in the app', detail: 'Visible on your profile at public launch.' },
+    { label: 'Name in the credits', detail: 'Listed at public launch as a founding member.' },
+  ]
+
+  const unsubUrl = `https://omenora.com/api/unsubscribe?token=invalid&e=${encodeURIComponent(data.email)}`
+
+  // ── Plain-text version ──────────────────────────────────────────────────────
+  const text = [
+    `OMENORA`,
+    ``,
+    `You're in. Welcome, Founding Member.`,
+    ``,
+    `Your founding membership is confirmed. This is the beginning of something we're building carefully — and you're part of it from day one.`,
+    ``,
+    `What you've unlocked:`,
+    ``,
+    ...benefits.map(b => `- ${b.label}\n  ${b.detail}`),
+    ``,
+    `What happens next:`,
+    ``,
+    `Paid features — Compatibility and Counsel — are still in development. You'll receive periodic updates as we build, and you'll be the first we contact when features go live. No specific launch date promised, but you'll know before anyone else.`,
+    ``,
+    `Refund policy:`,
+    ``,
+    `14 days, no questions asked. Email support@omenora.com with the subject "Founding Member Refund." Full details: https://omenora.com/refund-policy`,
+    ``,
+    `Thank you for being here from the start.`,
+    ``,
+    `— The OMENORA Team`,
+    ``,
+    `---`,
+    `For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.`,
+    ``,
+    emailFooterText(unsubUrl),
+  ].join('\n')
+
+  // ── HTML version ────────────────────────────────────────────────────────────
+  const benefitsHtml = benefits.map(b => `
+            <tr>
+              <td style="padding:12px 0;border-bottom:1px solid #1e1e28;">
+                <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">
+                  ${b.label}
+                </p>
+                <p style="margin:0;font-size:13px;color:#7a7060;font-family:Georgia,serif;line-height:1.5;">
+                  ${b.detail}
+                </p>
+              </td>
+            </tr>`).join('')
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0a0a0f;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0f;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding-bottom:32px;text-align:center;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.2em;color:#666;text-transform:uppercase;">OMENORA</p>
+            </td>
+          </tr>
+
+          <!-- Status badge -->
+          <tr>
+            <td style="padding-bottom:20px;text-align:center;">
+              <span style="display:inline-block;font-size:10px;letter-spacing:0.18em;color:#4B3F8C;text-transform:uppercase;border:1px solid #2a2050;padding:5px 14px;">
+                Founding Member
+              </span>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding-bottom:24px;text-align:center;">
+              <h1 style="margin:0;font-size:26px;font-weight:400;color:#f0ece4;font-family:Georgia,serif;line-height:1.35;font-style:italic;">
+                You're in. Welcome.
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <hr style="border:none;border-top:1px solid #222;margin:0;">
+            </td>
+          </tr>
+
+          <!-- Opening -->
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+              <p style="margin:0 0 14px;">Your founding membership is confirmed.</p>
+              <p style="margin:0;">This is the beginning of something we're building carefully — and you're part of it from day one.</p>
+            </td>
+          </tr>
+
+          <!-- Benefits heading -->
+          <tr>
+            <td style="padding-bottom:12px;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.15em;color:#4B3F8C;text-transform:uppercase;font-family:sans-serif;">What you've unlocked</p>
+            </td>
+          </tr>
+
+          <!-- Benefits table -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${benefitsHtml}
+              </table>
+            </td>
+          </tr>
+
+          <!-- What happens next -->
+          <tr>
+            <td style="padding-bottom:12px;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.15em;color:#4B3F8C;text-transform:uppercase;font-family:sans-serif;">What happens next</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+              <p style="margin:0;">Paid features — Compatibility and Counsel — are still in development. You'll receive periodic updates as we build, and you'll be the first we contact when features go live. No specific launch date promised, but you'll know before anyone else.</p>
+            </td>
+          </tr>
+
+          <!-- Refund reminder -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <div style="border-left:2px solid #2a2050;padding:14px 18px;background:rgba(75,63,140,0.06);">
+                <p style="margin:0 0 6px;font-size:12px;color:#7a7060;font-family:Georgia,serif;line-height:1.6;">
+                  <strong style="color:#a09880;">14-day refund policy.</strong> If this isn't right for you, email
+                  <a href="mailto:support@omenora.com" style="color:#a09880;">support@omenora.com</a>
+                  within 14 days — no questions asked. Full details at
+                  <a href="https://omenora.com/refund-policy" style="color:#a09880;">omenora.com/refund-policy</a>.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Closing -->
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+              <p style="margin:0 0 14px;">Thank you for being here from the start.</p>
+              <p style="margin:0;color:#7a7060;">— The OMENORA Team</p>
+            </td>
+          </tr>
+
+          <!-- Disclaimer -->
+          <tr>
+            <td style="text-align:center;padding:16px 0 8px;">
+              <p style="margin:0;font-size:10px;color:#3a3a3a;font-family:sans-serif;line-height:1.5;">
+                For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.
+              </p>
+            </td>
+          </tr>
+
+          ${emailFooterHtml(unsubUrl)}
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+
+  return { subject, html, text }
+}
+
 function buildHtmlEmail({
-  emoji,
+  symbol,
   title,
   body,
   ctaText,
@@ -544,7 +754,7 @@ function buildHtmlEmail({
   email,
   secret = '',
 }: {
-  emoji: string
+  symbol: string
   title: string
   body: string
   ctaText: string
@@ -554,7 +764,8 @@ function buildHtmlEmail({
   email: string
   secret?: string
 }) {
-  const ctaColor = urgent ? '#8B0000' : '#4B3F8C'
+  const ctaColor = urgent ? E_CTA_URGENT : E_CTA
+  const ctaTextColor = urgent ? E_TEXT_PRIMARY : E_CTA_TEXT
   const token    = secret ? unsubscribeToken(email, secret) : ''
   const unsubUrl = token
     ? `https://omenora.com/api/unsubscribe?token=${token}&e=${encodeURIComponent(email)}`
@@ -582,7 +793,7 @@ function buildHtmlEmail({
     `---`,
     `For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.`,
     ``,
-    `OMENORA · To unsubscribe: ${unsubUrl}`,
+    emailFooterText(unsubUrl),
   ].join('\n')
 
   const html = `<!DOCTYPE html>
@@ -592,82 +803,76 @@ function buildHtmlEmail({
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#0a0a0f;font-family:Georgia,serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0f;padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:${E_BG_PAGE};font-family:${E_FONT_DISPLAY};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:${E_BG_PAGE};padding:${E_SPACE_10} 20px;">
     <tr>
       <td align="center">
         <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
 
-          <!-- Header -->
+          <!-- Wordmark -->
           <tr>
-            <td style="padding-bottom:32px;text-align:center;">
-              <p style="margin:0;font-size:11px;letter-spacing:0.2em;color:#666;text-transform:uppercase;">OMENORA</p>
+            <td style="padding-bottom:${E_SPACE_8};text-align:center;">
+              <p style="margin:0;font-size:${E_TEXT_XS};letter-spacing:${E_TRACKING_WIDE};color:${E_TEXT_TERTIARY};text-transform:uppercase;font-family:${E_FONT_UI};">OMENORA</p>
             </td>
           </tr>
 
-          <!-- Emoji -->
+          <!-- Archetype Symbol -->
           <tr>
-            <td style="padding-bottom:16px;text-align:center;">
-              <span style="font-size:40px;">${emoji}</span>
+            <td style="padding-bottom:${E_SPACE_4};text-align:center;">
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr><td>${emailSymbolImg(symbol, 56)}</td></tr></table>
             </td>
           </tr>
 
           <!-- Title -->
           <tr>
-            <td style="padding-bottom:24px;text-align:center;">
-              <h1 style="margin:0;font-size:24px;font-weight:400;color:#f0ece4;font-family:Georgia,serif;line-height:1.4;">${title}</h1>
+            <td style="padding-bottom:${E_SPACE_6};text-align:center;">
+              <h1 style="margin:0;font-size:${E_TEXT_XL};font-weight:400;color:${E_TEXT_PRIMARY};font-family:${E_FONT_DISPLAY};line-height:1.4;">${title}</h1>
             </td>
           </tr>
 
           <!-- Divider -->
           <tr>
-            <td style="padding-bottom:28px;">
-              <hr style="border:none;border-top:1px solid #222;margin:0;">
+            <td style="padding-bottom:${E_SPACE_8};">
+              <div style="height:1px;background:${E_BORDER_FAINT};margin:0;"></div>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
-            <td style="color:#a09880;font-size:16px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+            <td style="color:${E_TEXT_SECONDARY};font-size:${E_TEXT_BASE};line-height:1.8;font-family:${E_FONT_DISPLAY};padding-bottom:${E_SPACE_8};">
               ${body}
             </td>
           </tr>
 
           <!-- CTA Button -->
           <tr>
-            <td style="padding-bottom:32px;text-align:center;">
-              <a href="${ctaUrl}"
-                 style="display:inline-block;background-color:${ctaColor};color:#f0ece4;font-family:Georgia,serif;font-size:15px;padding:16px 32px;text-decoration:none;border-radius:2px;letter-spacing:0.05em;">
-                ${ctaText}
-              </a>
+            <td style="padding-bottom:${E_SPACE_8};text-align:center;">
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr>
+                <td style="background-color:${ctaColor};border-radius:${E_RADIUS_SM};padding:${E_SPACE_4} ${E_SPACE_8};">
+                  <a href="${ctaUrl}" style="display:inline-block;color:${ctaTextColor};font-family:${E_FONT_UI};font-size:${E_TEXT_BASE};font-weight:500;text-decoration:none;letter-spacing:0.03em;white-space:nowrap;">${ctaText}</a>
+                </td>
+              </tr></table>
             </td>
           </tr>
 
           ${footerNote ? `
           <!-- Footer note -->
           <tr>
-            <td style="text-align:center;padding-bottom:24px;">
-              <p style="margin:0;font-size:12px;color:#555;font-family:Georgia,serif;">${footerNote}</p>
+            <td style="text-align:center;padding-bottom:${E_SPACE_6};">
+              <p style="margin:0;font-size:${E_TEXT_XS};color:${E_TEXT_TERTIARY};font-family:${E_FONT_UI};">${footerNote}</p>
             </td>
           </tr>` : ''}
 
           <!-- Disclaimer -->
           <tr>
-            <td style="text-align:center;padding:16px 0 8px;">
-              <p style="margin:0;font-size:10px;color:#3a3a3a;font-family:sans-serif;line-height:1.5;">
+            <td style="text-align:center;padding:${E_SPACE_4} 0 ${E_SPACE_3};">
+              <p style="margin:0;font-size:${E_TEXT_XS};color:${E_TEXT_TERTIARY};font-family:${E_FONT_UI};line-height:1.5;">
                 For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.
               </p>
             </td>
           </tr>
 
-          <!-- Unsubscribe -->
-          <tr>
-            <td style="text-align:center;padding-top:16px;border-top:1px solid #1a1a1a;">
-              <p style="margin:0;font-size:11px;color:#444;font-family:sans-serif;">
-                OMENORA · <a href="${unsubUrl}" style="color:#555;">Unsubscribe</a>
-              </p>
-            </td>
-          </tr>
+          ${emailFooterHtml(unsubUrl)}
 
         </table>
       </td>
@@ -677,4 +882,247 @@ function buildHtmlEmail({
 </html>`
 
   return { html, text }
+}
+
+// ── Premium Welcome Email ──────────────────────────────────────────────────────
+
+export interface PremiumWelcomeEmailData {
+  firstName: string
+  email: string
+  tokenHash: string
+}
+
+/**
+ * Builds the transactional welcome email for a new Premium subscriber.
+ * Contains a Supabase magic-link CTA so the user can authenticate on web
+ * immediately after purchase and set up their account for the mobile app.
+ *
+ * Magic-link URL format matches the pattern expected by useAuth.confirmMagicLink:
+ *   https://omenora.com/account?token_hash={tokenHash}
+ *
+ * Returns { subject, html, text } — same shape as buildFoundingMemberEmail.
+ */
+export function buildPremiumWelcomeEmail(data: PremiumWelcomeEmailData): {
+  subject: string
+  html: string
+  text: string
+} {
+  const subject = `Welcome to OMENORA Premium — your reading awaits`
+  const ctaUrl  = `https://omenora.com/account?token_hash=${encodeURIComponent(data.tokenHash)}`
+  const unsubUrl = `https://omenora.com/api/unsubscribe?token=invalid&e=${encodeURIComponent(data.email)}`
+
+  // ── Plain-text version ──────────────────────────────────────────────────────
+  const text = [
+    `OMENORA`,
+    ``,
+    `Welcome to Premium, ${data.firstName}.`,
+    ``,
+    `Your subscription is confirmed. Your 7-day free trial is now active.`,
+    ``,
+    `Click the link below to access your reading on web and complete your account setup:`,
+    ``,
+    ctaUrl,
+    ``,
+    `This link is one-time use. If it expires, you can request a new sign-in link at omenora.com/account.`,
+    ``,
+    `What's included in Premium:`,
+    ``,
+    `- Unlimited daily cosmic insights`,
+    `- Full Counsel access (coming in the mobile app)`,
+    `- Compatibility readings`,
+    `- Priority access to new features`,
+    ``,
+    `The OMENORA mobile app is coming soon. When it launches, sign in with this email address — your Premium subscription will be waiting.`,
+    ``,
+    `Questions? Email support@omenora.com.`,
+    ``,
+    `— The OMENORA Team`,
+    ``,
+    `---`,
+    `For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.`,
+    ``,
+    emailFooterText(unsubUrl),
+  ].join('\n')
+
+  // ── HTML version ─────────────────────────────────────────────────────────────
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#07070D;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#07070D;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding-bottom:32px;text-align:center;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.2em;color:#555;text-transform:uppercase;font-family:sans-serif;">OMENORA</p>
+            </td>
+          </tr>
+
+          <!-- Status badge -->
+          <tr>
+            <td style="padding-bottom:20px;text-align:center;">
+              <span style="display:inline-block;font-size:10px;letter-spacing:0.18em;color:#8B6FE0;text-transform:uppercase;border:1px solid #3a2a70;padding:5px 14px;font-family:sans-serif;">
+                Premium — Active
+              </span>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding-bottom:24px;text-align:center;">
+              <h1 style="margin:0;font-size:26px;font-weight:400;color:#f0ece4;font-family:Georgia,serif;line-height:1.35;font-style:italic;">
+                Welcome, ${data.firstName}.
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <hr style="border:none;border-top:1px solid #1a1a24;margin:0;">
+            </td>
+          </tr>
+
+          <!-- Opening -->
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:28px;">
+              <p style="margin:0 0 14px;">Your subscription is confirmed. Your 7-day free trial is now active.</p>
+              <p style="margin:0;">Click below to access your reading and complete your account — the same account you'll use when the OMENORA mobile app launches.</p>
+            </td>
+          </tr>
+
+          <!-- CTA Button -->
+          <tr>
+            <td style="padding-bottom:32px;text-align:center;">
+              <a href="${ctaUrl}"
+                 style="display:inline-block;background-color:#6B48E0;color:#ffffff;font-family:Georgia,serif;font-size:15px;padding:18px 36px;text-decoration:none;border-radius:2px;letter-spacing:0.05em;">
+                Access your Premium account
+              </a>
+            </td>
+          </tr>
+
+          <!-- Link note -->
+          <tr>
+            <td style="padding-bottom:32px;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#444;font-family:sans-serif;">
+                One-time link. If it expires, visit
+                <a href="https://omenora.com/account" style="color:#6B48E0;">omenora.com/account</a>
+                to request a new one.
+              </p>
+            </td>
+          </tr>
+
+          <!-- What's included -->
+          <tr>
+            <td style="padding-bottom:12px;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.15em;color:#6B48E0;text-transform:uppercase;font-family:sans-serif;">What's included</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr><td style="padding:10px 0;border-bottom:1px solid #141420;">
+                  <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">Unlimited daily cosmic insights</p>
+                  <p style="margin:0;font-size:13px;color:#665e50;font-family:Georgia,serif;line-height:1.5;">Personalised to your archetype. Delivered every morning.</p>
+                </td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #141420;">
+                  <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">Counsel access</p>
+                  <p style="margin:0;font-size:13px;color:#665e50;font-family:Georgia,serif;line-height:1.5;">Full guidance sessions — launching in the mobile app.</p>
+                </td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #141420;">
+                  <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">Compatibility readings</p>
+                  <p style="margin:0;font-size:13px;color:#665e50;font-family:Georgia,serif;line-height:1.5;">Unlimited cross-pattern compatibility analysis.</p>
+                </td></tr>
+                <tr><td style="padding:10px 0;">
+                  <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#f0ece4;font-family:Georgia,serif;">Priority access to new features</p>
+                  <p style="margin:0;font-size:13px;color:#665e50;font-family:Georgia,serif;line-height:1.5;">You'll be first when new capabilities ship.</p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Mobile handoff note -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <div style="border-left:2px solid #3a2a70;padding:14px 18px;background:rgba(107,72,224,0.06);">
+                <p style="margin:0;font-size:13px;color:#7a7060;font-family:Georgia,serif;line-height:1.6;">
+                  <strong style="color:#a09880;">Mobile app coming soon.</strong> Sign in with this email address when OMENORA launches on iOS and Android — your Premium subscription will be waiting.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Closing -->
+          <tr>
+            <td style="color:#a09880;font-size:15px;line-height:1.8;font-family:Georgia,serif;padding-bottom:32px;">
+              <p style="margin:0 0 14px;">Questions? Reply to this email or contact <a href="mailto:support@omenora.com" style="color:#a09880;">support@omenora.com</a>.</p>
+              <p style="margin:0;color:#665e50;">— The OMENORA Team</p>
+            </td>
+          </tr>
+
+          <!-- Disclaimer -->
+          <tr>
+            <td style="text-align:center;padding:16px 0 8px;">
+              <p style="margin:0;font-size:10px;color:#2e2e3a;font-family:sans-serif;line-height:1.5;">
+                For entertainment and self-reflection purposes only. Not a substitute for professional advice of any kind.
+              </p>
+            </td>
+          </tr>
+
+          ${emailFooterHtml(unsubUrl)}
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+
+  return { subject, html, text }
+}
+
+/**
+ * Send the Premium welcome email via Resend.
+ * Generates a Supabase magic-link and delivers the branded welcome email.
+ *
+ * Non-throwing — caller must wrap in try/catch if needed, but this function
+ * internally catches Resend errors and logs them.
+ *
+ * @param email      Subscriber email address
+ * @param firstName  Subscriber first name (may be empty string for anonymous users)
+ * @param tokenHash  Supabase magic-link hashed_token from auth.admin.generateLink
+ * @param resendKey  Resend API key (from useRuntimeConfig().resendApiKey)
+ */
+export async function sendPremiumWelcomeEmail(
+  email: string,
+  firstName: string,
+  tokenHash: string,
+  resendKey: string,
+): Promise<void> {
+  const { subject, html, text } = buildPremiumWelcomeEmail({ firstName, email, tokenHash })
+  try {
+    const resendClient = new Resend(resendKey)
+    const { error: resendErr } = await resendClient.emails.send({
+      from:    'OMENORA <reading@omenora.com>',
+      replyTo: 'support@omenora.com',
+      to:      email,
+      subject,
+      html,
+      text,
+    })
+    if (resendErr) {
+      console.error('[premium-welcome] Resend send failed (non-blocking):', resendErr, { email })
+    } else {
+      console.info('[premium-welcome] welcome email sent:', { email })
+    }
+  } catch (err: unknown) {
+    console.error('[premium-welcome] Resend exception (non-blocking):', err instanceof Error ? err.message : String(err), { email })
+  }
 }

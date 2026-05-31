@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lint": "ESLINT_USE_FLAT_CONFIG=true eslint .",
-    "typecheck": "npx tsc --noEmit"
+    "typecheck": "npx tsc --noEmit",
+    "dev:test": "dotenv -e .env.test -- nuxt dev"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.86.1",
@@ -28,6 +29,7 @@
     "html2canvas": "^1.4.1",
     "inngest": "^4.2.5",
     "jspdf": "^4.2.1",
+    "motion-v": "^2.2.1",
     "nuxt": "^4.4.2",
     "nuxt-gtag": "^4.1.0",
     "pdfkit": "^0.18.0",
@@ -42,10 +44,13 @@
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^0.3.0",
+    "@nuxt/fonts": "^0.14.0",
+    "@nuxt/image": "^2.0.0",
     "@playwright/test": "^1.43.0",
     "@types/node": "^25.5.2",
     "@types/pdfkit": "^0.17.5",
     "@vue/test-utils": "^2.4.5",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^8.57.0",
     "happy-dom": "^20.9.0",
     "node-gyp": "^12.2.0",

@@ -29,7 +29,7 @@ export const inngest = new Inngest({
  *   lifePathNumber  — numerology life path number (0 if unavailable)
  *   element         — elemental affinity (e.g. "Earth")
  *   region          — regional style variant (e.g. "western")
- *   planType        — subscription tier: "daily_horoscope" | "compatibility_plus"
+ *   planType        — subscription tier: "premium" | "daily_horoscope"
  *   sessionId       — Stripe checkout session ID — used as the Inngest idempotency key
  */
 export const subscriberWelcomeSend = eventType(
@@ -42,7 +42,7 @@ export const subscriberWelcomeSend = eventType(
       lifePathNumber: number
       element:        string
       region:         string
-      planType:       'daily_horoscope' | 'compatibility_plus'
+      planType:       'premium' | 'daily_horoscope'
       sessionId:      string
     }>(),
   },
@@ -59,7 +59,8 @@ export const subscriberWelcomeSend = eventType(
  *   sessionId         — the browser/quiz session ID at capture time
  *   firstName         — visitor's first name (for personalisation)
  *   archetypeName     — archetype display name (e.g. "The Phoenix")
- *   archetypeEmoji    — emoji for the archetype (e.g. "🔥")
+ *   archetypeEmoji    — legacy emoji field (kept for backward-compat)
+ *   archetypeSymbol   — preferred: Unicode symbol char (e.g. '◆') → resolves to hosted PNG in emails
  *   archetypeElement  — element name (e.g. "Fire")
  *   lifePath          — life path number as string (e.g. "7")
  *   birthCity         — city of birth (for personalisation)
@@ -75,6 +76,7 @@ export const abandonmentStarted = eventType(
       firstName:        string
       archetypeName:    string
       archetypeEmoji:   string
+      archetypeSymbol?: string
       archetypeElement: string
       lifePath:         string
       birthCity:        string
@@ -125,8 +127,8 @@ export const userUnsubscribed = eventType(
 )
 
 /**
- * Fired by the weekly transit orchestrator once per compatibility_plus
- * subscriber on Monday morning. The worker fetches the compatibility report,
+ * Fired by the weekly transit orchestrator once per eligible subscriber
+ * on Monday morning. The worker fetches the compatibility report,
  * calls Claude for the weekly relationship weather, sends the email, and logs.
  *
  *   email          — subscriber email address
