@@ -5,7 +5,7 @@
   },
   "build": {
     "development": {
-      "node": "22",
+      "node": "22.2.0",
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
@@ -13,14 +13,14 @@
       }
     },
     "development-simulator": {
-      "node": "22",
+      "node": "22.2.0",
       "developmentClient": true,
       "ios": {
         "simulator": true
       }
     },
     "preview": {
-      "node": "22",
+      "node": "22.2.0",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
@@ -34,7 +34,7 @@
       }
     },
     "production": {
-      "node": "22",
+      "node": "22.2.0",
       "android": {
         "buildType": "app-bundle"
       },
