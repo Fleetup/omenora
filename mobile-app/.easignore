@@ -1,2 +1,0 @@
-# Exclude macOS-generated lock file so EAS Linux workers run npm install fresh
-package-lock.json
