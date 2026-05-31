@@ -6,11 +6,11 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#050410",
+    "backgroundColor": "#15110D",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#050410"
+      "backgroundColor": "#15110D"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -43,7 +43,7 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#050410"
+        "backgroundColor": "#15110D"
       },
       "permissions": [
         "android.permission.INTERNET",
