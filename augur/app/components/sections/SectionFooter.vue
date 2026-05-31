@@ -151,7 +151,15 @@ withDefaults(defineProps<{
       <!-- Brand area -->
       <div class="section-footer__brand">
         <slot name="brand">
-          <!-- Default brand: wordmark + optional tagline + optional meta -->
+          <!-- Default brand: logo mark + wordmark + optional tagline + optional meta -->
+          <img
+            src="/android-chrome-192x192.png"
+            alt=""
+            aria-hidden="true"
+            class="section-footer__logo"
+            width="32"
+            height="32"
+          />
           <p class="section-footer__wordmark">{{ brandName }}</p>
           <p v-if="tagline" class="section-footer__tag">{{ tagline }}</p>
           <p v-if="brandMeta" class="section-footer__brand-meta">{{ brandMeta }}</p>
@@ -243,6 +251,17 @@ withDefaults(defineProps<{
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+/* Logo mark: 32×32 icon above the wordmark. object-fit: contain preserves
+   aspect ratio. opacity 0.72 sits within the tertiary register — present
+   without competing with the wordmark text below it. */
+.section-footer__logo {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  opacity: 0.72;
 }
 
 /* Wordmark: display font, weight 500, 0.34em tracking, 12px.

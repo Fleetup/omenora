@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import {
   View,
+  Image,
   StyleSheet,
   Pressable,
   ActivityIndicator,
@@ -89,16 +90,19 @@ export default function WelcomeScreen() {
       />
 
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-        {/* Brand wordmark — left-aligned editorial masthead */}
+        {/* Brand logo mark — centered masthead */}
         <MotiView
           from={WELCOME_WORDMARK_FROM}
           animate={WELCOME_WORDMARK_ANIMATE}
           transition={WELCOME_WORDMARK_TRANSITION}
           style={styles.topBar}
         >
-          <Text variant="micro" color="secondary" style={styles.wordmark}>
-            OMENORA
-          </Text>
+          <Image
+            source={require('../../../assets/icon.png')}
+            style={styles.logoMark}
+            resizeMode="contain"
+            accessibilityLabel="Omenora"
+          />
         </MotiView>
 
         {/* Headline cluster — upper third, asymmetric with right breathing room */}
@@ -213,8 +217,10 @@ const styles = StyleSheet.create({
     paddingTop:  space['5'],
     alignItems:  'center',
   },
-  wordmark: {
-    letterSpacing: 6,
+  logoMark: {
+    width:  32,
+    height: 32,
+    opacity: 0.90,
   },
   headlineZone: {
     flex:              1,

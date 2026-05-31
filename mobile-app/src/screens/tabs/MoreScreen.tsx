@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { View, ScrollView, Alert, Linking, StyleSheet } from 'react-native'
+import { View, ScrollView, Alert, Linking, Image, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { CommonActions } from '@react-navigation/native'
 import Constants from 'expo-constants'
@@ -106,6 +106,16 @@ export default function MoreScreen({ navigation }: MoreScreenProps) {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Brand logo mark ────────────────────────────────────────── */}
+        <View style={styles.logoBlock}>
+          <Image
+            source={require('../../../assets/icon.png')}
+            style={styles.logoMark}
+            resizeMode="contain"
+            accessibilityLabel="Omenora"
+          />
+        </View>
+
         {/* ── Account header ─────────────────────────────────────────── */}
         <Card variant="default" padding="default" style={{ backgroundColor: CARD_BG }}>
           <Text variant="heading2" color="primary">Account</Text>
@@ -359,6 +369,15 @@ const styles = StyleSheet.create({
   },
   planBadgePremium: {
     borderColor: tokens.border.accent,
+  },
+  logoBlock: {
+    alignItems:   'center',
+    paddingBottom: space['6'],
+  },
+  logoMark: {
+    width:   40,
+    height:  40,
+    opacity: 0.75,
   },
   sectionHeading: {
     marginBottom: space['2'],
