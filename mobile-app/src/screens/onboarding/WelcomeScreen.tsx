@@ -4,6 +4,7 @@ import {
   Image,
   StyleSheet,
   Pressable,
+  PressableStateCallbackType,
   ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -168,7 +169,7 @@ export default function WelcomeScreen() {
                       body: 'Sign in to access your readings and profile.',
                     })
                   }
-                  style={({ pressed }) => [
+                  style={({ pressed }: PressableStateCallbackType) => [
                     styles.signInTap,
                     pressed && styles.signInTapPressed,
                   ]}
