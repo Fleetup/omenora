@@ -7,17 +7,12 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#15110D",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#15110D"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "icon": {
-        "any": "./assets/icon-light.png",
+        "light": "./assets/icon-light.png",
         "dark": "./assets/icon-dark.png",
         "tinted": "./assets/icon-tinted.png"
       },
@@ -92,7 +87,14 @@
         "icon": "./assets/notification-icon.png",
         "color": "#7B61FF"
       }],
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#15110D"
+        }
+      ],
       "expo-system-ui",
       "expo-updates",
       "expo-web-browser",
