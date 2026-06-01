@@ -16,6 +16,11 @@
       "**/*"
     ],
     "ios": {
+      "icon": {
+        "any": "./assets/icon-light.png",
+        "dark": "./assets/icon-dark.png",
+        "tinted": "./assets/icon-tinted.png"
+      },
       "supportsTablet": true,
       "bundleIdentifier": "com.omenora.app",
       "buildNumber": "1.0.0",
